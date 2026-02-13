@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사주 해석 테스트</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .result {
+            margin-top: 40px;
+            display: none;
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .summary {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .summary h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .summary-item {
+            margin: 8px 0;
+            color: #666;
+        }
+        
+        .section {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #2c3e50;
+        }
+        
+        .section-content {
+            line-height: 1.8;
+            color: #444;
+            white-space: pre-wrap;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔮 사주 해석 테스트</h1>
+        
+        <form id="sajuForm">
+            <div class="form-group">
+                <label>일간</label>
+                <input type="text" id="dayStem" value="癸" required>
+            </div>
+            
+            <div class="form-group">
+                <label>년주</label>
+                <input type="text" id="year" value="庚辰" required>
+            </div>
+            
+            <div class="form-group">
+                <label>월주</label>
+                <input type="text" id="month" value="乙酉" required>
+            </div>
+            
+            <div class="form-group">
+                <label>일주</label>
+                <input type="text" id="day" value="癸未" required>
+            </div>
+            
+            <div class="form-group">
+                <label>시주</label>
+                <input type="text" id="hour" value="庚申" required>
+            </div>
+            
+            <div class="form-group">
+                <label>톤</label>
+                <select id="tone">
+                    <option value="empathy">공감형 (EMPATHY)</option>
+                    <option value="reality">현실형 (REALITY)</option>
+                    <option value="fun">재미형 (FUN)</option>
+                </select>
+            </div>
+            
+            <button type="submit">해석 생성</button>
+        </form>
+        
+        <div class="loading" id="loading">
+            ⏳ 해석 생성 중...
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="result" id="result">
+            <div class="summary" id="summary"></div>
+            <div id="sections"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        document.getElementById('sajuForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const result = document.getElementById('result');
+            
+            // 초기화
+            loading.classList.add('show');
+            error.classList.remove('show');
+            result.classList.remove('show');
+            
+            try {
+                const response = await fetch(`${API_URL}/api/interpret`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        day_stem: document.getElementById('dayStem').value,
+                        year: document.getElementById('year').value,
+                        month: document.getElementById('month').value,
+                        day: document.getElementById('day').value,
+                        hour: document.getElementById('hour').value,
+                        tone: document.getElementById('tone').value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error);
+                }
+                
+                // 요약 표시
+                const summary = data.data.analysis_summary;
+                document.getElementById('summary').innerHTML = `
+                    <h3>📊 분석 요약</h3>
+                    <div class="summary-item"><strong>신강약:</strong> ${summary.strength} (${summary.strength_score}점)</div>
+                    <div class="summary-item"><strong>십성:</strong> ${Object.entries(summary.ten_gods).map(([k,v]) => `${k} ${v}개`).join(', ')}</div>
+                    <div class="summary-item"><strong>패턴:</strong> ${summary.patterns}개 매칭</div>
+                `;
+                
+                // 해석 표시
+                const sections = data.data.interpretations;
+                document.getElementById('sections').innerHTML = sections.map(section => `
+                    <div class="section">
+                        <div class="section-title">섹션 ${section.section_id}: ${section.title}</div>
+                        <div class="section-content">${section.content}</div>
+                        <div style="margin-top: 12px; color: #999; font-size: 13px;">
+                            글자수: ${section.content.length}자 | 톤: ${section.tone}
+                        </div>
+                    </div>
+                `).join('');
+                
+                result.classList.add('show');
+                
+            } catch (err) {
+                error.textContent = `오류: ${err.message}`;
+                error.classList.add('show');
+            } finally {
+                loading.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>

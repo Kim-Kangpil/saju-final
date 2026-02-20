@@ -10,7 +10,7 @@ export default function Footer() {
                 <div className="space-y-1.5 sm:space-y-2 text-[10px] sm:text-xs text-gray-600 text-center mb-3 sm:mb-4">
                     <p className="leading-relaxed">
                         <span className="font-semibold">상호명:</span> 한양사주
-                        <span className="hidden sm:inline"> | </span>
+                        <span className="hidden sm:inline">  </span>
                         <span className="block sm:inline mt-0.5 sm:mt-0">
                             <span className="font-semibold">대표자:</span> 김강필
                         </span>
@@ -20,7 +20,7 @@ export default function Footer() {
                         <span className="font-mono">889-28-01406</span>
                     </p>
                     <p className="leading-relaxed px-2 sm:px-0">
-                        <span className="font-semibold">주소:</span> 경기도 안산시 상록구 학사4길 9-1, 302호(사동, 쁘띠메종)
+                        <span className="font-semibold">주소:</span> 경기도 안산시 상록구 학사4길 9-1,302호(사동, 쁘띠메종)
                     </p>
                     <p className="leading-relaxed">
                         <span className="font-semibold">이메일:</span>{" "}

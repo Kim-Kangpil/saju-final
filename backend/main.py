@@ -1,3 +1,4 @@
+
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -11,6 +12,10 @@ from logic.twelve_states import calculate_twelve_states, get_twelve_state
 from logic import test
 from logic import lunar_converter
 from logic.jijanggan import calculate_jijanggan_for_pillars
+
+
+from auth_kakao import router as kakao_router
+
 
 # .env 파일 경로 명시
 env_path = Path(__file__).resolve().parent / ".env"
@@ -36,7 +41,9 @@ else:
     print("⚠️  OPENAI_API_KEY 없음")
     client = None
 
+
 app = FastAPI(title="Saju API", version="0.1.0")
+app.include_router(kakao_router)
 
 # CORS 설정
 app.add_middleware(

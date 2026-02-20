@@ -2035,77 +2035,8 @@ export default function Page() {
                         </div>
                       </div>
 
-                      {newInterpretation?.metadata?.harmony?.transformations &&
-                        newInterpretation.metadata.harmony.transformations.length > 0 && (
-                          <div className="mb-2 p-4 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl border-2 border-orange-200">
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="text-xl">🔥</span>
-                              <h3 className="text-sm font-bold text-orange-900">화합(합충) 정보</h3>
-                            </div>
 
-                            <div className="grid grid-cols-2 gap-2">
-                              {newInterpretation.metadata.harmony.transformations.map(
-                                (trans: any, idx: number) => {
-                                  const typeIcons: any = {
-                                    천간합: "🌟",
-                                    지지육합: "🔗",
-                                    지지삼합: "⭐",
-                                  };
-                                  const elementColors: any = {
-                                    metal: "text-gray-600",
-                                    wood: "text-green-600",
-                                    water: "text-blue-600",
-                                    fire: "text-red-600",
-                                    earth: "text-yellow-700",
-                                  };
-                                  const labels: any = {
-                                    wood: "木",
-                                    fire: "火",
-                                    earth: "土",
-                                    metal: "金",
-                                    water: "水",
-                                  };
 
-                                  return (
-                                    <div
-                                      key={idx}
-                                      className="bg-white/80 rounded-lg p-3 border border-orange-200"
-                                    >
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-base">
-                                          {typeIcons[trans.type] || "✨"}
-                                        </span>
-                                        <span className="text-xs font-bold text-gray-700">
-                                          {trans.type}
-                                        </span>
-                                      </div>
-
-                                      <div className="text-sm font-semibold text-orange-800 mb-1">
-                                        {trans.name}
-                                      </div>
-
-                                      <div className="text-xs text-gray-600">
-                                        위치: {trans.positions?.join(" + ")}
-                                      </div>
-
-                                      <div className="flex items-center gap-1 mt-2 text-xs">
-                                        <span className="text-gray-500">
-                                          {trans.original_elements
-                                            ?.map((el: string) => labels[el] ?? el)
-                                            .join(" + ")}
-                                        </span>
-                                        <span className="text-orange-500">→</span>
-                                        <span className={`font-bold ${elementColors[trans.result]}`}>
-                                          {labels[trans.result] ?? trans.result}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  );
-                                }
-                              )}
-                            </div>
-                          </div>
-                        )}
 
                       <div className="relative">
                         {gateStep === "needAuth" && (

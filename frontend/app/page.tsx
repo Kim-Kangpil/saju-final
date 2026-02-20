@@ -649,7 +649,7 @@ export default function Page() {
   const [kakaoReady, setKakaoReady] = useState(false);
   const [isChannelAdded, setIsChannelAdded] = useState(false);
 
-  const CHANNEL_PUBLIC_ID = "_ZeUTxl";
+  const CHANNEL_PUBLIC_ID = "_Ribbn";
 
   const [kakaoTokenOk, setKakaoTokenOk] = useState(false);
   const [selectedTone, setSelectedTone] = useState<CharKey>("empathy");
@@ -1190,11 +1190,12 @@ export default function Page() {
     const stages = char.progressMessages;
     let progress = 0;
     let stageIndex = 0;
+    let messageChangeCounter = 0;  // 🔥 추가
 
     const progressInterval = setInterval(() => {
-      if (progress < 100) {
-        progress += Math.random() * 5 + 2;
-        if (progress > 100) progress = 100;
+      if (progress < 98) {  // 🔥 98%까지만
+        progress += Math.random() * 2 + 1;  // 🔥 1~3% 증가
+        if (progress > 98) progress = 98;  // 🔥 98%에서 멈춤
         setLoadingProgress(Math.floor(progress));
 
         if (progress < 33) {
@@ -1205,10 +1206,14 @@ export default function Page() {
           stageIndex = 2;
         }
 
-        const stageKey = `stage${stageIndex + 1}` as "stage1" | "stage2" | "stage3";
-        const messages = stages[stageKey];
-        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-        setLoadingMessage(randomMsg);
+        // 🔥 3초마다 대사 변경
+        messageChangeCounter++;
+        if (messageChangeCounter % 6 === 0) {
+          const stageKey = `stage${stageIndex + 1}` as "stage1" | "stage2" | "stage3";
+          const messages = stages[stageKey];
+          const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+          setLoadingMessage(randomMsg);
+        }
       }
     }, 500);
 
@@ -1252,7 +1257,7 @@ export default function Page() {
       });
     } finally {
       clearInterval(progressInterval);
-      setLoadingProgress(100);
+      setLoadingProgress(100);  // 🔥 완료되면 100%
       setLoading(false);
       setInterpLoading(false);
     }
@@ -1261,7 +1266,7 @@ export default function Page() {
   async function run() {
     setGateStep("idle");
     setIsChannelAdded(false);
-    
+
     const parsedYmd = parseYmd(birthYmd);
     const parsedHm = timeUnknown ? { hour: 12, minute: 0 } : parseHm(birthHm);
     if (!parsedYmd || !parsedHm) return;
@@ -1335,7 +1340,7 @@ export default function Page() {
     setShowCharacterSelect(false);
     setSelectedTone(selectedChar);
     setGateStep("showSaju");
-    
+
     // 🔥 바로 해석 요청 (로딩 시작)
     requestInterpretation();
   }
@@ -1829,16 +1834,16 @@ export default function Page() {
                         <button
                           type="button"
                           onClick={(e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  console.log("🔥 버튼 클릭!", { formError, birthYmd, birthHm }); // 🔥 추가
-  if (!formError) {
-    console.log("🔥 run() 실행!"); // 🔥 추가
-    run();
-  } else {
-    console.log("❌ formError:", formError); // 🔥 추가
-  }
-}}
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log("🔥 버튼 클릭!", { formError, birthYmd, birthHm }); // 🔥 추가
+                            if (!formError) {
+                              console.log("🔥 run() 실행!"); // 🔥 추가
+                              run();
+                            } else {
+                              console.log("❌ formError:", formError); // 🔥 추가
+                            }
+                          }}
                           onTouchStart={(e) => {
                             e.stopPropagation();
                           }}

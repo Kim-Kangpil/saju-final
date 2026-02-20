@@ -1,39 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Login() {
     const router = useRouter();
+
     const [formData, setFormData] = useState({
         email: '',
         password: '',
         rememberMe: false
     });
 
-    useEffect(() => {
-        // Kakao SDK 로드
-        const script = document.createElement('script');
-        script.src = 'https://developers.kakao.com/sdk/js/kakao.js';
-        script.async = true;
-        document.body.appendChild(script);
-
-        script.onload = () => {
-            if (window.Kakao && !window.Kakao.isInitialized()) {
-                // 여기에 카카오 JavaScript 키 입력
-                window.Kakao.init('YOUR_JAVASCRIPT_KEY');
-            }
-        };
-
-        return () => {
-            if (document.body.contains(script)) {
-                document.body.removeChild(script);
-            }
-        };
-    }, []);
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         // 실제로는 여기서 API 호출
         localStorage.setItem('isLoggedIn', 'true');
         alert('로그인 성공!');
@@ -48,28 +29,16 @@ export default function Login() {
         }));
     };
 
+    // ✅ 카카오 로그인 (백엔드 OAuth 방식)
     const handleKakaoLogin = () => {
-        if (typeof window !== 'undefined' && window.Kakao) {
-            window.Kakao.Auth.login({
-                success: (authObj: any) => {
-                    console.log('Kakao login success:', authObj);
-                    localStorage.setItem('isLoggedIn', 'true');
-                    localStorage.setItem('loginType', 'kakao');
-                    alert('카카오 로그인 성공!');
-                    router.push('/');
-                },
-                fail: (err: any) => {
-                    console.error('Kakao login failed:', err);
-                    alert('카카오 로그인에 실패했습니다.');
-                },
-            });
-        } else {
-            alert('카카오 SDK를 불러오는 중입니다. 잠시 후 다시 시도해주세요.');
-        }
+        const backend =
+            process.env.NEXT_PUBLIC_BACKEND_URL ||
+            'https://saju-backend-eqd6.onrender.com';
+
+        window.location.href = `${backend}/auth/kakao/login`;
     };
 
     return (
-
         <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-yellow-50 flex items-center justify-center">
             <div className="container mx-auto px-4 py-6 sm:py-12">
                 <div className="max-w-md mx-auto">
@@ -179,10 +148,4 @@ export default function Login() {
             </div>
         </div>
     );
-}
-
-declare global {
-    interface Window {
-        Kakao: any;
-    }
 }

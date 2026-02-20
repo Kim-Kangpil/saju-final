@@ -1374,26 +1374,30 @@ export default function Page() {
 
               <div className="flex items-center gap-2">
                 {isLoggedIn ? (
-                  <button
-                    onClick={handleLogout}
-                    className="px-3 py-1.5 text-sm font-bold text-[#556b2f] bg-white hover:bg-white/80 rounded-lg transition-colors shadow-sm"
-                  >
-                    로그아웃
-                  </button>
+                  <>
+                    <button
+                      onClick={() => router.push('/mypage')}
+                      className="px-3 py-1.5 text-sm font-bold text-white bg-[#556b2f] hover:bg-[#6d8b3a] rounded-lg transition-colors shadow-sm"
+                    >
+                      마이페이지
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="px-3 py-1.5 text-sm font-bold text-[#556b2f] bg-white hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                    >
+                      로그아웃
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button
-                      onClick={() => {
-                        router.push('/login');
-                      }}
+                      onClick={() => router.push('/login')}
                       className="px-3 py-1.5 text-sm font-bold text-[#556b2f] bg-white hover:bg-white/80 rounded-lg transition-colors shadow-sm"
                     >
                       로그인
                     </button>
                     <button
-                      onClick={() => {
-                        router.push('/signup');
-                      }}
+                      onClick={() => router.push('/signup')}
                       className="px-3 py-1.5 text-sm font-bold bg-[#556b2f] text-white rounded-lg hover:bg-[#6d8b3a] transition-colors shadow-sm"
                     >
                       회원가입

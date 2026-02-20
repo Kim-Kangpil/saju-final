@@ -16,13 +16,13 @@ export default function MyPage() {
     // 로그인 체크
     const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
     setIsLoggedIn(loggedIn);
-    
+
     if (!loggedIn) {
       alert('로그인이 필요합니다.');
       router.push('/login');
       return;
     }
-    
+
     // 저장된 사주 목록 불러오기
     const list = getSavedSajuList();
     setSajuList(list);
@@ -32,7 +32,7 @@ export default function MyPage() {
   const handleView = (saju: SavedSaju) => {
     // 마지막 조회 시간 업데이트
     updateLastViewed(saju.id);
-    
+
     // 사주 데이터를 세션에 저장하고 메인 페이지로
     sessionStorage.setItem('viewingSaju', JSON.stringify(saju));
     router.push('/?view=' + saju.id);
@@ -46,7 +46,7 @@ export default function MyPage() {
 
   const handleDelete = (id: string) => {
     const result = deleteSaju(id);
-    
+
     if (result.success) {
       setSajuList(getSavedSajuList());
       alert(result.message);
@@ -72,7 +72,7 @@ export default function MyPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-yellow-50 via-green-50 to-blue-50 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="w-full max-w-[450px] mx-auto">
         {/* 헤더 */}
         <div className="bg-white border-4 border-[#adc4af] rounded-2xl p-6 mb-6 shadow-lg">
           <div className="flex items-center justify-between">
@@ -84,7 +84,7 @@ export default function MyPage() {
                 저장된 사주를 관리하세요 (최대 5개)
               </p>
             </div>
-            
+
             <button
               onClick={handleLogout}
               className="px-4 py-2 text-sm font-bold text-gray-600 hover:text-gray-800 transition-colors"
@@ -137,7 +137,7 @@ export default function MyPage() {
                 저장된 사주 ({sajuList.length}/5)
               </h2>
             </div>
-            
+
             <AnimatePresence>
               {sajuList.map((saju, index) => (
                 <motion.div
@@ -167,7 +167,7 @@ export default function MyPage() {
             </p>
           </div>
         )}
-        
+
         {sajuList.length >= 5 && (
           <div className="mt-6 p-4 bg-orange-50 border-2 border-orange-200 rounded-xl">
             <p className="text-sm text-orange-700 text-center">

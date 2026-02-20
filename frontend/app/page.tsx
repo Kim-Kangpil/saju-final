@@ -665,100 +665,23 @@ export default function Page() {
   }, [kakaoReady, gateStep]);
 
   function handleKakaoLogin() {
-    if (!kakaoReady || !window.Kakao) {
-      alert("카카오 SDK 로딩이 완료 되지 않았어요.");
+    const backend = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!backend) {
+      alert("NEXT_PUBLIC_BACKEND_URL 환경변수가 없어요.");
       return;
     }
-
-    try {
-      window.Kakao.Auth.login({
-        scope: "talk_channel",
-        success: () => {
-          setErr("");
-          setKakaoTokenOk(true);
-          alert("로그인 완료! 이제 채널 추가를 눌러주세요");
-        },
-        fail: (e: any) => {
-          console.error("Kakao login error:", e);
-          setErr("카카오 로그인 실패");
-        },
-      });
-    } catch (e) {
-      console.error("Kakao login exception:", e);
-      setErr("카카오 로그인 처리 중 오류");
-    }
+    window.location.href = `${backend}/auth/kakao/login`;
   }
 
   function handleFollowChannel() {
-    if (!kakaoReady || !window.Kakao) {
-      alert("카카오 SDK 로딩이 완료 되지 않았어요.");
-      return;
-    }
-
-    try {
-      if (window.Kakao.Channel?.followChannel) {
-        window.Kakao.Channel.followChannel({ channelPublicId: CHANNEL_PUBLIC_ID });
-      } else if (window.Kakao.Channel?.addChannel) {
-        window.Kakao.Channel.addChannel({ channelPublicId: CHANNEL_PUBLIC_ID });
-      } else {
-        alert("채널 추가 기능을 찾지 못했어요 카카오 SDK 로딩/버전을 확인하세요.");
-        return;
-      }
-
-      setTimeout(() => {
-        checkChannelRelation();
-      }, 1200);
-    } catch (e) {
-      console.error(e);
-      setErr("채널 추가 처리 중 오류");
-    }
+    // 채널 추가 링크로 바꿔야 함 (카카오 채널 관리자에서 '채널 추가 링크' 복사해서 넣기)
+    window.open("https://pf.kakao.com/_YOUR_CHANNEL_ID", "_blank");
   }
 
-  async function checkChannelRelation() {
-    if (!kakaoReady || !window.Kakao) {
-      alert("카카오 SDK 로딩이 완료 되지 않았어요.");
-      return;
-    }
-
-    const token = window.Kakao?.Auth?.getAccessToken?.();
-    if (!token) {
-      alert("먼저 카카오 로그인을 하세요.");
-      return;
-    }
-
-    try {
-      const res = await window.Kakao.API.request({
-        url: "/v2/api/talk/channels",
-        data: {
-          channel_id_type: "channel_public_id",
-          channel_ids: CHANNEL_PUBLIC_ID,
-        },
-      });
-
-      const channels = Array.isArray(res?.channels) ? res.channels : [];
-      const me = channels[0] || null;
-
-      const added =
-        me?.relation === "ADDED" ||
-        me?.relation === "added" ||
-        me?.friend === true ||
-        me?.is_friend === true ||
-        me?.isFriend === true ||
-        me?.status === "ADDED";
-
-      setIsChannelAdded(!!added);
-
-      if (added) {
-        setGateStep("unlocked");
-        alert("채널 추가 확인 완료! 이석 잠금 해제됩니다.");
-        requestInterpretation();
-      } else {
-        alert("아직 채널 추가가 확인되지 않아요. 채널 추가 후 다시 확인하세요.");
-      }
-    } catch (e) {
-      console.error(e);
-      setErr("채널 관계 조회 실패: 카카오톡 설정(채널 숨김/동의 없음/비공개 등)을 확인하세요.");
-    }
+  function handleChannelAddedDone() {
+    // 채널 추가 완료 버튼 누르면 바로 잠금 해제/해석 요청
+    setGateStep("unlocked");
+    requestInterpretation();
   }
 
   const [sajuJsonRaw, setSajuJsonRaw] = useState<any>(null);
@@ -2080,12 +2003,7 @@ export default function Page() {
                                 </button>
                               </div>
 
-                              <button
-                                onClick={checkChannelRelation}
-                                className="mt-4 text-[10px] underline text-[#556b2f] opacity-80 hover:opacity-100"
-                              >
-                                이미 추가했으면 확인하기
-                              </button>
+                              <button onClick={handleChannelAddedDone}>채널 추가 완료했어요</button>
 
                               <div className="mt-2 text-[10px] text-[#556b2f] opacity-70">
                                 로그인: {kakaoTokenOk ? "OK" : "NO"} / 채널: {isChannelAdded ? "OK" : "NO"}

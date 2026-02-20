@@ -1,5 +1,5 @@
 "use client";
-
+import { saveSaju, getSavedSajuList } from '../lib/sajuStorage';
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import Script from "next/script";
@@ -618,11 +618,217 @@ function classifyMegaByTitle(title: string): MegaKey | null {
 export default function Page() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // 🔥 새로 추가: 저장 관련 state
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [sajuName, setSajuName] = useState('');
+  const [birthYmd, setBirthYmd] = useState("");
+  const [birthHm, setBirthHm] = useState("");
+  const [gender, setGender] = useState<"M" | "F">("M");
+  const [calendar, setCalendar] = useState<"solar" | "lunar">("solar");
+  const [timeUnknown, setTimeUnknown] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [result, setResult] = useState<SajuResult | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+
+  const [currentGreeting, setCurrentGreeting] = useState("");
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [scriptMode, setScriptMode] = useState<"hanja" | "hangul">("hanja");
+  const [expandedSection, setExpandedSection] = useState<"elements" | "wealth" | null>(null);
+
+  const [showHarmonyAfter, setShowHarmonyAfter] = useState(false);
+  const [newInterpretation, setNewInterpretation] = useState<any>(null);
+  const [showFortune, setShowFortune] = useState(false);
+  const [showCharm, setShowCharm] = useState(false);
+  const [showTalent, setShowTalent] = useState(false);
+  const [showStrength, setShowStrength] = useState(false);
+  const [showRelations, setShowRelations] = useState(false);
+  const [showSpecialStars, setShowSpecialStars] = useState(false);
+  const [showToday, setShowToday] = useState(false);
+
+  const [fortuneAnalysis, setFortuneAnalysis] = useState<{
+    greatFortune: {
+      current: GreatFortuneData;
+      next: GreatFortuneData;
+      direction: "순행" | "역행";
+    };
+    yearFortune: {
+      current: YearFortuneData;
+      next: YearFortuneData;
+    };
+  } | null>(null);
+
+  const [charmAnalysis, setCharmAnalysis] = useState<string | null>(null);
+  const [talentAnalysis, setTalentAnalysis] = useState<string | null>(null);
+  const [strengthAnalysis, setStrengthAnalysis] = useState<any>(null);
+  const [relationsAnalysis, setRelationsAnalysis] = useState<any>(null);
+  const [specialStarsAnalysis, setSpecialStarsAnalysis] = useState<any>(null);
+  const [todayFortune, setTodayFortune] = useState<any>(null);
+  const [natureAnalysis, setNatureAnalysis] = useState<string | null>(null);
+  const [natureYangCount, setNatureYangCount] = useState<number>(0);
+  const [natureYinCount, setNatureYinCount] = useState<number>(0);
+  const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);  // 🔥 추가
+  const [showCharacterSelect, setShowCharacterSelect] = useState(false);
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedIn');
     setIsLoggedIn(loggedIn === 'true');
   }, []);
+  // 🔥 새로 추가: 로그인 상태 실시간 반영
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
+      setIsLoggedIn(loggedIn);
+    };
+
+    checkLoginStatus();
+    window.addEventListener('storage', checkLoginStatus);
+    window.addEventListener('focus', checkLoginStatus);
+
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+      window.removeEventListener('focus', checkLoginStatus);
+    };
+  }, []);
+
+  // 🔥 새로 추가: 첫 방문 환영 메시지
+  useEffect(() => {
+    const showWelcome = localStorage.getItem('showWelcome') === 'true';
+    if (showWelcome && result) {
+      localStorage.removeItem('showWelcome');
+      setTimeout(() => {
+        alert('🎉 환영합니다!\n첫 사주 분석이 완료되었습니다.\n\n💡 "사주 저장하기"를 눌러서 나중에도 다시 볼 수 있습니다.');
+      }, 1000);
+    }
+  }, [result]);
+
+  // 🔥 새로 추가: 저장된 사주 불러오기
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const loadedId = params.get('loaded');
+
+    if (loadedId) {
+      const loadedSajuStr = sessionStorage.getItem('loadedSaju');
+      if (loadedSajuStr) {
+        try {
+          const loadedSaju = JSON.parse(loadedSajuStr);
+
+          setBirthYmd(loadedSaju.birthYmd);
+          setBirthHm(loadedSaju.birthHm);
+          setGender(loadedSaju.gender);
+          setCalendar(loadedSaju.calendar);
+          setTimeUnknown(loadedSaju.timeUnknown);
+          setResult(loadedSaju.result);
+
+          sessionStorage.removeItem('loadedSaju');
+          window.history.replaceState({}, '', '/');
+
+          setTimeout(() => {
+            resultRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 500);
+        } catch (e) {
+          console.error('사주 불러오기 실패:', e);
+        }
+      }
+    }
+  }, []);
+
+  // 🔥 새로 추가: 저장 함수들
+  function handleSaveSaju() {
+    if (!isLoggedIn) {
+      if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
+        router.push('/login');
+      }
+      return;
+    }
+
+    const savedList = getSavedSajuList();
+
+    if (savedList.length >= 5) {
+      if (confirm('저장 공간이 가득 찼습니다.\n마이페이지로 이동하시겠습니까?')) {
+        router.push('/mypage');
+      }
+      return;
+    }
+
+    setShowSaveDialog(true);
+  }
+
+  function confirmSave() {
+    if (!sajuName.trim()) {
+      alert('사주 이름을 입력해주세요.');
+      return;
+    }
+
+    if (!result) return;
+
+    const saveResult = saveSaju({
+      name: sajuName.trim(),
+      birthYmd,
+      birthHm: timeUnknown ? '1200' : birthHm,
+      gender,
+      calendar,
+      timeUnknown,
+      result,
+    });
+
+    if (saveResult.success) {
+      alert(`✅ ${saveResult.message}\n\n마이페이지에서 확인하세요!`);
+      setShowSaveDialog(false);
+      setSajuName('');
+
+      if (confirm('마이페이지로 이동하시겠습니까?')) {
+        router.push('/mypage');
+      }
+    } else {
+      alert(saveResult.message);
+    }
+  }
+
+  // 🔥 새로 추가: 공유 함수들
+  function handleShare() {
+    if (!window.Kakao || !window.Kakao.isInitialized()) {
+      handleCopyLink();
+      return;
+    }
+
+    try {
+      window.Kakao.Share.sendDefault({
+        objectType: 'feed',
+        content: {
+          title: '🔮 한양사주',
+          description: '무료로 내 사주팔자를 확인해보세요!',
+          imageUrl: 'https://hysaju.com/images/ham_icon.png',
+          link: {
+            mobileWebUrl: 'https://hysaju.com',
+            webUrl: 'https://hysaju.com',
+          },
+        },
+        buttons: [
+          {
+            title: '사주 보러가기',
+            link: {
+              mobileWebUrl: 'https://hysaju.com',
+              webUrl: 'https://hysaju.com',
+            },
+          },
+        ],
+      });
+    } catch (e) {
+      console.error('카카오 공유 실패:', e);
+      handleCopyLink();
+    }
+  }
+
+  function handleCopyLink() {
+    navigator.clipboard.writeText('https://hysaju.com').then(() => {
+      alert('🔗 링크가 복사되었습니다!\n친구에게 공유해보세요.');
+    }).catch(() => {
+      alert('링크 복사에 실패했습니다.');
+    });
+  }
 
   const handleLoginRequired = () => {
     if (!isLoggedIn) {
@@ -688,56 +894,7 @@ export default function Page() {
   const [interpLoading, setInterpLoading] = useState(false);
   const [selectedChar, setSelectedChar] = useState<CharKey>("empathy");
 
-  const [birthYmd, setBirthYmd] = useState("");
-  const [birthHm, setBirthHm] = useState("");
-  const [gender, setGender] = useState<"M" | "F">("M");
-  const [calendar, setCalendar] = useState<"solar" | "lunar">("solar");
-  const [timeUnknown, setTimeUnknown] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  const [result, setResult] = useState<SajuResult | null>(null);
-  const resultRef = useRef<HTMLDivElement>(null);
-
-  const [currentGreeting, setCurrentGreeting] = useState("");
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [scriptMode, setScriptMode] = useState<"hanja" | "hangul">("hanja");
-  const [expandedSection, setExpandedSection] = useState<"elements" | "wealth" | null>(null);
-
-  const [showHarmonyAfter, setShowHarmonyAfter] = useState(false);
-  const [newInterpretation, setNewInterpretation] = useState<any>(null);
-  const [showFortune, setShowFortune] = useState(false);
-  const [showCharm, setShowCharm] = useState(false);
-  const [showTalent, setShowTalent] = useState(false);
-  const [showStrength, setShowStrength] = useState(false);
-  const [showRelations, setShowRelations] = useState(false);
-  const [showSpecialStars, setShowSpecialStars] = useState(false);
-  const [showToday, setShowToday] = useState(false);
-
-  const [fortuneAnalysis, setFortuneAnalysis] = useState<{
-    greatFortune: {
-      current: GreatFortuneData;
-      next: GreatFortuneData;
-      direction: "순행" | "역행";
-    };
-    yearFortune: {
-      current: YearFortuneData;
-      next: YearFortuneData;
-    };
-  } | null>(null);
-
-  const [charmAnalysis, setCharmAnalysis] = useState<string | null>(null);
-  const [talentAnalysis, setTalentAnalysis] = useState<string | null>(null);
-  const [strengthAnalysis, setStrengthAnalysis] = useState<any>(null);
-  const [relationsAnalysis, setRelationsAnalysis] = useState<any>(null);
-  const [specialStarsAnalysis, setSpecialStarsAnalysis] = useState<any>(null);
-  const [todayFortune, setTodayFortune] = useState<any>(null);
-  const [natureAnalysis, setNatureAnalysis] = useState<string | null>(null);
-  const [natureYangCount, setNatureYangCount] = useState<number>(0);
-  const [natureYinCount, setNatureYinCount] = useState<number>(0);
-  const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);  // 🔥 추가
-  const [showCharacterSelect, setShowCharacterSelect] = useState(false);
 
   useEffect(() => {
     if (result && resultRef.current) {
@@ -2150,7 +2307,24 @@ export default function Page() {
                           })}
                         </div>
                       </div>
+                      {/* 🔥 저장 & 공유 버튼 추가 (다시 하기 버튼 바로 위) */}
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <button
+                          onClick={handleSaveSaju}
+                          className="py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors flex flex-col items-center justify-center gap-1"
+                        >
+                          <span className="text-xl">💾</span>
+                          <span className="text-sm">저장하기</span>
+                        </button>
 
+                        <button
+                          onClick={handleShare}
+                          className="py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold rounded-xl hover:scale-105 transition-transform flex flex-col items-center justify-center gap-1"
+                        >
+                          <span className="text-xl">🔗</span>
+                          <span className="text-sm">공유하기</span>
+                        </button>
+                      </div>
                       <div className="mt-4">
                         <button
                           onClick={() => {
@@ -2179,6 +2353,8 @@ export default function Page() {
                             setShowHarmonyAfter(false);
                             setShowCharacterSelect(false);
                           }}
+
+
                           className="w-full py-2 sm:py-3 border-2 border-[#ffb3b3] rounded-xl text-[10px] sm:text-[11px] font-bold text-[#ff4d4d] hover:bg-[#fff5f5] transition-colors flex items-center justify-center gap-1 sm:gap-2"
                         >
                           <span className="text-xs sm:text-sm">🔄</span>
@@ -2192,6 +2368,63 @@ export default function Page() {
             </div>
           </div>
         </div>
+        {/* 🔥 저장 다이얼로그 추가 (</main> 직전) */}
+        {showSaveDialog && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+            onClick={() => {
+              setShowSaveDialog(false);
+              setSajuName('');
+            }}
+          >
+            <div
+              className="bg-white rounded-2xl p-6 max-w-sm w-full border-4 border-[#adc4af] shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-[#556b2f] mb-2">💾 사주 저장하기</h3>
+
+              <p className="text-sm text-gray-600 mb-4">
+                이 사주에 이름을 붙여주세요<br />
+                <span className="text-xs text-gray-500">(예: 내 사주, 엄마 사주, 친구 사주)</span>
+              </p>
+
+              <input
+                type="text"
+                value={sajuName}
+                onChange={(e) => setSajuName(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') confirmSave();
+                }}
+                placeholder="사주 이름 입력"
+                className="w-full px-4 py-3 border-2 border-[#adc4af] rounded-xl mb-4 outline-none focus:border-[#556b2f] text-sm"
+                maxLength={20}
+                autoFocus
+              />
+
+              <div className="text-xs text-gray-500 mb-4 text-right">
+                {sajuName.length}/20
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setShowSaveDialog(false);
+                    setSajuName('');
+                  }}
+                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={confirmSave}
+                  className="flex-1 py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors"
+                >
+                  저장
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </>
   );

@@ -43,7 +43,7 @@ function useCounter(target: number) {  // ✅ 반환 타입 제거
 
 export default function LandingPage() {
     const router = useRouter();
-    const go = () => router.push("/");
+    const go = () => router.push("/add");
 
     const [selectedMode, setSelectedMode] = useState<number | null>(null);
     const [showPreview, setShowPreview] = useState(false);

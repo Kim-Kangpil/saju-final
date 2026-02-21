@@ -30,18 +30,15 @@ export default function MyPage() {
   }, [router]);
 
   const handleView = (saju: SavedSaju) => {
-    // 마지막 조회 시간 업데이트
     updateLastViewed(saju.id);
-
-    // 사주 데이터를 세션에 저장하고 메인 페이지로
-    sessionStorage.setItem('viewingSaju', JSON.stringify(saju));
-    router.push('/?view=' + saju.id);
+    sessionStorage.setItem('loadedSaju', JSON.stringify(saju));
+    router.push('/add?loaded=' + saju.id);
   };
 
+  // 수정 후
   const handleEdit = (saju: SavedSaju) => {
-    // 수정 모드로 메인 페이지 이동
     sessionStorage.setItem('editingSaju', JSON.stringify(saju));
-    router.push('/?edit=' + saju.id);
+    router.push('/add?edit=' + saju.id);
   };
 
   const handleDelete = (id: string) => {
@@ -56,14 +53,15 @@ export default function MyPage() {
   };
 
   const handleNewSaju = () => {
-    router.push('/');
+    router.push('/add');
   };
 
+  // 수정 후
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loginType');
     alert('로그아웃되었습니다.');
-    router.push('/');
+    router.push('/home');
   };
 
   if (!isLoggedIn) {

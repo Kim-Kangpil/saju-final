@@ -24,7 +24,7 @@ export default function LoginSuccess() {
         // 첫 로그인 또는 저장된 사주 없음 → 메인 페이지로 (사주 입력 유도)
         localStorage.setItem('isFirstLogin', 'false');
         localStorage.setItem('showWelcome', 'true'); // 환영 메시지 플래그
-        router.push('/');
+        router.push('/add');
       } else {
         // 재방문 + 저장된 사주 있음 → 마이페이지로
         router.push('/mypage');

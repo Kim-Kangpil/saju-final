@@ -1920,12 +1920,21 @@ export default function Page() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log("🔥 버튼 클릭!", { formError, birthYmd, birthHm }); // 🔥 추가
+
+                            // 🔥 로그인 체크 먼저
+                            if (!isLoggedIn) {
+                              if (confirm('사주 분석은 로그인 후 이용 가능합니다.\n로그인 하시겠습니까?')) {
+                                router.push('/login');
+                              }
+                              return;
+                            }
+
+                            console.log("🔥 버튼 클릭!", { formError, birthYmd, birthHm });
                             if (!formError) {
-                              console.log("🔥 run() 실행!"); // 🔥 추가
+                              console.log("🔥 run() 실행!");
                               run();
                             } else {
-                              console.log("❌ formError:", formError); // 🔥 추가
+                              console.log("❌ formError:", formError);
                             }
                           }}
                           onTouchStart={(e) => {
@@ -1933,17 +1942,17 @@ export default function Page() {
                           }}
                           disabled={loading || !!formError}
                           className={`
-                      w-full px-6 py-4
-                      bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600
-                      text-gray-900 font-bold text-lg
-                      rounded-lg
-                      transform transition-all duration-200
-                      ${loading || !!formError
+    w-full px-6 py-4
+    bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600
+    text-gray-900 font-bold text-lg
+    rounded-lg
+    transform transition-all duration-200
+    ${loading || !!formError
                               ? "opacity-50 cursor-not-allowed"
                               : "hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
                             }
-                      disabled:transform-none
-                    `}
+    disabled:transform-none
+  `}
                         >
                           {loading ? "분석 중.." : "🔮 사주 확인하기"}
                         </button>

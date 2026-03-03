@@ -800,18 +800,18 @@ export default function Page() {
         content: {
           title: '🔮 한양사주',
           description: '무료로 내 사주팔자를 확인해보세요!',
-          imageUrl: 'https://hysaju.com/images/ham_icon.png',
+          imageUrl: 'https://hsaju.com/images/ham_icon.png',
           link: {
-            mobileWebUrl: 'https://hysaju.com',
-            webUrl: 'https://hysaju.com',
+            mobileWebUrl: 'https://hsaju.com',
+            webUrl: 'https://hsaju.com',
           },
         },
         buttons: [
           {
             title: '사주 보러가기',
             link: {
-              mobileWebUrl: 'https://hysaju.com',
-              webUrl: 'https://hysaju.com',
+              mobileWebUrl: 'https://hsaju.com',
+              webUrl: 'https://hsaju.com',
             },
           },
         ],
@@ -823,7 +823,7 @@ export default function Page() {
   }
 
   function handleCopyLink() {
-    navigator.clipboard.writeText('https://hysaju.com').then(() => {
+    navigator.clipboard.writeText('https://hsaju.com').then(() => {
       alert('🔗 링크가 복사되었습니다!\n친구에게 공유해보세요.');
     }).catch(() => {
       alert('링크 복사에 실패했습니다.');

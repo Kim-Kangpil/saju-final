@@ -1,32 +1,29 @@
-
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-import os
-from dotenv import load_dotenv
+# ==================== 1. 환경변수 로드 (가장 먼저!) ====================
 import openai
 from logic.twelve_states import calculate_twelve_states, get_twelve_state
 from logic import test
 from logic import lunar_converter
 from logic.jijanggan import calculate_jijanggan_for_pillars
-
-
 from auth_kakao import router as kakao_router
+import os
+from pydantic import BaseModel, Field
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException
+from typing import Optional
+from datetime import datetime
+from dotenv import load_dotenv
+from pathlib import Path
 
-
-# .env 파일 경로 명시
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-# 수정된 코드
+# ==================== 2. 나머지 import ====================
+
+# ==================== 3. OpenAI 클라이언트 초기화 ====================
 api_key = os.getenv("OPENAI_API_KEY")
 if api_key:
     print(f"🔑 API Key 로드됨: {api_key[:10]}...")
     try:
-        # HTTP 클라이언트 설정 없이 초기화
         from openai import OpenAI
         client = OpenAI(
             api_key=api_key,
@@ -41,9 +38,11 @@ else:
     print("⚠️  OPENAI_API_KEY 없음")
     client = None
 
-
+# ==================== 4. FastAPI 앱 생성 ====================
 app = FastAPI(title="Saju API", version="0.1.0")
 app.include_router(kakao_router)
+
+# ... 나머지 코드 그대로 ...
 
 # CORS 설정
 app.add_middleware(

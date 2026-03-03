@@ -438,7 +438,7 @@ export default function LandingPage() {
                                 border: "none",
                                 boxShadow: "0 3px 14px rgba(251,191,36,.35)",
                             }}>
-                            ▶ 내 동물 확인하기
+                            ▶ 내 사주 확인하기
                         </button>
 
                         <div style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "rgba(85,107,47,.06)", borderRadius: 99, border: "1px solid rgba(85,107,47,.12)" }}>
@@ -452,7 +452,7 @@ export default function LandingPage() {
                 {/* ── 7. 푸터 ── */}
                 <div style={{ padding: "20px 0", textAlign: "center" }}>
                     <p className="sans" style={{ fontSize: 10, color: "#556b2f", opacity: .3 }}>
-                        © 2025 한양사주 · AI 사주명리 분석 서비스
+                        © 2026 한양사주 · AI 사주명리 분석 서비스
                     </p>
                 </div>
 

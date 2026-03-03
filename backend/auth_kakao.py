@@ -1,15 +1,31 @@
 # app/auth_kakao.py
-import os
-import secrets
-import requests
-from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Request
+import requests
+import secrets
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
 
 router = APIRouter()
 
-KAKAO_REST_KEY = os.environ["KAKAO_REST_KEY"]
-KAKAO_REDIRECT_URI = os.environ["KAKAO_REDIRECT_URI"]  # 예: https://saju-backend-eqd6.onrender.com/auth/kakao/callback
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://hsaju.com")
+# 🔥 os.environ[] → os.getenv()로 변경
+KAKAO_REST_KEY = os.getenv("KAKAO_REST_KEY", "")
+KAKAO_REDIRECT_URI = os.getenv(
+    "KAKAO_REDIRECT_URI", "http://localhost:3000/login/success")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://hsaju.com")
+
+# 🔥 필수 값 검증
+if not KAKAO_REST_KEY:
+    raise ValueError("❌ KAKAO_REST_KEY가 .env 파일에 없습니다!")
+
+print(f"✅ KAKAO_REST_KEY 로드됨: {KAKAO_REST_KEY[:10]}...")
+print(f"✅ KAKAO_REDIRECT_URI: {KAKAO_REDIRECT_URI}")
+print(f"✅ FRONTEND_URL: {FRONTEND_URL}")
+
 
 def exchange_token(code: str) -> dict:
     url = "https://kauth.kakao.com/oauth/token"
@@ -23,12 +39,14 @@ def exchange_token(code: str) -> dict:
     r.raise_for_status()
     return r.json()
 
+
 def kakao_me(access_token: str) -> dict:
     url = "https://kapi.kakao.com/v2/user/me"
     headers = {"Authorization": f"Bearer {access_token}"}
     r = requests.get(url, headers=headers, timeout=10)
     r.raise_for_status()
     return r.json()
+
 
 @router.get("/auth/kakao/login")
 def kakao_login():
@@ -52,6 +70,7 @@ def kakao_login():
         max_age=300,
     )
     return resp
+
 
 @router.get("/auth/kakao/callback")
 def kakao_callback(request: Request):
@@ -80,7 +99,7 @@ def kakao_callback(request: Request):
     kakao_id = me.get("id")
 
     # 3) 여기서 원래는 DB에 회원 저장/로그인 처리 해야 함
-    # 지금은 “로그인 됐다고 표시하는 쿠키”만 간단히 발급
+    # 지금은 "로그인 됐다고 표시하는 쿠키"만 간단히 발급
     resp = RedirectResponse(f"{FRONTEND_URL}/login/success", status_code=302)
     resp.set_cookie(
         "hsaju_session",

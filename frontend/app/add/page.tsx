@@ -880,12 +880,32 @@ export default function Page() {
   }
 
   function handleFollowChannel() {
-    // 채널 추가 링크로 바꿔야 함 (카카오 채널 관리자에서 '채널 추가 링크' 복사해서 넣기)
-    window.open("https://pf.kakao.com/_YOUR_CHANNEL_ID", "_blank");
+    // 1) Kakao SDK로 채널 추가 시도 (모바일 포함)
+    if (typeof window !== "undefined" && (window as any).Kakao?.Channel?.addChannel) {
+      (window as any).Kakao.Channel.addChannel({ channelPublicId: CHANNEL_PUBLIC_ID });
+      return;
+    }
+
+    // 2) 플랜B: 채널 페이지 열기
+    window.open(`https://pf.kakao.com/${CHANNEL_PUBLIC_ID}`, "_blank");
   }
 
   function handleChannelAddedDone() {
-    // 채널 추가 완료 버튼 누르면 바로 잠금 해제/해석 요청
+    // 채널 추가 완료 상태 저장 (모바일/새로고침 유지)
+    localStorage.setItem("isChannelAdded", "true");
+    setIsChannelAdded(true);
+
+    // 로그인 필수
+    const loggedIn =
+      localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
+
+    if (!loggedIn) {
+      setGateStep("needAuth");
+      alert("카카오 로그인을 먼저 완료해주세요.");
+      return;
+    }
+
+    // 둘 다 됐으면 해석 실행
     setGateStep("unlocked");
     requestInterpretation();
   }
@@ -894,7 +914,10 @@ export default function Page() {
   const [interpLoading, setInterpLoading] = useState(false);
   const [selectedChar, setSelectedChar] = useState<CharKey>("empathy");
 
-
+  useEffect(() => {
+    const v = localStorage.getItem("isChannelAdded") === "true";
+    setIsChannelAdded(v);
+  }, []);
 
   useEffect(() => {
     if (result && resultRef.current) {
@@ -1260,6 +1283,16 @@ export default function Page() {
   ]);
 
   async function requestInterpretation() {
+    const loggedIn =
+      localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
+    const channelAdded = localStorage.getItem("isChannelAdded") === "true";
+
+    if (!loggedIn || !channelAdded) {
+      setGateStep("needAuth");
+      alert("카카오 로그인과 채널 친구추가가 필요합니다.");
+      return;
+    }
+
     if (!sajuJsonRaw) return;
 
     setInterpLoading(true);
@@ -1422,6 +1455,14 @@ export default function Page() {
     setGateStep("showSaju");
 
     // 🔥 바로 해석 요청 (로딩 시작)
+    const loggedIn =
+      localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
+    const channelAdded = localStorage.getItem("isChannelAdded") === "true";
+
+    if (!loggedIn || !channelAdded) {
+      setGateStep("needAuth");
+      return;
+    }
     requestInterpretation();
   }
 
@@ -1472,50 +1513,13 @@ export default function Page() {
       />
 
       <main
-        className="min-h-screen p-4 flex flex-col items-center justify-center relative"
+        className="min-h-screen p-4 flex flex-col items-center justify-center relative bg-[#eef4ee]"
         style={{ position: "relative", zIndex: 10 }}
       >
-        {!loading && !result && !showCharacterSelect && (
-          <>
-            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-              {["⭐", "🌙", "🔮", "✨", "💫", "🌟", "🪐", "🌠"].map((emoji, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute text-2xl"
-                  style={{
-                    top: `${10 + i * 12}%`,
-                    left: `${5 + i * 11}%`,
-                  }}
-                  animate={{
-                    y: [0, -25, 0],
-                    x: [0, 10, 0],
-                    rotate: [0, 15, 0, -15, 0],
-                    opacity: [0.3, 0.8, 0.3],
-                    scale: [0.8, 1.1, 0.8],
-                  }}
-                  transition={{
-                    duration: 4 + i * 0.3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: i * 0.2,
-                  }}
-                >
-                  {emoji}
-                </motion.div>
-              ))}
-            </div>
 
-            <div className="fixed top-8 left-8 text-6xl">✨</div>
-            <div className="fixed top-12 right-12 text-5xl">⭐</div>
-            <div className="fixed bottom-16 left-16 text-5xl">💫</div>
-            <div className="fixed bottom-12 right-20 text-6xl">🌙</div>
-            <div className="fixed top-1/3 left-12 text-4xl">🔮</div>
-            <div className="fixed top-2/3 right-16 text-4xl">🌟</div>
-          </>
-        )}
 
         <div className="w-full max-w-[450px] mx-auto px-2 sm:px-0">
-          <div className="border-4 border-[#adc4af] rounded-[24px] overflow-hidden shadow-xl relative z-10 bg-white">
+          <div className="border-4 border-[#adc4af] rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white">
 
             {/* 헤더 */}
             <div className="bg-[#c1d8c3] px-4 py-3 flex justify-between items-center border-b-4 border-[#adc4af]">
@@ -1583,7 +1587,7 @@ export default function Page() {
                     zIndex: 9999,
                   }}
                 >
-                  <div className="bg-white rounded-2xl p-6 sm:p-8 w-[90vw] sm:w-[450px] max-w-[450px] mx-4 text-center shadow-2xl">
+                  <div className="bg-white rounded-2xl p-6 border-4 border-[#adc4af] sm:p-8 w-[90vw] sm:w-[450px] max-w-[450px] mx-4 text-center shadow-2xl">
                     <div className="mb-4 sm:mb-6">
                       <motion.div
                         initial={{ scale: 0.5, y: 50, opacity: 0 }}
@@ -1871,7 +1875,7 @@ export default function Page() {
                       >
                         <div className="space-y-3 pt-4">
                           <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                            <div className="flex bg-[#f1f3f5] p-1 rounded-xl border-3 border-[#adc4af]">
+                            <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
                               <button
                                 onClick={() => setCalendar("solar")}
                                 className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "solar" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
@@ -1888,7 +1892,7 @@ export default function Page() {
                               </button>
                             </div>
 
-                            <div className="flex bg-[#f1f3f5] p-1 rounded-xl border-3 border-[#adc4af]">
+                            <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
                               <button
                                 onClick={() => setGender("M")}
                                 className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "M" ? "bg-black text-white shadow-sm" : "text-[#868e96]"

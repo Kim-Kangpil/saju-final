@@ -1,60 +1,207 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-export default function Login() {
+export default function LoginPage() {
     const router = useRouter();
 
     const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-        rememberMe: false
+        email: "",
+        password: "",
+        rememberMe: false,
     });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type, checked } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value,
+        }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // 실제로는 여기서 API 호출
-        localStorage.setItem('isLoggedIn', 'true');
-        alert('로그인 성공!');
-        router.push('/');
+        // TODO: 실제 API로 교체
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("loginType", "email");
+        localStorage.setItem("loginTime", new Date().toISOString());
+
+        router.push("/");
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked : value
-        }));
-    };
-
-    // ✅ 카카오 로그인 (백엔드 OAuth 방식)
     const handleKakaoLogin = () => {
         const backend =
             process.env.NEXT_PUBLIC_BACKEND_URL ||
-            'https://saju-backend-eqd6.onrender.com';
+            "https://saju-backend-eqd6.onrender.com";
 
         window.location.href = `${backend}/auth/kakao/login`;
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-yellow-50 flex items-center justify-center">
-            <div className="container mx-auto px-4 py-6 sm:py-12">
-                <div className="max-w-md mx-auto">
-                    <div className="text-center mb-8 sm:mb-12">
-                        <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent mb-3 sm:mb-4">
-                            로그인
-                        </h1>
-                        <p className="text-sm sm:text-base text-gray-600">
-                            나만의 사주 풀이를 확인하세요
-                        </p>
+        <main
+            style={{
+                background: "#eef4ee",
+                minHeight: "100vh",
+                fontFamily: "'Gowun Dodum', sans-serif",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+            }}
+        >
+            <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=Gowun+Dodum&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .serif { font-family: 'Noto Serif KR', serif; }
+        .sans  { font-family: 'Gowun Dodum', sans-serif; }
+
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .fu0 { animation: fadeUp .55s ease both; }
+        .fu1 { animation: fadeUp .55s .12s ease both; }
+        .fu2 { animation: fadeUp .55s .24s ease both; }
+
+        .tap {
+          transition: transform .15s ease, opacity .15s ease;
+          -webkit-tap-highlight-color: transparent;
+          cursor: pointer;
+        }
+        .tap:active { transform: scale(.98); opacity: .92; }
+
+        .wrap {
+          width: 100%;
+          max-width: 420px;
+          margin: 0 auto;
+          padding: 0 20px 80px;
+        }
+        @media (max-width: 390px) {
+          .wrap { padding: 0 16px 80px; }
+        }
+      `}</style>
+
+            <div className="wrap">
+                {/* 헤더 */}
+                <header
+                    className="fu0"
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        paddingTop: 24,
+                        paddingBottom: 16,
+                    }}
+                >
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <img
+                            src="/images/ham_icon.png"
+                            alt=""
+                            style={{ width: 28, height: 28, objectFit: "contain" }}
+                        />
+                        <span
+                            className="sans"
+                            style={{
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: "#2d4a1e",
+                                letterSpacing: "0.04em",
+                            }}
+                        >
+                            한양사주
+                        </span>
                     </div>
 
-                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10">
-                        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+                    <button
+                        className="tap sans"
+                        onClick={() => router.push("/")}
+                        style={{
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: "#556b2f",
+                            padding: "6px 16px",
+                            borderRadius: 999,
+                            border: "1.5px solid #adc4af",
+                            background: "transparent",
+                        }}
+                    >
+                        홈으로
+                    </button>
+                </header>
+
+                {/* 카드 */}
+                <section
+                    className="fu1"
+                    style={{
+                        background: "#ffffff",
+                        borderRadius: 20,
+                        border: "1.5px solid #c8dac8",
+                        padding: "26px 22px",
+                        marginBottom: 14,
+                        position: "relative",
+                        overflow: "hidden",
+                    }}
+                >
+                    {/* 은은한 패턴 */}
+                    <div
+                        aria-hidden
+                        style={{
+                            position: "absolute",
+                            inset: 0,
+                            opacity: 0.03,
+                            backgroundImage: "radial-gradient(circle, #556b2f 1px, transparent 1px)",
+                            backgroundSize: "8px 8px",
+                            pointerEvents: "none",
+                        }}
+                    />
+
+                    <div style={{ position: "relative" }}>
+                        <div style={{ textAlign: "center", marginBottom: 16 }}>
+                            <div
+                                style={{
+                                    display: "inline-block",
+                                    padding: "5px 14px",
+                                    background: "#e8f0e8",
+                                    border: "1.5px solid #adc4af",
+                                    borderRadius: 999,
+                                    marginBottom: 14,
+                                }}
+                            >
+                                <span
+                                    className="sans"
+                                    style={{
+                                        fontSize: 11,
+                                        fontWeight: 800,
+                                        color: "#556b2f",
+                                        letterSpacing: "0.08em",
+                                    }}
+                                >
+                                    LOGIN
+                                </span>
+                            </div>
+
+                            <h1
+                                className="serif"
+                                style={{
+                                    fontSize: 22,
+                                    fontWeight: 900,
+                                    color: "#1a2e0e",
+                                    letterSpacing: "-0.02em",
+                                    marginBottom: 6,
+                                }}
+                            >
+                                로그인
+                            </h1>
+
+                            <p className="sans" style={{ fontSize: 13, color: "#556b2f", opacity: 0.85 }}>
+                                저장된 사주를 이어서 확인할 수 있어요
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className="sans" style={{ display: "block", fontSize: 12, fontWeight: 800, color: "#2d4a1e", marginBottom: 6 }}>
                                     이메일
                                 </label>
                                 <input
@@ -64,12 +211,20 @@ export default function Login() {
                                     onChange={handleChange}
                                     placeholder="example@email.com"
                                     required
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors text-base"
+                                    style={{
+                                        width: "100%",
+                                        padding: "12px 12px",
+                                        borderRadius: 12,
+                                        border: "1.5px solid #e0e7e0",
+                                        outline: "none",
+                                        fontSize: 14,
+                                        background: "#fafcfa",
+                                    }}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className="sans" style={{ display: "block", fontSize: 12, fontWeight: 800, color: "#2d4a1e", marginBottom: 6 }}>
                                     비밀번호
                                 </label>
                                 <input
@@ -79,73 +234,133 @@ export default function Login() {
                                     onChange={handleChange}
                                     placeholder="비밀번호를 입력하세요"
                                     required
-                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:outline-none transition-colors text-base"
+                                    style={{
+                                        width: "100%",
+                                        padding: "12px 12px",
+                                        borderRadius: 12,
+                                        border: "1.5px solid #e0e7e0",
+                                        outline: "none",
+                                        fontSize: 14,
+                                        background: "#fafcfa",
+                                    }}
                                 />
                             </div>
 
-                            <div className="flex items-center justify-between">
-                                <label className="flex items-center cursor-pointer group">
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
+                                <label className="sans" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#556b2f" }}>
                                     <input
                                         type="checkbox"
                                         name="rememberMe"
                                         checked={formData.rememberMe}
                                         onChange={handleChange}
-                                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 cursor-pointer"
+                                        style={{ width: 16, height: 16 }}
                                     />
-                                    <span className="ml-2 text-sm text-gray-700 group-hover:text-gray-900">
-                                        로그인 상태 유지
-                                    </span>
+                                    로그인 상태 유지
                                 </label>
-                                <a href="/forgot-password" className="text-sm text-purple-600 hover:text-purple-700 font-medium">
+
+                                <button
+                                    type="button"
+                                    className="tap sans"
+                                    onClick={() => router.push("/forgot-password")}
+                                    style={{
+                                        fontSize: 12,
+                                        fontWeight: 800,
+                                        color: "#556b2f",
+                                        background: "transparent",
+                                        border: "none",
+                                        textDecoration: "underline",
+                                    }}
+                                >
                                     비밀번호 찾기
-                                </a>
+                                </button>
                             </div>
 
                             <button
                                 type="submit"
-                                className="w-full py-3.5 sm:py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white font-bold text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl active:scale-95 sm:hover:scale-[1.02] transition-all"
+                                className="tap sans"
+                                style={{
+                                    width: "100%",
+                                    padding: "14px 0",
+                                    borderRadius: 14,
+                                    fontWeight: 900,
+                                    fontSize: 14,
+                                    color: "#1a2e0e",
+                                    background: "linear-gradient(135deg, #fef08a 0%, #fde047 100%)",
+                                    border: "none",
+                                    boxShadow: "0 4px 14px rgba(251,191,36,.28)",
+                                    marginTop: 6,
+                                }}
                             >
                                 로그인
                             </button>
 
-                            <div className="relative py-3 sm:py-4">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t border-gray-200"></div>
-                                </div>
-                                <div className="relative flex justify-center text-sm">
-                                    <span className="px-4 bg-white text-gray-500">간편 로그인</span>
-                                </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "8px 0 2px" }}>
+                                <div style={{ height: 1, background: "#dce8dc", flex: 1 }} />
+                                <span className="sans" style={{ fontSize: 11, color: "#556b2f", opacity: 0.75 }}>
+                                    간편 로그인
+                                </span>
+                                <div style={{ height: 1, background: "#dce8dc", flex: 1 }} />
                             </div>
 
                             <button
                                 type="button"
+                                className="tap sans"
                                 onClick={handleKakaoLogin}
-                                className="w-full py-3.5 sm:py-4 bg-[#FEE500] hover:bg-[#FDD835] active:bg-[#FDD835] text-gray-800 font-bold text-base sm:text-lg rounded-xl shadow-md hover:shadow-lg active:scale-95 sm:hover:scale-[1.02] transition-all flex items-center justify-center gap-2 sm:gap-3"
+                                style={{
+                                    width: "100%",
+                                    padding: "13px 0",
+                                    borderRadius: 14,
+                                    fontWeight: 900,
+                                    fontSize: 14,
+                                    color: "#1a2e0e",
+                                    background: "#FEE500",
+                                    border: "1.5px solid rgba(0,0,0,.08)",
+                                    boxShadow: "0 3px 12px rgba(0,0,0,.06)",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    gap: 10,
+                                }}
                             >
-                                <svg width="20" height="20" viewBox="0 0 18 18" fill="none" className="sm:w-6 sm:h-6">
-                                    <path d="M9 0C4.03 0 0 3.34 0 7.47C0 10.07 1.57 12.35 4.03 13.69L3.12 17.25C3.06 17.47 3.29 17.64 3.48 17.52L7.66 14.97C8.1 15.02 8.55 15.05 9 15.05C13.97 15.05 18 11.71 18 7.58C18 3.45 13.97 0 9 0Z" fill="#3C1E1E" />
+                                <svg width="20" height="20" viewBox="0 0 18 18" fill="none">
+                                    <path
+                                        d="M9 0C4.03 0 0 3.34 0 7.47C0 10.07 1.57 12.35 4.03 13.69L3.12 17.25C3.06 17.47 3.29 17.64 3.48 17.52L7.66 14.97C8.1 15.02 8.55 15.05 9 15.05C13.97 15.05 18 11.71 18 7.58C18 3.45 13.97 0 9 0Z"
+                                        fill="#3C1E1E"
+                                    />
                                 </svg>
                                 카카오 로그인
                             </button>
+
+                            <div style={{ textAlign: "center", marginTop: 10 }}>
+                                <p className="sans" style={{ fontSize: 12, color: "#556b2f", opacity: 0.9 }}>
+                                    아직 회원이 아니신가요?{" "}
+                                    <button
+                                        type="button"
+                                        className="tap sans"
+                                        onClick={() => router.push("/signup")}
+                                        style={{
+                                            fontSize: 12,
+                                            fontWeight: 900,
+                                            color: "#2d4a1e",
+                                            background: "transparent",
+                                            border: "none",
+                                            textDecoration: "underline",
+                                        }}
+                                    >
+                                        회원가입
+                                    </button>
+                                </p>
+                            </div>
                         </form>
-
-                        <div className="mt-6 sm:mt-8 text-center">
-                            <p className="text-sm text-gray-600">
-                                아직 회원이 아니신가요?{' '}
-                                <a href="/signup" className="text-purple-600 font-semibold hover:text-purple-700 underline">
-                                    회원가입
-                                </a>
-                            </p>
-                        </div>
                     </div>
+                </section>
 
-                    <div className="mt-6 text-center">
-                        <a href="/" className="text-sm text-gray-600 hover:text-gray-900">
-                            ← 메인으로 돌아가기
-                        </a>
-                    </div>
+                <div className="fu2" style={{ textAlign: "center" }}>
+                    <p className="sans" style={{ fontSize: 10, color: "#556b2f", opacity: 0.35 }}>
+                        © 2026 한양사주 · AI 사주명리 분석 서비스
+                    </p>
                 </div>
             </div>
-        </div>
+        </main>
     );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import type { RefObject } from "react";
 
 function useCounter(target: number) {  // ✅ 반환 타입 제거
@@ -41,6 +41,44 @@ function useCounter(target: number) {  // ✅ 반환 타입 제거
     return { count, counterRef };
 }
 
+// ✅ 여기 추가 시작
+const MODE_EXAMPLES: Record<string, string[]> = {
+    공감형: [
+        "요즘은 마음이 먼저 반응하고, 머리가 나중에 따라오는 흐름이에요.",
+        "겉으로는 괜찮아 보여도 속은 생각이 많아지는 시기예요.",
+        "사람 문제로 예민해질 수 있지만, 그만큼 감각은 정확해요.",
+        "억지로 버티기보다 감정 피로부터 낮추는 게 먼저예요.",
+        "결과보다 ‘내가 편해지는 선택’이 더 좋은 답이에요.",
+        "말 한마디가 크게 남을 수 있어요. 부드럽게 정리해보면 좋아요.",
+    ],
+    분석형: [
+        "지금 흐름은 선택과 집중이 이득입니다. 분산하면 손해가 커져요.",
+        "현재는 속도보다 구조가 중요합니다. 순서만 잡아도 해결돼요.",
+        "이번 달은 ‘관계’보다 ‘성과’에 가중치가 실리는 타이밍이에요.",
+        "리스크는 하나뿐입니다. 계획을 너무 늦게 확정하는 것.",
+        "데이터로 보면, 지금은 공격보다 정리·정돈이 수익률이 좋아요.",
+        "결론만 말하면, 방향은 맞고 페이스 조절만 하면 됩니다.",
+    ],
+    친구형: [
+        "솔직히 말하면 지금은 고민 오래 할수록 손해야. 그냥 가.",
+        "사람 때문에 흔들리지 마. 네 기준이 맞는 날이야.",
+        "이번엔 밀어붙여도 돼. 이건 네가 이길 판이야.",
+        "선 넘는 사람? 바로 거리 둬. 손해 보는 건 너야.",
+        "타이밍 좋다. 오늘 한 번에 처리해버려.",
+        "괜히 겁먹지 마. 네가 생각하는 것보다 상황은 단순해.",
+    ],
+};
+
+function pick3(arr: string[]) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a.slice(0, 3);
+}
+// ✅ 여기 추가 끝
+
 export default function LandingPage() {
     const router = useRouter();
     const go = () => router.push("/add");
@@ -49,6 +87,15 @@ export default function LandingPage() {
     const [showPreview, setShowPreview] = useState(false);
     const [randomAnimals, setRandomAnimals] = useState<string[]>([]);
 
+    // ✅ 추가
+    const [modeSeed, setModeSeed] = useState(0);
+
+    const modeName = selectedMode === null ? null : ["공감형", "분석형", "친구형"][selectedMode];
+    const modeExamples = useMemo(() => {
+        if (!modeName) return [];
+        const pool = MODE_EXAMPLES[modeName] || [];
+        return pick3(pool);
+    }, [modeName, modeSeed]);
     // 오늘 날짜 기준 고정 카운트 (localStorage 활용)
     const getTodayCount = () => {
         if (typeof window === "undefined") return 100; // SSR 방어
@@ -308,14 +355,17 @@ export default function LandingPage() {
 
                     <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
                         {[
-                            { name: "공감형", desc: "감정의 결을 따라 풀이합니다.", img: "/images/ham_soft.png", bc: "#e0e7e0" },
-                            { name: "분석형", desc: "구조를 기준으로 해석합니다.", img: "/images/ham_cold.png", bc: "#e0e7e0" },
-                            { name: "친구형", desc: "있는 그대로 짚어드립니다.", img: "/images/ham_friend.png", bc: "#e0e7e0" },
+                            { name: "공감형", desc: "감정 기복이 크거나 위로가 필요한 분에게", img: "/images/ham_soft.png", bc: "#e0e7e0" },
+                            { name: "분석형", desc: "정리된 팩트 위주로 빠르게 확인하고 싶은 분에게", img: "/images/ham_cold.png", bc: "#e0e7e0" },
+                            { name: "친구형", desc: "재미있게 듣지만 핵심은 챙기고 싶은 분에게", img: "/images/ham_friend.png", bc: "#e0e7e0" },
                         ].map((mode, i) => (
                             <div
                                 key={i}
                                 className={`mode-card ${selectedMode === i ? "selected" : ""}`}
-                                onClick={() => setSelectedMode(i)}
+                                onClick={() => {
+                                    setSelectedMode(i);
+                                    setModeSeed((v) => v + 1);
+                                }}
                                 style={{
                                     display: "flex", alignItems: "center", gap: 14,
                                     padding: "16px 18px", borderRadius: 14,
@@ -338,10 +388,78 @@ export default function LandingPage() {
                     </div>
 
                     {selectedMode !== null && (
-                        <div style={{ padding: "12px 16px", background: "#f7faf7", border: "1.5px solid #c8dac8", borderRadius: 12, animation: "fadeUp .4s ease both" }}>
-                            <p className="sans" style={{ fontSize: 12, color: "#2d4a1e", fontWeight: 700 }}>
-                                {["공감형", "분석형", "친구형"][selectedMode]}이 당신의 사주를 읽습니다.
-                            </p>
+                        <div
+                            style={{
+                                marginTop: 10,
+                                borderRadius: 14,
+                                border: "1.5px solid #c8dac8",
+                                background: "#ffffff",
+                                overflow: "hidden",
+                                animation: "fadeUp .4s ease both",
+                                boxShadow: "0 6px 18px rgba(85,107,47,.08)",
+                                textAlign: "left",
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "12px 14px",
+                                    background: "#f7faf7",
+                                    borderBottom: "1px solid #e3eee3",
+                                }}
+                            >
+                                <div>
+                                    <p className="sans" style={{ fontSize: 12, fontWeight: 800, color: "#2d4a1e", marginBottom: 2 }}>
+                                        💬 {modeName} 말투 예시
+                                    </p>
+                                    <p className="sans" style={{ fontSize: 10, color: "#556b2f", opacity: 0.75 }}>
+                                        실제 해석은 입력값에 따라 더 구체화됩니다
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="tap sans"
+                                    onClick={() => setModeSeed((v) => v + 1)}
+                                    style={{
+                                        fontSize: 11,
+                                        fontWeight: 800,
+                                        color: "#556b2f",
+                                        padding: "7px 10px",
+                                        borderRadius: 99,
+                                        border: "1.5px solid #adc4af",
+                                        background: "#ffffff",
+                                        whiteSpace: "nowrap",
+                                    }}
+                                >
+                                    다른 예시 ↻
+                                </button>
+                            </div>
+
+                            <div style={{ padding: "12px 14px" }}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    {modeExamples.map((line, idx) => (
+                                        <div key={idx} style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                                            <div style={{ width: 8, height: 8, borderRadius: 99, background: "#8fb996", marginTop: 7, flexShrink: 0 }} />
+                                            <div
+                                                style={{
+                                                    flex: 1,
+                                                    background: "#fafcfa",
+                                                    border: "1.5px solid #e0e7e0",
+                                                    borderRadius: 14,
+                                                    padding: "10px 12px",
+                                                }}
+                                            >
+                                                <p className="sans" style={{ fontSize: 12, color: "#1a2e0e", lineHeight: 1.7 }}>
+                                                    {line}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -350,7 +468,7 @@ export default function LandingPage() {
                 {showPreview && (
                     <div style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid #c8dac8", padding: "28px 24px", marginBottom: 14, animation: "fadeUp .6s ease both", textAlign: "center" }}>
                         <div style={{ display: "inline-block", padding: "4px 10px", background: "#f3e8ff", border: "1.5px solid #c084fc", borderRadius: 99, marginBottom: 16 }}>
-                            <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#581c87", letterSpacing: "0.08em" }}>🟠 1차 결과 미리보기</span>
+                            <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#581c87", letterSpacing: "0.08em" }}>🟠 결과 미리보기</span>
                         </div>
 
                         <div style={{ padding: "16px 18px", background: "#f7fbf7", border: "1.5px solid #dce8dc", borderRadius: 12, marginBottom: 10 }}>
@@ -443,7 +561,7 @@ export default function LandingPage() {
 
                         <div style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "rgba(85,107,47,.06)", borderRadius: 99, border: "1px solid rgba(85,107,47,.12)" }}>
                             <p className="sans" style={{ fontSize: 11, color: "#556b2f", fontWeight: 600, margin: 0 }}>
-                                오늘 이미 <span style={{ fontWeight: 800, color: "#2d4a1e" }}>{count + 23}</span>명이 자신의 동물을 확인했습니다
+                                오늘 이미 <span style={{ fontWeight: 800, color: "#2d4a1e" }}>{count}</span>명이 생성했습니다
                             </p>
                         </div>
                     </div>

@@ -1497,13 +1497,25 @@ export default function Page() {
         className="min-h-screen p-4 flex flex-col items-center justify-center relative bg-[#eef4ee]"
         style={{ position: "relative", zIndex: 10 }}
       >
-
-
         <div className="w-full max-w-[450px] mx-auto px-2 sm:px-0">
           <div className="border-4 border-[#adc4af] rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white">
-
-            {/* 헤더 */}
-            <div className="bg-[#c1d8c3] px-4 py-3 flex justify-between items-center border-b-4 border-[#adc4af]">
+            {/* 배경 이미지 레이어 */}
+            <div
+              className="absolute left-0 right-0 bottom-0 top-[64px]"
+              style={{
+                backgroundImage: "url('/images/hamster-forest.png')",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                opacity: 0.35,
+                filter: "saturate(1.1) contrast(1.08)",
+                transform: "scale(1.03)",
+                zIndex: 0,
+                pointerEvents: "none",
+              }}
+            />
+            {/* 헤더는 그대로 */}
+            <div className="h-[64px] bg-[#c1d8c3] px-4 py-3 flex justify-between items-center border-b-4 border-[#adc4af] relative z-20">
               <button
                 onClick={() => {
                   window.location.href = '/home';
@@ -1550,898 +1562,920 @@ export default function Page() {
             </div>
 
             {/* 메인 콘텐츠 */}
-            <div className="p-5 bg-white">
-              {err && !loading && !result && (
-                <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">
-                  {err}
-                </div>
-              )}
-
-              {loading && (
-                <div
-                  className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-                  style={{
-                    touchAction: "none",
-                    WebkitTouchCallout: "none",
-                    WebkitUserSelect: "none",
-                    userSelect: "none",
-                    zIndex: 9999,
-                  }}
-                >
-                  <div className="bg-white rounded-2xl p-6 border-4 border-[#adc4af] sm:p-8 w-[90vw] sm:w-[450px] max-w-[450px] mx-4 text-center shadow-2xl">
-                    <div className="mb-4 sm:mb-6">
-                      <motion.div
-                        initial={{ scale: 0.5, y: 50, opacity: 0 }}
-                        animate={{
-                          scale: [0.5, 1.3, 1],
-                          y: [50, -20, 0],
-                          opacity: 1,
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          times: [0, 0.6, 1],
-                          ease: "easeOut",
-                        }}
-                        className="relative mb-4 sm:mb-6"
-                      >
-                        <img
-                          src={CHARACTERS[selectedChar].img}
-                          alt={CHARACTERS[selectedChar].name}
-                          className="w-32 h-32 sm:w-40 sm:h-40 object-contain pixel-art drop-shadow-2xl mx-auto"
-                        />
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="text-center px-4 sm:px-6"
-                      >
-                        <p className="text-[#556b2f] font-bold text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-korean">
-                          {loadingMessage}
-                        </p>
-                      </motion.div>
-
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8 }}
-                        className="w-full px-4 sm:px-8 space-y-2 sm:space-y-3 mt-4 sm:mt-6"
-                      >
-                        <div className="flex justify-between items-center px-1 sm:px-2">
-                          <span className="text-xs sm:text-sm font-bold text-[#556b2f]">
-                            분석 진행중
-                          </span>
-                          <span
-                            className="text-xl sm:text-2xl font-black text-[#556b2f]"
-                            style={{ fontFamily: "monospace" }}
-                          >
-                            {loadingProgress}% <span className="pixel-heart">💚</span>
-                          </span>
-                        </div>
-
-                        <div className="relative h-8 sm:h-10 bg-[#e9ecef] border-2 sm:border-4 border-[#556b2f] overflow-hidden shadow-[2px_2px_0px_0px_rgba(85,107,47,0.3)]">
-                          <motion.div
-                            className="h-full bg-gradient-to-r from-[#fef08a] via-[#fde047] to-[#facc15]"
-                            style={{
-                              width: `${loadingProgress}%`,
-                              imageRendering: "pixelated",
-                            }}
-                            animate={{ width: `${loadingProgress}%` }}
-                            transition={{
-                              duration: 0.3,
-                              ease: "linear",
-                            }}
-                          >
-                            <div className="absolute top-0 left-0 w-full h-[30%] bg-white/30" />
-                          </motion.div>
-
-                          {[...Array(99)].map((_, i) => (
-                            <div
-                              key={i}
-                              className="absolute top-0 bottom-0 w-[1px] bg-[#556b2f]"
-                              style={{
-                                left: `${(i + 1) * 1}%`,
-                                opacity: 0.15,
-                              }}
-                            />
-                          ))}
-
-                          {[...Array(9)].map((_, i) => (
-                            <div
-                              key={`thick-${i}`}
-                              className="absolute top-0 bottom-0 w-[2px] bg-[#556b2f]"
-                              style={{
-                                left: `${(i + 1) * 10}%`,
-                                opacity: 0.4,
-                              }}
-                            />
-                          ))}
-                        </div>
-                      </motion.div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 🔥 캐릭터 선택 화면 (사주 명식 포함) */}
-              {showCharacterSelect && !loading && result && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="space-y-6"
-                >
-                  {/* 🔥 사주 명식 먼저 표시 */}
-                  <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
-                    <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[11px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
-                      <span>시주</span>
-                      <span>일주</span>
-                      <span>월주</span>
-                      <span>년주</span>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-0 text-center divide-x-2 divide-[#adc4af] overflow-x-auto">
-                      {pillars.map((p, i) => (
-                        <div
-                          key={i}
-                          className="py-2 sm:py-3 flex flex-col items-center gap-0.5 sm:gap-1"
-                        >
-                          <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                            {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
-                          </div>
-
-                          <div
-                            className={cn(
-                              "text-xl sm:text-2xl font-bold",
-                              elementClass(hanjaToElement(p.cheongan.hanja))
-                            )}
-                          >
-                            {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
-                          </div>
-
-                          <div
-                            className={cn(
-                              "text-xl sm:text-2xl font-bold",
-                              elementClass(hanjaToElement(p.jiji.hanja))
-                            )}
-                          >
-                            {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
-                          </div>
-
-                          <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                            {(() => {
-                              const ms = branchMainStem(p.jiji.hanja);
-                              return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
-                            })()}
-                          </div>
-
-                          {result.jijanggan && (
-                            <div className="flex gap-0.5 text-[8px] sm:text-[9px] font-medium mt-0.5">
-                              {(() => {
-                                const jijangganList =
-                                  i === 0
-                                    ? result.jijanggan.hour
-                                    : i === 1
-                                      ? result.jijanggan.day
-                                      : i === 2
-                                        ? result.jijanggan.month
-                                        : result.jijanggan.year;
-
-                                return jijangganList?.map((jj: any, idx: number) => (
-                                  <span
-                                    key={idx}
-                                    className={cn("font-bold", elementClass(jj.element))}
-                                  >
-                                    {scriptMode === "hanja" ? jj.hanja : jj.hangul}
-                                  </span>
-                                ));
-                              })()}
-                            </div>
-                          )}
-
-                          {result.twelve_states && (
-                            <div className="text-[10px] sm:text-[11px] text-[#556b2f] opacity-70 font-medium mt-0.5">
-                              {i === 0 && result.twelve_states.hour}
-                              {i === 1 && result.twelve_states.day}
-                              {i === 2 && result.twelve_states.month}
-                              {i === 3 && result.twelve_states.year}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+            <div className="p-5 relative">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: "url('/images/hamster-forest.png')",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  opacity: 0.35,
+                  filter: "saturate(1.1) contrast(1.08)",
+                  transform: "scale(1.03)",
+                  pointerEvents: "none",
+                  zIndex: 0,
+                }}
+              />
+              <div className="relative z-10">
+                {err && !loading && !result && (
+                  <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">
+                    {err}
                   </div>
 
-                  {/* 캐릭터 선택 */}
-                  <div className="text-center space-y-2">
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#556b2f]">
-                      어떤 햄스터가 해석해드릴까요?
-                    </h2>
-                    <p className="text-xs sm:text-sm text-gray-600">
-                      선택한 햄스터의 스타일로 사주를 풀이해드립니다
-                    </p>
-                  </div>
+                )}
 
-                  <div className="grid grid-cols-1 gap-4">
-                    {(Object.keys(CHARACTERS) as CharKey[]).map((id) => (
-                      <motion.button
-                        key={id}
-                        onClick={() => setSelectedChar(id)}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={cn(
-                          "p-4 rounded-2xl border-4 transition-all",
-                          selectedChar === id
-                            ? "border-[#556b2f] bg-[#fefae0] shadow-lg"
-                            : "border-[#e9edc9] bg-white hover:border-[#c1d8c3]"
-                        )}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-20 h-20 rounded-full overflow-hidden bg-white border-2 border-[#adc4af] flex-shrink-0">
-                            <img
-                              src={CHARACTERS[id].img}
-                              alt={CHARACTERS[id].name}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-                          <div className="flex-1 text-left">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="text-lg font-bold text-[#556b2f]">
-                                {CHARACTERS[id].name}
-                              </h3>
-                              {selectedChar === id && (
-                                <span className="text-xl">✅</span>
-                              )}
-                            </div>
-                            <p className="text-xs text-gray-600 mb-1">
-                              {CHARACTERS[id].oneLine}
-                            </p>
-                            <p className="text-xs text-[#556b2f] opacity-70">
-                              {CHARACTERS[id].desc}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.button>
-                    ))}
-                  </div>
-
-                  <button
-                    onClick={handleCharacterConfirm}
-                    className="w-full py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                {loading && (
+                  <div
+                    className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+                    style={{
+                      touchAction: "none",
+                      WebkitTouchCallout: "none",
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                      zIndex: 9999,
+                    }}
                   >
-                    이 햄스터로 결정! 🎯
-                  </button>
-                </motion.div>
-              )}
-
-              {!loading && !result && !showCharacterSelect && (
-                <div className="text-center mb-6">
-                  {isLoggedIn ? (
-                    <p className="text-[#556b2f] font-bold text-sm text-korean">
-                      생년월일과 성별을 입력하세요!
-                    </p>
-                  ) : (
-                    <div className="space-y-4 py-8">
-                      <div className="text-6xl mb-4">🔮</div>
-                      <p className="text-xl font-bold text-[#556b2f]">
-                        한양사주에 오신 걸 환영합니다!
-                      </p>
-                      <p className="text-sm text-gray-600 px-4">
-                        사주 분석을 이용하시려면<br />먼저 로그인해주세요
-                      </p>
-
-                      <div className="flex flex-col gap-3 max-w-xs mx-auto pt-4">
-                        <button
-                          onClick={() => router.push('/login')}
-                          className="w-full py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                    <div className="bg-white rounded-2xl p-6 border-4 border-[#adc4af] sm:p-8 w-[90vw] sm:w-[450px] max-w-[450px] mx-4 text-center shadow-2xl">
+                      <div className="mb-4 sm:mb-6">
+                        <motion.div
+                          initial={{ scale: 0.5, y: 50, opacity: 0 }}
+                          animate={{
+                            scale: [0.5, 1.3, 1],
+                            y: [50, -20, 0],
+                            opacity: 1,
+                          }}
+                          transition={{
+                            duration: 0.8,
+                            times: [0, 0.6, 1],
+                            ease: "easeOut",
+                          }}
+                          className="relative mb-4 sm:mb-6"
                         >
-                          🔑 로그인하고 시작하기
-                        </button>
+                          <img
+                            src={CHARACTERS[selectedChar].img}
+                            alt={CHARACTERS[selectedChar].name}
+                            className="w-32 h-32 sm:w-40 sm:h-40 object-contain pixel-art drop-shadow-2xl mx-auto"
+                          />
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6 }}
+                          className="text-center px-4 sm:px-6"
+                        >
+                          <p className="text-[#556b2f] font-bold text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-korean">
+                            {loadingMessage}
+                          </p>
+                        </motion.div>
+
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8 }}
+                          className="w-full px-4 sm:px-8 space-y-2 sm:space-y-3 mt-4 sm:mt-6"
+                        >
+                          <div className="flex justify-between items-center px-1 sm:px-2">
+                            <span className="text-xs sm:text-sm font-bold text-[#556b2f]">
+                              분석 진행중
+                            </span>
+                            <span
+                              className="text-xl sm:text-2xl font-black text-[#556b2f]"
+                              style={{ fontFamily: "monospace" }}
+                            >
+                              {loadingProgress}% <span className="pixel-heart">💚</span>
+                            </span>
+                          </div>
+
+                          <div className="relative h-8 sm:h-10 bg-[#e9ecef] border-2 sm:border-4 border-[#556b2f] overflow-hidden shadow-[2px_2px_0px_0px_rgba(85,107,47,0.3)]">
+                            <motion.div
+                              className="h-full bg-gradient-to-r from-[#fef08a] via-[#fde047] to-[#facc15]"
+                              style={{
+                                width: `${loadingProgress}%`,
+                                imageRendering: "pixelated",
+                              }}
+                              animate={{ width: `${loadingProgress}%` }}
+                              transition={{
+                                duration: 0.3,
+                                ease: "linear",
+                              }}
+                            >
+                              <div className="absolute top-0 left-0 w-full h-[30%] bg-white/30" />
+                            </motion.div>
+
+                            {[...Array(99)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="absolute top-0 bottom-0 w-[1px] bg-[#556b2f]"
+                                style={{
+                                  left: `${(i + 1) * 1}%`,
+                                  opacity: 0.15,
+                                }}
+                              />
+                            ))}
+
+                            {[...Array(9)].map((_, i) => (
+                              <div
+                                key={`thick-${i}`}
+                                className="absolute top-0 bottom-0 w-[2px] bg-[#556b2f]"
+                                style={{
+                                  left: `${(i + 1) * 10}%`,
+                                  opacity: 0.4,
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </motion.div>
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
 
-              <div className="space-y-4">
-                <AnimatePresence mode="wait">
-                  {loading ? null : showCharacterSelect ? null : !result ? (
-                    isLoggedIn ? (
-                      <motion.div
-                        key="input-form"
-                        initial={{ opacity: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-6"
-                      >
-                        <div className="space-y-3 pt-4">
-                          <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                            <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
-                              <button
-                                onClick={() => setCalendar("solar")}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "solar" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
-                                  }`}
-                              >
-                                양력
-                              </button>
-                              <button
-                                onClick={() => setCalendar("lunar")}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "lunar" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
-                                  }`}
-                              >
-                                음력
-                              </button>
+                {/* 🔥 캐릭터 선택 화면 (사주 명식 포함) */}
+                {showCharacterSelect && !loading && result && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="space-y-6"
+                  >
+                    {/* 🔥 사주 명식 먼저 표시 */}
+                    <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
+                      <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[11px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
+                        <span>시주</span>
+                        <span>일주</span>
+                        <span>월주</span>
+                        <span>년주</span>
+                      </div>
+
+                      <div className="grid grid-cols-4 gap-0 text-center divide-x-2 divide-[#adc4af] overflow-x-auto">
+                        {pillars.map((p, i) => (
+                          <div
+                            key={i}
+                            className="py-2 sm:py-3 flex flex-col items-center gap-0.5 sm:gap-1"
+                          >
+                            <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
+                              {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
                             </div>
 
-                            <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
-                              <button
-                                onClick={() => setGender("M")}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "M" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
-                                  }`}
-                              >
-                                남
-                              </button>
-                              <button
-                                onClick={() => setGender("F")}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "F" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
-                                  }`}
-                              >
-                                여
-                              </button>
+                            <div
+                              className={cn(
+                                "text-xl sm:text-2xl font-bold",
+                                elementClass(hanjaToElement(p.cheongan.hanja))
+                              )}
+                            >
+                              {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
                             </div>
+
+                            <div
+                              className={cn(
+                                "text-xl sm:text-2xl font-bold",
+                                elementClass(hanjaToElement(p.jiji.hanja))
+                              )}
+                            >
+                              {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
+                            </div>
+
+                            <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
+                              {(() => {
+                                const ms = branchMainStem(p.jiji.hanja);
+                                return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
+                              })()}
+                            </div>
+
+                            {result.jijanggan && (
+                              <div className="flex gap-0.5 text-[8px] sm:text-[9px] font-medium mt-0.5">
+                                {(() => {
+                                  const jijangganList =
+                                    i === 0
+                                      ? result.jijanggan.hour
+                                      : i === 1
+                                        ? result.jijanggan.day
+                                        : i === 2
+                                          ? result.jijanggan.month
+                                          : result.jijanggan.year;
+
+                                  return jijangganList?.map((jj: any, idx: number) => (
+                                    <span
+                                      key={idx}
+                                      className={cn("font-bold", elementClass(jj.element))}
+                                    >
+                                      {scriptMode === "hanja" ? jj.hanja : jj.hangul}
+                                    </span>
+                                  ));
+                                })()}
+                              </div>
+                            )}
+
+                            {result.twelve_states && (
+                              <div className="text-[10px] sm:text-[11px] text-[#556b2f] opacity-70 font-medium mt-0.5">
+                                {i === 0 && result.twelve_states.hour}
+                                {i === 1 && result.twelve_states.day}
+                                {i === 2 && result.twelve_states.month}
+                                {i === 3 && result.twelve_states.year}
+                              </div>
+                            )}
                           </div>
+                        ))}
+                      </div>
+                    </div>
 
-                          <input
-                            className="w-full rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-base outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50"
-                            placeholder="생년월일 8자리"
-                            value={birthYmd}
-                            onChange={(e) => setBirthYmd(onlyDigits(e.target.value).slice(0, 8))}
-                            inputMode="numeric"
-                          />
+                    {/* 캐릭터 선택 */}
+                    <div className="text-center space-y-2">
+                      <h2 className="text-xl sm:text-2xl font-bold text-[#556b2f]">
+                        어떤 햄스터가 해석해드릴까요?
+                      </h2>
+                      <p className="text-xs sm:text-sm text-gray-600">
+                        선택한 햄스터의 스타일로 사주를 풀이해드립니다
+                      </p>
+                    </div>
 
-                          <div className="flex gap-2">
-                            <input
-                              className="flex-1 rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-[16px] sm:text-sm outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50 disabled:opacity-30"
-                              placeholder="시간 4자리 (HHMM)"
-                              value={birthHm}
-                              disabled={timeUnknown}
-                              onChange={(e) => setBirthHm(onlyDigits(e.target.value).slice(0, 4))}
-                            />
-                            <label className="flex items-center gap-1 sm:gap-2 border-3 border-[#adc4af] rounded-xl px-2 sm:px-3 py-2 sm:py-3 bg-[#fefae0] cursor-pointer hover:bg-white transition-colors flex-shrink-0">
-                              <input
-                                type="checkbox"
-                                checked={timeUnknown}
-                                onChange={(e) => setTimeUnknown(e.target.checked)}
-                                className="w-4 h-4 accent-[#556b2f]"
+                    <div className="grid grid-cols-1 gap-4">
+                      {(Object.keys(CHARACTERS) as CharKey[]).map((id) => (
+                        <motion.button
+                          key={id}
+                          onClick={() => setSelectedChar(id)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className={cn(
+                            "p-4 rounded-2xl border-4 transition-all",
+                            selectedChar === id
+                              ? "border-[#556b2f] bg-[#fefae0] shadow-lg"
+                              : "border-[#e9edc9] bg-white hover:border-[#c1d8c3]"
+                          )}
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-20 h-20 rounded-full overflow-hidden bg-white border-2 border-[#adc4af] flex-shrink-0">
+                              <img
+                                src={CHARACTERS[id].img}
+                                alt={CHARACTERS[id].name}
+                                className="w-full h-full object-contain"
                               />
-                              <span className="text-[10px] font-bold text-[#556b2f] whitespace-nowrap">모름</span>
-                            </label>
+                            </div>
+                            <div className="flex-1 text-left">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-lg font-bold text-[#556b2f]">
+                                  {CHARACTERS[id].name}
+                                </h3>
+                                {selectedChar === id && (
+                                  <span className="text-xl">✅</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-600 mb-1">
+                                {CHARACTERS[id].oneLine}
+                              </p>
+                              <p className="text-xs text-[#556b2f] opacity-70">
+                                {CHARACTERS[id].desc}
+                              </p>
+                            </div>
                           </div>
+                        </motion.button>
+                      ))}
+                    </div>
 
-                          <div className="text-[10px] text-[#556b2f] opacity-70 px-1">
-                            {formError ? formError : "입력 완료. 버튼 누르면 분석 시작"}
-                          </div>
+                    <button
+                      onClick={handleCharacterConfirm}
+                      className="w-full py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                    >
+                      이 햄스터로 결정! 🎯
+                    </button>
+                  </motion.div>
+                )}
 
+                {!loading && !result && !showCharacterSelect && (
+                  <div className="text-center mb-6">
+                    {isLoggedIn ? (
+                      <p className="text-[#556b2f] font-bold text-sm text-korean">
+                        생년월일과 성별을 입력하세요!
+                      </p>
+                    ) : (
+                      <div className="space-y-4 py-8 rounded-2xl bg-white/35 backdrop-blur-[1px] border border-white/60 shadow-lg">
+                        <img
+                          src="/images/ham_icon.png"
+                          alt="hamster"
+                          className="w-20 h-20 mx-auto mb-4"
+                        />
+                        <p className="text-xl font-bold text-[#556b2f]">
+                          한양사주에 오신 걸 환영합니다!
+                        </p>
+                        <p className="text-sm text-gray-600 px-4">
+                          사주 분석을 이용하시려면<br />먼저 로그인해주세요
+                        </p>
+
+                        <div className="flex flex-col gap-3 max-w-xs mx-auto pt-4">
                           <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
+                            onClick={() => router.push('/login')}
+                            className="w-full py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                          >
+                            🔑 로그인하고 시작하기
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                              // 🔥 로그인 체크 먼저
-                              if (!isLoggedIn) {
-                                if (confirm('사주 분석은 로그인 후 이용 가능합니다.\n로그인 하시겠습니까?')) {
-                                  router.push('/login');
+                <div className="space-y-4">
+                  <AnimatePresence mode="wait">
+                    {loading ? null : showCharacterSelect ? null : !result ? (
+                      isLoggedIn ? (
+                        <motion.div
+                          key="input-form"
+                          initial={{ opacity: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.3 }}
+                          className="space-y-6"
+                        >
+                          <div className="space-y-3 pt-4">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                              <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
+                                <button
+                                  onClick={() => setCalendar("solar")}
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "solar" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                    }`}
+                                >
+                                  양력
+                                </button>
+                                <button
+                                  onClick={() => setCalendar("lunar")}
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "lunar" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                    }`}
+                                >
+                                  음력
+                                </button>
+                              </div>
+
+                              <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
+                                <button
+                                  onClick={() => setGender("M")}
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "M" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                    }`}
+                                >
+                                  남
+                                </button>
+                                <button
+                                  onClick={() => setGender("F")}
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "F" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                    }`}
+                                >
+                                  여
+                                </button>
+                              </div>
+                            </div>
+
+                            <input
+                              className="w-full rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-base outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50"
+                              placeholder="생년월일 8자리"
+                              value={birthYmd}
+                              onChange={(e) => setBirthYmd(onlyDigits(e.target.value).slice(0, 8))}
+                              inputMode="numeric"
+                            />
+
+                            <div className="flex gap-2">
+                              <input
+                                className="flex-1 rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-[16px] sm:text-sm outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50 disabled:opacity-30"
+                                placeholder="시간 4자리 (HHMM)"
+                                value={birthHm}
+                                disabled={timeUnknown}
+                                onChange={(e) => setBirthHm(onlyDigits(e.target.value).slice(0, 4))}
+                              />
+                              <label className="flex items-center gap-1 sm:gap-2 border-3 border-[#adc4af] rounded-xl px-2 sm:px-3 py-2 sm:py-3 bg-[#fefae0] cursor-pointer hover:bg-white transition-colors flex-shrink-0">
+                                <input
+                                  type="checkbox"
+                                  checked={timeUnknown}
+                                  onChange={(e) => setTimeUnknown(e.target.checked)}
+                                  className="w-4 h-4 accent-[#556b2f]"
+                                />
+                                <span className="text-[10px] font-bold text-[#556b2f] whitespace-nowrap">모름</span>
+                              </label>
+                            </div>
+
+                            <div className="text-[10px] text-[#556b2f] opacity-70 px-1">
+                              {formError ? formError : "입력 완료. 버튼 누르면 분석 시작"}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                // 🔥 로그인 체크 먼저
+                                if (!isLoggedIn) {
+                                  if (confirm('사주 분석은 로그인 후 이용 가능합니다.\n로그인 하시겠습니까?')) {
+                                    router.push('/login');
+                                  }
+                                  return;
                                 }
-                                return;
-                              }
 
-                              console.log("🔥 버튼 클릭!", { formError, birthYmd, birthHm });
-                              if (!formError) {
-                                console.log("🔥 run() 실행!");
-                                run();
-                              } else {
-                                console.log("❌ formError:", formError);
-                              }
-                            }}
-                            onTouchStart={(e) => {
-                              e.stopPropagation();
-                            }}
-                            disabled={loading || !!formError}
-                            className={`
+                                console.log("🔥 버튼 클릭!", { formError, birthYmd, birthHm });
+                                if (!formError) {
+                                  console.log("🔥 run() 실행!");
+                                  run();
+                                } else {
+                                  console.log("❌ formError:", formError);
+                                }
+                              }}
+                              onTouchStart={(e) => {
+                                e.stopPropagation();
+                              }}
+                              disabled={loading || !!formError}
+                              className={`
     w-full px-6 py-4
     bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600
     text-gray-900 font-bold text-lg
     rounded-lg
     transform transition-all duration-200
     ${loading || !!formError
-                                ? "opacity-50 cursor-not-allowed"
-                                : "hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
-                              }
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : "hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                                }
     disabled:transform-none
   `}
-                          >
-                            {loading ? "분석 중.." : "🔮 사주 확인하기"}
-                          </button>
-                        </div>
-                      </motion.div>
-                    ) : null
-                  ) : (
-                    <motion.div
-                      ref={resultRef}
-                      key="result"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.5 }}
-                      className="space-y-4"
-                    >
+                            >
+                              {loading ? "분석 중.." : "🔮 사주 확인하기"}
+                            </button>
+                          </div>
+                        </motion.div>
+                      ) : null
+                    ) : (
                       <motion.div
-                        key={`result-${selectedChar}`}
-                        initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-4 sm:p-6 shadow-lg border-4 border-[#adc4af] mb-6"
+                        ref={resultRef}
+                        key="result"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.5 }}
+                        className="space-y-4"
                       >
-                        <div className="flex flex-col items-center gap-3 sm:gap-4">
-                          <h3 className="text-lg sm:text-2xl font-bold text-[#556b2f] text-center">
-                            ✨ 사주 분석 완료!
-                          </h3>
-
-                          <motion.div
-                            animate={{
-                              y: [0, -8, 0],
-                              rotate: [0, 2, -2, 0],
-                            }}
-                            transition={{
-                              duration: 2,
-                              repeat: Infinity,
-                              ease: "easeInOut",
-                            }}
-                            className="relative"
-                          >
-                            <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-white shadow-xl flex items-center justify-center border-4 border-yellow-300">
-                              <img
-                                src={CHARACTERS[selectedChar].img}
-                                alt={CHARACTERS[selectedChar].name}
-                                className="w-24 h-24 sm:w-32 sm:h-32 object-contain pixel-art"
-                              />
-                            </div>
-                            <div className="absolute -top-2 -right-2 text-2xl sm:text-3xl animate-bounce">
-                              ✨
-                            </div>
-                          </motion.div>
-
-                          <div className="text-center space-y-2 max-w-xs sm:max-w-sm px-2">
-                            <p className="text-base sm:text-xl font-bold text-[#556b2f]">
-                              {CHARACTERS[selectedChar].name}
-                            </p>
-                            <p className="text-xs sm:text-sm text-gray-600 bg-white px-3 py-2 rounded-full shadow-sm border-2 border-[#adc4af]">
-                              {CHARACTERS[selectedChar].desc}
-                            </p>
-                            <p className="text-[10px] sm:text-xs text-[#556b2f] opacity-70">
-                              {CHARACTERS[selectedChar].oneLine}
-                            </p>
-                          </div>
-
-                          <div className="flex gap-2 text-xl sm:text-2xl">
-                            <motion.span
-                              animate={{ scale: [1, 1.3, 1] }}
-                              transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                            >
-                              💚
-                            </motion.span>
-                            <motion.span
-                              animate={{ scale: [1, 1.3, 1] }}
-                              transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                            >
-                              💚
-                            </motion.span>
-                            <motion.span
-                              animate={{ scale: [1, 1.3, 1] }}
-                              transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                            >
-                              💚
-                            </motion.span>
-                          </div>
-                        </div>
-                      </motion.div>
-
-                      {/* 사주 명식은 결과 화면에도 계속 표시 */}
-                      <div className="relative">
-                        <button
-                          onClick={() => setScriptMode(scriptMode === "hanja" ? "hangul" : "hanja")}
-                          className="absolute -top-7 right-1 z-20 px-2.5 py-1 bg-[#fef08a] border-2 border-[#eab308] rounded-full text-[9px] font-bold text-[#854d0e] hover:bg-[#fde047] transition-all hover:scale-110 shadow-md"
+                        <motion.div
+                          key={`result-${selectedChar}`}
+                          initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                          className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-4 sm:p-6 shadow-lg border-4 border-[#adc4af] mb-6"
                         >
-                          {scriptMode === "hanja" ? "한글" : "한자"}
-                        </button>
-                        <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
-                          <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[9px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
-                            <span>시주</span>
-                            <span>일주</span>
-                            <span>월주</span>
-                            <span>년주</span>
-                          </div>
+                          <div className="flex flex-col items-center gap-3 sm:gap-4">
+                            <h3 className="text-lg sm:text-2xl font-bold text-[#556b2f] text-center">
+                              ✨ 사주 분석 완료!
+                            </h3>
 
-                          <div className="grid grid-cols-4 gap-0 text-center divide-x-2 divide-[#adc4af] overflow-x-auto">
-                            {pillars.map((p, i) => (
-                              <div
-                                key={i}
-                                className="py-2 sm:py-3 flex flex-col items-center gap-0.5 sm:gap-1"
+                            <motion.div
+                              animate={{
+                                y: [0, -8, 0],
+                                rotate: [0, 2, -2, 0],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                              }}
+                              className="relative"
+                            >
+                              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-white shadow-xl flex items-center justify-center border-4 border-yellow-300">
+                                <img
+                                  src={CHARACTERS[selectedChar].img}
+                                  alt={CHARACTERS[selectedChar].name}
+                                  className="w-24 h-24 sm:w-32 sm:h-32 object-contain pixel-art"
+                                />
+                              </div>
+                              <div className="absolute -top-2 -right-2 text-2xl sm:text-3xl animate-bounce">
+                                ✨
+                              </div>
+                            </motion.div>
+
+                            <div className="text-center space-y-2 max-w-xs sm:max-w-sm px-2">
+                              <p className="text-base sm:text-xl font-bold text-[#556b2f]">
+                                {CHARACTERS[selectedChar].name}
+                              </p>
+                              <p className="text-xs sm:text-sm text-gray-600 bg-white px-3 py-2 rounded-full shadow-sm border-2 border-[#adc4af]">
+                                {CHARACTERS[selectedChar].desc}
+                              </p>
+                              <p className="text-[10px] sm:text-xs text-[#556b2f] opacity-70">
+                                {CHARACTERS[selectedChar].oneLine}
+                              </p>
+                            </div>
+
+                            <div className="flex gap-2 text-xl sm:text-2xl">
+                              <motion.span
+                                animate={{ scale: [1, 1.3, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
                               >
-                                <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                                  {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
-                                </div>
+                                💚
+                              </motion.span>
+                              <motion.span
+                                animate={{ scale: [1, 1.3, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
+                              >
+                                💚
+                              </motion.span>
+                              <motion.span
+                                animate={{ scale: [1, 1.3, 1] }}
+                                transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                              >
+                                💚
+                              </motion.span>
+                            </div>
+                          </div>
+                        </motion.div>
 
+                        {/* 사주 명식은 결과 화면에도 계속 표시 */}
+                        <div className="relative">
+                          <button
+                            onClick={() => setScriptMode(scriptMode === "hanja" ? "hangul" : "hanja")}
+                            className="absolute -top-7 right-1 z-20 px-2.5 py-1 bg-[#fef08a] border-2 border-[#eab308] rounded-full text-[9px] font-bold text-[#854d0e] hover:bg-[#fde047] transition-all hover:scale-110 shadow-md"
+                          >
+                            {scriptMode === "hanja" ? "한글" : "한자"}
+                          </button>
+                          <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
+                            <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[9px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
+                              <span>시주</span>
+                              <span>일주</span>
+                              <span>월주</span>
+                              <span>년주</span>
+                            </div>
+
+                            <div className="grid grid-cols-4 gap-0 text-center divide-x-2 divide-[#adc4af] overflow-x-auto">
+                              {pillars.map((p, i) => (
                                 <div
-                                  className={cn(
-                                    "text-xl sm:text-2xl font-bold",
-                                    elementClass(hanjaToElement(p.cheongan.hanja))
-                                  )}
+                                  key={i}
+                                  className="py-2 sm:py-3 flex flex-col items-center gap-0.5 sm:gap-1"
                                 >
-                                  {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
-                                </div>
+                                  <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
+                                    {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
+                                  </div>
 
-                                <div
-                                  className={cn(
-                                    "text-xl sm:text-2xl font-bold",
-                                    elementClass(hanjaToElement(p.jiji.hanja))
-                                  )}
-                                >
-                                  {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
-                                </div>
+                                  <div
+                                    className={cn(
+                                      "text-xl sm:text-2xl font-bold",
+                                      elementClass(hanjaToElement(p.cheongan.hanja))
+                                    )}
+                                  >
+                                    {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
+                                  </div>
 
-                                <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                                  {(() => {
-                                    const ms = branchMainStem(p.jiji.hanja);
-                                    return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
-                                  })()}
-                                </div>
+                                  <div
+                                    className={cn(
+                                      "text-xl sm:text-2xl font-bold",
+                                      elementClass(hanjaToElement(p.jiji.hanja))
+                                    )}
+                                  >
+                                    {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
+                                  </div>
 
-                                {result.jijanggan && (
-                                  <div className="flex gap-0.5 text-[8px] sm:text-[9px] font-medium mt-0.5">
+                                  <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
                                     {(() => {
-                                      const jijangganList =
-                                        i === 0
-                                          ? result.jijanggan.hour
-                                          : i === 1
-                                            ? result.jijanggan.day
-                                            : i === 2
-                                              ? result.jijanggan.month
-                                              : result.jijanggan.year;
-
-                                      return jijangganList?.map((jj: any, idx: number) => (
-                                        <span
-                                          key={idx}
-                                          className={cn("font-bold", elementClass(jj.element))}
-                                        >
-                                          {scriptMode === "hanja" ? jj.hanja : jj.hangul}
-                                        </span>
-                                      ));
+                                      const ms = branchMainStem(p.jiji.hanja);
+                                      return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
                                     })()}
                                   </div>
-                                )}
 
-                                {result.twelve_states && (
-                                  <div className="text-[10px] sm:text-[11px] text-[#556b2f] opacity-70 font-medium mt-0.5">
-                                    {i === 0 && result.twelve_states.hour}
-                                    {i === 1 && result.twelve_states.day}
-                                    {i === 2 && result.twelve_states.month}
-                                    {i === 3 && result.twelve_states.year}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
+                                  {result.jijanggan && (
+                                    <div className="flex gap-0.5 text-[8px] sm:text-[9px] font-medium mt-0.5">
+                                      {(() => {
+                                        const jijangganList =
+                                          i === 0
+                                            ? result.jijanggan.hour
+                                            : i === 1
+                                              ? result.jijanggan.day
+                                              : i === 2
+                                                ? result.jijanggan.month
+                                                : result.jijanggan.year;
 
+                                        return jijangganList?.map((jj: any, idx: number) => (
+                                          <span
+                                            key={idx}
+                                            className={cn("font-bold", elementClass(jj.element))}
+                                          >
+                                            {scriptMode === "hanja" ? jj.hanja : jj.hangul}
+                                          </span>
+                                        ));
+                                      })()}
+                                    </div>
+                                  )}
 
-
-
-                      <div className="relative">
-                        {gateStep === "needAuth" && (
-                          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/85 backdrop-blur-sm rounded-2xl border-4 border-[#adc4af]">
-                            <div className="w-[92%] max-w-[360px] bg-white rounded-2xl border-4 border-[#adc4af] shadow-xl p-6 text-center">
-                              <div className="text-sm font-bold text-[#556b2f] mb-2">
-                                해석을 보려면 카카오 로그인 + 채널 추가가 필요해요
-                              </div>
-
-                              <div className="text-[11px] text-[#556b2f] opacity-80 mb-4 whitespace-pre-line">
-                                {"1) 카카오 로그인\n2) 채널 친구추가\n3) 해석 잠금 해제"}
-                              </div>
-
-                              <div className="flex flex-col gap-3 w-full">
-                                <button
-                                  onClick={handleKakaoLogin}
-                                  className="w-full h-[50px] rounded-[12px] flex items-center justify-center gap-3 font-medium transition-all hover:brightness-95 active:scale-[0.98]"
-                                  style={{
-                                    backgroundColor: "#FEE500",
-                                    color: "rgba(0, 0, 0, 0.85)",
-                                  }}
-                                >
-                                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fillRule="evenodd" clipRule="evenodd" d="M10 0C4.477 0 0 3.731 0 8.333c0 2.848 1.746 5.35 4.397 6.872l-.934 3.43c-.082.302.21.56.493.435l4.47-1.969C8.94 17.134 9.464 17.167 10 17.167c5.523 0 10-3.731 10-8.334C20 3.731 15.523 0 10 0z" fill="#000000" />
-                                  </svg>
-                                  <span style={{ fontSize: "15px", fontWeight: 500 }}>카카오 로그인</span>
-                                </button>
-
-                                <button
-                                  onClick={handleFollowChannel}
-                                  className="w-full h-[50px] rounded-[12px] flex items-center justify-center gap-3 font-medium transition-all hover:brightness-95 active:scale-[0.98]"
-                                  style={{
-                                    backgroundColor: "#FEE500",
-                                    color: "rgba(0, 0, 0, 0.85)",
-                                  }}
-                                >
-                                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fillRule="evenodd" clipRule="evenodd" d="M10 0C4.477 0 0 3.731 0 8.333c0 2.848 1.746 5.35 4.397 6.872l-.934 3.43c-.082.302.21.56.493.435l4.47-1.969C8.94 17.134 9.464 17.167 10 17.167c5.523 0 10-3.731 10-8.334C20 3.731 15.523 0 10 0z" fill="#000000" />
-                                  </svg>
-                                  <span style={{ fontSize: "15px", fontWeight: 500 }}>채널 추가</span>
-                                </button>
-                              </div>
-
-                              <button onClick={handleChannelAddedDone}>채널 추가 완료했어요</button>
-
-                              <div className="mt-2 text-[10px] text-[#556b2f] opacity-70">
-                                로그인: {kakaoTokenOk ? "OK" : "NO"} / 채널: {isChannelAdded ? "OK" : "NO"}
-                              </div>
+                                  {result.twelve_states && (
+                                    <div className="text-[10px] sm:text-[11px] text-[#556b2f] opacity-70 font-medium mt-0.5">
+                                      {i === 0 && result.twelve_states.hour}
+                                      {i === 1 && result.twelve_states.day}
+                                      {i === 2 && result.twelve_states.month}
+                                      {i === 3 && result.twelve_states.year}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                             </div>
                           </div>
-                        )}
+                        </div>
 
-                        <div className="space-y-3">
-                          {megaOrder.map((k) => {
-                            const sec = MEGA_SECTIONS[k];
-                            const isOpen = openMega === k;
-                            const cards = megaCards[k] || [];
 
-                            return (
-                              <div
-                                key={k}
-                                className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none"
-                              >
-                                <button
-                                  onClick={() => setOpenMega(isOpen ? null : k)}
-                                  className="w-full p-3 sm:p-4 flex items-center justify-between hover:bg-[#f0f5f1] transition-colors"
-                                >
-                                  <p className="text-[10px] sm:text-[11px] font-bold text-[#556b2f] flex items-center gap-2">
-                                    <span className="text-sm sm:text-base">{sec.icon}</span>
-                                    <span>{sec.title}</span>
-                                  </p>
-                                  <motion.span
-                                    animate={{ rotate: isOpen ? 180 : 0 }}
-                                    className="text-[10px] sm:text-xs text-[#556b2f]"
+
+
+                        <div className="relative">
+                          {gateStep === "needAuth" && (
+                            <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/85 backdrop-blur-sm rounded-2xl border-4 border-[#adc4af]">
+                              <div className="w-[92%] max-w-[360px] bg-white rounded-2xl border-4 border-[#adc4af] shadow-xl p-6 text-center">
+                                <div className="text-sm font-bold text-[#556b2f] mb-2">
+                                  해석을 보려면 카카오 로그인 + 채널 추가가 필요해요
+                                </div>
+
+                                <div className="text-[11px] text-[#556b2f] opacity-80 mb-4 whitespace-pre-line">
+                                  {"1) 카카오 로그인\n2) 채널 친구추가\n3) 해석 잠금 해제"}
+                                </div>
+
+                                <div className="flex flex-col gap-3 w-full">
+                                  <button
+                                    onClick={handleKakaoLogin}
+                                    className="w-full h-[50px] rounded-[12px] flex items-center justify-center gap-3 font-medium transition-all hover:brightness-95 active:scale-[0.98]"
+                                    style={{
+                                      backgroundColor: "#FEE500",
+                                      color: "rgba(0, 0, 0, 0.85)",
+                                    }}
                                   >
-                                    ▼
-                                  </motion.span>
-                                </button>
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <path fillRule="evenodd" clipRule="evenodd" d="M10 0C4.477 0 0 3.731 0 8.333c0 2.848 1.746 5.35 4.397 6.872l-.934 3.43c-.082.302.21.56.493.435l4.47-1.969C8.94 17.134 9.464 17.167 10 17.167c5.523 0 10-3.731 10-8.334C20 3.731 15.523 0 10 0z" fill="#000000" />
+                                    </svg>
+                                    <span style={{ fontSize: "15px", fontWeight: 500 }}>카카오 로그인</span>
+                                  </button>
 
-                                <AnimatePresence>
-                                  {isOpen && (
-                                    <motion.div
-                                      initial={{ height: 0, opacity: 0 }}
-                                      animate={{ height: "auto", opacity: 1 }}
-                                      exit={{ height: 0, opacity: 0 }}
-                                      transition={{ duration: 0.25 }}
-                                      className="overflow-hidden"
+                                  <button
+                                    onClick={handleFollowChannel}
+                                    className="w-full h-[50px] rounded-[12px] flex items-center justify-center gap-3 font-medium transition-all hover:brightness-95 active:scale-[0.98]"
+                                    style={{
+                                      backgroundColor: "#FEE500",
+                                      color: "rgba(0, 0, 0, 0.85)",
+                                    }}
+                                  >
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                      <path fillRule="evenodd" clipRule="evenodd" d="M10 0C4.477 0 0 3.731 0 8.333c0 2.848 1.746 5.35 4.397 6.872l-.934 3.43c-.082.302.21.56.493.435l4.47-1.969C8.94 17.134 9.464 17.167 10 17.167c5.523 0 10-3.731 10-8.334C20 3.731 15.523 0 10 0z" fill="#000000" />
+                                    </svg>
+                                    <span style={{ fontSize: "15px", fontWeight: 500 }}>채널 추가</span>
+                                  </button>
+                                </div>
+
+                                <button onClick={handleChannelAddedDone}>채널 추가 완료했어요</button>
+
+                                <div className="mt-2 text-[10px] text-[#556b2f] opacity-70">
+                                  로그인: {kakaoTokenOk ? "OK" : "NO"} / 채널: {isChannelAdded ? "OK" : "NO"}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="space-y-3">
+                            {megaOrder.map((k) => {
+                              const sec = MEGA_SECTIONS[k];
+                              const isOpen = openMega === k;
+                              const cards = megaCards[k] || [];
+
+                              return (
+                                <div
+                                  key={k}
+                                  className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none"
+                                >
+                                  <button
+                                    onClick={() => setOpenMega(isOpen ? null : k)}
+                                    className="w-full p-3 sm:p-4 flex items-center justify-between hover:bg-[#f0f5f1] transition-colors"
+                                  >
+                                    <p className="text-[10px] sm:text-[11px] font-bold text-[#556b2f] flex items-center gap-2">
+                                      <span className="text-sm sm:text-base">{sec.icon}</span>
+                                      <span>{sec.title}</span>
+                                    </p>
+                                    <motion.span
+                                      animate={{ rotate: isOpen ? 180 : 0 }}
+                                      className="text-[10px] sm:text-xs text-[#556b2f]"
                                     >
-                                      <div className="p-0 border-t-2 border-[#adc4af] space-y-0">
-                                        {cards.map((c) => (
-                                          <div
-                                            key={c.id}
-                                            className={cn(
-                                              "p-4 relative",
-                                              c.kind === "ready"
-                                                ? "bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl mx-4 my-3"
-                                                : c.kind === "preview"
-                                                  ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] rounded-xl mx-4 my-3"
-                                                  : "bg-[#fefae0]"
-                                            )}
-                                            onClick={() => {
-                                              if (c.kind === "preview") {
-                                                setGateStep("needAuth");
-                                              }
-                                            }}
-                                          >
-                                            <div className="flex items-center gap-2 mb-2">
-                                              <span className="text-sm">{c.icon || "📌"}</span>
-                                              <div className="text-[11px] font-bold text-[#556b2f]">
-                                                {c.title}
-                                              </div>
-                                              {c.kind === "ready" && (
-                                                <span className="ml-auto text-[10px] font-bold text-slate-500">
-                                                  준비중
-                                                </span>
+                                      ▼
+                                    </motion.span>
+                                  </button>
+
+                                  <AnimatePresence>
+                                    {isOpen && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.25 }}
+                                        className="overflow-hidden"
+                                      >
+                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0">
+                                          {cards.map((c) => (
+                                            <div
+                                              key={c.id}
+                                              className={cn(
+                                                "p-4 relative",
+                                                c.kind === "ready"
+                                                  ? "bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl mx-4 my-3"
+                                                  : c.kind === "preview"
+                                                    ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] rounded-xl mx-4 my-3"
+                                                    : "bg-[#fefae0]"
                                               )}
+                                              onClick={() => {
+                                                if (c.kind === "preview") {
+                                                  setGateStep("needAuth");
+                                                }
+                                              }}
+                                            >
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-sm">{c.icon || "📌"}</span>
+                                                <div className="text-[11px] font-bold text-[#556b2f]">
+                                                  {c.title}
+                                                </div>
+                                                {c.kind === "ready" && (
+                                                  <span className="ml-auto text-[10px] font-bold text-slate-500">
+                                                    준비중
+                                                  </span>
+                                                )}
+                                                {c.kind === "preview" && (
+                                                  <div className="ml-auto">
+                                                    <LockIcon />
+                                                  </div>
+                                                )}
+                                              </div>
+
                                               {c.kind === "preview" && (
-                                                <div className="ml-auto">
-                                                  <LockIcon />
+                                                <div className="relative">
+                                                  <div className="text-[11px] leading-relaxed text-[#556b2f] blur-[6px] select-none pointer-events-none line-clamp-6">
+                                                    {c.content.slice(0, 500)}...
+                                                  </div>
+
+                                                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white/90 flex items-end justify-center pb-3">
+                                                    <div className="text-center space-y-1 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 border-2 border-yellow-400 shadow-lg">
+                                                      <div className="flex justify-center">
+                                                        <LockIcon />
+                                                      </div>
+                                                      <p className="text-[10px] font-bold text-[#556b2f]">
+                                                        🔓 클릭하여 잠금 해제
+                                                      </p>
+                                                      <p className="text-[8px] text-[#556b2f] opacity-70">
+                                                        카카오 로그인 + 채널 추가
+                                                      </p>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              )}
+
+                                              {c.kind === "ready" && (
+                                                <div className="text-[11px] leading-relaxed text-slate-500">
+                                                  콘텐츠 곧 업데이트됩니다
+                                                </div>
+                                              )}
+
+                                              {c.kind === "content" && (
+                                                <div className="space-y-4">
+                                                  {c.id === "nature_text" && result && (
+                                                    <SajuEnergyWheel
+                                                      dayStem={result.day.cheongan.hanja}
+                                                      yangCount={natureYangCount}
+                                                      yinCount={natureYinCount}
+                                                      size={220}
+                                                    />
+                                                  )}
+
+                                                  {c.title === "일주 동물의 형상과 본성" ? (
+                                                    <div
+                                                      className="text-[11px] leading-relaxed text-[#556b2f]"
+                                                      dangerouslySetInnerHTML={{ __html: c.content }}
+                                                    />
+                                                  ) : (
+                                                    <div
+                                                      className="text-[11px] leading-relaxed text-[#556b2f]"
+                                                      dangerouslySetInnerHTML={{ __html: c.content.replace(/\n/g, '<br />') }}
+                                                    />
+                                                  )}
                                                 </div>
                                               )}
                                             </div>
-
-                                            {c.kind === "preview" && (
-                                              <div className="relative">
-                                                <div className="text-[11px] leading-relaxed text-[#556b2f] blur-[6px] select-none pointer-events-none line-clamp-6">
-                                                  {c.content.slice(0, 500)}...
-                                                </div>
-
-                                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white/90 flex items-end justify-center pb-3">
-                                                  <div className="text-center space-y-1 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 border-2 border-yellow-400 shadow-lg">
-                                                    <div className="flex justify-center">
-                                                      <LockIcon />
-                                                    </div>
-                                                    <p className="text-[10px] font-bold text-[#556b2f]">
-                                                      🔓 클릭하여 잠금 해제
-                                                    </p>
-                                                    <p className="text-[8px] text-[#556b2f] opacity-70">
-                                                      카카오 로그인 + 채널 추가
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            )}
-
-                                            {c.kind === "ready" && (
-                                              <div className="text-[11px] leading-relaxed text-slate-500">
-                                                콘텐츠 곧 업데이트됩니다
-                                              </div>
-                                            )}
-
-                                            {c.kind === "content" && (
-                                              <div className="space-y-4">
-                                                {c.id === "nature_text" && result && (
-                                                  <SajuEnergyWheel
-                                                    dayStem={result.day.cheongan.hanja}
-                                                    yangCount={natureYangCount}
-                                                    yinCount={natureYinCount}
-                                                    size={220}
-                                                  />
-                                                )}
-
-                                                {c.title === "일주 동물의 형상과 본성" ? (
-                                                  <div
-                                                    className="text-[11px] leading-relaxed text-[#556b2f]"
-                                                    dangerouslySetInnerHTML={{ __html: c.content }}
-                                                  />
-                                                ) : (
-                                                  <div
-                                                    className="text-[11px] leading-relaxed text-[#556b2f]"
-                                                    dangerouslySetInnerHTML={{ __html: c.content.replace(/\n/g, '<br />') }}
-                                                  />
-                                                )}
-                                              </div>
-                                            )}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
-                              </div>
-                            );
-                          })}
+                                          ))}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                      {/* 🔥 저장 & 공유 버튼 추가 (다시 하기 버튼 바로 위) */}
-                      <div className="grid grid-cols-2 gap-3 mb-4">
-                        <button
-                          onClick={handleSaveSaju}
-                          className="py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors flex flex-col items-center justify-center gap-1"
-                        >
-                          <span className="text-xl">💾</span>
-                          <span className="text-sm">저장하기</span>
-                        </button>
+                        {/* 🔥 저장 & 공유 버튼 추가 (다시 하기 버튼 바로 위) */}
+                        <div className="grid grid-cols-2 gap-3 mb-4">
+                          <button
+                            onClick={handleSaveSaju}
+                            className="py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors flex flex-col items-center justify-center gap-1"
+                          >
+                            <span className="text-xl">💾</span>
+                            <span className="text-sm">저장하기</span>
+                          </button>
 
-                        <button
-                          onClick={handleShare}
-                          className="py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold rounded-xl hover:scale-105 transition-transform flex flex-col items-center justify-center gap-1"
-                        >
-                          <span className="text-xl">🔗</span>
-                          <span className="text-sm">공유하기</span>
-                        </button>
-                      </div>
-                      <div className="mt-4">
-                        <button
-                          onClick={() => {
-                            setResult(null);
-                            setFortuneAnalysis(null);
-                            setCharmAnalysis(null);
-                            setTalentAnalysis(null);
-                            setStrengthAnalysis(null);
-                            setRelationsAnalysis(null);
-                            setSpecialStarsAnalysis(null);
-                            setTodayFortune(null);
-                            setNewInterpretation(null);
-                            setExpandedSection(null);
-                            setShowFortune(false);
-                            setShowCharm(false);
-                            setShowTalent(false);
-                            setShowStrength(false);
-                            setShowRelations(false);
-                            setShowSpecialStars(false);
-                            setShowToday(false);
-                            setBirthYmd("");
-                            setBirthHm("");
-                            setTimeUnknown(false);
-                            setLoading(false);
-                            setErr("");
-                            setShowHarmonyAfter(false);
-                            setShowCharacterSelect(false);
-                          }}
+                          <button
+                            onClick={handleShare}
+                            className="py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold rounded-xl hover:scale-105 transition-transform flex flex-col items-center justify-center gap-1"
+                          >
+                            <span className="text-xl">🔗</span>
+                            <span className="text-sm">공유하기</span>
+                          </button>
+                        </div>
+                        <div className="mt-4">
+                          <button
+                            onClick={() => {
+                              setResult(null);
+                              setFortuneAnalysis(null);
+                              setCharmAnalysis(null);
+                              setTalentAnalysis(null);
+                              setStrengthAnalysis(null);
+                              setRelationsAnalysis(null);
+                              setSpecialStarsAnalysis(null);
+                              setTodayFortune(null);
+                              setNewInterpretation(null);
+                              setExpandedSection(null);
+                              setShowFortune(false);
+                              setShowCharm(false);
+                              setShowTalent(false);
+                              setShowStrength(false);
+                              setShowRelations(false);
+                              setShowSpecialStars(false);
+                              setShowToday(false);
+                              setBirthYmd("");
+                              setBirthHm("");
+                              setTimeUnknown(false);
+                              setLoading(false);
+                              setErr("");
+                              setShowHarmonyAfter(false);
+                              setShowCharacterSelect(false);
+                            }}
 
 
-                          className="w-full py-2 sm:py-3 border-2 border-[#ffb3b3] rounded-xl text-[10px] sm:text-[11px] font-bold text-[#ff4d4d] hover:bg-[#fff5f5] transition-colors flex items-center justify-center gap-1 sm:gap-2"
-                        >
-                          <span className="text-xs sm:text-sm">🔄</span>
-                          <span>다시 하기</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                            className="w-full py-2 sm:py-3 border-2 border-[#ffb3b3] rounded-xl text-[10px] sm:text-[11px] font-bold text-[#ff4d4d] hover:bg-[#fff5f5] transition-colors flex items-center justify-center gap-1 sm:gap-2"
+                          >
+                            <span className="text-xs sm:text-sm">🔄</span>
+                            <span>다시 하기</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        {/* 🔥 저장 다이얼로그 추가 (</main> 직전) */}
-        {showSaveDialog && (
-          <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
-            onClick={() => {
-              setShowSaveDialog(false);
-              setSajuName('');
-            }}
-          >
+          {/* 🔥 저장 다이얼로그 추가 (</main> 직전) */}
+          {showSaveDialog && (
             <div
-              className="bg-white rounded-2xl p-6 max-w-sm w-full border-4 border-[#adc4af] shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+              onClick={() => {
+                setShowSaveDialog(false);
+                setSajuName('');
+              }}
             >
-              <h3 className="text-xl font-bold text-[#556b2f] mb-2">💾 사주 저장하기</h3>
+              <div
+                className="bg-white rounded-2xl p-6 max-w-sm w-full border-4 border-[#adc4af] shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-xl font-bold text-[#556b2f] mb-2">💾 사주 저장하기</h3>
 
-              <p className="text-sm text-gray-600 mb-4">
-                이 사주에 이름을 붙여주세요<br />
-                <span className="text-xs text-gray-500">(예: 내 사주, 엄마 사주, 친구 사주)</span>
-              </p>
+                <p className="text-sm text-gray-600 mb-4">
+                  이 사주에 이름을 붙여주세요<br />
+                  <span className="text-xs text-gray-500">(예: 내 사주, 엄마 사주, 친구 사주)</span>
+                </p>
 
-              <input
-                type="text"
-                value={sajuName}
-                onChange={(e) => setSajuName(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') confirmSave();
-                }}
-                placeholder="사주 이름 입력"
-                className="w-full px-4 py-3 border-2 border-[#adc4af] rounded-xl mb-4 outline-none focus:border-[#556b2f] text-sm"
-                maxLength={20}
-                autoFocus
-              />
-
-              <div className="text-xs text-gray-500 mb-4 text-right">
-                {sajuName.length}/20
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setShowSaveDialog(false);
-                    setSajuName('');
+                <input
+                  type="text"
+                  value={sajuName}
+                  onChange={(e) => setSajuName(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') confirmSave();
                   }}
-                  className="flex-1 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={confirmSave}
-                  className="flex-1 py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors"
-                >
-                  저장
-                </button>
+                  placeholder="사주 이름 입력"
+                  className="w-full px-4 py-3 border-2 border-[#adc4af] rounded-xl mb-4 outline-none focus:border-[#556b2f] text-sm"
+                  maxLength={20}
+                  autoFocus
+                />
+
+                <div className="text-xs text-gray-500 mb-4 text-right">
+                  {sajuName.length}/20
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setShowSaveDialog(false);
+                      setSajuName('');
+                    }}
+                    className="flex-1 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={confirmSave}
+                    className="flex-1 py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors"
+                  >
+                    저장
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+
+          )}
+        </div>
       </main>
     </>
   );

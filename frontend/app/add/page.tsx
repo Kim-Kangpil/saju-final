@@ -1,4 +1,6 @@
 "use client";
+
+import "../../styles/add-login.css";
 import { saveSaju, getSavedSajuList } from '../../lib/sajuStorage';
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
@@ -22,7 +24,8 @@ import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
 import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";
-
+import BackgroundScene from "@/components/add/BackgroundScene";
+import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
 type PillarBlock = { label: string; cheongan: Pillar; jiji: Pillar };
 type SajuResult = {
@@ -1849,7 +1852,7 @@ export default function Page() {
                         생년월일과 성별을 입력하세요!
                       </p>
                     ) : (
-                      <div className="space-y-4 py-8 rounded-2xl bg-white/35 backdrop-blur-[1px] border border-white/60 shadow-lg">
+                      <div className="space-y-4 py-8 rounded-2xl bg-white/35 backdrop-blur-[1px] shadow-lg">
                         <img
                           src="/images/ham_icon.png"
                           alt="hamster"
@@ -1864,10 +1867,66 @@ export default function Page() {
 
                         <div className="flex flex-col gap-3 max-w-xs mx-auto pt-4">
                           <button
-                            onClick={() => router.push('/login')}
-                            className="w-full py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                            type="button"
+                            className="tap sans"
+                            onClick={handleKakaoLogin}
+                            style={{
+                              width: "100%",
+                              maxWidth: 280,
+                              margin: "0 auto",
+                              padding: "14px 0",
+                              borderRadius: 16,
+                              fontWeight: 900,
+                              fontSize: 15,
+                              color: "#1a2e0e",
+                              background:
+                                "linear-gradient(135deg, #FFF3A6 0%, #FEE500 60%, #F5D700 100%)",
+                              border: "none",
+                              boxShadow:
+                                "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 10,
+                              position: "relative",
+                              overflow: "hidden",
+                              cursor: "pointer",
+                              transition: "all .15s ease"
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = "scale(1.03)";
+                              e.currentTarget.style.boxShadow =
+                                "0 4px 0 rgba(0,0,0,.06), 0 14px 28px rgba(16,24,40,.18)";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = "scale(1)";
+                              e.currentTarget.style.boxShadow =
+                                "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)";
+                            }}
                           >
-                            🔑 로그인하고 시작하기
+                            <span
+                              aria-hidden
+                              style={{
+                                position: "absolute",
+                                inset: 0,
+                                background:
+                                  "radial-gradient(140px 44px at 22% 22%, rgba(255,255,255,.45), transparent 60%)",
+                                pointerEvents: "none",
+                              }}
+                            />
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 18 18"
+                              fill="none"
+                              style={{ position: "relative" }}
+                            >
+                              <path
+                                d="M9 0C4.03 0 0 3.34 0 7.47C0 10.07 1.57 12.35 4.03 13.69L3.12 17.25C3.06 17.47 3.29 17.64 3.48 17.52L7.66 14.97C8.1 15.02 8.55 15.05 9 15.05C13.97 15.05 18 11.71 18 7.58C18 3.45 13.97 0 9 0Z"
+                                fill="#3C1E1E"
+                              />
+                            </svg>
+                            <span style={{ position: "relative" }}>카카오로 시작하기</span>
                           </button>
                         </div>
                       </div>
@@ -2183,35 +2242,10 @@ export default function Page() {
                                   {"1) 카카오 로그인\n2) 채널 친구추가\n3) 해석 잠금 해제"}
                                 </div>
 
-                                <div className="flex flex-col gap-3 w-full">
-                                  <button
-                                    onClick={handleKakaoLogin}
-                                    className="w-full h-[50px] rounded-[12px] flex items-center justify-center gap-3 font-medium transition-all hover:brightness-95 active:scale-[0.98]"
-                                    style={{
-                                      backgroundColor: "#FEE500",
-                                      color: "rgba(0, 0, 0, 0.85)",
-                                    }}
-                                  >
-                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path fillRule="evenodd" clipRule="evenodd" d="M10 0C4.477 0 0 3.731 0 8.333c0 2.848 1.746 5.35 4.397 6.872l-.934 3.43c-.082.302.21.56.493.435l4.47-1.969C8.94 17.134 9.464 17.167 10 17.167c5.523 0 10-3.731 10-8.334C20 3.731 15.523 0 10 0z" fill="#000000" />
-                                    </svg>
-                                    <span style={{ fontSize: "15px", fontWeight: 500 }}>카카오 로그인</span>
-                                  </button>
-
-                                  <button
-                                    onClick={handleFollowChannel}
-                                    className="w-full h-[50px] rounded-[12px] flex items-center justify-center gap-3 font-medium transition-all hover:brightness-95 active:scale-[0.98]"
-                                    style={{
-                                      backgroundColor: "#FEE500",
-                                      color: "rgba(0, 0, 0, 0.85)",
-                                    }}
-                                  >
-                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path fillRule="evenodd" clipRule="evenodd" d="M10 0C4.477 0 0 3.731 0 8.333c0 2.848 1.746 5.35 4.397 6.872l-.934 3.43c-.082.302.21.56.493.435l4.47-1.969C8.94 17.134 9.464 17.167 10 17.167c5.523 0 10-3.731 10-8.334C20 3.731 15.523 0 10 0z" fill="#000000" />
-                                    </svg>
-                                    <span style={{ fontSize: "15px", fontWeight: 500 }}>채널 추가</span>
-                                  </button>
-                                </div>
+                                <main style={{ position: "relative", minHeight: "100vh" }}>
+                                  <BackgroundScene backgroundUrl="/bg/hamster-forest.png" />
+                                  <LoginCard onKakaoLogin={handleKakaoLogin} />
+                                </main>
 
                                 <button onClick={handleChannelAddedDone}>채널 추가 완료했어요</button>
 

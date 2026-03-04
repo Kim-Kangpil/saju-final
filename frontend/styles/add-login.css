@@ -1,0 +1,29 @@
+/* 로그인 전체 루트 */
+.loginRoot {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* 카드 가운데 정렬 */
+.loginCenter {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 풀잎 흔들림 */
+@keyframes sajuSway {
+  0% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  100% { transform: translateX(-2px); }
+}
+
+/* 파티클 */
+@keyframes sajuParticles {
+  0% { transform: translateY(0px); }
+  100% { transform: translateY(-20px); }
+}

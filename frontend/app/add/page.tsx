@@ -671,7 +671,11 @@ export default function Page() {
   const [natureYinCount, setNatureYinCount] = useState<number>(0);
   const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);  // 🔥 추가
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
-
+  useEffect(() => {
+    if (showCharacterSelect) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [showCharacterSelect]);
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedIn');
     setIsLoggedIn(loggedIn === 'true');
@@ -1692,7 +1696,7 @@ export default function Page() {
                 >
                   {/* 🔥 사주 명식 먼저 표시 */}
                   <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
-                    <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[9px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
+                    <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[11px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
                       <span>시주</span>
                       <span>일주</span>
                       <span>월주</span>
@@ -1920,7 +1924,7 @@ export default function Page() {
 
                           <div className="flex gap-2">
                             <input
-                              className="flex-1 rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-xs sm:text-sm outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50 disabled:opacity-30"
+                              className="flex-1 rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-[16px] sm:text-sm outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50 disabled:opacity-30"
                               placeholder="시간 4자리 (HHMM)"
                               value={birthHm}
                               disabled={timeUnknown}

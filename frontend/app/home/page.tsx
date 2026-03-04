@@ -467,37 +467,11 @@ export default function LandingPage() {
                 {/* ── 6. 1차 결과 미리보기 ── */}
                 {showPreview && (
                     <div style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid #c8dac8", padding: "28px 24px", marginBottom: 14, animation: "fadeUp .6s ease both", textAlign: "center" }}>
-                        <div style={{ display: "inline-block", padding: "4px 10px", background: "#f3e8ff", border: "1.5px solid #c084fc", borderRadius: 99, marginBottom: 16 }}>
-                            <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#581c87", letterSpacing: "0.08em" }}>🟠 결과 미리보기</span>
-                        </div>
 
-                        <div style={{ padding: "16px 18px", background: "#f7fbf7", border: "1.5px solid #dce8dc", borderRadius: 12, marginBottom: 10 }}>
-                            <p className="serif" style={{ fontSize: 14, color: "#1a2e0e", lineHeight: 1.85, marginBottom: 12 }}>
-                                당신은 감정 에너지가 깊은 구조입니다.
-                            </p>
-                            <p className="sans" style={{ fontSize: 13, color: "#556b2f", lineHeight: 1.75 }}>
-                                겉은 차분하지만 내면에서는 빠르게 판단합니다.
-                            </p>
-                        </div>
 
-                        <p className="serif" style={{ fontSize: 14, fontWeight: 700, color: "#2d4a1e", marginBottom: 10 }}>
-                            그리고
-                        </p>
 
-                        <div style={{ position: "relative", marginBottom: 18 }}>
-                            <div style={{ padding: "16px 18px", background: "#f7fbf7", border: "1.5px solid #dce8dc", borderRadius: 12 }}>
-                                <p className="sans blur-cover" style={{ fontSize: 13, color: "#556b2f", lineHeight: 1.75 }}>
-                                    사람을 고를 때 무의식적인 기준이 있습니다. 특정 유형에게 끌리는 이유와 매번 비슷한 방식으로 관계가 흘러가는 패턴이 보입니다.
-                                </p>
-                            </div>
-                            <div style={{ position: "absolute", inset: 0, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(247,251,247,.65)" }}>
-                                <span style={{ fontSize: 18, marginBottom: 4 }}>🔒</span>
-                                <p className="sans" style={{ fontSize: 10, color: "#2d4a1e", fontWeight: 700 }}>잠금됨</p>
-                            </div>
-                        </div>
 
-                        <p className="sans" style={{ fontSize: 12, color: "#556b2f", opacity: .65, marginBottom: 4 }}>…</p>
-                        <p className="sans" style={{ fontSize: 12, color: "#556b2f", opacity: .65, marginBottom: 4 }}>여기까지는 기본 분석입니다.</p>
+
                         <div style={{ height: 1, background: "#dce8dc", margin: "16px 0" }} />
 
                         {/* 배우자 AI 미리보기 */}

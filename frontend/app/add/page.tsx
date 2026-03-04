@@ -1456,13 +1456,14 @@ export default function Page() {
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </Head>
       <Script
-        src="https://developers.kakao.com/sdk/js/kakao.min.js"
+        src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.0/kakao.min.js"
         strategy="afterInteractive"
+        crossOrigin="anonymous"
         onLoad={() => {
-          console.log("=== Kakao SDK v1 로딩 시작 ===");
+          console.log("=== Kakao SDK 로딩 시작 ===");
           try {
             if (!window.Kakao) {
-              console.error("❌ Kakao SDK 로드 실패");
+              console.error("❌ window.Kakao 없음");
               return;
             }
 
@@ -1474,25 +1475,18 @@ export default function Page() {
 
             if (!window.Kakao.isInitialized()) {
               window.Kakao.init(key);
-              console.log("✅ Kakao SDK v1 초기화 완료");
-              console.log("초기화 상태:", window.Kakao.isInitialized());
+              console.log("✅ Kakao 초기화 완료:", window.Kakao.isInitialized());
             } else {
-              console.log("✅ Kakao SDK 이미 초기화됨");
+              console.log("✅ Kakao 이미 초기화됨");
             }
 
-            console.log("Auth 모듈:", window.Kakao.Auth);
-            console.log("Auth.login:", typeof window.Kakao.Auth?.login);
-
-            setTimeout(() => {
-              setKakaoReady(true);
-              console.log("✅ kakaoReady 상태 설정 완료");
-            }, 300);
-          } catch (e) {
-            console.error("❌ Kakao SDK 초기화 오류:", e);
+            setKakaoReady(true);
+          } catch (err) {
+            console.error("❌ Kakao 초기화 오류:", err);
           }
         }}
-        onError={(e) => {
-          console.error("❌ Kakao SDK 스크립트 로딩 실패:", e);
+        onError={() => {
+          console.error("❌ Kakao SDK 스크립트 로딩 실패 (네트워크/CSP/차단 가능)");
         }}
       />
 
@@ -1566,21 +1560,25 @@ export default function Page() {
 
             {/* 메인 콘텐츠 */}
             <div className="p-5 relative">
+              {!result && (
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    backgroundImage: "url('/images/hamster-forest.png')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                    opacity: 0.6,
+                    filter: "saturate(1.1) contrast(1.08)",
+                    transform: "scale(1.03)",
+                    pointerEvents: "none",
+                    zIndex: 0,
+                  }}
+                />
+              )}
               <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: "url('/images/hamster-forest.png')",
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  backgroundRepeat: "no-repeat",
-                  opacity: 0.6,
-                  filter: "saturate(1.1) contrast(1.08)",
-                  transform: "scale(1.03)",
-                  pointerEvents: "none",
-                  zIndex: 0,
-                }}
-              />
-              <div className="relative z-10">
+                className="relative z-10 rounded-2xl bg-white/80 backdrop-blur-xl shadow-xl p-4 sm:p-6 mx-auto max-w-[420px]"
+              >
                 {err && !loading && !result && (
                   <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">
                     {err}
@@ -1599,7 +1597,7 @@ export default function Page() {
                       zIndex: 9999,
                     }}
                   >
-                    <div className="bg-white rounded-2xl p-6 border-4 border-[#adc4af] sm:p-8 w-[90vw] sm:w-[450px] max-w-[450px] mx-4 text-center shadow-2xl">
+                    <div className="rounded-2xl p-6 sm:p-8 w-[90vw] sm:w-[450px] max-w-[450px] mx-4 text-center shadow-2xl">
                       <div className="mb-4 sm:mb-6">
                         <motion.div
                           initial={{ scale: 0.5, y: 50, opacity: 0 }}
@@ -1803,7 +1801,7 @@ export default function Page() {
                           className={cn(
                             "p-4 rounded-2xl border-4 transition-all",
                             selectedChar === id
-                              ? "border-[#556b2f] bg-[#fefae0] shadow-lg"
+                              ? "border-[#556b2f] bg-yellow-50 shadow-lg"
                               : "border-[#e9edc9] bg-white hover:border-[#c1d8c3]"
                           )}
                         >
@@ -1852,82 +1850,84 @@ export default function Page() {
                         생년월일과 성별을 입력하세요!
                       </p>
                     ) : (
-                      <div className="space-y-4 py-8 rounded-2xl bg-white/35 backdrop-blur-[1px] shadow-lg">
-                        <img
-                          src="/images/ham_icon.png"
-                          alt="hamster"
-                          className="w-20 h-20 mx-auto mb-4"
-                        />
-                        <p className="text-xl font-bold text-[#556b2f]">
-                          한양사주에 오신 걸 환영합니다!
-                        </p>
-                        <p className="text-sm text-gray-600 px-4">
-                          사주 분석을 이용하시려면<br />먼저 로그인해주세요
-                        </p>
+                      <div className="flex justify-center">
+                        <div className="space-y-4 py-6 px-6 bg-white/70 rounded-2xl backdrop-blur-md max-w-[320px]">
+                          <img
+                            src="/images/ham_icon.png"
+                            alt="hamster"
+                            className="w-20 h-20 mx-auto mb-4"
+                          />
+                          <p className="text-xl font-bold text-[#556b2f]">
+                            한양사주에 오신 걸 환영합니다!
+                          </p>
+                          <p className="text-sm text-gray-600 px-4">
+                            사주 분석을 이용하시려면<br />먼저 로그인해주세요
+                          </p>
 
-                        <div className="flex flex-col gap-3 max-w-xs mx-auto pt-4">
-                          <button
-                            type="button"
-                            className="tap sans"
-                            onClick={handleKakaoLogin}
-                            style={{
-                              width: "100%",
-                              maxWidth: 280,
-                              margin: "0 auto",
-                              padding: "14px 0",
-                              borderRadius: 16,
-                              fontWeight: 900,
-                              fontSize: 15,
-                              color: "#1a2e0e",
-                              background:
-                                "linear-gradient(135deg, #FFF3A6 0%, #FEE500 60%, #F5D700 100%)",
-                              border: "none",
-                              boxShadow:
-                                "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 10,
-                              position: "relative",
-                              overflow: "hidden",
-                              cursor: "pointer",
-                              transition: "all .15s ease"
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = "scale(1.03)";
-                              e.currentTarget.style.boxShadow =
-                                "0 4px 0 rgba(0,0,0,.06), 0 14px 28px rgba(16,24,40,.18)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = "scale(1)";
-                              e.currentTarget.style.boxShadow =
-                                "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)";
-                            }}
-                          >
-                            <span
-                              aria-hidden
+                          <div className="flex flex-col gap-3 max-w-xs mx-auto pt-4">
+                            <button
+                              type="button"
+                              className="tap sans"
+                              onClick={handleKakaoLogin}
                               style={{
-                                position: "absolute",
-                                inset: 0,
+                                width: "100%",
+                                maxWidth: 280,
+                                margin: "0 auto",
+                                padding: "14px 0",
+                                borderRadius: 16,
+                                fontWeight: 900,
+                                fontSize: 15,
+                                color: "#1a2e0e",
                                 background:
-                                  "radial-gradient(140px 44px at 22% 22%, rgba(255,255,255,.45), transparent 60%)",
-                                pointerEvents: "none",
+                                  "linear-gradient(135deg, #FFF3A6 0%, #FEE500 60%, #F5D700 100%)",
+                                border: "none",
+                                boxShadow:
+                                  "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 10,
+                                position: "relative",
+                                overflow: "hidden",
+                                cursor: "pointer",
+                                transition: "all .15s ease"
                               }}
-                            />
-                            <svg
-                              width="20"
-                              height="20"
-                              viewBox="0 0 18 18"
-                              fill="none"
-                              style={{ position: "relative" }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = "scale(1.03)";
+                                e.currentTarget.style.boxShadow =
+                                  "0 4px 0 rgba(0,0,0,.06), 0 14px 28px rgba(16,24,40,.18)";
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = "scale(1)";
+                                e.currentTarget.style.boxShadow =
+                                  "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)";
+                              }}
                             >
-                              <path
-                                d="M9 0C4.03 0 0 3.34 0 7.47C0 10.07 1.57 12.35 4.03 13.69L3.12 17.25C3.06 17.47 3.29 17.64 3.48 17.52L7.66 14.97C8.1 15.02 8.55 15.05 9 15.05C13.97 15.05 18 11.71 18 7.58C18 3.45 13.97 0 9 0Z"
-                                fill="#3C1E1E"
+                              <span
+                                aria-hidden
+                                style={{
+                                  position: "absolute",
+                                  inset: 0,
+                                  background:
+                                    "radial-gradient(140px 44px at 22% 22%, rgba(255,255,255,.45), transparent 60%)",
+                                  pointerEvents: "none",
+                                }}
                               />
-                            </svg>
-                            <span style={{ position: "relative" }}>카카오로 시작하기</span>
-                          </button>
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 18 18"
+                                fill="none"
+                                style={{ position: "relative" }}
+                              >
+                                <path
+                                  d="M9 0C4.03 0 0 3.34 0 7.47C0 10.07 1.57 12.35 4.03 13.69L3.12 17.25C3.06 17.47 3.29 17.64 3.48 17.52L7.66 14.97C8.1 15.02 8.55 15.05 9 15.05C13.97 15.05 18 11.71 18 7.58C18 3.45 13.97 0 9 0Z"
+                                  fill="#3C1E1E"
+                                />
+                              </svg>
+                              <span style={{ position: "relative" }}>카카오로 시작하기</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -1947,34 +1947,34 @@ export default function Page() {
                         >
                           <div className="space-y-3 pt-4">
                             <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                              <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
+                              <div className="flex bg-yellow-50 p-1 rounded-xl border-3 border-[#adc4af]">
                                 <button
                                   onClick={() => setCalendar("solar")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "solar" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "solar" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
                                     }`}
                                 >
                                   양력
                                 </button>
                                 <button
                                   onClick={() => setCalendar("lunar")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "lunar" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "lunar" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
                                     }`}
                                 >
                                   음력
                                 </button>
                               </div>
 
-                              <div className="flex bg-white p-1 rounded-xl border-3 border-[#adc4af]">
+                              <div className="flex bg-yellow-50 p-1 rounded-xl border-3 border-[#adc4af]">
                                 <button
                                   onClick={() => setGender("M")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "M" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "M" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
                                     }`}
                                 >
                                   남
                                 </button>
                                 <button
                                   onClick={() => setGender("F")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "F" ? "bg-black text-white shadow-sm" : "text-[#868e96]"
+                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "F" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
                                     }`}
                                 >
                                   여
@@ -1983,7 +1983,7 @@ export default function Page() {
                             </div>
 
                             <input
-                              className="w-full rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-base outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50"
+                              className="w-full rounded-xl border-3 border-[#adc4af] bg-yellow-50 px-3 sm:px-4 py-2 sm:py-3 font-mono text-base text-[#1f2937] placeholder:text-gray-500 outline-none transition-all focus:border-[#556b2f]"
                               placeholder="생년월일 8자리"
                               value={birthYmd}
                               onChange={(e) => setBirthYmd(onlyDigits(e.target.value).slice(0, 8))}
@@ -1992,13 +1992,13 @@ export default function Page() {
 
                             <div className="flex gap-2">
                               <input
-                                className="flex-1 rounded-xl border-3 border-[#adc4af] px-3 sm:px-4 py-2 sm:py-3 font-mono text-[16px] sm:text-sm outline-none transition-all focus:border-[#556b2f] focus:bg-yellow-50 disabled:opacity-30"
+                                className="flex-1 rounded-xl border-3 border-[#adc4af] bg-yellow-50 px-3 sm:px-4 py-2 sm:py-3 font-mono text-[16px] sm:text-sm text-[#1f2937] placeholder:text-gray-500 outline-none transition-all focus:border-[#556b2f] disabled:opacity-30"
                                 placeholder="시간 4자리 (HHMM)"
                                 value={birthHm}
                                 disabled={timeUnknown}
                                 onChange={(e) => setBirthHm(onlyDigits(e.target.value).slice(0, 4))}
                               />
-                              <label className="flex items-center gap-1 sm:gap-2 border-3 border-[#adc4af] rounded-xl px-2 sm:px-3 py-2 sm:py-3 bg-[#fefae0] cursor-pointer hover:bg-white transition-colors flex-shrink-0">
+                              <label className="flex items-center gap-1 sm:gap-2 border-3 border-[#adc4af] rounded-xl px-2 sm:px-3 py-2 sm:py-3 bg-yellow-50 cursor-pointer hover:bg-white transition-colors flex-shrink-0">
                                 <input
                                   type="checkbox"
                                   checked={timeUnknown}
@@ -2302,7 +2302,7 @@ export default function Page() {
                                                   ? "bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl mx-4 my-3"
                                                   : c.kind === "preview"
                                                     ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] rounded-xl mx-4 my-3"
-                                                    : "bg-[#fefae0]"
+                                                    : "bg-yellow-50"
                                               )}
                                               onClick={() => {
                                                 if (c.kind === "preview") {

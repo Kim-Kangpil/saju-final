@@ -5,127 +5,143 @@
 
 type CharKey = "empathy" | "reality" | "fun";
 
-// 십신 -> 사회적 가면 특성
-const MASK_TYPE: Record<string, string> = {
-  비견: "경쟁하고 자기주장하는 사람",
-  겁재: "경쟁하고 자기주장하는 사람",
-  식신: "표현력 넘치는 콘텐츠형 사람",
-  상관: "표현력 넘치는 콘텐츠형 사람",
-  편재: "결과와 실리를 중시하는 사람",
-  정재: "결과와 실리를 중시하는 사람",
-  편관: "책임감 있고 신뢰받는 사람",
-  정관: "책임감 있고 신뢰받는 사람",
-  편인: "배움을 좋아하는 이해력 높은 사람",
-  정인: "배움을 좋아하는 이해력 높은 사람",
+/** 십신을 문장에 자연스럽게 넣기 위한 짧은 라벨 */
+const TG_LABEL: Record<string, string> = {
+  비견: "자기주도",
+  겁재: "승부욕",
+  식신: "표현력",
+  상관: "돌파력",
+  편재: "실리감각",
+  정재: "안정지향",
+  편관: "긴장감",
+  정관: "책임감",
+  편인: "사색",
+  정인: "이해력",
 };
 
-// 십이운성 -> 존재감 강도
-const INTENSITY_MAP: Record<string, string> = {
-  장생: "존재감 강도 높음",
-  건록: "존재감 강도 높음",
-  제왕: "존재감 강도 높음",
-  목욕: "부드럽게 스며듦",
-  태: "부드럽게 스며듦",
-  양: "부드럽게 스며듦",
-  쇠: "존재감은 약하지만 깊이 있음",
-  병: "존재감은 약하지만 깊이 있음",
-  사: "존재감은 약하지만 깊이 있음",
-  절: "존재감은 약하지만 깊이 있음",
-  묘: "존재감은 약하지만 깊이 있음",
-  태지: "부드럽게 스며듦",
-  절지: "존재감은 약하지만 깊이 있음",
-  관대: "부드럽게 스며듦",
-  쇠지: "존재감은 약하지만 깊이 있음",
-  병지: "존재감은 약하지만 깊이 있음",
+/** 십이운성 -> 문장용 뉘앙스 */
+const STATE_VIBE: Record<string, { lead: string; after: string }> = {
+  장생: { lead: "존재감이 또렷한 편이라", after: "처음 만나는 자리에서도 금방 티가 나." },
+  건록: { lead: "톤이 단단해서", after: "말과 행동에 힘이 실리는 편이야." },
+  제왕: { lead: "임팩트가 강해서", after: "주도권을 잡기 쉬운 편이야." },
+
+  목욕: { lead: "분위기에 맞춰", after: "부드럽게 스며드는 편이야." },
+  태: { lead: "상황을 살피면서", after: "천천히 드러나는 편이야." },
+  양: { lead: "밝게 맞춰", after: "가볍게 친해지는 편이야." },
+  태지: { lead: "무리 없이", after: "부드럽게 존재감을 남기는 편이야." },
+  관대: { lead: "자연스럽게", after: "격을 갖추되 편안한 편이야." },
+
+  쇠: { lead: "겉으로는 담백해 보여도", after: "알수록 깊이가 느껴지는 편이야." },
+  병: { lead: "겉으로는 조용해도", after: "내면 에너지가 꽤 도는 편이야." },
+  사: { lead: "겉은 차분한데", after: "집중할 때 몰입이 강한 편이야." },
+  절: { lead: "감정을 아껴 쓰는 듯하지만", after: "선과 기준이 분명한 편이야." },
+  묘: { lead: "겉은 얌전해 보여도", after: "속은 단단한 편이야." },
+
+  절지: { lead: "겉으로는 단정한데", after: "속에는 강한 기준이 있는 편이야." },
+  쇠지: { lead: "말수는 적어도", after: "핵심만 남기는 편이야." },
+  병지: { lead: "표정은 덤덤해도", after: "속은 에너지가 큰 편이야." },
 };
 
-// 가면 vs 본질 조합 예시
-const MASK_VS_NATURE_EXAMPLES: Record<string, string> = {
-  "편관-식신": "겉은 책임형, 속은 자유 유희형",
-  "정관-식신": "겉은 책임형, 속은 자유 유희형",
-  "편관-상관": "겉은 책임형, 속은 자유 유희형",
-  "정관-상관": "겉은 책임형, 속은 자유 유희형",
-  "편재-편인": "겉은 현실적, 속은 생각 많은 사색가",
-  "정재-편인": "겉은 현실적, 속은 생각 많은 사색가",
-  "편재-정인": "겉은 현실적, 속은 생각 많은 사색가",
-  "정재-정인": "겉은 현실적, 속은 생각 많은 사색가",
-  "식신-비견": "겉은 표현형, 속은 경쟁심 강함",
-  "상관-비견": "겉은 표현형, 속은 경쟁심 강함",
-  "식신-겁재": "겉은 표현형, 속은 경쟁심 강함",
-  "상관-겁재": "겉은 표현형, 속은 경쟁심 강함",
-  "편인-편재": "겉은 배움형, 속은 실리 추구",
-  "정인-편재": "겉은 배움형, 속은 실리 추구",
-  "편인-정재": "겉은 배움형, 속은 실리 추구",
-  "정인-정재": "겉은 배움형, 속은 실리 추구",
+/** 조합 한 줄 요약 */
+const COMBO_ONE_LINER: Record<string, string> = {
+  "편관-식신": "겉은 단단한데 속은 의외로 유연한 조합",
+  "정관-식신": "겉은 정돈돼 보이지만 속은 자유도가 높은 조합",
+  "편관-상관": "겉은 책임감, 속은 돌파욕이 같이 도는 조합",
+  "정관-상관": "겉은 안정적, 속은 변화를 만들고 싶은 조합",
+
+  "편재-편인": "겉은 현실적인데 속은 생각이 많은 조합",
+  "정재-편인": "겉은 안정지향인데 속은 혼자 정리 시간이 필요한 조합",
+  "편재-정인": "겉은 실리감각, 속은 이해와 배려가 큰 조합",
+  "정재-정인": "겉은 차분한 이해, 속은 안정적인 선택을 선호하는 조합",
+
+  "식신-비견": "겉은 친근한데 속은 주도권 욕구가 있는 조합",
+  "상관-비견": "겉은 직설적인데 속은 자존심이 강한 조합",
+  "식신-겁재": "겉은 유쾌한데 속은 승부욕이 살아 있는 조합",
+  "상관-겁재": "겉은 강단 있어 보이고 속은 경쟁심이 불붙는 조합",
+
+  "편인-편재": "겉은 사색가인데 속은 결과도 챙기고 싶은 조합",
+  "정인-편재": "겉은 이해력인데 속은 실리 계산도 빠른 조합",
+  "편인-정재": "겉은 생각, 속은 안정과 루틴을 원하는 조합",
+  "정인-정재": "겉은 차분한 이해, 속은 안정적인 선택을 원하는 조합",
 };
 
 interface MaskVsNatureResult {
   text: string;
 }
 
+const pick = <T,>(v: T | undefined, fallback: T) => (v === undefined ? fallback : v);
+
+function joinLines(lines: string[]) {
+  return lines.filter(Boolean).join("\n\n");
+}
+
+function toPolite(str: string) {
+  return str
+    .replace(/나\./g, "요.")
+    .replace(/야\./g, "요.")
+    .replace(/야$/g, "요")
+    .replace(/해\./g, "해요.")
+    .replace(/해$/g, "해요")
+    .replace(/거야\./g, "거예요.")
+    .replace(/거야$/g, "거예요")
+    .replace(/있어\./g, "있어요.")
+    .replace(/있어$/g, "있어요")
+    .replace(/보여\./g, "보여요.")
+    .replace(/보여$/g, "보여요")
+    .replace(/필요해\./g, "필요해요.")
+    .replace(/필요해$/g, "필요해요")
+    .replace(/쉬워\./g, "쉬워요.")
+    .replace(/쉬워$/g, "쉬워요");
+}
+
 /**
  * 사회적 가면 vs 실제 기질 분석
  */
 export function analyzeMaskVsNature(
-  monthStemTenGod: string,      // 월간 십신
-  monthTwelveState: string,      // 월간의 십이운성
-  hourStemTenGod: string,        // 시간 십신
-  hourBranchTenGod: string,      // 시지 십신 (지장간 본기 기준)
+  monthStemTenGod: string, // 월간 십신
+  monthTwelveState: string, // 월간의 십이운성
+  hourStemTenGod: string, // 시간 십신
+  hourBranchTenGod: string, // 시지 십신 (지장간 본기 기준)
   selectedChar: CharKey
 ): MaskVsNatureResult {
-  // 1. 사회적 가면 (월주)
-  const maskType = MASK_TYPE[monthStemTenGod] || "독특한 개성";
-  const intensity = INTENSITY_MAP[monthTwelveState] || "보통의 존재감";
+  const mask = pick(TG_LABEL[monthStemTenGod], "개성");
+  const nature = pick(TG_LABEL[hourStemTenGod], "본질");
+  const habit = pick(TG_LABEL[hourBranchTenGod], "습관");
 
-  // 2. 실제 기질 (시주)
-  const trueNature = MASK_TYPE[hourStemTenGod] || "내면의 본질";
-  const unconsciousHabit = MASK_TYPE[hourBranchTenGod] || "무의식적 패턴";
+  const state = pick(STATE_VIBE[monthTwelveState], {
+    lead: "자연스럽게",
+    after: "무난하게 드러나는 편이야.",
+  });
 
-  // 3. 가면 vs 본질 조합
   const comboKey = `${monthStemTenGod}-${hourStemTenGod}`;
-  const exampleText = MASK_VS_NATURE_EXAMPLES[comboKey] || "개성적인 조합";
+  const oneLiner = pick(COMBO_ONE_LINER[comboKey], "겉과 속의 결이 꽤 다른 조합");
 
-  // 4. 십이운성을 자연스러운 문장으로 변환
-  const intensityPhrase = (() => {
-    if (monthTwelveState === "장생" || monthTwelveState === "건록" || monthTwelveState === "제왕") {
-      return "존재감이 강한 편이라";
-    } else if (monthTwelveState === "목욕" || monthTwelveState === "태" || monthTwelveState === "양" || monthTwelveState === "태지" || monthTwelveState === "관대") {
-      return "부드럽게 스며드는 방식으로";
-    } else {
-      return "깊이 있게";
-    }
-  })();
+  // 기본 문장(반복감 줄이려고 3덩어리로)
+  const baseLinesBanmal = [
+    `밖에서는 ${mask} 쪽이 먼저 켜지는 타입이야. ${state.lead} 그 분위기로 들어가서, 주변은 너를 그쪽 이미지로 기억하기 쉽고. ${state.after}`,
+    `근데 편해지면 결이 달라져. 이때는 ${nature}이 더 진하게 올라오고, 무의식은 ${habit} 쪽으로 슥 흘러가기도 해.`,
+    `한 줄로 정리하면 ${oneLiner}야. 그래서 사회에서는 “이런 사람”, 사적으로는 “저런 사람” 느낌이 동시에 살아.`,
+  ];
 
-  // 5. 캐릭터별 톤 적용
-  let text = "";
-
-  switch (selectedChar) {
-    case "empathy":
-      text = `당신은 밖에 나가면 자연스럽게 "${maskType}"처럼 행동하게 되는 사람이에요. 회사에서든, 모임에서든, 처음 만나는 사람들 앞에서든 이런 모습이 자동으로 나타나는 편이에요. ${intensityPhrase} 사람들에게 다가가고, 본인도 모르게 그렇게 행동하게 되죠. 주변 사람들도 당신을 그런 사람으로 기억하는 경우가 많아요.
-
-하지만 문을 닫고 집에 돌아오면 완전히 다른 모습이 나타나요. 실제 당신의 본질은 "${trueNature}"에 훨씬 가까워요. 친한 사람들이나 혼자 있을 때는 "${unconsciousHabit}"의 면모가 자연스럽게 흘러나오고요. 이때의 당신이 진짜 편안한 상태예요.
-
-간단히 말하면, ${exampleText}. 이게 가끔 피곤하게 느껴질 수도 있는데, 사실 이런 이중성이 당신을 특별하게 만드는 비밀이에요. 사회에서는 한 가지 모습으로 살아가지만, 실제로는 더 풍부한 내면을 가진 사람이니까요.`;
-      break;
-
-    case "reality":
-      text = `당신의 사주는 매우 흥미로운 이중 구조를 가지고 있습니다.
-
-월주를 보면 ${monthStemTenGod}이 자리하고 있어 사회적으로는 "${maskType}"처럼 보입니다. 십이운성이 ${monthTwelveState}이므로 ${intensity}의 방식으로 작동하죠. 이게 당신이 직장, 사회관계, 공적인 자리에서 사용하는 공식 모드입니다. 사람들은 대부분 당신을 이렇게 인식하고 기억합니다.
-
-반면 시주를 보면 완전히 다른 패턴이 나타납니다. 시간 간지가 ${hourStemTenGod}(${trueNature})이고, 시지 본기가 ${hourBranchTenGod}(${unconsciousHabit})입니다. 이게 퇴근 후, 문 닫고 나서, 혼자 있거나 편한 사람들과 있을 때의 진짜 당신이에요.
-
-정리하면 ${exampleText}. 이 간극이 클수록 사회생활 후 피로도가 높아지는 경향이 있습니다. 두 모드가 완전히 다른 사람처럼 느껴질 수 있어요.`;
-      break;
-
-    case "fun":
-      text = `너 진짜 신기한 사람이야. 밖에서는 "${maskType}"처럼 딱 정해진 캐릭터로 나가잖아. ${intensityPhrase} 사람들한테 어필하고. 회사 사람들, 친구들, 처음 보는 사람들한테 그렇게 보이고 싶어하는 거 맞지? 그리고 실제로도 사람들이 너를 그렇게 생각하고 있을 거야.
-
-근데 집 들어오면 완전 딴사람 돼. 진짜 너는 "${trueNature}"이거든. 편한 사람들이랑 있거나 혼자 있을 때 무의식적으로 "${unconsciousHabit}" 모드 자동 켜지는 거 느껴봤을 거야. 그게 진짜 네 모습이야.
-
-쉽게 말하면, ${exampleText}. 이게 좀 피곤할 수 있어. 근데 솔직히 이게 너만의 독특한 포인트야. 밖에서는 한 가지 캐릭터로 살지만, 실제로는 훨씬 더 다층적인 사람이니까.`;
-      break;
+  // empathy / reality는 존댓말, fun은 반말
+  if (selectedChar === "fun") {
+    return { text: joinLines(baseLinesBanmal) };
   }
 
-  return { text };
+  if (selectedChar === "reality") {
+    const lines = [
+      `공적인 자리에서는 ${mask} 성향이 먼저 작동하는 편입니다. ${state.lead} 그 모드가 앞에 나와서, 주변은 당신을 그쪽 이미지로 기억하기 쉽습니다.`,
+      `반면 편한 환경에서는 결이 달라집니다. 이때는 ${nature}이 더 진해지고, 무의식적으로는 ${habit} 성향이 반복 패턴처럼 나타날 수 있습니다.`,
+      `요약하면 ${oneLiner}입니다. 이 간극이 클수록 “밖에서 에너지 소모 → 안에서 회복” 흐름이 뚜렷해지는 편입니다.`,
+    ];
+    return { text: joinLines(lines) };
+  }
+
+  // empathy
+  const lines = [
+    `밖에서는 당신이 일부러 힘주지 않아도 ${mask} 쪽이 자연스럽게 앞에 나오는 편이에요. ${state.lead} 분위기에 맞춰 들어가서, 주변이 당신을 그 이미지로 기억하기 쉬워요. ${toPolite(state.after)}`,
+    `그런데 가까운 사람들 앞이나 혼자 있을 때는 결이 달라져요. 이때는 ${nature}이 훨씬 편하고, 무의식적으로는 ${habit} 성향이 습관처럼 튀어나올 수 있어요.`,
+    `한 줄로 요약하면 ${oneLiner}예요. 둘 중 하나가 가짜가 아니라, 상황에 따라 스위치가 바뀌는 타입이라서 오히려 폭이 넓게 느껴질 수 있어요.`,
+  ];
+  return { text: joinLines(lines) };
 }

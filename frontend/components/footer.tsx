@@ -20,7 +20,7 @@ export default function Footer() {
                         <span className="font-mono">889-28-01406</span>
                     </p>
                     <p className="leading-relaxed px-2 sm:px-0">
-                        <span className="font-semibold">주소:</span> 경기도 안산시 상록구 학사4길 9-1,302호(사동, 쁘띠메종)
+                        <span className="font-semibold">주소:</span> 경기도 안산시 상록구 학사4길 9-1,<br />302호(사동, 쁘띠메종)
                     </p>
                     <p className="leading-relaxed">
                         <span className="font-semibold">이메일:</span>{" "}

@@ -875,11 +875,7 @@ export default function Page() {
   }, [kakaoReady, gateStep]);
 
   function handleKakaoLogin() {
-    const backend = process.env.NEXT_PUBLIC_BACKEND_URL;
-    if (!backend) {
-      alert("NEXT_PUBLIC_BACKEND_URL 환경변수가 없어요.");
-      return;
-    }
+    const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "https://saju-backend-eqd6.onrender.com";
     window.location.href = `${backend}/auth/kakao/login`;
   }
 
@@ -895,23 +891,9 @@ export default function Page() {
   }
 
   function handleChannelAddedDone() {
-    // 채널 추가 완료 상태 저장 (모바일/새로고침 유지)
     localStorage.setItem("isChannelAdded", "true");
     setIsChannelAdded(true);
-
-    // 로그인 필수
-    const loggedIn =
-      localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
-
-    if (!loggedIn) {
-      setGateStep("needAuth");
-      alert("카카오 로그인을 먼저 완료해주세요.");
-      return;
-    }
-
-    // 둘 다 됐으면 해석 실행
-    setGateStep("unlocked");
-    requestInterpretation();
+    alert("채널 추가 완료! 앞으로 업데이트/이벤트 소식을 빠르게 받아볼 수 있어요.");
   }
 
   const [sajuJsonRaw, setSajuJsonRaw] = useState<any>(null);
@@ -1287,13 +1269,10 @@ export default function Page() {
   ]);
 
   async function requestInterpretation() {
-    const loggedIn =
-      localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
-    const channelAdded = localStorage.getItem("isChannelAdded") === "true";
-
-    if (!loggedIn || !channelAdded) {
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
+    if (!loggedIn) {
       setGateStep("needAuth");
-      alert("카카오 로그인과 채널 친구추가가 필요합니다.");
+      alert("카카오 로그인이 필요합니다.");
       return;
     }
 
@@ -1382,7 +1361,7 @@ export default function Page() {
 
   async function run() {
     setGateStep("idle");
-    setIsChannelAdded(false);
+
 
     const parsedYmd = parseYmd(birthYmd);
     const parsedHm = timeUnknown ? { hour: 12, minute: 0 } : parseHm(birthHm);
@@ -1459,10 +1438,8 @@ export default function Page() {
     setGateStep("showSaju");
 
     // 🔥 바로 해석 요청 (로딩 시작)
-    const loggedIn =
-      localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     const channelAdded = localStorage.getItem("isChannelAdded") === "true";
-
     if (!loggedIn || !channelAdded) {
       setGateStep("needAuth");
       return;

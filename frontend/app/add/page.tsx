@@ -1577,7 +1577,7 @@ export default function Page() {
                 />
               )}
               <div
-                className="relative z-10 rounded-2xl bg-white/80 backdrop-blur-xl shadow-xl p-4 sm:p-6 mx-auto max-w-[420px]"
+                className="relative z-10 rounded-2xl backdrop-blur-xl shadow-xl p-4 sm:p-6 mx-auto max-w-[420px]"
               >
                 {err && !loading && !result && (
                   <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">

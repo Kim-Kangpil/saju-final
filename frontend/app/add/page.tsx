@@ -1,5 +1,5 @@
 "use client";
-
+import { createPortal } from "react-dom";
 import "../../styles/add-login.css";
 import { saveSaju, getSavedSajuList } from '../../lib/sajuStorage';
 import { useState, useMemo, useEffect, useRef } from "react";
@@ -674,7 +674,14 @@ export default function Page() {
   const [natureYinCount, setNatureYinCount] = useState<number>(0);
   const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);  // 🔥 추가
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
-
+  useEffect(() => {
+    if (!loading) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [loading]);
   useEffect(() => {
     if (showCharacterSelect) {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1594,112 +1601,106 @@ export default function Page() {
 
                 )}
 
-                {loading && (
-                  <div
-                    className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-                    style={{
-                      touchAction: "none",
-                      WebkitTouchCallout: "none",
-                      WebkitUserSelect: "none",
-                      userSelect: "none",
-                      zIndex: 9999,
-                    }}
-                  >
-                    <div className="rounded-2xl p-6 sm:p-8 w-[90vw] sm:w-[450px] max-w-[450px] mx-4 text-center shadow-2xl">
-                      <div className="mb-4 sm:mb-6">
-                        <motion.div
-                          initial={{ scale: 0.5, y: 50, opacity: 0 }}
-                          animate={{
-                            scale: [0.5, 1.3, 1],
-                            y: [50, -20, 0],
-                            opacity: 1,
-                          }}
-                          transition={{
-                            duration: 0.8,
-                            times: [0, 0.6, 1],
-                            ease: "easeOut",
-                          }}
-                          className="relative mb-4 sm:mb-6"
-                        >
-                          <img
-                            src={CHARACTERS[selectedChar].img}
-                            alt={CHARACTERS[selectedChar].name}
-                            className="w-32 h-32 sm:w-40 sm:h-40 object-contain pixel-art drop-shadow-2xl mx-auto"
-                          />
-                        </motion.div>
+                {typeof window !== "undefined" && loading
+                  ? createPortal(
+                    <div
+                      className="fixed left-0 top-0 w-screen"
+                      style={{
+                        height: "100dvh",
+                        background:
+                          "radial-gradient(1200px 700px at 50% 35%, rgba(255,255,255,0.85) 0%, rgba(238,244,238,0.95) 55%, rgba(221,232,221,0.98) 100%)",
+                        backdropFilter: "blur(6px)",
+                        WebkitBackdropFilter: "blur(6px)",
+                        zIndex: 2147483647,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "16px",
+                        touchAction: "none",
+                        WebkitTouchCallout: "none",
+                        WebkitUserSelect: "none",
+                        userSelect: "none",
+                      }}
+                    >
+                      <div
+                        className="rounded-2xl p-6 sm:p-8 w-[92vw] max-w-[450px] text-center shadow-2xl"
+                        style={{ background: "white" }}
+                      >
+                        <div className="mb-4 sm:mb-6">
+                          <motion.div
+                            initial={{ scale: 0.5, y: 50, opacity: 0 }}
+                            animate={{ scale: [0.5, 1.3, 1], y: [50, -20, 0], opacity: 1 }}
+                            transition={{ duration: 0.8, times: [0, 0.6, 1], ease: "easeOut" }}
+                            className="relative mb-4 sm:mb-6"
+                          >
+                            <img
+                              src={CHARACTERS[selectedChar].img}
+                              alt={CHARACTERS[selectedChar].name}
+                              className="w-32 h-32 sm:w-40 sm:h-40 object-contain pixel-art drop-shadow-2xl mx-auto"
+                            />
+                          </motion.div>
 
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6 }}
-                          className="text-center px-4 sm:px-6"
-                        >
-                          <p className="text-[#556b2f] font-bold text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-korean">
-                            {loadingMessage}
-                          </p>
-                        </motion.div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.6 }}
+                            className="text-center px-4 sm:px-6"
+                          >
+                            <p className="text-[#556b2f] font-bold text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-korean">
+                              {loadingMessage}
+                            </p>
+                          </motion.div>
 
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.8 }}
-                          className="w-full px-4 sm:px-8 space-y-2 sm:space-y-3 mt-4 sm:mt-6"
-                        >
-                          <div className="flex justify-between items-center px-1 sm:px-2">
-                            <span className="text-xs sm:text-sm font-bold text-[#556b2f]">
-                              분석 진행중
-                            </span>
-                            <span
-                              className="text-xl sm:text-2xl font-black text-[#556b2f]"
-                              style={{ fontFamily: "monospace" }}
-                            >
-                              {loadingProgress}% <span className="pixel-heart">💚</span>
-                            </span>
-                          </div>
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.8 }}
+                            className="w-full px-4 sm:px-8 space-y-2 sm:space-y-3 mt-4 sm:mt-6"
+                          >
+                            <div className="flex justify-between items-center px-1 sm:px-2">
+                              <span className="text-xs sm:text-sm font-bold text-[#556b2f]">
+                                분석 진행중
+                              </span>
+                              <span
+                                className="text-xl sm:text-2xl font-black text-[#556b2f]"
+                                style={{ fontFamily: "monospace" }}
+                              >
+                                {loadingProgress}% <span className="pixel-heart">💚</span>
+                              </span>
+                            </div>
 
-                          <div className="relative h-8 sm:h-10 bg-[#e9ecef] border-2 sm:border-4 border-[#556b2f] overflow-hidden shadow-[2px_2px_0px_0px_rgba(85,107,47,0.3)]">
-                            <motion.div
-                              className="h-full bg-gradient-to-r from-[#fef08a] via-[#fde047] to-[#facc15]"
-                              style={{
-                                width: `${loadingProgress}%`,
-                                imageRendering: "pixelated",
-                              }}
-                              animate={{ width: `${loadingProgress}%` }}
-                              transition={{
-                                duration: 0.3,
-                                ease: "linear",
-                              }}
-                            >
-                              <div className="absolute top-0 left-0 w-full h-[30%] bg-white/30" />
-                            </motion.div>
+                            <div className="relative h-8 sm:h-10 bg-[#e9ecef] border-2 sm:border-4 border-[#556b2f] overflow-hidden shadow-[2px_2px_0px_0px_rgba(85,107,47,0.3)]">
+                              <motion.div
+                                className="h-full bg-gradient-to-r from-[#fef08a] via-[#fde047] to-[#facc15]"
+                                style={{ width: `${loadingProgress}%`, imageRendering: "pixelated" }}
+                                animate={{ width: `${loadingProgress}%` }}
+                                transition={{ duration: 0.3, ease: "linear" }}
+                              >
+                                <div className="absolute top-0 left-0 w-full h-[30%] bg-white/30" />
+                              </motion.div>
 
-                            {[...Array(99)].map((_, i) => (
-                              <div
-                                key={i}
-                                className="absolute top-0 bottom-0 w-[1px] bg-[#556b2f]"
-                                style={{
-                                  left: `${(i + 1) * 1}%`,
-                                  opacity: 0.15,
-                                }}
-                              />
-                            ))}
-
-                            {[...Array(9)].map((_, i) => (
-                              <div
-                                key={`thick-${i}`}
-                                className="absolute top-0 bottom-0 w-[2px] bg-[#556b2f]"
-                                style={{
-                                  left: `${(i + 1) * 10}%`,
-                                  opacity: 0.4,
-                                }}
-                              />
-                            ))}
-                          </div>
-                        </motion.div>
+                              {[...Array(99)].map((_, i) => (
+                                <div
+                                  key={i}
+                                  className="absolute top-0 bottom-0 w-[1px] bg-[#556b2f]"
+                                  style={{ left: `${(i + 1) * 1}%`, opacity: 0.15 }}
+                                />
+                              ))}
+                              {[...Array(9)].map((_, i) => (
+                                <div
+                                  key={`thick-${i}`}
+                                  className="absolute top-0 bottom-0 w-[2px] bg-[#556b2f]"
+                                  style={{ left: `${(i + 1) * 10}%`, opacity: 0.4 }}
+                                />
+                              ))}
+                            </div>
+                          </motion.div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    </div>,
+                    document.body
+                  )
+                  : null}
 
                 {/* 🔥 캐릭터 선택 화면 (사주 명식 포함) */}
                 {showCharacterSelect && !loading && result && (
@@ -2365,10 +2366,10 @@ export default function Page() {
                                                         <LockIcon />
                                                       </div>
                                                       <p className="text-[10px] font-bold text-[#556b2f]">
-                                                        🔓 클릭하여 잠금 해제
+                                                        🔓 로그인 후 확인하기
                                                       </p>
                                                       <p className="text-[8px] text-[#556b2f] opacity-70">
-                                                        카카오 로그인 + 채널 추가
+                                                        카카오 로그인 후 이용 가능
                                                       </p>
                                                     </div>
                                                   </div>

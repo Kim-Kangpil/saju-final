@@ -1183,10 +1183,35 @@ export default function Page() {
 
     const dayPillarText = getDayPillarAnimalText;
 
+    // 🔥 백엔드에서 온 core_values 섹션(월지 기반 가치관/지향점) 추출
+    let coreValuesContent: string | null = null;
+    const interps: any[] = Array.isArray(newInterpretation?.interpretations)
+      ? newInterpretation.interpretations
+      : [];
+
+    for (const it of interps) {
+      if (it && it.section === "core_values" && typeof it.content === "string") {
+        coreValuesContent = it.content;
+        break;
+      }
+    }
+
     const base: Record<MegaKey, MegaCard[]> = {
       identity: MEGA_SECTIONS.identity.items
         .filter(item => item.key !== "animal" && item.key !== "nature" && item.key !== "persona")
-        .map((it) => asReady(`identity_${it.key}`, it.title, it.icon)),
+        .map((it) => {
+          // 🔥 "삶의 핵심적인 가치관과 지향점" 슬롯에 core_values 해석을 직접 매핑
+          if (it.key === "values" && coreValuesContent) {
+            return asContent(
+              "identity_values",
+              it.title,
+              coreValuesContent,
+              it.icon,
+              "gpt"
+            );
+          }
+          return asReady(`identity_${it.key}`, it.title, it.icon);
+        }),
       talent: MEGA_SECTIONS.talent.items.map((it) =>
         asReady(`talent_${it.key}`, it.title, it.icon)
       ),
@@ -1254,12 +1279,11 @@ export default function Page() {
       base.solution.unshift(asContent("today_text", "오늘의 처방", txt, "💊", "local"));
     }
 
-    const interps: any[] = Array.isArray(newInterpretation?.interpretations)
-      ? newInterpretation.interpretations
-      : [];
-
+    // 🔥 나머지 GPT 해석들은 기존처럼 제목 기반으로 섹션 분류
+    //    단, core_values 섹션은 위에서 이미 values 슬롯에 꽂았으니 여기서는 제외
     for (let i = 0; i < interps.length; i++) {
       const it = interps[i];
+      if (it?.section === "core_values") continue;
       const title = String(it?.title ?? "").trim();
       const content = String(it?.content ?? "").trim();
       if (!title || !content) continue;

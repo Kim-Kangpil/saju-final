@@ -674,6 +674,7 @@ export default function Page() {
   const [natureYinCount, setNatureYinCount] = useState<number>(0);
   const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);  // 🔥 추가
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
+
   useEffect(() => {
     if (showCharacterSelect) {
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -700,6 +701,7 @@ export default function Page() {
     };
   }, []);
 
+
   // 🔥 새로 추가: 첫 방문 환영 메시지
   useEffect(() => {
     const showWelcome = localStorage.getItem('showWelcome') === 'true';
@@ -710,6 +712,7 @@ export default function Page() {
       }, 1000);
     }
   }, [result]);
+
 
   // 🔥 새로 추가: 저장된 사주 불러오기
   useEffect(() => {
@@ -857,8 +860,13 @@ export default function Page() {
   const megaOrder: MegaKey[] = ["identity", "talent", "relation", "insight", "solution"];
   const [openMega, setOpenMega] = useState<MegaKey | null>("identity");
   type GateStep = "idle" | "showSaju" | "needAuth" | "unlocked";
-
   const [gateStep, setGateStep] = useState<GateStep>("idle");
+
+  useEffect(() => {
+    if (isLoggedIn && gateStep === "needAuth") {
+      setGateStep("showSaju");
+    }
+  }, [isLoggedIn, gateStep]);
   const [kakaoReady, setKakaoReady] = useState(false);
   const [isChannelAdded, setIsChannelAdded] = useState(false);
 
@@ -2241,19 +2249,31 @@ export default function Page() {
                           {gateStep === "needAuth" && (
                             <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/85 backdrop-blur-sm rounded-2xl border-4 border-[#adc4af]">
                               <div className="w-[92%] max-w-[360px] bg-white rounded-2xl border-4 border-[#adc4af] shadow-xl p-6 text-center">
+
                                 <div className="text-sm font-bold text-[#556b2f] mb-2">
-                                  해석을 보려면 카카오 로그인이 필요해요.
+                                  해석을 보려면 로그인이 필요해요
                                 </div>
 
-                                <div className="text-[11px] text-[#556b2f] opacity-80 mb-4 whitespace-pre-line">
-                                  {"1) 카카오 로그인\n2) 채널 친구추가\n3) 해석 잠금 해제"}
+                                <div className="text-[11px] text-[#556b2f] opacity-80 mb-4">
+                                  로그인 후 전체 해석이 바로 열립니다
                                 </div>
 
+                                <button
+                                  type="button"
+                                  onClick={handleKakaoLogin}
+                                  className="w-full py-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                                >
+                                  카카오로 로그인하기
+                                </button>
 
+                                <button
+                                  type="button"
+                                  onClick={() => setGateStep("showSaju")}
+                                  className="w-full mt-3 py-2 border-2 border-[#adc4af] rounded-xl text-[11px] font-bold text-[#556b2f] hover:bg-[#f0f5f1] transition-colors"
+                                >
+                                  닫기
+                                </button>
 
-                                <div className="mt-2 text-[10px] text-[#556b2f] opacity-70">
-                                  로그인 필요 : {kakaoTokenOk ? "OK" : "NO"}
-                                </div>
                               </div>
                             </div>
                           )}
@@ -2307,9 +2327,13 @@ export default function Page() {
                                                     : "bg-yellow-50"
                                               )}
                                               onClick={() => {
-                                                if (c.kind === "preview") {
+                                                if (c.kind === "preview") return;
+                                                const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+                                                if (!loggedIn) {
                                                   setGateStep("needAuth");
+                                                  return;
                                                 }
+                                                // 로그인 돼 있으면 오버레이 안 띄움 (필요하면 여기서 requestInterpretation() 호출 가능)
                                               }}
                                             >
                                               <div className="flex items-center gap-2 mb-2">

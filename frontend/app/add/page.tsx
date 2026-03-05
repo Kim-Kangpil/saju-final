@@ -1865,10 +1865,10 @@ export default function Page() {
                             className="w-20 h-20 mx-auto mb-4"
                           />
                           <p className="text-xl font-bold text-[#556b2f]">
-                            한양사주에 오신 걸 환영합니다!
+                            한양사주에 오신 걸 <br />환영합니다!
                           </p>
                           <p className="text-sm text-gray-600 px-4">
-                            사주 분석을 이용하시려면<br />먼저 로그인해주세요
+                            사주 분석을 이용하시려면<br />로그인해주세요.
                           </p>
 
                           <div className="flex flex-col gap-3 max-w-xs mx-auto pt-4">
@@ -2517,7 +2517,7 @@ export default function Page() {
 
           )}
         </div>
-      </main>
+      </main >
     </>
   );
 }

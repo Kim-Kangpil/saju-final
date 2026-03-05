@@ -441,7 +441,7 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
         except Exception as e:
             print(f"⚠️ 이론 검색 실패: {e}")
 
-        # ✅ 5. 합화 정보 계산
+        # ✅ 5. 합화 정보 계산 + GPT 해석 생성기 준비
         from logic.gpt_generator import GPTInterpretationGenerator
         generator = GPTInterpretationGenerator()
 
@@ -455,24 +455,44 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
         for trans in transformations:
             print(f"   - {trans.get('name', '')}")
 
-        # ✅ 6. GPT 해석 생성
+        # ✅ 6. GPT 해석 생성 (종합 해석 + 월지 기반 핵심 가치관)
         try:
+            # 종합 해석
             content = generator.generate_comprehensive_interpretation(
                 analysis=analysis,
                 tone=req.tone,
                 theories=theories
             )
 
+            # 월지(월지=월주 지지) 추출
+            month_pillar = pillars_dict.get('month', '')
+            month_branch = month_pillar[1] if isinstance(
+                month_pillar, str) and len(month_pillar) >= 2 else ''
+
+            core_values = generator.generate_core_values(
+                day_stem=req.day_stem,
+                month_branch=month_branch,
+                tone=req.tone
+            )
+
             print(f"✅ GPT 해석 생성 완료: {len(content)}자")
 
             return {
                 "success": True,
-                "interpretations": [{
-                    "section": "elements",
-                    "title": get_title_by_tone(req.tone),
-                    "content": content,
-                    "related_theories": ["신강약", "오행십신", "합충", "신살"]
-                }],
+                "interpretations": [
+                    {
+                        "section": "elements",
+                        "title": get_title_by_tone(req.tone),
+                        "content": content,
+                        "related_theories": ["신강약", "오행십신", "합충", "신살"]
+                    },
+                    {
+                        "section": "core_values",
+                        "title": "삶의 핵심 가치관과 지향점",
+                        "content": core_values,
+                        "related_theories": ["월지", "십신", "가치관"]
+                    }
+                ],
                 "metadata": {
                     "model": "gpt-4o",
                     "day_stem": req.day_stem,
@@ -487,6 +507,9 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
                         "original": element_counts,
                         "transformed": transformed_counts,
                         "transformations": transformations
+                    },
+                    "core_values": {
+                        "month_branch": month_branch
                     }
                 }
             }

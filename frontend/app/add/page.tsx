@@ -1624,7 +1624,7 @@ export default function Page() {
                     >
                       <div
                         className="rounded-2xl p-6 sm:p-8 w-[92vw] max-w-[450px] text-center shadow-2xl"
-                        style={{ background: "white" }}
+                        style={{ background: "white", maxHeight: "90dvh", overflowY: "auto" }}
                       >
                         <div className="mb-4 sm:mb-6">
                           <motion.div

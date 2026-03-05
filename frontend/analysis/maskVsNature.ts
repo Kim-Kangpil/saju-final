@@ -20,7 +20,7 @@ const TG_LABEL: Record<string, string> = {
   정인: "이해력",
 };
 
-/** 십신별 사회적 모드 부연 설명 */
+/** 십신별 사회적 모드 부연 — 반말 기준으로 저장 */
 const TG_MASK_DESC: Record<string, string> = {
   비견: "비슷한 결의 사람들과 어울릴 때 편하고, 자기 페이스를 잃지 않으려는 경향이 있어",
   겁재: "경쟁이나 자극이 있는 환경에서 오히려 에너지가 올라오는 편이야",
@@ -34,7 +34,7 @@ const TG_MASK_DESC: Record<string, string> = {
   정인: "경청하고 이해하려는 태도가 자연스럽게 배어 나오는 편이야",
 };
 
-/** 십신별 내면 기질 부연 설명 */
+/** 십신별 내면 기질 부연 — 반말 기준 */
 const TG_NATURE_DESC: Record<string, string> = {
   비견: "혼자 결정하고 혼자 책임지는 게 편하고, 누군가의 페이스에 끌려가는 걸 불편해해",
   겁재: "지고 싶지 않다는 감각이 바닥에 깔려 있고, 자극이 있어야 집중이 잘 돼",
@@ -48,7 +48,7 @@ const TG_NATURE_DESC: Record<string, string> = {
   정인: "상황을 충분히 이해하고 나서야 움직이는 편이라 섣불리 결론 내리는 걸 불편해해",
 };
 
-/** 시지 십신별 무의식 습관 부연 */
+/** 시지 십신별 무의식 습관 부연 — 반말 기준 */
 const TG_HABIT_DESC: Record<string, string> = {
   비견: "자기도 모르게 혼자 처리하거나, 남에게 기대는 상황을 피하려는 패턴이 나와",
   겁재: "스트레스를 받을수록 오히려 더 밀어붙이거나 경쟁심으로 돌파하려는 경향이 있어",
@@ -62,7 +62,7 @@ const TG_HABIT_DESC: Record<string, string> = {
   정인: "정보를 더 모으거나 한 번 더 확인하려는 습관이 반복되는 편이야",
 };
 
-/** 십이운성 -> 문장용 뉘앙스 */
+/** 십이운성 -> 문장용 뉘앙스 (반말 기준) */
 const STATE_VIBE: Record<string, { lead: string; after: string; extra: string }> = {
   장생: {
     lead: "존재감이 또렷한 편이라",
@@ -146,7 +146,7 @@ const STATE_VIBE: Record<string, { lead: string; after: string; extra: string }>
   },
 };
 
-/** 조합 한 줄 요약 + 부연 */
+/** 조합 한 줄 요약 + 부연 (반말 기준) */
 const COMBO_DATA: Record<string, { oneLiner: string; detail: string }> = {
   "편관-식신": {
     oneLiner: "겉은 단단한데 속은 의외로 유연한 조합",
@@ -157,11 +157,11 @@ const COMBO_DATA: Record<string, { oneLiner: string; detail: string }> = {
     detail: "규칙적으로 보이지만 실제로는 여유롭게 표현하고 즐기는 공간이 있어야 오래 버티는 타입이야.",
   },
   "편관-상관": {
-    oneLiner: "겉은 책임감, 속은 돌파욕이 같이 도는 조합",
+    oneLiner: "겉은 절도 있고 속은 돌파욕이 같이 도는 조합",
     detail: "긴장을 잘 잡으면서도 안으로는 현 상황을 바꾸고 싶다는 충동이 동시에 흐르는 편이야.",
   },
   "정관-상관": {
-    oneLiner: "겉은 안정적, 속은 변화를 만들고 싶은 조합",
+    oneLiner: "겉은 안정적이고 속은 변화를 만들고 싶은 조합",
     detail: "차분해 보이지만 속으로는 기존 방식보다 더 나은 방향을 꾸준히 모색하는 편이야.",
   },
   "편재-편인": {
@@ -173,12 +173,12 @@ const COMBO_DATA: Record<string, { oneLiner: string; detail: string }> = {
     detail: "꼼꼼하고 안정감을 주는 이미지 뒤에 혼자만의 사색 공간이 없으면 쉽게 지치는 편이야.",
   },
   "편재-정인": {
-    oneLiner: "겉은 실리감각, 속은 이해와 배려가 큰 조합",
+    oneLiner: "겉은 실리감각이고 속은 이해와 배려가 큰 조합",
     detail: "기민하게 움직이면서도 관계에서는 충분히 이해하고 맞춰가려는 성향이 공존하는 편이야.",
   },
   "정재-정인": {
-    oneLiner: "겉은 차분한 이해, 속은 안정적인 선택을 선호하는 조합",
-    detail: "겉으로도 속으로도 안정을 추구하는 흐름이 강해서 급격한 변화보다 점진적인 방향이 잘 맞아.",
+    oneLiner: "겉도 속도 안정을 추구하는 조합",
+    detail: "급격한 변화보다 점진적인 방향이 잘 맞고, 검증된 것들 안에서 힘을 발휘하는 타입이야.",
   },
   "식신-비견": {
     oneLiner: "겉은 친근한데 속은 주도권 욕구가 있는 조합",
@@ -201,15 +201,15 @@ const COMBO_DATA: Record<string, { oneLiner: string; detail: string }> = {
     detail: "조용하고 생각이 많아 보이지만 실제로는 현실적인 성과나 가능성도 꼼꼼히 계산하는 편이야.",
   },
   "정인-편재": {
-    oneLiner: "겉은 이해력인데 속은 실리 계산도 빠른 조합",
+    oneLiner: "겉은 이해형인데 속은 실리 계산도 빠른 조합",
     detail: "듣고 이해하는 태도가 앞에 나오지만 실제로는 상황의 이득과 손해를 빠르게 읽는 편이야.",
   },
   "편인-정재": {
-    oneLiner: "겉은 생각, 속은 안정과 루틴을 원하는 조합",
+    oneLiner: "겉은 사색형이고 속은 안정과 루틴을 원하는 조합",
     detail: "사색적으로 보이지만 실제로는 흔들리지 않는 기반과 반복 루틴이 있어야 안심하는 타입이야.",
   },
   "정인-정재": {
-    oneLiner: "겉은 차분한 이해, 속은 안정적인 선택을 원하는 조합",
+    oneLiner: "겉도 속도 안정적인 선택을 선호하는 조합",
     detail: "외부에서도 내부에서도 안전하고 검증된 방향을 선호해서 점진적인 변화가 잘 맞는 편이야.",
   },
 };
@@ -224,54 +224,79 @@ function joinLines(lines: string[]) {
   return lines.filter(Boolean).join("\n\n");
 }
 
-function toPolite(str: string) {
+/** 반말 → 자연스러운 -요/-에요 말투 (empathy 전용) */
+function toEmpathy(str: string): string {
   return str
-    .replace(/나\./g, "요.")
-    .replace(/야\./g, "요.")
-    .replace(/야$/g, "요")
-    .replace(/해\./g, "해요.")
-    .replace(/해$/g, "해요")
-    .replace(/거야\./g, "거예요.")
-    .replace(/거야$/g, "거예요")
-    .replace(/있어\./g, "있어요.")
-    .replace(/있어$/g, "있어요")
-    .replace(/보여\./g, "보여요.")
-    .replace(/보여$/g, "보여요")
-    .replace(/필요해\./g, "필요해요.")
-    .replace(/필요해$/g, "필요해요")
-    .replace(/쉬워\./g, "쉬워요.")
-    .replace(/쉬워$/g, "쉬워요")
-    .replace(/나와\./g, "나와요.")
-    .replace(/나와$/g, "나와요")
-    .replace(/맞아\./g, "맞아요.")
-    .replace(/맞아$/g, "맞아요")
-    .replace(/이야\./g, "이에요.")
+    .replace(/편이야$/g, "편이에요")
+    .replace(/타입이야$/g, "타입이에요")
+    .replace(/스타일이야$/g, "스타일이에요")
     .replace(/이야$/g, "이에요")
-    .replace(/이라\./g, "이라서요.")
-    .replace(/올라와\./g, "올라와요.")
-    .replace(/올라와$/g, "올라와요");
+    .replace(/곤 해$/g, "곤 해요")
+    .replace(/경향이 있어$/g, "경향이 있어요")
+    .replace(/나와$/g, "나와요")
+    .replace(/있어$/g, "있어요")
+    .replace(/맞아$/g, "맞아요")
+    .replace(/선호해$/g, "선호해요")
+    .replace(/불편해해$/g, "불편해해요")
+    .replace(/좋아해$/g, "좋아해요")
+    .replace(/필요해$/g, "필요해요")
+    .replace(/드러나$/g, "드러나요")
+    .replace(/비춰져$/g, "비춰져요")
+    .replace(/않아$/g, "않아요")
+    .replace(/많아$/g, "많아요")
+    .replace(/잘 돼$/g, "잘 돼요")
+    .replace(/기도 해$/g, "기도 해요")
+    .replace(/쉬워$/g, "쉬워요")
+    .replace(/야$/g, "야요"); // fallback — 정상 어미가 위에서 처리됨
+}
+
+/** 반말 → 격식체 (reality 전용) */
+function toFormal(str: string): string {
+  return str
+    .replace(/편이야$/g, "편입니다")
+    .replace(/타입이야$/g, "타입입니다")
+    .replace(/스타일이야$/g, "스타일입니다")
+    .replace(/이야$/g, "입니다")
+    .replace(/곤 해$/g, "곤 합니다")
+    .replace(/기도 해$/g, "기도 합니다")
+    .replace(/경향이 있어$/g, "경향이 있습니다")
+    .replace(/나와$/g, "나타납니다")
+    .replace(/있어$/g, "있습니다")
+    .replace(/맞아$/g, "맞습니다")
+    .replace(/선호해$/g, "선호합니다")
+    .replace(/불편해해$/g, "불편해합니다")
+    .replace(/좋아해$/g, "좋아합니다")
+    .replace(/필요해$/g, "필요합니다")
+    .replace(/드러나$/g, "드러납니다")
+    .replace(/비춰져$/g, "비춰집니다")
+    .replace(/않아$/g, "않습니다")
+    .replace(/많아$/g, "많습니다")
+    .replace(/잘 돼$/g, "잘 됩니다")
+    .replace(/기도 해$/g, "기도 합니다")
+    .replace(/쉬워$/g, "쉽습니다")
+    .replace(/야$/g, "는 편입니다");
 }
 
 /**
  * 사회적 가면 vs 실제 기질 분석 (400~500자 보장 버전)
  */
 export function analyzeMaskVsNature(
-  monthStemTenGod: string, // 월간 십신
-  monthTwelveState: string, // 월간의 십이운성
-  hourStemTenGod: string, // 시간 십신
-  hourBranchTenGod: string, // 시지 십신 (지장간 본기 기준)
+  monthStemTenGod: string,   // 월간 십신
+  monthTwelveState: string,  // 월간의 십이운성
+  hourStemTenGod: string,    // 시간 십신
+  hourBranchTenGod: string,  // 시지 십신 (지장간 본기 기준)
   selectedChar: CharKey
 ): MaskVsNatureResult {
-  const mask = pick(TG_LABEL[monthStemTenGod], "개성");
-  const nature = pick(TG_LABEL[hourStemTenGod], "본질");
-  const habit = pick(TG_LABEL[hourBranchTenGod], "습관");
+  const mask   = pick(TG_LABEL[monthStemTenGod],   "개성");
+  const nature = pick(TG_LABEL[hourStemTenGod],    "본질");
+  const habit  = pick(TG_LABEL[hourBranchTenGod],  "습관");
 
-  const maskDesc = pick(TG_MASK_DESC[monthStemTenGod], "사회적 자리에서 자기만의 색이 드러나는 편이야");
-  const natureDesc = pick(TG_NATURE_DESC[hourStemTenGod], "편한 환경에서는 다른 결이 올라오는 편이야");
-  const habitDesc = pick(TG_HABIT_DESC[hourBranchTenGod], "무의식적인 반응 패턴이 반복되는 편이야");
+  const maskDesc   = pick(TG_MASK_DESC[monthStemTenGod],   "사회적 자리에서 자기만의 색이 드러나는 편이야");
+  const natureDesc = pick(TG_NATURE_DESC[hourStemTenGod],  "편한 환경에서는 다른 결이 올라오는 편이야");
+  const habitDesc  = pick(TG_HABIT_DESC[hourBranchTenGod], "무의식적인 반응 패턴이 반복되는 편이야");
 
   const state = pick(STATE_VIBE[monthTwelveState], {
-    lead: "자연스럽게",
+    lead:  "자연스럽게",
     after: "무난하게 드러나는 편이야.",
     extra: "딱히 힘을 주지 않아도 그 분위기가 배어 나오는 타입이야.",
   });
@@ -279,58 +304,37 @@ export function analyzeMaskVsNature(
   const comboKey = `${monthStemTenGod}-${hourStemTenGod}`;
   const combo = pick(COMBO_DATA[comboKey], {
     oneLiner: "겉과 속의 결이 꽤 다른 조합",
-    detail: "밖에서 보이는 모습과 혼자 있을 때의 결이 달라서 가까워질수록 다른 면이 보이는 타입이야.",
+    detail:   "밖에서 보이는 모습과 혼자 있을 때의 결이 달라서 가까워질수록 다른 면이 보이는 타입이야.",
   });
+
+  // extra 필드 끝 마침표 제거 헬퍼 (변환 후 문장 중간에 들어가므로)
+  const extraClean = (str: string) => str.replace(/\.$/, "");
 
   // ── fun (반말) ──────────────────────────────────────────────
   if (selectedChar === "fun") {
     const lines = [
-      `밖에서는 ${mask} 쪽이 먼저 켜지는 타입이야. ${state.lead} 그 분위기로 들어가서, 주변은 너를 그쪽 이미지로 기억하기 쉬워. ${state.after} ${maskDesc}.`,
-      `근데 편해지면 결이 달라져. 이때는 ${nature}이 더 진하게 올라오고, ${natureDesc}. 무의식 쪽에서는 ${habit} 성향도 함께 나오는데, ${habitDesc}.`,
-      `한 줄로 정리하면 ${combo.oneLiner}야. ${combo.detail} 그래서 사회에서는 "이런 사람", 사적으로는 "저런 사람" 느낌이 동시에 살아. 둘 다 진짜 네 모습이야.`,
+      `밖에서는 ${mask} 쪽이 먼저 켜지는 타입이야. ${extraClean(state.extra)}. ${state.lead} 주변은 너를 그쪽 이미지로 기억하기 쉬워. ${maskDesc}.`,
+      `근데 편해지면 결이 달라져. 이때는 ${nature}이 훨씬 진하게 올라오는데, ${natureDesc}. 무의식 쪽에서는 ${habit} 성향도 함께 나오고, ${habitDesc}.`,
+      `한 줄로 정리하면 ${combo.oneLiner}야. ${combo.detail} 사회에서는 이런 사람, 사적으로는 저런 사람 느낌이 동시에 살아. 둘 다 진짜 네 모습이야.`,
     ];
     return { text: joinLines(lines) };
   }
 
-  // ── reality (격식체) ──────────────────────────────────────
+  // ── reality (격식 · 정보 중심) ─────────────────────────────
   if (selectedChar === "reality") {
-    // 반말 문장 → 격식체 변환 헬퍼
-    const toFormal = (str: string) =>
-      str
-        .replace(/편이야$/g, "편입니다")
-        .replace(/타입이야$/g, "타입입니다")
-        .replace(/편이야\./g, "편입니다.")
-        .replace(/타입이야\./g, "타입입니다.")
-        .replace(/있어$/g, "있습니다")
-        .replace(/있어\./g, "있습니다.")
-        .replace(/나와$/g, "나타납니다")
-        .replace(/나와\./g, "나타납니다.")
-        .replace(/맞아$/g, "맞습니다")
-        .replace(/이야$/g, "입니다")
-        .replace(/이야\./g, "입니다.")
-        .replace(/해$/g, "합니다")
-        .replace(/해\./g, "합니다.")
-        .replace(/야$/g, "는 편입니다")
-        .replace(/야\./g, "는 편입니다.")
-        .replace(/곤 해$/g, "곤 합니다")
-        .replace(/경향이 있어$/g, "경향이 있습니다")
-        .replace(/있어$/g, "있습니다")
-        .replace(/많아$/g, "많습니다")
-        .replace(/많아\./g, "많습니다.");
-
     const lines = [
-      `공적인 자리에서는 ${mask} 성향이 먼저 작동하는 편입니다. ${state.lead} 그 모드가 앞에 나와 주변은 당신을 그쪽 이미지로 기억하기 쉽습니다. ${toFormal(state.extra)} ${toFormal(maskDesc)}.`,
-      `반면 편한 환경에서는 결이 달라집니다. 이때는 ${nature}이 더 강하게 드러나고, ${toFormal(natureDesc)}. 무의식적으로는 ${habit} 성향도 반복 패턴처럼 나타납니다.`,
-      `요약하면 ${combo.oneLiner}입니다. ${toFormal(combo.detail)} 이 두 결 모두 실제 당신의 모습이므로, 어느 쪽이 더 진짜인지 고민할 필요는 없습니다.`,
+      `공적 자리에서는 ${mask} 성향이 먼저 작동합니다. ${toFormal(extraClean(state.extra))}. ${state.lead} 주변은 당신을 그쪽 이미지로 기억하게 됩니다. ${toFormal(maskDesc)}.`,
+      `편한 환경에서는 ${nature}이 주도권을 잡습니다. ${toFormal(natureDesc)}. 무의식에서는 ${habit} 성향이 반복 패턴으로 나타나고, ${toFormal(habitDesc)}.`,
+      `정리하면 ${combo.oneLiner}입니다. ${toFormal(combo.detail)} 두 면 모두 실제 기질이며, 어느 쪽이 더 진짜인지 고민할 필요는 없습니다.`,
     ];
     return { text: joinLines(lines) };
   }
 
-  // ── empathy (공감형 존댓말) ──────────────────────────────
+  // ── empathy (공감형 · 자연스러운 -요/-에요 말투) ──────────
   const lines = [
-    `밖에서는 당신이 일부러 힘주지 않아도 ${mask} 쪽이 자연스럽게 앞에 나오는 편이에요. ${toPolite(state.lead)} 그 분위기로 들어가서, 주변이 당신을 그 이미지로 기억하기 쉬워요. ${toPolite(state.after)} ${toPolite(maskDesc).replace(/야$/g, "요")}.`,
-    `그런데 가까운 사람들 앞이나 혼자 있을 때는 결이 달라져요. 이때는 ${nature}이 훨씬 편하고 진하게 나오는데, ${toPolite(natureDesc).replace(/야$/g, "요")}. 무의식적으로는 ${habit} 성향도 함께 올라오고, ${toPolite(habitDesc).replace(/야$/g, "요")}.`,
-    `한 줄로 요약하면 ${combo.oneLiner}예요. ${toPolite(combo.detail).replace(/야$/g, "요")} 둘 중 하나가 가짜가 아니라, 상황에 따라 스위치가 바뀌는 타입이라서 오히려 폭이 넓게 느껴질 수 있어요.`,
+    `밖에서는 ${mask} 쪽이 자연스럽게 먼저 나오는 편이에요. ${toEmpathy(extraClean(state.extra))}. ${state.lead} 주변에서는 그쪽 이미지로 기억하기 쉬워요. ${toEmpathy(maskDesc)}.`,
+    `편해지면 결이 달라지는 편이에요. 이때는 ${nature}이 훨씬 진하게 올라오는데, ${toEmpathy(natureDesc)}. 무의식적으로는 ${habit} 성향도 함께 올라오고, ${toEmpathy(habitDesc)}.`,
+    `한 줄로 요약하면 ${combo.oneLiner}예요. ${toEmpathy(combo.detail)} 둘 중 하나가 가짜가 아니라 상황에 따라 스위치가 바뀌는 타입이라서, 알수록 폭이 넓은 사람처럼 느껴질 수 있어요.`,
   ];
   return { text: joinLines(lines) };
 }

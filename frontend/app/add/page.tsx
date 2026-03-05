@@ -273,7 +273,7 @@ function LockIcon() {
 const CHARACTERS = {
   empathy: {
     id: "empathy",
-    name: "부드러운 안내자",
+    name: "공감형",
     img: "/images/ham_soft.png",
     oneLine: "틀렸다고 말하지 않고, 방향만 살짝 바꿔주는 사람",
     desc: "어조가 부드럽고 부정적인 말도 완충재를 깔아드려요.",
@@ -331,9 +331,9 @@ const CHARACTERS = {
   },
   reality: {
     id: "reality",
-    name: "냉정한 분석가",
+    name: "분석형",
     img: "/images/ham_cold.png",
-    oneLine: "기분은 몰라도, 방향은 정확히 알려주는 사람",
+    oneLine: "기분은 몰라도, 방향은 정확히 알려주는",
     desc: "감정 빼고 사실만! 군더더기 없이 말해드립니다.",
     progressMessages: {
       stage1: [
@@ -389,7 +389,7 @@ const CHARACTERS = {
   },
   fun: {
     id: "fun",
-    name: "찐친 도사",
+    name: "친구형",
     img: "/images/ham_friend.png",
     oneLine: "친구가 커피 마시면서 해주는 사주 이야기",
     desc: "반말 섞인 친근한 말투!",

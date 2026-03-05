@@ -1440,13 +1440,13 @@ export default function Page() {
     setSelectedTone(selectedChar);
     setGateStep("showSaju");
 
-    // 🔥 바로 해석 요청 (로딩 시작)
+    // 로그인만 체크
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
-    const channelAdded = localStorage.getItem("isChannelAdded") === "true";
-    if (!loggedIn || !channelAdded) {
+    if (!loggedIn) {
       setGateStep("needAuth");
       return;
     }
+
     requestInterpretation();
   }
 
@@ -2242,22 +2242,17 @@ export default function Page() {
                             <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/85 backdrop-blur-sm rounded-2xl border-4 border-[#adc4af]">
                               <div className="w-[92%] max-w-[360px] bg-white rounded-2xl border-4 border-[#adc4af] shadow-xl p-6 text-center">
                                 <div className="text-sm font-bold text-[#556b2f] mb-2">
-                                  해석을 보려면 카카오 로그인 + 채널 추가가 필요해요
+                                  해석을 보려면 카카오 로그인이 필요해요.
                                 </div>
 
                                 <div className="text-[11px] text-[#556b2f] opacity-80 mb-4 whitespace-pre-line">
                                   {"1) 카카오 로그인\n2) 채널 친구추가\n3) 해석 잠금 해제"}
                                 </div>
 
-                                <main style={{ position: "relative", minHeight: "100vh" }}>
-                                  <BackgroundScene backgroundUrl="/bg/hamster-forest.png" />
-                                  <LoginCard onKakaoLogin={handleKakaoLogin} />
-                                </main>
 
-                                <button onClick={handleChannelAddedDone}>채널 추가 완료했어요</button>
 
                                 <div className="mt-2 text-[10px] text-[#556b2f] opacity-70">
-                                  로그인: {kakaoTokenOk ? "OK" : "NO"} / 채널: {isChannelAdded ? "OK" : "NO"}
+                                  로그인 필요 : {kakaoTokenOk ? "OK" : "NO"}
                                 </div>
                               </div>
                             </div>

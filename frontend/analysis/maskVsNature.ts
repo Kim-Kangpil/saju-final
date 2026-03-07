@@ -1,23 +1,52 @@
 /**
  * 사회적 가면 vs 실제 기질 분석
- * 월주(사회적 가면) vs 시주(실제 기질) 비교
- * 400~500자 출력 보장 버전
+ * 월주(사회적 가면) vs 시주(실제 기질) 비교.
+ * 이론: backend/logic/theories/사주이론(오행, 육친과 십신).txt
+ * 십신별로 "겉에서 드러나는 모습"과 "편할 때 드러나는 본성"을 구체 문장으로 서술.
  */
 
 type CharKey = "empathy" | "reality" | "fun";
 
-/** 십신을 문장에 자연스럽게 넣기 위한 짧은 라벨 */
-const TG_LABEL: Record<string, string> = {
-  비견: "자기주도",
-  겁재: "승부욕",
-  식신: "표현력",
-  상관: "돌파력",
-  편재: "실리감각",
-  정재: "안정지향",
-  편관: "긴장감",
-  정관: "책임감",
-  편인: "사색",
-  정인: "이해력",
+/** 십신별 “사회에서 먼저 보이는 모습” — 문장에 그대로 넣어도 어색하지 않은 구체 표현 (이론: 비겁=주체성, 식상=표현·활동, 재성=결과·재물, 관성=규율·책임, 인성=학문·수용) */
+const TG_MASK_LABEL: Record<string, string> = {
+  비견: "스스로 서서 자기 페이스를 지키는 모습",
+  겁재: "경쟁이나 자극이 있을 때 오히려 힘이 나는 모습",
+  식신: "말과 재능을 넉넉히 나누는 모습",
+  상관: "기존 방식보다 새로운 방향을 제시하려는 모습",
+  편재: "사람과 상황을 빠르게 읽고 실용적으로 움직이는 모습",
+  정재: "꼼꼼하고 흐트러지지 않아 신뢰가 쌓이는 모습",
+  편관: "압박이 있을수록 긴장을 잡고 버티는 모습",
+  정관: "규칙과 역할을 지키는 모습",
+  편인: "독립적으로 생각이 많아 보이는 모습",
+  정인: "경청하고 이해하려는 태도가 드러나는 모습",
+};
+
+/** 십신별 “편해졌을 때 진하게 드러나는 본성” — 구체 표현 */
+const TG_NATURE_LABEL: Record<string, string> = {
+  비견: "혼자 결정하고 자기 방향을 고수하는 본성",
+  겁재: "지고 싶지 않다는 감각이 바닥에 깔려 있는 본성",
+  식신: "좋아하는 걸 즐기고 표현할 때 충전되는 본성",
+  상관: "틀에 맞추기보다 자기 방식대로 풀어내야 직성이 풀리는 본성",
+  편재: "가능성을 빠르게 감지하고 움직이는 본성",
+  정재: "흔들리지 않는 기반을 만드는 게 안정이 되는 본성",
+  편관: "도전이나 긴장감이 있어야 집중이 잘 되는 본성",
+  정관: "기준과 원칙이 있어야 마음이 안정되는 본성",
+  편인: "혼자 생각을 정리하는 시간이 반드시 필요한 본성",
+  정인: "상황을 충분히 이해한 뒤에야 움직이는 본성",
+};
+
+/** 십신별 “무의식적으로 반복되는 습관” — 구체 표현 */
+const TG_HABIT_LABEL: Record<string, string> = {
+  비견: "혼자 처리하거나 남에게 기대는 상황을 피하려는 습관",
+  겁재: "스트레스가 있을수록 더 밀어붙이거나 경쟁심으로 돌파하려는 습관",
+  식신: "긴장이 풀리면 먹고 즐기고 표현하는 쪽으로 흘러가는 습관",
+  상관: "답답한 상황에서 참기보다 한마디 하거나 방향을 바꿔버리는 습관",
+  편재: "여러 가능성을 동시에 탐색하려는 습관",
+  정재: "안정된 루틴으로 돌아가고 불확실한 건 정리해서 만들려는 습관",
+  편관: "긴장이 오면 더 집중하거나 스스로 압박을 가해 돌파구를 찾는 습관",
+  정관: "규칙이나 순서를 따르고 기준이 흔들리면 불편해지는 습관",
+  편인: "혼자 있는 시간을 찾거나 생각에 잠기는 습관",
+  정인: "정보를 더 모으거나 한 번 더 확인하려는 습관",
 };
 
 /** 십신별 사회적 모드 부연 — 반말 기준, 핵심어 볼드 */
@@ -290,9 +319,9 @@ export function analyzeMaskVsNature(
   hourBranchTenGod: string,  // 시지 십신 (지장간 본기 기준)
   selectedChar: CharKey
 ): MaskVsNatureResult {
-  const mask   = pick(TG_LABEL[monthStemTenGod],   "개성");
-  const nature = pick(TG_LABEL[hourStemTenGod],    "본질");
-  const habit  = pick(TG_LABEL[hourBranchTenGod],  "습관");
+  const maskLabel   = pick(TG_MASK_LABEL[monthStemTenGod],   "사회에서 자기만의 색이 드러나는 모습");
+  const natureLabel = pick(TG_NATURE_LABEL[hourStemTenGod],  "편한 환경에서 다른 결이 올라오는 본성");
+  const habitLabel  = pick(TG_HABIT_LABEL[hourBranchTenGod], "무의식적으로 반복되는 패턴");
 
   const maskDesc   = pick(TG_MASK_DESC[monthStemTenGod],   "사회적 자리에서 자기만의 색이 드러나는 편이야");
   const natureDesc = pick(TG_NATURE_DESC[hourStemTenGod],  "편한 환경에서는 다른 결이 올라오는 편이야");
@@ -316,8 +345,8 @@ export function analyzeMaskVsNature(
   // ── fun (반말) ──────────────────────────────────────────────
   if (selectedChar === "fun") {
     const lines = [
-      `밖에서는 ${mask} 쪽이 먼저 켜지는 타입이야. ${extraClean(state.extra)}. ${state.lead} 주변은 너를 그쪽 이미지로 기억하기 쉬워. ${maskDesc}.`,
-      `근데 편해지면 결이 달라져. 이때는 ${nature}이 훨씬 진하게 올라오는데, ${natureDesc}. 무의식 쪽에서는 ${habit} 성향도 함께 나오고, ${habitDesc}.`,
+      `밖에서는 ${maskLabel}이 먼저 드러나는 타입이야. ${extraClean(state.extra)}. ${state.lead} 주변은 너를 그쪽 이미지로 기억하기 쉬워. ${maskDesc}.`,
+      `편해지면 결이 달라져. 이때는 ${natureLabel}이 훨씬 진하게 올라오는데, ${natureDesc}. 무의식적으로는 ${habitLabel}도 함께 나오고, ${habitDesc}.`,
       `한 줄로 정리하면 ${combo.oneLiner}야. ${combo.detail} 사회에서는 이런 사람, 사적으로는 저런 사람 느낌이 동시에 살아. 둘 다 진짜 네 모습이야.`,
     ];
     return { text: joinLines(lines) };
@@ -326,8 +355,8 @@ export function analyzeMaskVsNature(
   // ── reality (격식 · 정보 중심) ─────────────────────────────
   if (selectedChar === "reality") {
     const lines = [
-      `공적 자리에서는 ${mask} 성향이 먼저 작동합니다. ${toFormal(extraClean(state.extra))}. ${state.lead} 주변은 당신을 그쪽 이미지로 기억하게 됩니다. ${toFormal(maskDesc)}.`,
-      `편한 환경에서는 ${nature}이 주도권을 잡습니다. ${toFormal(natureDesc)}. 무의식에서는 ${habit} 성향이 반복 패턴으로 나타나고, ${toFormal(habitDesc)}.`,
+      `공적 자리에서는 ${maskLabel}이 먼저 드러납니다. ${toFormal(extraClean(state.extra))}. ${state.lead} 주변은 당신을 그쪽 이미지로 기억하게 됩니다. ${toFormal(maskDesc)}.`,
+      `편한 환경에서는 ${natureLabel}이 주도권을 잡습니다. ${toFormal(natureDesc)}. 무의식에서는 ${habitLabel}이 반복 패턴으로 나타나고, ${toFormal(habitDesc)}.`,
       `정리하면 ${combo.oneLiner}입니다. ${toFormal(combo.detail)} 두 면 모두 실제 기질이며, 어느 쪽이 더 진짜인지 고민할 필요는 없습니다.`,
     ];
     return { text: joinLines(lines) };
@@ -335,8 +364,8 @@ export function analyzeMaskVsNature(
 
   // ── empathy (공감형 · 자연스러운 -요/-에요 말투) ──────────
   const lines = [
-    `밖에서는 ${mask} 쪽이 자연스럽게 먼저 나오는 편이에요. ${toEmpathy(extraClean(state.extra))}. ${state.lead} 주변에서는 그쪽 이미지로 기억하기 쉬워요. ${toEmpathy(maskDesc)}.`,
-    `편해지면 결이 달라지는 편이에요. 이때는 ${nature}이 훨씬 진하게 올라오는데, ${toEmpathy(natureDesc)}. 무의식적으로는 ${habit} 성향도 함께 올라오고, ${toEmpathy(habitDesc)}.`,
+    `밖에서는 ${maskLabel}이 자연스럽게 먼저 드러나는 편이에요. ${toEmpathy(extraClean(state.extra))}. ${state.lead} 주변에서는 그쪽 이미지로 기억하기 쉬워요. ${toEmpathy(maskDesc)}.`,
+    `편해지면 결이 달라지는 편이에요. 이때는 ${natureLabel}이 훨씬 진하게 올라오는데, ${toEmpathy(natureDesc)}. 무의식적으로는 ${habitLabel}도 함께 올라오고, ${toEmpathy(habitDesc)}.`,
     `한 줄로 요약하면 ${combo.oneLiner}예요. ${toEmpathy(combo.detail)} 둘 중 하나가 가짜가 아니라 상황에 따라 스위치가 바뀌는 타입이라서, 알수록 폭이 넓은 사람처럼 느껴질 수 있어요.`,
   ];
   return { text: joinLines(lines) };

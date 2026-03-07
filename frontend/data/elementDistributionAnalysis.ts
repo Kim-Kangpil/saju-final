@@ -178,8 +178,11 @@ export function getElementDistributionParagraph(
   const dayElement = getDayStemElement(pillars);
   const elementAsTenGod = (dayElement ? ELEMENT_AS_TEN_GOD[dayElement] : null) ?? ELEMENT_AS_TEN_GOD["木"];
   const elements = ["木", "火", "土", "金", "水"] as const;
-
-  const countParts = elements.map((el) => `${EL_NAME[el]} ${count[el] ?? 0}개`).join(", ");
+  /** 많은 오행부터 나열 (4+ → 2~3 → 0~1) */
+  const countParts = [...elements]
+    .sort((a, b) => (count[b] ?? 0) - (count[a] ?? 0))
+    .map((el) => `${EL_NAME[el]} ${count[el] ?? 0}개`)
+    .join(", ");
   const strengthLines: string[] = [];   // 2~3개: 강점
   const manyLines: string[] = [];       // 4개 이상: 강점이자 약점
   const weaknessLines: string[] = [];   // 0~1개: 부족 → 약점, 보완 권장

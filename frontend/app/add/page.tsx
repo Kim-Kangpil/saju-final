@@ -1306,13 +1306,6 @@ export default function Page() {
       );
     }
 
-    if (talentAnalysis) {
-      base.talent.unshift(asContent("talent_text", "재능 요약", talentAnalysis, "🎭", "local"));
-    }
-    if (strengthAnalysis?.[selectedChar]) {
-      const txt = `${strengthAnalysis.type} (점수: ${strengthAnalysis.score})\n\n${strengthAnalysis[selectedChar]}\n\n추천: ${strengthAnalysis.recommendation}`;
-      base.talent.unshift(asContent("strength_text", "신강약 분석", txt, "💪", "local"));
-    }
     if (relationsAnalysis?.[selectedChar]) {
       base.relation.unshift(
         asContent("relation_text", "관계 패턴 요약", relationsAnalysis[selectedChar], "🤝", "local")
@@ -1330,12 +1323,14 @@ export default function Page() {
 
     // 🔥 나머지 GPT 해석들은 기존처럼 제목 기반으로 섹션 분류
     //    단, core_values 섹션은 위에서 이미 values 슬롯에 꽂았으니 여기서는 제외
+    const elementTitles = Object.values(ELEMENT_ANALYSIS).map((e) => e.title);
     for (let i = 0; i < interps.length; i++) {
       const it = interps[i];
       if (it?.section === "core_values") continue;
       const title = String(it?.title ?? "").trim();
       const content = String(it?.content ?? "").trim();
       if (!title || !content) continue;
+      if (elementTitles.includes(title)) continue; // 당신의 오행 에너지 등 오행 에너지 카드 제외
 
       const where = classifyMegaByTitle(title);
       if (!where) continue;
@@ -1346,8 +1341,6 @@ export default function Page() {
     return base;
   }, [
     newInterpretation,
-    talentAnalysis,
-    strengthAnalysis,
     relationsAnalysis,
     specialStarsAnalysis,
     todayFortune,

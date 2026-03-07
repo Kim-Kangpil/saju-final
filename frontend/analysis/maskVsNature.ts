@@ -234,6 +234,7 @@ function toEmpathy(str: string): string {
     .replace(/곤 해$/g, "곤 해요")
     .replace(/경향이 있어$/g, "경향이 있어요")
     .replace(/나와$/g, "나와요")
+    .replace(/올라와$/g, "올라와요")
     .replace(/있어$/g, "있어요")
     .replace(/맞아$/g, "맞아요")
     .replace(/선호해$/g, "선호해요")
@@ -247,7 +248,9 @@ function toEmpathy(str: string): string {
     .replace(/잘 돼$/g, "잘 돼요")
     .replace(/기도 해$/g, "기도 해요")
     .replace(/쉬워$/g, "쉬워요")
-    .replace(/야$/g, "야요"); // fallback — 정상 어미가 위에서 처리됨
+    .replace(/편이라 /g, "편이라서 ")
+    .replace(/해$/g, "해요")
+    .replace(/야$/g, "야요");
 }
 
 /** 반말 → 격식체 (reality 전용) */

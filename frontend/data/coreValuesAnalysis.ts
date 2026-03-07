@@ -109,7 +109,7 @@ export interface GetCoreValuesParams {
 export function getCoreValuesParagraph(params: GetCoreValuesParams): string {
   const { monthBranchHanja, dayStemHanja, tone, getBranchMainStem, getTenGod } = params;
   const branchInfo = MONTH_BRANCH_ARCHETYPES[monthBranchHanja];
-  const branchName = branchInfo?.name ?? monthBranchHanja || "월지";
+  const branchName = branchInfo?.name ?? (monthBranchHanja || "월지");
   const keywords = branchInfo?.keywords ?? "자기만의 방식으로 삶의 방향을 만들어 가는 기질";
   const monthStem = getBranchMainStem(monthBranchHanja);
   const tenGodName = monthStem ? getTenGod(dayStemHanja, monthStem) : "";

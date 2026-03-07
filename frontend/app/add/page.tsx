@@ -21,6 +21,7 @@ import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
 import { TODAY_ANALYSIS, analyzeTodayFortune } from "../../data/todayAnalysis";
 import { dayPillarTexts } from "../../data/dayPillarAnimal";
 import { getCoreValuesParagraph } from "../../data/coreValuesAnalysis";
+import { getStrengthWeaknessParagraph } from "../../data/strengthWeaknessAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -866,7 +867,8 @@ export default function Page() {
     alert('로그아웃되었습니다.');
   };
 
-  const megaOrder: MegaKey[] = ["identity", "talent", "relation", "insight", "solution"];
+  // 아코디언에는 재력과 사회적 무기(4개 항목)만 표시
+  const megaOrder: MegaKey[] = ["talent"];
   const [openMega, setOpenMega] = useState<MegaKey | null>("identity");
   type GateStep = "idle" | "showSaju" | "needAuth" | "unlocked";
   const [gateStep, setGateStep] = useState<GateStep>("idle");
@@ -1086,7 +1088,7 @@ export default function Page() {
 
   // 첫 문장에 포함된 색깔(예: 하늘빛, 초록빛)로 첫 문장만 해당 색상 적용
   const DAY_PILLAR_COLOR_MAP: Record<string, string> = {
-    하늘빛: "#87CEEB",
+    하늘빛: "#4A90D9",
     초록빛: "#2E7D32",
     연두빛: "#9ACD32",
     주황빛: "#FF8C00",
@@ -1255,9 +1257,13 @@ export default function Page() {
           }
           return asReady(`identity_${it.key}`, it.title, it.icon);
         }),
-      talent: MEGA_SECTIONS.talent.items.map((it) =>
-        asReady(`talent_${it.key}`, it.title, it.icon)
-      ),
+      talent: MEGA_SECTIONS.talent.items.map((it) => {
+        if (it.key === "strengthWeak" && result) {
+          const content = getStrengthWeaknessParagraph(result, selectedChar);
+          return asContent("talent_strengthWeak", it.title, content, it.icon, "local");
+        }
+        return asReady(`talent_${it.key}`, it.title, it.icon);
+      }),
       relation: MEGA_SECTIONS.relation.items.map((it) =>
         asReady(`relation_${it.key}`, it.title, it.icon)
       ),

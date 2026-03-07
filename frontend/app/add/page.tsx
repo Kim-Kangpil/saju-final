@@ -238,6 +238,45 @@ function tenGod(dayStem: string, targetStem: string): string {
   return "";
 }
 
+// 월지(지지) 기반 가치관 로컬 폴백용 (백엔드 core_values 없을 때)
+const MONTH_BRANCH_ARCHETYPES: Record<string, { name: string; keywords: string }> = {
+  "子": { name: "자수", keywords: "정서적 교류, 친밀감, 유연한 생존감각" },
+  "丑": { name: "축토", keywords: "안정, 현실감각, 신중한 의사결정" },
+  "寅": { name: "인목", keywords: "개척, 도전, 선구자 에너지" },
+  "卯": { name: "묘목", keywords: "관계와 조화, 미감과 센스, 균형감각" },
+  "辰": { name: "진토", keywords: "조정과 중재, 포괄적 사고" },
+  "巳": { name: "사화", keywords: "욕망과 성취, 분석력, 목표 지향" },
+  "午": { name: "오화", keywords: "표현력, 카리스마, 존재감" },
+  "未": { name: "미토", keywords: "돌봄과 배려, 섬세한 감수성" },
+  "申": { name: "신금", keywords: "분석, 전략, 효율과 성과" },
+  "酉": { name: "유금", keywords: "완성, 기준, 디테일, 정돈" },
+  "戌": { name: "술토", keywords: "헌신, 의리, 정의감" },
+  "亥": { name: "해수", keywords: "이상과 영감, 깊은 감성" },
+};
+const TEN_GOD_CORE_MEANINGS: Record<string, string> = {
+  비견: "나와 비슷한 사람·동료를 통해 자신을 확인하는 관계 중심형",
+  겁재: "경쟁과 자극 속에서 성장하는 추진력",
+  식신: "꾸준함과 생산성을 중시하고 몸으로 실천하는 스타일",
+  상관: "틀을 깨고 새로움을 시도하는 혁신형",
+  편재: "기회와 인연, 돈과 정보의 흐름 속에서 기민하게 움직이는 실전형",
+  정재: "안정적인 기반과 책임, 묵직한 현실 감각",
+  편관: "도전과 압박을 통해 단단해지는 성장형",
+  정관: "명예와 신뢰, 규칙과 기준을 중시",
+  편인: "깊은 사고와 통찰로 자신만의 길을 찾는 연구자형",
+  정인: "배움과 자격, 신뢰받는 역할을 통한 안정",
+};
+function getLocalCoreValuesFallback(result: { day: { cheongan: { hanja: string } }; month: { jiji: { hanja: string } } }): string {
+  const monthBranch = result.month?.jiji?.hanja ?? "";
+  const dayStem = result.day?.cheongan?.hanja ?? "";
+  const branchInfo = MONTH_BRANCH_ARCHETYPES[monthBranch];
+  const branchName = branchInfo?.name ?? (monthBranch || "월지");
+  const branchKeywords = branchInfo?.keywords ?? "자기만의 방식으로 삶의 방향을 만들어 가는 기질";
+  const monthStem = branchMainStem(monthBranch);
+  const tenGodName = monthStem ? tenGod(dayStem, monthStem) : "";
+  const tenGodText = (tenGodName && TEN_GOD_CORE_MEANINGS[tenGodName]) ?? "자신이 중요하게 여기는 사람·일·가치에 오래 애정을 두고, 그 안에서 정체성을 찾아가는 경향";
+  return `당신의 삶의 엔진은 월지 ${branchName}에서 강하게 드러납니다. 이 자리는 타고난 기질이 ‘무엇을 우선순위로 두고 살아가느냐’를 보여주는 자리예요. ${branchName}는(은) ${branchKeywords} 쪽으로 자연스럽게 끌리게 만듭니다. 일간 기준으로 월지는 '${tenGodName}'에 해당하는 자리라, ${tenGodText}을(를) 삶의 핵심 가치로 두고 길을 선택하는 경향이 있습니다. 중요한 선택의 순간마다, 이 가치가 지켜지는지, 나다운 마음이 살아있는지를 기준으로 방향을 정하는 사람이에요.`;
+}
+
 function generatePreviewText(title: string): string {
   const previews = [
     "당신의 사주에서 발견된 특별한 기운이 있습니다. 이는 매우 흥미로운 패턴으로, 일반적이지 않은 조합입니다. 이러한 배치는 당신만의 독특한 재능과 가능성을 나타내며, 특히 인간관계에서 두각을 나타낼 수 있습니다. 더 자세한 내용은 로그인 후 확인하실 수 있습니다.",
@@ -1228,15 +1267,18 @@ export default function Page() {
       identity: MEGA_SECTIONS.identity.items
         .filter(item => item.key !== "animal" && item.key !== "nature" && item.key !== "persona")
         .map((it) => {
-          // 🔥 "삶의 핵심적인 가치관과 지향점" 슬롯에 core_values 해석을 직접 매핑
-          if (it.key === "values" && coreValuesContent) {
-            return asContent(
-              "identity_values",
-              it.title,
-              coreValuesContent,
-              it.icon,
-              "gpt"
-            );
+          // 🔥 "삶의 핵심적인 가치관과 지향점" 슬롯: 백엔드 core_values 우선, 없으면 로컬 폴백
+          if (it.key === "values") {
+            const content = coreValuesContent ?? (result ? getLocalCoreValuesFallback(result) : null);
+            if (content) {
+              return asContent(
+                "identity_values",
+                it.title,
+                content,
+                it.icon,
+                coreValuesContent ? "gpt" : "local"
+              );
+            }
           }
           return asReady(`identity_${it.key}`, it.title, it.icon);
         }),

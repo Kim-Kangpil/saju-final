@@ -1,5 +1,5 @@
 // frontend/data/strengthWeaknessAnalysis.ts
-// 나의 강점과 약점 — 사주 8글자 중 오행 개수: 2~3개 = 강점, 0개 = 약점. 이론(천간·지지·오행·십신) 기반 ~600자(강점 450자, 약점 150자), 3가지 말투
+// 나의 강점과 약점 — 일간 기준 오행→육친(십신) 해석. 2~3개=적당·잘 쓸 수 있음, 4개 이상=잘 쓸 수 있으나 과하면 조절 필요, 0개=보완 여지. ~600자, 가독성·긍정 톤, 비난 금지
 
 export type StrengthWeakToneKey = "empathy" | "reality" | "fun";
 
@@ -16,74 +16,71 @@ const ELEMENT_NAMES: Record<string, string> = {
   "木": "목(木)", "火": "화(火)", "土": "토(土)", "金": "금(金)", "水": "수(水)",
 };
 
-/** 오행별 강점 문장 (해당 오행이 2~3개일 때 쓸 문장) — 이론(천간·지지·오행·육친십신) 요약 */
-const ELEMENT_STRENGTH: Record<string, Record<StrengthWeakToneKey, string>> = {
-  "木": {
-    empathy: "목(木) 기운이 적당히 있어 성장과 추진의 힘이 잘 발휘됩니다. 봄의 나무처럼 위로 뻗어 나가려는 의지와 기획력, 약자를 보살피는 리더십이 당신의 강점이에요. 다만 마무리보다 시작에 강한 편이니 끈기만 더하면 좋습니다.",
-    reality: "목(木) 기운이 2~3개로 균형 있어 성장·추진·기획 역량이 강합니다. 천간 갑목/을목과 지지 인묘의 특성상 상승 작용과 유연한 적응력이 두드러지며, 리더십과 개척력이 강점으로 작용합니다.",
-    fun: "목 기운이 적당히 있어서 성장하고 쑥쑥 나가는 힘이 있어. 기획이랑 추진은 네 강점이고, 약한 사람 챙기는 리더십도 잘 맞아. 끝까지 가는 끈기만 보강하면 좋겠어.",
+/** 일간 오행별 → 해당 오행이 일간 기준 어떤 육친(십신)인지 */
+const ELEMENT_AS_TEN_GOD: Record<string, Record<string, string>> = {
+  "木": { "木": "비겁", "火": "식상", "土": "재성", "金": "관성", "水": "인성" },
+  "火": { "火": "비겁", "土": "식상", "金": "재성", "水": "관성", "木": "인성" },
+  "土": { "土": "비겁", "金": "식상", "水": "재성", "木": "관성", "火": "인성" },
+  "金": { "金": "비겁", "水": "식상", "木": "재성", "火": "관성", "土": "인성" },
+  "水": { "水": "비겁", "木": "식상", "火": "재성", "土": "관성", "金": "인성" },
+};
+
+/** 십신(육친)별 기능 설명 — 잘 쓸 수 있다는 식으로, 비난 없이 */
+const TEN_GOD_FUNCTION: Record<string, Record<StrengthWeakToneKey, string>> = {
+  비겁: {
+    empathy: "자기 확신과 독립성, 동료와 함께하는 힘을 잘 발휘하실 수 있어요.",
+    reality: "비겁(주체성·동료)의 기능을 잘 활용할 수 있는 구조입니다.",
+    fun: "자기 페이스랑 동료와의 협력 그거 잘 쓸 수 있는 타입이야.",
   },
-  "火": {
-    empathy: "화(火) 기운이 적당히 있어 밝은 태양처럼 주변을 비추는 힘이 있습니다. 명랑함과 열정, 예의와 절도를 갖춘 대인관계가 당신의 강점이에요. 다만 과한 발산은 지치게 하니 때로는 쉬어 가는 것이 좋습니다.",
-    reality: "화(火) 기운이 2~3개로 적정하여 발산력·표현력·사회성이 강합니다. 병정화와 사오의 특성상 리더십과 규율 의식이 두드러지며, 명랑·당당·예의가 강점으로 작용합니다.",
-    fun: "화 기운이 적당히 있어서 밝고 열정적인 게 강점이야. 주변 비추는 태양 같은 존재감이 있고, 예의랑 절도도 잘 지키는 편. 대신 너무 퍼주면 지치니까 충전도 해.",
+  식상: {
+    empathy: "말과 표현, 재능과 창의성을 세상에 잘 꺼내 쓰실 수 있어요.",
+    reality: "식상(표현·재능)의 기능을 잘 활용할 수 있는 구조입니다.",
+    fun: "말이랑 재능, 표현하는 거 잘 쓸 수 있어.",
   },
-  "土": {
-    empathy: "토(土) 기운이 적당히 있어 넓은 땅처럼 포용과 안정감을 줍니다. 성실함과 끈기, 협력과 희생정신이 당신의 강점이에요. 주변을 든든히 받쳐 주는 존재감이 있어, 신뢰를 쌓기 좋습니다.",
-    reality: "토(土) 기운이 2~3개로 균형 있어 안정·포용·중재 역량이 강합니다. 무기토와 진술축미의 특성상 성실·끈기·협력이 두드러지며, 토대 구축과 신뢰 형성이 강점으로 작용합니다.",
-    fun: "토 기운이 적당히 있어서 포용력이랑 안정감이 강점이야. 성실하고 끈기 있게 버티는 편이고, 협력·희생도 잘해. 주변 받쳐 주는 든든한 타입이지.",
+  재성: {
+    empathy: "현실 감각과 결과물, 재물을 다루는 능력을 잘 발휘하실 수 있어요.",
+    reality: "재성(재물·현실감각)의 기능을 잘 활용할 수 있는 구조입니다.",
+    fun: "돈이랑 결과물, 현실 감각 잘 쓸 수 있는 편이야.",
   },
-  "金": {
-    empathy: "금(金) 기운이 적당히 있어 원칙과 정리가 분명합니다. 질서 감각, 결단력, 정의감이 당신의 강점이에요. 자기 세계를 잘 구조화하고 말과 행동에 무게가 있어 신뢰를 줍니다.",
-    reality: "금(金) 기운이 2~3개로 적정하여 구조화·원칙·결단 역량이 강합니다. 경신금과 신유의 특성상 정리·규칙·정의감이 두드러지며, 명분과 결과 지향이 강점으로 작용합니다.",
-    fun: "금 기운이 적당히 있어서 원칙이랑 정리가 네 강점이야. 질서감 있고 결단력 있게 행동하고, 말한 거 지키는 편이라 신뢰받아.",
+  관성: {
+    empathy: "책임감과 규율, 조직과 명예를 다루는 힘을 잘 발휘하실 수 있어요.",
+    reality: "관성(책임·명예)의 기능을 잘 활용할 수 있는 구조입니다.",
+    fun: "책임감이랑 규칙, 조직에서의 역할 잘 쓸 수 있어.",
   },
-  "水": {
-    empathy: "수(水) 기운이 적당히 있어 지혜와 통찰이 잘 발휘됩니다. 빠른 두뇌 회전, 유연한 적응, 넓은 포용이 당신의 강점이에요. 상황을 읽고 시원하게 일을 풀어 나가는 능력이 있습니다.",
-    reality: "수(水) 기운이 2~3개로 균형 있어 총명·유연·포용 역량이 강합니다. 임계수와 자해의 특성상 기획·직관·적응력이 두드러지며, 지혜와 통찰이 강점으로 작용합니다.",
-    fun: "수 기운이 적당히 있어서 머리 회전이랑 통찰이 강점이야. 유연하게 상황 읽고 시원하게 풀어 나가는 스타일이고, 포용력도 있어.",
+  인성: {
+    empathy: "학문과 인내, 배움과 지혜를 쌓는 힘을 잘 발휘하실 수 있어요.",
+    reality: "인성(학문·인내)의 기능을 잘 활용할 수 있는 구조입니다.",
+    fun: "공부랑 인내, 배우는 거 잘 쓸 수 있는 타입이야.",
   },
 };
 
-/** 오행별 약점 한 줄 (해당 오행이 0개일 때) */
-const ELEMENT_WEAKNESS: Record<string, Record<StrengthWeakToneKey, string>> = {
-  "木": {
-    empathy: "목(木) 기운이 없어 성장·추진·기획을 스스로 이끌 때 부담을 느낄 수 있어요. 작은 목표부터 차근차근 시작하는 습관이 도움이 됩니다.",
-    reality: "목(木) 결여로 추진·기획·상승 에너지가 상대적으로 약합니다. 단계적 목표 설정과 리드 경험이 보완에 유리합니다.",
-    fun: "목이 없어서 추진이랑 기획이 조금 부담될 수 있어. 작은 걸부터 차근차근 해 보는 게 좋아.",
+/** 해당 오행이 0개일 때 — 보완 여지만, 비난 없이 */
+const TEN_GOD_ABSENT: Record<string, Record<StrengthWeakToneKey, string>> = {
+  비겁: {
+    empathy: "스스로 확신을 갖고 동료와의 관계를 조금씩 쌓아 가시면 좋아요.",
+    reality: "주체성·동료 관계를 의식적으로 키우면 보완에 도움이 됩니다.",
+    fun: "자기 페이스랑 동료 관계 조금씩 쌓아 보면 좋겠어.",
   },
-  "火": {
-    empathy: "화(火) 기운이 없어 밖으로 표출하는 에너지가 적을 수 있어요. 작은 것이라도 꾸준히 말하고 표현하는 연습이 도움이 됩니다.",
-    reality: "화(火) 결여로 발산·표현·사회적 활력이 상대적으로 약합니다. 소통과 자기표현을 의식적으로 늘리는 것이 보완에 유리합니다.",
-    fun: "화가 없어서 표현이랑 활력이 조금 부족할 수 있어. 말하고 드러내는 걸 조금씩 늘려 보면 좋아.",
+  식상: {
+    empathy: "말과 표현을 조금씩 늘려 보시면 그만큼 재능이 더 드러나기 쉬워요.",
+    reality: "표현·재능을 의식적으로 발휘하면 보완에 도움이 됩니다.",
+    fun: "말이랑 표현 조금씩 늘려 보면 재능이 더 보일 거야.",
   },
-  "土": {
-    empathy: "토(土) 기운이 없어 안정감이나 끈기가 부족하게 느껴질 수 있어요. 루틴을 정하고 한 가지를 오래 지키는 연습이 도움이 됩니다.",
-    reality: "토(土) 결여로 안정·지속·포용 역량이 상대적으로 약합니다. 루틴 확보와 소규모 책임 유지가 보완에 유리합니다.",
-    fun: "토가 없어서 안정이랑 끈기가 조금 부족할 수 있어. 하나 정해서 오래 지키는 습관이 도움 돼.",
+  재성: {
+    empathy: "작은 것부터 정리하고 결과를 챙기는 습관이 도움이 됩니다.",
+    reality: "현실감각·결과 관리를 단계적으로 늘리면 보완에 도움이 됩니다.",
+    fun: "작은 거부터 정리하고 결과 챙기는 습관이 도움 돼.",
   },
-  "金": {
-    empathy: "금(金) 기운이 없어 정리나 원칙을 세우는 데 어려움을 느낄 수 있어요. 할 일을 짧게 나누고 하나씩 정리하는 습관이 도움이 됩니다.",
-    reality: "금(金) 결여로 구조화·원칙·결단 역량이 상대적으로 약합니다. 단위 업무 정리와 기준 설정이 보완에 유리합니다.",
-    fun: "금이 없어서 정리나 원칙이 조금 어려울 수 있어. 할 일 잘게 나눠서 하나씩 끝내 보면 좋아.",
+  관성: {
+    empathy: "역할과 책임을 작게 나누어 맡아 보시면 좋아요.",
+    reality: "책임·규율을 소규모로 경험하면 보완에 도움이 됩니다.",
+    fun: "역할이랑 책임 작게 나눠서 맡아 보면 좋아.",
   },
-  "水": {
-    empathy: "수(水) 기운이 없어 직관이나 유연한 판단이 부족하게 느껴질 수 있어요. 정보를 모은 뒤 잠시 쉬고 결정하는 습관이 도움이 됩니다.",
-    reality: "수(水) 결여로 총명·유연·기획 역량이 상대적으로 약합니다. 정보 수집 후 숙고 시간을 두는 것이 보완에 유리합니다.",
-    fun: "수가 없어서 직관이랑 유연한 판단이 조금 부족할 수 있어. 정보 모은 다음에 잠깐 쉬고 결정해 보면 좋아.",
+  인성: {
+    empathy: "배우고 싶은 것을 하나씩 쌓아 가시면 인내와 지혜가 늘어요.",
+    reality: "학문·인내를 꾸준히 쌓으면 보완에 도움이 됩니다.",
+    fun: "배우고 싶은 거 하나씩 쌓아 가면 좋겠어.",
   },
-};
-
-const INTRO_STRENGTH: Record<StrengthWeakToneKey, string> = {
-  empathy: "당신의 사주 팔자에는 ",
-  reality: "사주 팔자 오행 분포상 ",
-  fun: "네 사주에는 ",
-};
-
-const INTRO_WEAKNESS: Record<StrengthWeakToneKey, string> = {
-  empathy: "반면 ",
-  reality: "한편 ",
-  fun: "대신 ",
 };
 
 export interface SajuPillars {
@@ -110,59 +107,102 @@ function countElementsByRow(pillars: SajuPillars): Record<string, number> {
   return count;
 }
 
-/** 강점 오행(2~3개), 약점 오행(0개) 구분 */
-function getStrongAndWeak(count: Record<string, number>): { strong: string[]; weak: string[] } {
+/** 일간 한자 → 오행 */
+function getDayStemElement(pillars: SajuPillars): string {
+  const stem = pillars.day?.cheongan?.hanja?.[0] ?? "";
+  return stem ? (STEM_TO_ELEMENT[stem] ?? "木") : "木";
+}
+
+/** 오행 개수별 구분: 적당(2~3), 많음(4+), 없음(0) */
+function getElementGroups(count: Record<string, number>) {
   const elements = ["木", "火", "土", "金", "水"] as const;
-  const strong: string[] = [];
-  const weak: string[] = [];
+  const moderate: string[] = [];
+  const many: string[] = [];
+  const absent: string[] = [];
   for (const el of elements) {
     const n = count[el] ?? 0;
-    if (n >= 2 && n <= 3) strong.push(el);
-    else if (n === 0) weak.push(el);
+    if (n >= 2 && n <= 3) moderate.push(el);
+    else if (n >= 4) many.push(el);
+    else if (n === 0) absent.push(el);
   }
-  return { strong, weak };
+  return { moderate, many, absent };
 }
 
 /**
- * 나의 강점과 약점 문단 생성. 강점 ~450자, 약점 ~150자, 총 ~600자.
- * 2~3개 있는 오행 = 강점, 0개인 오행 = 약점. 3가지 말투.
+ * 나의 강점과 약점 문단. 일간 기준 육친(십신)으로 해석, ~600자, 가독성·긍정 톤.
+ * 2~3개 = 적당히 있어 그 육친 기능을 잘 쓸 수 있음.
+ * 4개 이상 = 잘 쓸 수 있으나 과하면 조절이 필요할 수 있음.
+ * 0개 = 보완 여지만 안내, 비난 없음.
  */
 export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: StrengthWeakToneKey): string {
   const count = countElementsByRow(pillars);
-  const { strong, weak } = getStrongAndWeak(count);
+  const dayElement = getDayStemElement(pillars);
+  const elementToTenGod = ELEMENT_AS_TEN_GOD[dayElement] ?? ELEMENT_AS_TEN_GOD["木"];
+  const { moderate, many, absent } = getElementGroups(count);
 
-  let strengthPart = INTRO_STRENGTH[tone];
-  if (strong.length === 0) {
-    strengthPart += tone === "empathy"
-      ? "한두 개씩 골고루 퍼진 오행이 있어, 특정 한 가지보다는 균형 있는 기운으로 살아가시는 편이에요. 무리하게 한쪽만 쓰기보다는 상황에 맞게 나누어 쓰는 것이 좋습니다."
-      : tone === "reality"
-        ? "오행이 고르게 분포하여 한 영역에 치우치지 않는 균형형에 가깝습니다. 상황별로 강점을 선택해 쓰는 전략이 유리합니다."
-        : "오행이 골고루 있어서 한쪽만 튀진 않는 타입이야. 상황에 맞게 골라 쓰는 게 좋아.";
-  } else {
-    const parts = strong.map(el => ELEMENT_STRENGTH[el][tone]);
-    if (tone === "reality" && strong.length > 0) {
-      strengthPart += strong.map(el => ELEMENT_NAMES[el]).join(", ") + " 기운이 적정하여 " + (parts[0] ?? "");
-      for (let i = 1; i < parts.length; i++) strengthPart += " " + (parts[i] ?? "");
+  const lines: string[] = [];
+
+  if (tone === "empathy") {
+    lines.push("당신의 사주는 일간(나)을 기준으로, 각 오행이 어떤 역할(육친)로 작동하는지가 분명한 편이에요.");
+    if (moderate.length > 0) {
+      const list = moderate.map((el) => `${ELEMENT_NAMES[el]} 기운이 2~3개씩 적당히 있어 일간 기준 ‘${elementToTenGod[el]}’에 해당하는 힘을 잘 쓰실 수 있어요. ${TEN_GOD_FUNCTION[elementToTenGod[el]]?.[tone] ?? ""}`).join(" ");
+      lines.push(list + " 이런 부분이 당신만의 강점이에요.");
+    }
+    if (many.length > 0) {
+      const list = many.map((el) => `${ELEMENT_NAMES[el]} 기운이 네 개 이상 있어 ‘${elementToTenGod[el]}’ 기능도 잘 쓸 수 있는 구조예요. 다만 기운이 지나치면 조절이 필요할 수 있으니, 적당히 나누어 쓰시면 더욱 좋아요.`).join(" ");
+      lines.push(list);
+    }
+    if (moderate.length === 0 && many.length === 0) {
+      lines.push("오행이 한두 개씩 골고루 있어, 특정 역할에 치우치지 않고 균형 있게 쓰시기 좋은 사주예요.");
+    }
+    if (absent.length > 0) {
+      const list = absent.map((el) => `${ELEMENT_NAMES[el]} 기운이 없어 일간 기준 ‘${elementToTenGod[el]}’에 해당하는 부분은 보완할 여지가 있어요. ${TEN_GOD_ABSENT[elementToTenGod[el]]?.[tone] ?? ""}`).join(" ");
+      lines.push("반면 " + list);
+    } else if (moderate.length > 0 || many.length > 0) {
+      lines.push("결여된 오행이 뚜렷하지 않아, 전반적으로 고른 기운을 갖추고 계세요.");
+    }
+  } else if (tone === "reality") {
+    lines.push("일간 기준 오행 분포상, 각 오행이 육친(십신)으로 어떤 기능을 하는지가 뚜렷합니다.");
+    if (moderate.length > 0) {
+      const list = moderate.map((el) => `${ELEMENT_NAMES[el]} 2~3개로 적정하여 ‘${elementToTenGod[el]}’ 기능을 잘 활용할 수 있습니다. ${TEN_GOD_FUNCTION[elementToTenGod[el]]?.[tone] ?? ""}`).join(" ");
+      lines.push(list);
+    }
+    if (many.length > 0) {
+      const list = many.map((el) => `${ELEMENT_NAMES[el]} 4개 이상으로 많아 ‘${elementToTenGod[el]}’ 기능을 충분히 쓸 수 있으나, 과하면 조절이 필요할 수 있습니다.`).join(" ");
+      lines.push(list);
+    }
+    if (moderate.length === 0 && many.length === 0) {
+      lines.push("오행이 고르게 분포하여 균형형에 가깝습니다.");
+    }
+    if (absent.length > 0) {
+      const list = absent.map((el) => `${ELEMENT_NAMES[el]} 결여로 ‘${elementToTenGod[el]}’ 영역은 보완 여지가 있습니다. ${TEN_GOD_ABSENT[elementToTenGod[el]]?.[tone] ?? ""}`).join(" ");
+      lines.push("한편 " + list);
     } else {
-      strengthPart += parts.join(" ");
+      lines.push("특정 오행 결여가 뚜렷하지 않습니다.");
+    }
+  } else {
+    lines.push("네 사주는 일간 기준으로 오행이 어떤 역할(육친)로 나오는지가 잘 드러나는 편이야.");
+    if (moderate.length > 0) {
+      const list = moderate.map((el) => `${ELEMENT_NAMES[el]}가 2~3개씩 적당히 있어서 ‘${elementToTenGod[el]}’ 그거 잘 쓸 수 있어. ${TEN_GOD_FUNCTION[elementToTenGod[el]]?.[tone] ?? ""}`).join(" ");
+      lines.push(list + " 이게 네 강점이야.");
+    }
+    if (many.length > 0) {
+      const list = many.map((el) => `${ELEMENT_NAMES[el]}가 네 개 이상 있어서 ‘${elementToTenGod[el]}’ 기능 잘 쓸 수 있긴 한데, 너무 많으면 조절이 필요할 수 있어. 적당히 나눠 쓰면 좋아.`).join(" ");
+      lines.push(list);
+    }
+    if (moderate.length === 0 && many.length === 0) {
+      lines.push("오행이 골고루 있어서 한쪽만 튀진 않는 타입이야.");
+    }
+    if (absent.length > 0) {
+      const list = absent.map((el) => `${ELEMENT_NAMES[el]}가 없어서 ‘${elementToTenGod[el]}’ 쪽은 보완할 여지가 있어. ${TEN_GOD_ABSENT[elementToTenGod[el]]?.[tone] ?? ""}`).join(" ");
+      lines.push("대신 " + list);
+    } else {
+      lines.push("없는 오행이 뚜렷하지 않아서 전반적으로 고른 편이야.");
     }
   }
 
-  let weaknessPart = INTRO_WEAKNESS[tone];
-  if (weak.length === 0) {
-    weaknessPart += tone === "empathy"
-      ? "결여된 오행이 뚜렷하지 않아, 전반적으로 고른 기운을 갖추고 있어요. 부족한 부분이 보일 때마다 그때그때 보완하시면 됩니다."
-      : tone === "reality"
-        ? "특정 오행 결여가 뚜렷하지 않아 보완은 상황에 따라 조정하시면 됩니다."
-        : "특별히 없는 오행이 없어서, 부족하다 싶을 때만 조금씩 보완하면 돼.";
-  } else {
-    const parts = weak.map(el => ELEMENT_WEAKNESS[el][tone]);
-    weaknessPart += tone === "empathy"
-      ? weak.map(el => ELEMENT_NAMES[el]).join(", ") + " 기운이 없어 " + parts.join(" ")
-      : tone === "reality"
-        ? weak.map(el => ELEMENT_NAMES[el]).join(", ") + " 결여로 " + parts.join(" ")
-        : weak.map(el => ELEMENT_NAMES[el]).join(", ") + "가 없어 " + parts.join(" ");
-  }
-
-  return strengthPart + "\n\n" + weaknessPart;
+  const text = lines.join("\n\n").trim();
+  if (text.length >= 580) return text;
+  const tail = tone === "empathy" ? "당신만의 강점을 알아가시는 데 이 해석이 조금이라도 도움이 되면 좋겠어요." : tone === "reality" ? "위 내용을 참고하여 강점을 활용하고 보완 여지를 점검하시면 됩니다." : "이 해석이 네 강점 알아가는 데 조금이라도 도움 되면 좋겠어.";
+  return text + "\n\n" + tail;
 }

@@ -219,26 +219,27 @@ export function getElementDistributionParagraph(
 
   const lines: string[] = [];
 
+  // 순서: 많은 것(4+) → 적당한 것(2~3) → 적은 것(0~1)
   if (tone === "empathy") {
     lines.push(`여덟 글자 속에 ${countParts}가 있어요.`);
-    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
+    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
     if (weaknessLines.length > 0) lines.push("부족한 쪽(약점)은 이렇게 보완하면 좋아요. " + weaknessLines.join(" "));
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 분포해 있어, 한쪽으로 치우치지 않고 상황에 맞게 쓰기 좋은 편이에요.");
     }
   } else if (tone === "reality") {
     lines.push(`분포: ${countParts}.`);
-    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
+    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
     if (weaknessLines.length > 0) lines.push("부족(약점)·보완: " + weaknessLines.join(" "));
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 전반적으로 균형 잡혀 있습니다.");
     }
   } else {
     lines.push(`니한테는 ${countParts}야.`);
-    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
+    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
     if (weaknessLines.length > 0) lines.push("부족한 쪽(약점)은 보완하면 좋아. " + weaknessLines.join(" "));
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 있어서 한쪽만 튀지 않고 쓰기 좋은 편이야.");

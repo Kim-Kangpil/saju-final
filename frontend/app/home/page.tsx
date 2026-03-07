@@ -472,8 +472,6 @@ export default function LandingPage() {
 
 
 
-                        <div style={{ height: 1, background: "#dce8dc", margin: "16px 0" }} />
-
                         {/* 배우자 AI 미리보기 */}
                         <div style={{ marginBottom: 20 }}>
                             <div style={{ display: "inline-block", padding: "4px 10px", background: "#fef3c7", border: "1.5px solid #fbbf24", borderRadius: 99, marginBottom: 12 }}>
@@ -513,8 +511,6 @@ export default function LandingPage() {
                                 당신과 궁합이 맞는 배우자의 외형적 특징을 예측합니다.
                             </p>
                         </div>
-
-                        <div style={{ height: 1, background: "#dce8dc", margin: "16px 0" }} />
 
                         <div style={{ marginBottom: 20 }}>
                             <p className="serif pulse-text" style={{ fontSize: 16, fontWeight: 900, color: "#1a2e0e", marginBottom: 8 }}>

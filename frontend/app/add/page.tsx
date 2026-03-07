@@ -24,6 +24,7 @@ import { getCoreValuesParagraph } from "../../data/coreValuesAnalysis";
 import { getStrengthWeaknessParagraph } from "../../data/strengthWeaknessAnalysis";
 import { getLatentTalentAptitudeParagraph } from "../../data/latentTalentAptitude";
 import { getElementDistributionParagraph } from "../../data/elementDistributionAnalysis";
+import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -1280,6 +1281,10 @@ export default function Page() {
         if (it.key === "elements" && result) {
           const content = getElementDistributionParagraph(result, selectedChar);
           return asContent("talent_elements", it.title, content, it.icon, "local");
+        }
+        if (it.key === "tengod" && result) {
+          const content = getTenGodAbilityParagraph(result, selectedChar);
+          return asContent("talent_tengod", it.title, content, it.icon, "local");
         }
         return asReady(`talent_${it.key}`, it.title, it.icon);
       }),

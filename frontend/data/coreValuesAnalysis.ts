@@ -24,14 +24,29 @@ export const MONTH_BRANCH_ARCHETYPES: Record<string, MonthBranchArchetype> = {
   "亥": { name: "亥(해수)", keywords: "이상과 영감, 깊은 감성, 보이지 않는 것을 신뢰하는 직관" },
 };
 
-/** 말투별 문단 템플릿 — {{branchName}}, {{keywords}}, {{tenGod}}, {{tenGodMeaning}} 치환 */
+/** 한글 마지막 글자 받침 여부 — 조사 선택용 */
+function hasBatchim(c: string): boolean {
+  const code = c.charCodeAt(0);
+  if (code < 0xac00 || code > 0xd7a3) return false;
+  return (code - 0xac00) % 28 !== 0;
+}
+function josaEulReul(word: string): string {
+  if (!word.length) return "를";
+  return hasBatchim(word[word.length - 1]) ? "을" : "를";
+}
+function josaEunNeun(word: string): string {
+  if (!word.length) return "는";
+  return hasBatchim(word[word.length - 1]) ? "은" : "는";
+}
+
+/** 말투별 문단 템플릿 — 450~500자, 2~3문단. {{branchName}}, {{branchNameJosa}}, {{keywords}}, {{tenGod}}, {{tenGodMeaning}}, {{tenGodMeaningJosa}} 치환 */
 const CORE_VALUES_TEMPLATE: Record<CoreValuesToneKey, string> = {
   empathy:
-    "당신의 삶의 엔진은 월지 {{branchName}}에서 강하게 드러납니다. 이 자리는 타고난 기질이 '무엇을 우선순위로 두고 살아가느냐'를 보여주는 자리예요. {{branchName}}는(은) {{keywords}} 쪽으로 자연스럽게 끌리게 만듭니다. 일간 기준으로 월지는 '{{tenGod}}'에 해당하는 자리라, {{tenGodMeaning}}을(를) 삶의 핵심 가치로 두고 길을 선택하는 경향이 있습니다. 중요한 선택의 순간마다, 이 가치가 지켜지는지, 나다운 마음이 살아있는지를 기준으로 방향을 정하는 사람이에요.",
+    "당신의 삶의 엔진은 월지 {{branchName}}에서 가장 잘 드러납니다. 이 자리는 삶의 핵심적인 가치관과 지향점을 담는 자리로, 타고난 기질이 ‘무엇을 우선순위로 두고 살아가느냐’를 보여주죠. {{branchName}}{{branchNameJosa}} {{keywords}} 쪽으로 자연스럽게 끌리기 때문에, 일상의 선택과 방향 설정에서도 이 성향이 반복적으로 나타나곤 합니다.\n\n삶의 핵심적인 가치관과 지향점으로 보면, 일간 기준 월지는 ‘{{tenGod}}’에 해당하는 자리라 {{tenGodMeaning}}{{tenGodMeaningJosa}} 핵심 가치로 두고 길을 선택하는 경향이 있습니다. 그래서 중요한 선택의 순간마다 머리로만 계산하기보다, 이 가치가 지켜지는지, 나다운 마음이 살아 있는지를 기준으로 방향을 정하는 사람이에요. 그런 점이 당신을 일관되게 이끄는 나침반 역할을 합니다.",
   reality:
-    "당신의 삶의 엔진은 월지 {{branchName}}에서 강하게 드러납니다. 이 자리는 타고난 기질이 '무엇을 우선순위로 두고 살아가느냐'를 보여주는 자리입니다. {{branchName}}는(은) {{keywords}} 쪽으로 자연스럽게 끌리게 만듭니다. 일간 기준으로 월지는 '{{tenGod}}'에 해당하는 자리라, {{tenGodMeaning}}을(를) 삶의 핵심 가치로 두고 경로를 선택하는 경향이 있습니다. 중요한 선택 시점에는, 해당 가치가 유지되는지, 자기 정체성이 살아있는지를 기준으로 방향을 정하는 구조입니다.",
+    "당신의 삶의 엔진은 월지 {{branchName}}에서 가장 잘 드러납니다. 이 자리는 삶의 핵심적인 가치관과 지향점을 담는 자리로, 타고난 기질이 ‘무엇을 우선순위로 두고 살아가느냐’를 보여줍니다. {{branchName}}{{branchNameJosa}} {{keywords}} 쪽으로 자연스럽게 끌리기 때문에, 일상의 선택과 방향 설정에서도 이 성향이 반복적으로 나타나는 구조예요.\n\n삶의 핵심적인 가치관과 지향점으로 보면, 일간 기준 월지는 ‘{{tenGod}}’에 해당하는 자리라 {{tenGodMeaning}}{{tenGodMeaningJosa}} 핵심 가치로 두고 경로를 선택하는 경향이 있습니다. 따라서 중요한 선택 시점에는 해당 가치가 유지되는지, 자기 정체성이 살아 있는지를 기준으로 방향을 정하는 패턴을 보입니다. 이 구조가 의사결정의 일관성을 만드는 요인으로 작동합니다.",
   fun:
-    "네 삶의 엔진은 월지 {{branchName}}에서 확 드러나. 이 자리가 '뭘 우선으로 살아갈지' 보여주는 자리잖아. {{branchName}}는(은) {{keywords}} 쪽으로 자연스럽게 끌려. 일간 기준으로 월지는 '{{tenGod}}'에 해당하는 자리라서, {{tenGodMeaning}}을(를) 삶의 핵심 가치로 두고 길 고르는 경향이 있어. 중요한 선택할 때마다, 이 가치 지켜지는지, 내 마음이 살아있는지 보고 방향 정하는 타입이야.",
+    "네 삶의 엔진은 월지 {{branchName}}에서 제일 잘 드러나. 이 자리가 삶의 핵심적인 가치관이랑 지향점을 보여주는 자리라서, ‘뭘 우선으로 살아갈지’가 여기서 드러나. {{branchName}}{{branchNameJosa}} {{keywords}} 쪽으로 자연스럽게 끌려서, 일상에서 선택할 때도 이 성향이 자꾸 나오는 편이야.\n\n삶의 핵심적인 가치관과 지향점으로 보면, 일간 기준 월지는 ‘{{tenGod}}’에 해당하는 자리라서 {{tenGodMeaning}}{{tenGodMeaningJosa}} 핵심 가치로 두고 길 고르는 경향이 있어. 그래서 중요한 선택할 때마다 이 가치가 지켜지는지, 내 마음이 살아 있는지 보고 방향 정하는 타입이야. 그게 네 나침반 역할을 하는 거지.",
 };
 
 /** 십신별 핵심 가치 한 줄 — 3가지 말투 */
@@ -102,9 +117,15 @@ export interface GetCoreValuesParams {
   getTenGod: (dayStem: string, targetStem: string) => string;
 }
 
+/** 괄호 안 한글을 추출해 조사 기준으로 사용 (예: "子(자수)" → "자수") */
+function josaBase(text: string): string {
+  const m = text.match(/\(([^)]+)\)$/);
+  return m ? m[1] : text;
+}
+
 /**
- * 월지 + 일간 기준 십신으로 '삶의 핵심 가치관과 지향점' 문단 1개 반환.
- * add 페이지에서 branchMainStem, tenGod 함수를 넘겨 호출.
+ * 월지 + 일간 기준 십신으로 '삶의 핵심 가치관과 지향점' 문단 반환.
+ * 450~500자, 2~3문단. 조사(은/는, 을/를)는 앞말에 맞게 자동 선택.
  */
 export function getCoreValuesParagraph(params: GetCoreValuesParams): string {
   const { monthBranchHanja, dayStemHanja, tone, getBranchMainStem, getTenGod } = params;
@@ -116,10 +137,15 @@ export function getCoreValuesParagraph(params: GetCoreValuesParams): string {
   const tenGodRow = tenGodName ? TEN_GOD_CORE_MEANINGS[tenGodName] : null;
   const tenGodMeaning = tenGodRow?.[tone] ?? DEFAULT_TEN_GOD_MEANING[tone];
 
+  const branchNameJosa = josaEunNeun(josaBase(branchName));
+  const tenGodMeaningJosa = josaEulReul(tenGodMeaning);
+
   const template = CORE_VALUES_TEMPLATE[tone];
   return template
     .replace(/\{\{branchName\}\}/g, branchName)
+    .replace(/\{\{branchNameJosa\}\}/g, branchNameJosa)
     .replace(/\{\{keywords\}\}/g, keywords)
     .replace(/\{\{tenGod\}\}/g, tenGodName || "—")
-    .replace(/\{\{tenGodMeaning\}\}/g, tenGodMeaning);
+    .replace(/\{\{tenGodMeaning\}\}/g, tenGodMeaning)
+    .replace(/\{\{tenGodMeaningJosa\}\}/g, tenGodMeaningJosa);
 }

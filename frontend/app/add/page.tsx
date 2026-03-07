@@ -868,7 +868,7 @@ export default function Page() {
   };
 
   // 아코디언에는 재력과 사회적 무기(4개 항목)만 표시
-  const megaOrder: MegaKey[] = ["talent"];
+  const megaOrder: MegaKey[] = ["identity", "talent", "relation", "insight", "solution"];
   const [openMega, setOpenMega] = useState<MegaKey | null>("identity");
   type GateStep = "idle" | "showSaju" | "needAuth" | "unlocked";
   const [gateStep, setGateStep] = useState<GateStep>("idle");

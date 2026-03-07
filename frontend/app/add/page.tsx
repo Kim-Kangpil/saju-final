@@ -1731,7 +1731,7 @@ export default function Page() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-6"
+                    className="space-y-4"
                   >
                     {/* 🔥 사주 명식 먼저 표시 */}
                     <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
@@ -1815,16 +1815,13 @@ export default function Page() {
                     </div>
 
                     {/* 캐릭터 선택 */}
-                    <div className="text-center space-y-2">
-                      <h2 className="text-xl sm:text-2xl font-bold text-[#556b2f]">
+                    <div className="text-center space-y-1">
+                      <h2 className="text-lg sm:text-xl font-bold text-[#556b2f]">
                         어떤 햄스터가 해석해드릴까요?
                       </h2>
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        선택한 햄스터의 스타일로 사주를 풀이해드립니다
-                      </p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 gap-3">
                       {(Object.keys(CHARACTERS) as CharKey[]).map((id) => (
                         <motion.button
                           key={id}
@@ -1832,33 +1829,33 @@ export default function Page() {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           className={cn(
-                            "p-4 rounded-2xl border-4 transition-all",
+                            "p-3 rounded-xl border-2 transition-all",
                             selectedChar === id
-                              ? "border-[#556b2f] bg-yellow-50 shadow-lg"
+                              ? "border-[#556b2f] bg-yellow-50 shadow-md"
                               : "border-[#e9edc9] bg-white hover:border-[#c1d8c3]"
                           )}
                         >
-                          <div className="flex items-center gap-4">
-                            <div className="w-20 h-20 rounded-full overflow-hidden bg-white border-2 border-[#adc4af] flex-shrink-0">
+                          <div className="flex items-center gap-3">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-white border-2 border-[#adc4af] flex-shrink-0">
                               <img
                                 src={CHARACTERS[id].img}
                                 alt={CHARACTERS[id].name}
                                 className="w-full h-full object-contain"
                               />
                             </div>
-                            <div className="flex-1 text-left">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-lg font-bold text-[#556b2f]">
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <h3 className="text-base font-bold text-[#556b2f]">
                                   {CHARACTERS[id].name}
                                 </h3>
                                 {selectedChar === id && (
-                                  <span className="text-xl">✅</span>
+                                  <span className="text-sm">✅</span>
                                 )}
                               </div>
-                              <p className="text-xs text-gray-600 mb-1">
+                              <p className="text-[11px] text-gray-600 mb-0.5 leading-snug">
                                 {CHARACTERS[id].oneLine}
                               </p>
-                              <p className="text-xs text-[#556b2f] opacity-70">
+                              <p className="text-[11px] text-[#556b2f] opacity-70 leading-snug">
                                 {CHARACTERS[id].desc}
                               </p>
                             </div>
@@ -1869,7 +1866,7 @@ export default function Page() {
 
                     <button
                       onClick={handleCharacterConfirm}
-                      className="w-full py-4 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-lg rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                      className="w-full py-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-base rounded-lg shadow-md hover:scale-105 active:scale-95 transition-transform"
                     >
                       이 햄스터로 결정! 🎯
                     </button>

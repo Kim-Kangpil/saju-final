@@ -1878,11 +1878,7 @@ export default function Page() {
 
                 {!loading && !result && !showCharacterSelect && (
                   <div className="text-center mb-6">
-                    {isLoggedIn ? (
-                      <p className="text-[#556b2f] font-bold text-sm text-korean">
-                        생년월일과 성별을 입력하세요!
-                      </p>
-                    ) : (
+                    {!isLoggedIn && (
                       <div className="flex justify-center">
                         <div
                           className="space-y-4 py-6 px-6 rounded-2xl max-w-[320px]"
@@ -2047,10 +2043,6 @@ export default function Page() {
                                 />
                                 <span className="text-[10px] font-bold text-[#556b2f] whitespace-nowrap">모름</span>
                               </label>
-                            </div>
-
-                            <div className="text-[10px] text-[#556b2f] opacity-70 px-1">
-                              {formError ? formError : "입력 완료. 버튼 누르면 분석 시작"}
                             </div>
 
                             <button

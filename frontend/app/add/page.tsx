@@ -1106,8 +1106,17 @@ export default function Page() {
     const rest = firstEnd >= 0 ? text.slice(firstEnd + 1) : "";
     const colorMatch = firstSentence.match(/(\S+빛)/);
     const hex = colorMatch ? DAY_PILLAR_COLOR_MAP[colorMatch[1]] : null;
-    const escapedFirst = firstSentence.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const restEscaped = rest.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escapedFirst = firstSentence
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/&lt;strong&gt;/g, "<strong>")
+      .replace(/&lt;\/strong&gt;/g, "</strong>");
+    // 이스케이프 후 <strong>/</strong>만 복원해 볼드가 렌더되도록 함
+    const restEscaped = rest
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/&lt;strong&gt;/g, "<strong>")
+      .replace(/&lt;\/strong&gt;/g, "</strong>");
     const restWithBr = restEscaped.replace(/\n/g, "<br />");
     if (hex) {
       return `<span style="color:${hex};font-weight:600">${escapedFirst}</span>${restWithBr}`;

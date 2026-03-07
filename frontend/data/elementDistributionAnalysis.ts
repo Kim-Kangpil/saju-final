@@ -15,6 +15,52 @@ const BRANCH_TO_ELEMENT: Record<string, string> = {
   "申": "金", "酉": "金", "子": "水", "亥": "水",
 };
 
+/** 일간 오행별 → 해당 오행이 일간 기준 어떤 육친(십신)인지. 이론: 사주이론(오행, 육친과 십신).txt */
+const ELEMENT_AS_TEN_GOD: Record<string, Record<string, string>> = {
+  "木": { "木": "비겁", "火": "식상", "土": "재성", "金": "관성", "水": "인성" },
+  "火": { "火": "비겁", "土": "식상", "金": "재성", "水": "관성", "木": "인성" },
+  "土": { "土": "비겁", "金": "식상", "水": "재성", "木": "관성", "火": "인성" },
+  "金": { "金": "비겁", "水": "식상", "木": "재성", "火": "관성", "土": "인성" },
+  "水": { "水": "비겁", "木": "식상", "火": "재성", "土": "관성", "金": "인성" },
+};
+
+/** 십신(오행→육친 매핑 결과 5종) → 사용자용 한글 라벨 */
+const TEN_GOD_LABEL: Record<string, string> = {
+  비겁: "자아·동료·주체성",
+  식상: "표현·재능",
+  재성: "재물·결과",
+  관성: "규율·책임·리더십",
+  인성: "학문·인내·배움",
+};
+
+/** 오행 코드 → 한글 이름 */
+const EL_NAME: Record<string, string> = {
+  "木": "목(木)", "火": "화(火)", "土": "토(土)", "金": "금(金)", "水": "수(水)",
+};
+
+/** 오행 코드 → 주어형 (조사 이/가 붙음) */
+const EL_NAME_SUBJECT: Record<string, string> = {
+  "木": "목(木)이", "火": "화(火)가", "土": "토(土)가", "金": "금(金)이", "水": "수(水)가",
+};
+
+/** 십신별 강점 한 줄 (오행 분포에서 “해당 육친 → 강점” 서술용) */
+const TEN_GOD_STRENGTH: Record<string, Record<ElementDistToneKey, string>> = {
+  비겁: { empathy: "스스로 결단하고 동료와 협력하는 힘이 강점이에요.", reality: "주체성·동료 관계가 강점입니다.", fun: "스스로 나서고 동료랑 잘해." },
+  식상: { empathy: "말과 재능을 밖으로 꺼내는 힘이 강점이에요.", reality: "표현·재능 발휘가 강점입니다.", fun: "말이랑 재능 꺼내는 거 잘해." },
+  재성: { empathy: "돈과 결과를 챙기고 정리하는 힘이 강점이에요.", reality: "재물·관리가 강점입니다.", fun: "쌓고 정리하는 거 잘해." },
+  관성: { empathy: "규칙과 책임을 지키고 이끄는 힘이 강점이에요.", reality: "책임·리더십이 강점입니다.", fun: "규칙·책임 지키고 이끄는 거 잘해." },
+  인성: { empathy: "배우고 쌓고 견디는 힘이 강점이에요.", reality: "학습·인내가 강점입니다.", fun: "배우고 가르치는 거 잘해." },
+};
+
+/** 십신별 보완 한 줄 (해당 오행 0개일 때) */
+const TEN_GOD_ABSENT: Record<string, Record<ElementDistToneKey, string>> = {
+  비겁: { empathy: "작은 것부터 스스로 정하고, 동료와 함께하는 일을 늘려 보시면 좋아요.", reality: "주체성·동료 관계를 의식적으로 늘리면 보완됩니다.", fun: "작은 거 스스로 정하고 사람이랑 해 보면 좋아." },
+  식상: { empathy: "하고 싶은 말을 짧게라도 꾸준히 해 보시면 좋아요.", reality: "말·글·창작 기회를 늘리면 보완됩니다.", fun: "말 조금씩 해 보면 좋아." },
+  재성: { empathy: "작은 것부터 정리하고, 결과를 한 가지씩 챙겨 보시면 좋아요.", reality: "정리·관리 경험을 늘리면 보완됩니다.", fun: "작은 거부터 정리하고 챙겨 봐." },
+  관성: { empathy: "작은 역할부터 맡아 보시면 좋아요.", reality: "소규모 책임·역할을 늘리면 보완됩니다.", fun: "작은 역할부터 맡아 봐." },
+  인성: { empathy: "배우고 싶은 걸 하나 정해서 조금씩 쌓아 보시면 좋아요.", reality: "학습·쌓기 경험을 늘리면 보완됩니다.", fun: "하나 정해서 쌓아 봐." },
+};
+
 /** 오행 코드 → 사용자용 설명 (목·화·토·금·수는 사용) */
 const ELEMENT_PLAIN: Record<string, { name: string; many: Record<ElementDistToneKey, string>; absent: Record<ElementDistToneKey, string> }> = {
   "木": {
@@ -107,63 +153,82 @@ function countByElement(pillars: SajuPillarsForElement): Record<string, number> 
   return count;
 }
 
+function getDayStemElement(pillars: SajuPillarsForElement): string {
+  const stem = pillars.day?.cheongan?.hanja?.trim?.()?.[0] ?? "";
+  return stem ? (STEM_TO_ELEMENT[stem] ?? "") : "";
+}
+
 /**
- * 오행의 분포와 보완법 문단. 여덟 글자 속 다섯 가지 기운의 분포를 쉬운 말로, 보완법은 구체적으로. ~600자, 3톤.
+ * 오행의 분포와 보완법 문단. 목·화·토·금·수 개수, 일간 기준 육친(십신) 연결, 강점 위주 + 보완 한 줄. ~600자, 3톤.
  */
 export function getElementDistributionParagraph(
   pillars: SajuPillarsForElement,
   tone: ElementDistToneKey
 ): string {
   const count = countByElement(pillars);
+  const dayElement = getDayStemElement(pillars);
+  const elementAsTenGod = (dayElement ? ELEMENT_AS_TEN_GOD[dayElement] : null) ?? ELEMENT_AS_TEN_GOD["木"];
   const elements = ["木", "火", "土", "金", "水"] as const;
-  const many: string[] = [];
+
+  const countParts = elements.map((el) => `${EL_NAME[el]} ${count[el] ?? 0}개`).join(", ");
+  const present: string[] = [];
   const absent: string[] = [];
+
   for (const el of elements) {
     const n = count[el] ?? 0;
-    if (n >= 4) many.push(el);
-    else if (n === 0) absent.push(el);
+    const tenGod = elementAsTenGod[el] ?? "";
+    const label = tenGod ? TEN_GOD_LABEL[tenGod] : "";
+    if (n >= 1) {
+      const strength = tenGod ? (TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "") : "";
+      if (tone === "empathy" && label && strength) {
+        present.push(`${EL_NAME[el]} ${n}개는 당신에게 <strong>${label}</strong>에 해당해서, ${strength}`);
+      } else if (tone === "reality" && label && strength) {
+        present.push(`${EL_NAME[el]} ${n}개 → ${label}: ${strength}`);
+      } else if (tone === "fun" && label && strength) {
+        present.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength}`);
+      }
+    } else {
+      const complement = tenGod ? (TEN_GOD_ABSENT[tenGod]?.[tone] ?? "") : "";
+      if (label && complement) {
+        absent.push(`${EL_NAME_SUBJECT[el]} 없어서 <strong>${label}</strong> 쪽을 보완하면 좋아요. ${complement}`);
+      }
+    }
   }
 
   const lines: string[] = [];
 
   if (tone === "empathy") {
-    lines.push("당신에게는 <strong>목·화·토·금·수</strong> 다섯 가지 <strong>기운</strong>이 각각 다르게 분포해 있어요. 잘 드러나는 기운이 있는가 하면, 아직 적게 드러나는 기운도 있어요.");
-    if (many.length > 0) {
-      const parts = many.map((el) => ELEMENT_PLAIN[el]?.many?.empathy ?? "").filter(Boolean);
-      if (parts.length) lines.push(parts.join(" "));
+    lines.push(`여덟 글자 속에 ${countParts}가 있어요.`);
+    if (present.length > 0) {
+      lines.push(present.join(" "));
     }
     if (absent.length > 0) {
-      const parts = absent.map((el) => ELEMENT_PLAIN[el]?.absent?.empathy ?? "").filter(Boolean);
-      if (parts.length) lines.push("한편 이렇게 <strong>보완</strong>해 보시면 좋아요. " + parts.join(" "));
+      lines.push("한편 보완하면 좋은 점은 이렇게요. " + absent.join(" "));
     }
-    if (many.length === 0 && absent.length === 0) {
-      lines.push("목·화·토·금·수가 고르게 분포해 있어, 한쪽으로 치우치지 않고 상황에 맞게 쓰기 좋은 편이에요. 무리하지 않는 선에서 다양한 경험을 쌓아 가시면 좋겠어요.");
+    if (present.length === 0 && absent.length === 0) {
+      lines.push("목·화·토·금·수가 고르게 분포해 있어, 한쪽으로 치우치지 않고 상황에 맞게 쓰기 좋은 편이에요.");
     }
   } else if (tone === "reality") {
-    lines.push("<strong>목·화·토·금·수</strong> 다섯 가지 <strong>기운</strong>의 분포가 뚜렷합니다. 잘 드러나는 기운과 <strong>보완</strong> 여지가 있는 기운을 구분해 보시면 됩니다.");
-    if (many.length > 0) {
-      const parts = many.map((el) => ELEMENT_PLAIN[el]?.many?.reality ?? "").filter(Boolean);
-      if (parts.length) lines.push(parts.join(" "));
+    lines.push(`분포: ${countParts}.`);
+    if (present.length > 0) {
+      lines.push(present.join(" "));
     }
     if (absent.length > 0) {
-      const parts = absent.map((el) => ELEMENT_PLAIN[el]?.absent?.reality ?? "").filter(Boolean);
-      if (parts.length) lines.push("<strong>보완</strong> 참고. " + parts.join(" "));
+      lines.push("보완: " + absent.join(" "));
     }
-    if (many.length === 0 && absent.length === 0) {
-      lines.push("목·화·토·금·수가 전반적으로 균형 잡혀 있습니다. 다양한 영역을 골고루 활용하시면 됩니다.");
+    if (present.length === 0 && absent.length === 0) {
+      lines.push("목·화·토·금·수가 전반적으로 균형 잡혀 있습니다.");
     }
   } else {
-    lines.push("니한테는 <strong>목·화·토·금·수</strong> 다섯 가지 <strong>기운</strong>이 각각 다르게 깔려 있어. 잘 나오는 거 있는 반면에, 아직 적게 나오는 거도 있어.");
-    if (many.length > 0) {
-      const parts = many.map((el) => ELEMENT_PLAIN[el]?.many?.fun ?? "").filter(Boolean);
-      if (parts.length) lines.push(parts.join(" "));
+    lines.push(`니한테는 ${countParts}야.`);
+    if (present.length > 0) {
+      lines.push(present.join(" "));
     }
     if (absent.length > 0) {
-      const parts = absent.map((el) => ELEMENT_PLAIN[el]?.absent?.fun ?? "").filter(Boolean);
-      if (parts.length) lines.push("한편 이렇게 <strong>보완</strong>해 보면 좋아. " + parts.join(" "));
+      lines.push("보완하면 좋은 거는 이렇게. " + absent.join(" "));
     }
-    if (many.length === 0 && absent.length === 0) {
-      lines.push("목·화·토·금·수가 고르게 있어서 한쪽만 튀지 않고 쓰기 좋은 편이야. 무리하지 않게 다양한 거 해 보면 좋겠어.");
+    if (present.length === 0 && absent.length === 0) {
+      lines.push("목·화·토·금·수가 고르게 있어서 한쪽만 튀지 않고 쓰기 좋은 편이야.");
     }
   }
 

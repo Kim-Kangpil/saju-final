@@ -1330,11 +1330,6 @@ export default function Page() {
       );
     }
 
-    if (relationsAnalysis?.[selectedChar]) {
-      base.relation.unshift(
-        asContent("relation_text", "관계 패턴 요약", relationsAnalysis[selectedChar], "🤝", "local")
-      );
-    }
     if (specialStarsAnalysis?.[selectedChar]) {
       base.insight.unshift(
         asContent("stars_text", "특수신살/신살", specialStarsAnalysis[selectedChar], "⭐", "local")

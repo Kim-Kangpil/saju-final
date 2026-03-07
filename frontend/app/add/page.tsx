@@ -1082,11 +1082,39 @@ export default function Page() {
     return texts[selectedTone];
   }, [result, selectedTone]);
 
+  // 첫 문장에 포함된 색깔(예: 하늘빛, 초록빛)로 첫 문장만 해당 색상 적용
+  const DAY_PILLAR_COLOR_MAP: Record<string, string> = {
+    하늘빛: "#87CEEB",
+    초록빛: "#2E7D32",
+    연두빛: "#9ACD32",
+    주황빛: "#FF8C00",
+    노랑빛: "#F9A825",
+    연노랑빛: "#FDD835",
+    은빛: "#9E9E9E",
+    파랑빛: "#1976D2",
+    붉은빛: "#C62828",
+  };
+  const formatDayPillarWithFirstSentenceColor = (text: string): string => {
+    const firstEnd = text.search(/[.。!?]/);
+    const firstSentence = firstEnd >= 0 ? text.slice(0, firstEnd + 1) : text;
+    const rest = firstEnd >= 0 ? text.slice(firstEnd + 1) : "";
+    const colorMatch = firstSentence.match(/(\S+빛)/);
+    const hex = colorMatch ? DAY_PILLAR_COLOR_MAP[colorMatch[1]] : null;
+    const escapedFirst = firstSentence.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const restEscaped = rest.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const restWithBr = restEscaped.replace(/\n/g, "<br />");
+    if (hex) {
+      return `<span style="color:${hex};font-weight:600">${escapedFirst}</span>${restWithBr}`;
+    }
+    return escapedFirst + restWithBr;
+  };
+
   const contentWithImage = useMemo(() => {
     if (!result || !getDayPillarAnimalText) return null;
 
     const dayPillarKey = result.day.cheongan.hangul + result.day.jiji.hangul;
     const imagePath = `/images/day_pillars/${dayPillarKey}.png`;
+    const bodyHtml = formatDayPillarWithFirstSentenceColor(getDayPillarAnimalText);
 
     return `
     <div style="
@@ -1123,7 +1151,7 @@ export default function Page() {
       </div>
     </div>
     <div style="margin-top: 1rem; line-height: 1.8; text-align: left;">
-      ${getDayPillarAnimalText.replace(/\n/g, '<br />')}
+      ${bodyHtml}
     </div>
   `;
   }, [result, getDayPillarAnimalText]);

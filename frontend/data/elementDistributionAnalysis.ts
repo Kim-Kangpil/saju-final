@@ -52,13 +52,22 @@ const TEN_GOD_STRENGTH: Record<string, Record<ElementDistToneKey, string>> = {
   인성: { empathy: "배우고 쌓고 견디는 힘이 강점이에요.", reality: "학습·인내가 강점입니다.", fun: "배우고 가르치는 거 잘해." },
 };
 
-/** 십신별 보완 한 줄 (해당 오행 0개일 때) */
+/** 십신별 보완 한 줄 (0~1개일 때 약점·부족으로 서술) */
 const TEN_GOD_ABSENT: Record<string, Record<ElementDistToneKey, string>> = {
   비겁: { empathy: "작은 것부터 스스로 정하고, 동료와 함께하는 일을 늘려 보시면 좋아요.", reality: "주체성·동료 관계를 의식적으로 늘리면 보완됩니다.", fun: "작은 거 스스로 정하고 사람이랑 해 보면 좋아." },
   식상: { empathy: "하고 싶은 말을 짧게라도 꾸준히 해 보시면 좋아요.", reality: "말·글·창작 기회를 늘리면 보완됩니다.", fun: "말 조금씩 해 보면 좋아." },
   재성: { empathy: "작은 것부터 정리하고, 결과를 한 가지씩 챙겨 보시면 좋아요.", reality: "정리·관리 경험을 늘리면 보완됩니다.", fun: "작은 거부터 정리하고 챙겨 봐." },
   관성: { empathy: "작은 역할부터 맡아 보시면 좋아요.", reality: "소규모 책임·역할을 늘리면 보완됩니다.", fun: "작은 역할부터 맡아 봐." },
   인성: { empathy: "배우고 싶은 걸 하나 정해서 조금씩 쌓아 보시면 좋아요.", reality: "학습·쌓기 경험을 늘리면 보완됩니다.", fun: "하나 정해서 쌓아 봐." },
+};
+
+/** 4개 이상일 때 — 강점이자 약점 (과하면 조절 필요) */
+const TEN_GOD_MANY: Record<string, Record<ElementDistToneKey, string>> = {
+  비겁: { empathy: "강점이지만 많아서 자기만 고집하면 약점이 될 수 있어요. 때로 한발 물러서 보는 게 좋아요.", reality: "강점이나 과하면 고집·독선으로 이어질 수 있으니 조절이 유리합니다.", fun: "강점인데 많아서 고집되면 약점 돼. 한발 물러서 보는 게 좋아." },
+  식상: { empathy: "강점이지만 많아서 말이 행동보다 너무 앞서면 약점이 될 수 있어요. 듣고 끝까지 마무리하는 습관이 좋아요.", reality: "강점이나 과하면 말이 앞서거나 마무리가 약해지니, 듣기·실행 비중을 늘리면 유리합니다.", fun: "강점인데 많으면 말만 나와. 듣고 끝까지 하는 거 챙겨." },
+  재성: { empathy: "강점이지만 많아서 재물에만 몰두하면 균형이 무너질 수 있어요. 나누고 쉬는 시간을 갖는 게 좋아요.", reality: "강점이나 과하면 집착·소모가 될 수 있으니 여유를 두는 것이 유리합니다.", fun: "강점인데 많으면 그거만 하게 돼. 나누고 쉬는 거 잊지 마." },
+  관성: { empathy: "강점이지만 많아서 혼자만 짊어지면 부담이 될 수 있어요. 역할을 나누는 게 좋아요.", reality: "강점이나 과하면 자기 억압·부담이 되니 역할 분담이 유리합니다.", fun: "강점인데 많으면 혼자 다 짊어지게 돼. 나눠서 해." },
+  인성: { empathy: "강점이지만 많아서 생각만 하다가 실행을 놓치기 쉬워요. 작은 것부터 행동에 옮기는 게 좋아요.", reality: "강점이나 과하면 우유부단·실행 지연이 되니 실행 비중을 늘리면 유리합니다.", fun: "강점인데 많으면 생각만 하게 돼. 작은 거부터 해 봐." },
 };
 
 /** 오행 코드 → 사용자용 설명 (목·화·토·금·수는 사용) */
@@ -171,27 +180,40 @@ export function getElementDistributionParagraph(
   const elements = ["木", "火", "土", "金", "水"] as const;
 
   const countParts = elements.map((el) => `${EL_NAME[el]} ${count[el] ?? 0}개`).join(", ");
-  const present: string[] = [];
-  const absent: string[] = [];
+  const strengthLines: string[] = [];   // 2~3개: 강점
+  const manyLines: string[] = [];       // 4개 이상: 강점이자 약점
+  const weaknessLines: string[] = [];   // 0~1개: 부족 → 약점, 보완 권장
 
   for (const el of elements) {
     const n = count[el] ?? 0;
     const tenGod = elementAsTenGod[el] ?? "";
     const label = tenGod ? TEN_GOD_LABEL[tenGod] : "";
-    if (n >= 1) {
-      const strength = tenGod ? (TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "") : "";
-      if (tone === "empathy" && label && strength) {
-        present.push(`${EL_NAME[el]} ${n}개는 당신에게 <strong>${label}</strong>에 해당해서, ${strength}`);
-      } else if (tone === "reality" && label && strength) {
-        present.push(`${EL_NAME[el]} ${n}개 → ${label}: ${strength}`);
-      } else if (tone === "fun" && label && strength) {
-        present.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength}`);
+    if (!label) continue;
+
+    if (n <= 1) {
+      // 0~1개: 부족 → 약점으로 서술, 보완 권장
+      const complement = TEN_GOD_ABSENT[tenGod]?.[tone] ?? "";
+      if (tone === "empathy") {
+        if (n === 0) weaknessLines.push(`${EL_NAME_SUBJECT[el]} 없어서 <strong>${label}</strong> 쪽이 부족해요. 보완하면 좋아요. ${complement}`);
+        else weaknessLines.push(`${EL_NAME[el]} ${n}개라 <strong>${label}</strong> 쪽이 부족한 편이에요. 보완하면 좋아요. ${complement}`);
+      } else if (tone === "reality") {
+        weaknessLines.push(n === 0 ? `${EL_NAME[el]} 없음 → ${label} 부족. 보완: ${complement}` : `${EL_NAME[el]} ${n}개 → ${label} 부족. 보완: ${complement}`);
+      } else {
+        weaknessLines.push(n === 0 ? `${EL_NAME_SUBJECT[el]} 없어서 ${label} 쪽 약점. ${complement}` : `${EL_NAME[el]} ${n}개라 ${label} 쪽 부족해. ${complement}`);
       }
+    } else if (n <= 3) {
+      // 2~3개: 적당 → 강점만
+      const strength = TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "";
+      if (tone === "empathy") strengthLines.push(`${EL_NAME[el]} ${n}개는 당신에게 <strong>${label}</strong>에 해당해서, ${strength}`);
+      else if (tone === "reality") strengthLines.push(`${EL_NAME[el]} ${n}개 → ${label}: ${strength}`);
+      else strengthLines.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength}`);
     } else {
-      const complement = tenGod ? (TEN_GOD_ABSENT[tenGod]?.[tone] ?? "") : "";
-      if (label && complement) {
-        absent.push(`${EL_NAME_SUBJECT[el]} 없어서 <strong>${label}</strong> 쪽을 보완하면 좋아요. ${complement}`);
-      }
+      // 4개 이상: 많음 → 강점이자 약점
+      const strength = TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "";
+      const manyMsg = TEN_GOD_MANY[tenGod]?.[tone] ?? "";
+      if (tone === "empathy") manyLines.push(`${EL_NAME[el]} ${n}개는 당신에게 <strong>${label}</strong>에 해당해서 ${strength} ${manyMsg}`);
+      else if (tone === "reality") manyLines.push(`${EL_NAME[el]} ${n}개 → ${label}: ${strength} ${manyMsg}`);
+      else manyLines.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength} ${manyMsg}`);
     }
   }
 
@@ -199,35 +221,26 @@ export function getElementDistributionParagraph(
 
   if (tone === "empathy") {
     lines.push(`여덟 글자 속에 ${countParts}가 있어요.`);
-    if (present.length > 0) {
-      lines.push(present.join(" "));
-    }
-    if (absent.length > 0) {
-      lines.push("한편 보완하면 좋은 점은 이렇게요. " + absent.join(" "));
-    }
-    if (present.length === 0 && absent.length === 0) {
+    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
+    if (manyLines.length > 0) lines.push(manyLines.join(" "));
+    if (weaknessLines.length > 0) lines.push("부족한 쪽(약점)은 이렇게 보완하면 좋아요. " + weaknessLines.join(" "));
+    if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 분포해 있어, 한쪽으로 치우치지 않고 상황에 맞게 쓰기 좋은 편이에요.");
     }
   } else if (tone === "reality") {
     lines.push(`분포: ${countParts}.`);
-    if (present.length > 0) {
-      lines.push(present.join(" "));
-    }
-    if (absent.length > 0) {
-      lines.push("보완: " + absent.join(" "));
-    }
-    if (present.length === 0 && absent.length === 0) {
+    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
+    if (manyLines.length > 0) lines.push(manyLines.join(" "));
+    if (weaknessLines.length > 0) lines.push("부족(약점)·보완: " + weaknessLines.join(" "));
+    if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 전반적으로 균형 잡혀 있습니다.");
     }
   } else {
     lines.push(`니한테는 ${countParts}야.`);
-    if (present.length > 0) {
-      lines.push(present.join(" "));
-    }
-    if (absent.length > 0) {
-      lines.push("보완하면 좋은 거는 이렇게. " + absent.join(" "));
-    }
-    if (present.length === 0 && absent.length === 0) {
+    if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
+    if (manyLines.length > 0) lines.push(manyLines.join(" "));
+    if (weaknessLines.length > 0) lines.push("부족한 쪽(약점)은 보완하면 좋아. " + weaknessLines.join(" "));
+    if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 있어서 한쪽만 튀지 않고 쓰기 좋은 편이야.");
     }
   }

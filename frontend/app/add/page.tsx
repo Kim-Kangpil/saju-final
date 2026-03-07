@@ -22,6 +22,7 @@ import { TODAY_ANALYSIS, analyzeTodayFortune } from "../../data/todayAnalysis";
 import { dayPillarTexts } from "../../data/dayPillarAnimal";
 import { getCoreValuesParagraph } from "../../data/coreValuesAnalysis";
 import { getStrengthWeaknessParagraph } from "../../data/strengthWeaknessAnalysis";
+import { getLatentTalentAptitudeParagraph } from "../../data/latentTalentAptitude";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -1261,6 +1262,10 @@ export default function Page() {
         if (it.key === "strengthWeak" && result) {
           const content = getStrengthWeaknessParagraph(result, selectedChar);
           return asContent("talent_strengthWeak", it.title, content, it.icon, "local");
+        }
+        if (it.key === "aptitude" && result) {
+          const content = getLatentTalentAptitudeParagraph(result, selectedChar);
+          return asContent("talent_aptitude", it.title, content, it.icon, "local");
         }
         return asReady(`talent_${it.key}`, it.title, it.icon);
       }),

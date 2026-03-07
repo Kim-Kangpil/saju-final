@@ -260,9 +260,9 @@ export default function LandingPage() {
                             style={{
                                 width: "100%", maxWidth: 320, padding: "16px 0", borderRadius: 14,
                                 fontWeight: 700, fontSize: 15, color: "#1a2e0e",
-                                background: "linear-gradient(135deg, #fef08a 0%, #fde047 100%)",
+                                background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
                                 border: "none",
-                                boxShadow: "0 4px 14px rgba(251,191,36,.3)",
+                                boxShadow: "0 4px 14px rgba(85,107,47,.25)",
                             }}>
                             ▶ 무료로 생성하기
                         </button>
@@ -522,9 +522,9 @@ export default function LandingPage() {
                             style={{
                                 width: "100%", padding: "15px 0", borderRadius: 14,
                                 fontWeight: 700, fontSize: 14, color: "#1a2e0e",
-                                background: "linear-gradient(135deg, #fef08a 0%, #fde047 100%)",
+                                background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
                                 border: "none",
-                                boxShadow: "0 3px 14px rgba(251,191,36,.35)",
+                                boxShadow: "0 3px 14px rgba(85,107,47,.35)",
                             }}>
                             ▶ 내 사주 확인하기
                         </button>

@@ -2085,14 +2085,15 @@ export default function Page() {
     text-gray-900 font-bold text-lg
     rounded-lg
     transform transition-all duration-200
+    shadow-lg
     ${loading || !!formError
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : "hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                                  ? "cursor-not-allowed"
+                                  : "hover:scale-105 active:scale-95 hover:shadow-xl"
                                 }
     disabled:transform-none
   `}
                             >
-                              {loading ? "분석 중.." : "🔮 사주 확인하기"}
+                              {loading ? "분석 중.." : "사주 확인하기"}
                             </button>
                           </div>
                         </motion.div>

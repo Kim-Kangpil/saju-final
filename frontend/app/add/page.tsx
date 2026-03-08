@@ -33,7 +33,7 @@ import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
 import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";
-import { MaskVsNatureVisual } from "../../components/MaskVsNatureVisual";
+import { FaceSplitCard } from "../../components/FaceSplitCard";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -684,7 +684,8 @@ export default function Page() {
   const [natureAnalysis, setNatureAnalysis] = useState<string | null>(null);
   const [natureYangCount, setNatureYangCount] = useState<number>(0);
   const [natureYinCount, setNatureYinCount] = useState<number>(0);
-  const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);  // 🔥 추가
+  const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);
+  const [maskVsNatureLabels, setMaskVsNatureLabels] = useState<{ social: string; real: string; habit: string } | null>(null);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
   useEffect(() => {
     if (!loading) return;
@@ -1092,6 +1093,11 @@ export default function Page() {
           selectedChar
         );
         setMaskVsNatureAnalysis(maskVsNatureResult.text);
+        setMaskVsNatureLabels({
+          social: monthStemTenGod,
+          real: hourStemTenGod,
+          habit: hourBranchTenGod || hourStemTenGod,
+        });
 
       } catch (error) {
         console.error("대운세운 분석 오류:", error);
@@ -2495,6 +2501,13 @@ export default function Page() {
 
                                               {c.kind === "content" && (
                                                 <div className="space-y-4">
+                                                  {c.id === "identity_persona" && maskVsNatureLabels && (
+                                                    <FaceSplitCard
+                                                      socialLabel={maskVsNatureLabels.social}
+                                                      realLabel={maskVsNatureLabels.real}
+                                                      habitLabel={maskVsNatureLabels.habit}
+                                                    />
+                                                  )}
                                                   {c.id === "nature_text" && result && (
                                                     <SajuEnergyWheel
                                                       dayStem={result.day.cheongan.hanja}
@@ -2502,11 +2515,6 @@ export default function Page() {
                                                       yinCount={natureYinCount}
                                                       size={220}
                                                     />
-                                                  )}
-                                                  {c.id === "identity_persona" && (
-                                                    <div className="flex flex-col items-center gap-1 my-2">
-                                                      <MaskVsNatureVisual size={200} className="max-w-[260px] w-full h-auto" />
-                                                    </div>
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (
@@ -2563,6 +2571,8 @@ export default function Page() {
                               setSpecialStarsAnalysis(null);
                               setTodayFortune(null);
                               setNewInterpretation(null);
+                              setMaskVsNatureAnalysis(null);
+                              setMaskVsNatureLabels(null);
                               setExpandedSection(null);
                               setShowFortune(false);
                               setShowCharm(false);

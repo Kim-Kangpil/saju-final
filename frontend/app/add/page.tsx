@@ -1699,8 +1699,8 @@ export default function Page() {
               </div>
             </div>
 
-            {/* 메인 콘텐츠: 분석 결과만 여백 없음, 환영/로그인/입력창은 원래 여백 */}
-            <div className={cn("relative", result && gateStep !== "needAuth" ? "p-0" : "p-5")}>
+            {/* 메인 콘텐츠: 분석 결과만 여백 없음, 환영/로그인/입력창/캐릭터선택은 여백 유지 */}
+            <div className={cn("relative", result && gateStep !== "needAuth" && !showCharacterSelect ? "p-0" : "p-5")}>
               {!result && (
                 <div
                   className="absolute inset-0"
@@ -1720,7 +1720,7 @@ export default function Page() {
               <div
                 className={cn(
                   "relative z-10 rounded-2xl shadow-xl mx-auto",
-                  result && gateStep !== "needAuth" ? "p-0 w-full" : "p-4 sm:p-6 max-w-[420px]"
+                  result && gateStep !== "needAuth" && !showCharacterSelect ? "p-0 w-full" : "p-4 sm:p-6 max-w-[420px]"
                 )}
               >
                 {err && !loading && !result && (
@@ -2274,13 +2274,25 @@ export default function Page() {
                         </motion.div>
 
                         {/* 사주 명식은 결과 화면에도 계속 표시 */}
-                        <div className="relative">
-                          <button
-                            onClick={() => setScriptMode(scriptMode === "hanja" ? "hangul" : "hanja")}
-                            className="absolute -top-7 right-1 z-20 px-2.5 py-1 bg-[#fef08a] border-2 border-[#eab308] rounded-full text-[9px] font-bold text-[#854d0e] hover:bg-[#fde047] transition-all hover:scale-110 shadow-md"
-                          >
-                            {scriptMode === "hanja" ? "한글" : "한자"}
-                          </button>
+                        <div className="relative pt-6 pb-6 space-y-4">
+                          <div className="flex justify-end">
+                            <div className="flex bg-yellow-50 p-1 rounded-xl border-2 border-[#adc4af]">
+                              <button
+                                type="button"
+                                onClick={() => setScriptMode("hanja")}
+                                className={`flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all ${scriptMode === "hanja" ? "bg-[#556b2f] text-white shadow-sm" : "bg-transparent text-[#374151] hover:bg-white/60"}`}
+                              >
+                                한자
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setScriptMode("hangul")}
+                                className={`flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all ${scriptMode === "hangul" ? "bg-[#556b2f] text-white shadow-sm" : "bg-transparent text-[#374151] hover:bg-white/60"}`}
+                              >
+                                한글
+                              </button>
+                            </div>
+                          </div>
                           <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
                             <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[9px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
                               <span>시주</span>

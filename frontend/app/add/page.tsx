@@ -2277,20 +2277,20 @@ export default function Page() {
                         </motion.div>
 
                         {/* 사주 명식은 결과 화면에도 계속 표시 */}
-                        <div className="relative pt-6 pb-6 space-y-4">
+                        <div className="relative pt-1 pb-2 space-y-1.5">
                           <div className="flex justify-end">
-                            <div className="flex bg-yellow-50 p-1 rounded-xl border-2 border-[#adc4af]">
+                            <div className="flex bg-yellow-50 p-0.5 rounded-md border border-[#adc4af]">
                               <button
                                 type="button"
                                 onClick={() => setScriptMode("hanja")}
-                                className={`flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all ${scriptMode === "hanja" ? "bg-[#556b2f] text-white shadow-sm" : "bg-transparent text-[#374151] hover:bg-white/60"}`}
+                                className={`min-w-[36px] px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${scriptMode === "hanja" ? "bg-[#556b2f] text-white" : "bg-transparent text-[#374151] hover:bg-white/70"}`}
                               >
                                 한자
                               </button>
                               <button
                                 type="button"
                                 onClick={() => setScriptMode("hangul")}
-                                className={`flex-1 min-w-[60px] py-2 rounded-lg text-sm font-bold transition-all ${scriptMode === "hangul" ? "bg-[#556b2f] text-white shadow-sm" : "bg-transparent text-[#374151] hover:bg-white/60"}`}
+                                className={`min-w-[36px] px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${scriptMode === "hangul" ? "bg-[#556b2f] text-white" : "bg-transparent text-[#374151] hover:bg-white/70"}`}
                               >
                                 한글
                               </button>

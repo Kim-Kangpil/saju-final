@@ -1700,7 +1700,7 @@ export default function Page() {
             </div>
 
             {/* 메인 콘텐츠 */}
-            <div className="p-5 relative">
+            <div className="p-3 relative">
               {!result && (
                 <div
                   className="absolute inset-0"
@@ -1718,7 +1718,7 @@ export default function Page() {
                 />
               )}
               <div
-                className="relative z-10 rounded-2xl shadow-xl p-4 sm:p-6 mx-auto max-w-[420px]"
+                className="relative z-10 rounded-2xl shadow-xl p-3 sm:p-4 mx-auto w-full"
               >
                 {err && !loading && !result && (
                   <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">

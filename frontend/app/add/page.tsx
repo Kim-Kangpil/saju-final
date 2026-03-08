@@ -1699,8 +1699,8 @@ export default function Page() {
               </div>
             </div>
 
-            {/* 메인 콘텐츠 */}
-            <div className="p-0 relative">
+            {/* 메인 콘텐츠: 분석 결과만 여백 없음, 환영/로그인/입력창은 원래 여백 */}
+            <div className={cn("relative", result && gateStep !== "needAuth" ? "p-0" : "p-5")}>
               {!result && (
                 <div
                   className="absolute inset-0"
@@ -1718,7 +1718,10 @@ export default function Page() {
                 />
               )}
               <div
-                className="relative z-10 rounded-2xl shadow-xl p-0 mx-auto w-full"
+                className={cn(
+                  "relative z-10 rounded-2xl shadow-xl mx-auto",
+                  result && gateStep !== "needAuth" ? "p-0 w-full" : "p-4 sm:p-6 max-w-[420px]"
+                )}
               >
                 {err && !loading && !result && (
                   <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">

@@ -26,6 +26,7 @@ import { getLatentTalentAptitudeParagraph } from "../../data/latentTalentAptitud
 import { getElementDistributionParagraph } from "../../data/elementDistributionAnalysis";
 import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
 import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
+import { getAncestorParentParagraph } from "../../data/ancestorParentFortune";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -508,7 +509,7 @@ const MEGA_SECTIONS: Record<
     icon: "🤝",
     items: [
       { key: "comm", title: "인간관계 스타일", icon: "💬" },
-      { key: "parents", title: "조상의 혼은 부모운", icon: "👪" },
+      { key: "parents", title: "내 안에 흐르는 가장 단단한 유전자", icon: "👪" },
       { key: "charisma", title: "카리스마와 사회적 영향력", icon: "👑" },
       { key: "hapchung", title: "지지 합과 충의 본색", icon: "⚡" },
     ],
@@ -591,6 +592,7 @@ function classifyMegaByTitle(title: string): MegaKey | null {
     t.includes("커뮤니케이션") ||
     t.includes("부모") ||
     t.includes("조상") ||
+    t.includes("유전자") ||
     t.includes("카리스마") ||
     t.includes("영향력") ||
     t.includes("합") ||
@@ -1294,6 +1296,10 @@ export default function Page() {
           const content = getRelationshipStyleParagraph(result, selectedChar);
           return asContent("relation_comm", it.title, content, it.icon, "local");
         }
+        if (it.key === "parents" && result) {
+          const content = getAncestorParentParagraph(result, gender, selectedChar);
+          return asContent("relation_parents", it.title, content, it.icon, "local");
+        }
         return asReady(`relation_${it.key}`, it.title, it.icon);
       }),
       insight: MEGA_SECTIONS.insight.items.map((it) =>
@@ -1374,6 +1380,7 @@ export default function Page() {
     gateStep,
     getDayPillarAnimalText,
     result,
+    gender,
   ]);
 
   async function requestInterpretation() {

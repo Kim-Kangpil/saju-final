@@ -240,7 +240,6 @@ export function getRelationshipStyleParagraph(
     const strong = isStrong(g);
     return TEXTS[g][dim][strong ? "strong" : "weak"][tone];
   };
-  const label = (dim: DimKey) => DIM_LABEL[dim][tone];
 
   const s1 = line("view", top);
   const s2 = line("role", top);
@@ -249,20 +248,21 @@ export function getRelationshipStyleParagraph(
   const s5 = line("strength", top);
   const s5b = second !== top ? line("strength", second) : "";
 
+  // 소제목 없이 서술문 속에 자연스럽게 녹임. ~600자, 2~3문단.
   if (tone === "empathy") {
-    const p1 = "<strong>" + label("view") + "</strong> " + s1 + " <strong>" + label("role") + "</strong> " + s2;
-    const p2 = "<strong>" + label("pattern") + "</strong> " + s3 + " <strong>" + label("conflict") + "</strong> " + s4;
-    const p3 = "<strong>" + label("strength") + "</strong> " + s5 + (s5b ? " " + s5b : "");
+    const p1 = s1 + " 관계에서는 " + s2;
+    const p2 = s3 + " 다만 " + s4;
+    const p3 = s5 + (s5b ? " " + s5b : "");
     return [p1, p2, p3].join("\n\n").trim();
   }
   if (tone === "reality") {
-    const p1 = "<strong>" + label("view") + "</strong> " + s1 + " <strong>" + label("role") + "</strong> " + s2;
-    const p2 = "<strong>" + label("pattern") + "</strong> " + s3 + " <strong>" + label("conflict") + "</strong> " + s4;
-    const p3 = "<strong>" + label("strength") + "</strong> " + s5 + (s5b ? " " + s5b : "");
+    const p1 = s1 + " 관계에서는 " + s2;
+    const p2 = s3 + " 다만 " + s4;
+    const p3 = s5 + (s5b ? " " + s5b : "");
     return [p1, p2, p3].join("\n\n").trim();
   }
-  const p1 = "<strong>" + label("view") + "</strong> " + s1 + " <strong>" + label("role") + "</strong> " + s2;
-  const p2 = "<strong>" + label("pattern") + "</strong> " + s3 + " <strong>" + label("conflict") + "</strong> " + s4;
-  const p3 = "<strong>" + label("strength") + "</strong> " + s5 + (s5b ? " " + s5b : "");
+  const p1 = s1 + " 관계에서는 " + s2;
+  const p2 = s3 + " 다만 " + s4;
+  const p3 = s5 + (s5b ? " " + s5b : "");
   return [p1, p2, p3].join("\n\n").trim();
 }

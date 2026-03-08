@@ -878,8 +878,20 @@ export default function Page() {
   // 아코디언에는 재력과 사회적 무기(4개 항목)만 표시
   const megaOrder: MegaKey[] = ["identity", "talent", "relation", "insight", "solution"];
   const [openMega, setOpenMega] = useState<MegaKey | null>("identity");
+  const megaSectionRefs = useRef<Record<MegaKey, HTMLDivElement | null>>({
+    identity: null, talent: null, relation: null, insight: null, solution: null,
+  });
   type GateStep = "idle" | "showSaju" | "needAuth" | "unlocked";
   const [gateStep, setGateStep] = useState<GateStep>("idle");
+
+  // 아코디언 열릴 때 해당 섹션으로 스크롤 (첫 문단이 보이도록)
+  useEffect(() => {
+    if (!openMega) return;
+    const t = setTimeout(() => {
+      megaSectionRefs.current[openMega]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 350);
+    return () => clearTimeout(t);
+  }, [openMega]);
 
   useEffect(() => {
     if (isLoggedIn && gateStep === "needAuth") {
@@ -2385,6 +2397,7 @@ export default function Page() {
                               return (
                                 <div
                                   key={k}
+                                  ref={(el) => { megaSectionRefs.current[k] = el; }}
                                   className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none"
                                 >
                                   <button

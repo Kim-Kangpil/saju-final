@@ -278,15 +278,20 @@ const TEN_GOD_MEANING: Record<string, string> = {
   인성: "배우고 쌓는 힘",
 };
 
-/** status별 짧은 desc (HTML 제거, 첫 문장 또는 50자 내) */
+/** status별 짧은 desc (HTML 제거, 첫 문장 또는 50자 내). 0취약 1약함 2보통 3강함 4매우강함 5+과다 */
 function getShortDesc(tenGod: string, status: string, tone: ElementDistToneKey): string {
   const strip = (s: string) => s.replace(/<[^>]+>/g, "").trim();
-  if (status === "강함" || status === "적당") {
+  if (status === "강함" || status === "보통" || status === "매우 강함") {
     const raw = strip(TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "");
     const first = raw.split(/[.]/)[0] ?? raw;
     return (first.length > 48 ? first.slice(0, 47) + "…" : first) + (first.endsWith(".") ? "" : ".");
   }
-  if (status === "보완" || status === "취약") {
+  if (status === "과다") {
+    const raw = strip(TEN_GOD_MANY[tenGod]?.[tone] ?? "");
+    const first = raw.split(/[.]/)[0] ?? raw;
+    return (first.length > 48 ? first.slice(0, 47) + "…" : first) + (first.endsWith(".") ? "" : ".");
+  }
+  if (status === "취약" || status === "약함") {
     const raw = strip(TEN_GOD_ABSENT[tenGod]?.[tone] ?? "");
     const first = raw.split(/[.。]/)[0] ?? raw;
     return (first.length > 52 ? first.slice(0, 51) + "…" : first) + (first.endsWith(".") ? "" : ".");
@@ -294,39 +299,51 @@ function getShortDesc(tenGod: string, status: string, tone: ElementDistToneKey):
   return "";
 }
 
-/** status별 짧은 tip 한 줄 */
+/** status별 짧은 tip 한 줄. 0취약 1약함 2보통 3강함 4매우강함 5+과다 */
 const TEN_GOD_TIP: Record<string, Record<string, string>> = {
   비겁: {
-    강함: "한발 물러서 보는 순간을 갖으면 방향이 오래 갑니다.",
-    적당: "이 기질을 의식해서 키우면 중요한 순간에 빛나요.",
-    보완: "작은 결정부터 스스로 내리는 연습을 해보세요.",
     취약: "작은 결정부터 스스로 내리고, 함께할 일을 늘려보세요.",
+    약함: "작은 결정부터 스스로 내리는 연습을 해보세요.",
+    보통: "이 기질을 의식해서 키우면 중요한 순간에 빛나요.",
+    강함: "한발 물러서 보는 순간을 갖으면 방향이 오래 갑니다.",
+    "매우 강함": "역할을 나누면 그만큼 방향이 오래 유지돼요.",
+    과다: "한발 물러서 보는 순간을 갖으면 방향이 오래 갑니다.",
   },
   식상: {
-    강함: "듣는 시간과 끝까지 마무리하는 습관을 두세요.",
-    적당: "말과 표현을 늘릴수록 당신만의 색이 분명해져요.",
-    보완: "하고 싶은 말을 꾸준히 꺼내는 연습이 필요해요.",
     취약: "말과 표현을 늘릴수록 당신만의 색이 분명해져요.",
+    약함: "하고 싶은 말을 꾸준히 꺼내는 연습이 필요해요.",
+    보통: "말과 표현을 늘릴수록 당신만의 색이 분명해져요.",
+    강함: "듣는 시간과 끝까지 마무리하는 습관을 두세요.",
+    "매우 강함": "듣고 끝까지 하는 습관이 균형을 잡아줘요.",
+    과다: "듣는 시간과 끝까지 마무리하는 습관을 두세요.",
   },
   재성: {
-    강함: "나누고 쉬는 시간을 갖으면 기운이 오래 유지돼요.",
-    적당: "이 기질을 의식해서 키우면 중요한 순간에 빛나요.",
-    보완: "작은 것부터 정리하고 한 가지씩 결과를 챙기세요.",
     취약: "작은 것부터 정리하고 한 가지씩 결과를 챙기세요.",
+    약함: "작은 것부터 정리하고 한 가지씩 결과를 챙기세요.",
+    보통: "이 기질을 의식해서 키우면 중요한 순간에 빛나요.",
+    강함: "나누고 쉬는 시간을 갖으면 기운이 오래 유지돼요.",
+    "매우 강함": "여유를 두면 중요한 순간에 더 오래 작동해요.",
+    과다: "나누고 쉬는 시간을 갖으면 기운이 오래 유지돼요.",
   },
   관성: {
-    강함: "역할을 나누고 스스로에게 여유를 주세요.",
-    적당: "규칙을 지키고 믿음을 주는 힘이 있어요.",
-    보완: "작은 역할부터 맡아 보시면 재능이 서서히 드러나요.",
     취약: "작은 규칙부터 지켜 보시고 맡은 일을 끝까지 해보세요.",
+    약함: "작은 역할부터 맡아 보시면 재능이 서서히 드러나요.",
+    보통: "규칙을 지키고 믿음을 주는 힘이 있어요.",
+    강함: "역할을 나누고 스스로에게 여유를 주세요.",
+    "매우 강함": "역할을 나누면 믿음 주는 리더십이 오래 갑니다.",
+    과다: "역할을 나누고 스스로에게 여유를 주세요.",
   },
   인성: {
-    강함: "작은 것부터 행동에 옮기면 균형이 잡혀요.",
-    적당: "공부하고 견디며 쌓는 힘이 강해요.",
-    보완: "배우고 싶은 걸 하나 정해서 조금씩 쌓아 가보세요.",
     취약: "생각에 머물지 말고 작은 것부터 행동에 옮기세요.",
+    약함: "배우고 싶은 걸 하나 정해서 조금씩 쌓아 가보세요.",
+    보통: "공부하고 견디며 쌓는 힘이 강해요.",
+    강함: "작은 것부터 행동에 옮기면 균형이 잡혀요.",
+    "매우 강함": "실행 비중을 늘리면 중요한 순간에 빛나요.",
+    과다: "작은 것부터 행동에 옮기면 균형이 잡혀요.",
   },
 };
+
+export type OhaengStatus = "취약" | "약함" | "보통" | "강함" | "매우 강함" | "과다";
 
 export interface OhaengElementItem {
   key: string;
@@ -338,7 +355,7 @@ export interface OhaengElementItem {
   meaning: string;
   desc: string;
   tip: string;
-  status: "강함" | "적당" | "보완" | "취약";
+  status: OhaengStatus;
 }
 
 export interface OhaengVisualData {
@@ -354,10 +371,10 @@ export function getElementDistributionVisualData(
   const elementAsTenGod = (dayElement ? ELEMENT_AS_TEN_GOD[dayElement] : null) ?? ELEMENT_AS_TEN_GOD["木"];
 
   const elements: OhaengElementItem[] = ELEMENT_VISUAL_ORDER.map((el) => {
-    const n = Math.min(count[el] ?? 0, 8);
+    const n = count[el] ?? 0;
     const tenGod = elementAsTenGod[el] ?? "";
     const status: OhaengElementItem["status"] =
-      n >= 4 ? "강함" : n >= 2 ? "적당" : n === 1 ? "보완" : "취약";
+      n >= 5 ? "과다" : n === 4 ? "매우 강함" : n === 3 ? "강함" : n === 2 ? "보통" : n === 1 ? "약함" : "취약";
     const meaning = tenGod ? (TEN_GOD_MEANING[tenGod] ?? "") : "";
     const desc = getShortDesc(tenGod, status, tone);
     const tip = tenGod ? (TEN_GOD_TIP[tenGod]?.[status] ?? "이 기운을 의식해서 키우면 중요한 순간에 빛나요.") : "";
@@ -366,7 +383,7 @@ export function getElementDistributionVisualData(
       key: EL_KEY[el] ?? el,
       label: el,
       count: n,
-      max: 4,
+      max: 5,
       color: EL_COLOR[el] ?? "#6B8A7A",
       glow: EL_GLOW[el] ?? "#6B8A7A55",
       meaning,

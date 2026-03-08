@@ -98,7 +98,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             cy={cy}
             r={r - 2}
             fill="#13131F"
-            stroke="rgba(107, 138, 122, 0.27)"
+            stroke="rgba(196, 120, 100, 0.45)"
             strokeWidth="1.5"
           />
           {/* 내부 링 */}
@@ -228,12 +228,12 @@ export function CompassCard({ data }: { data: CompassCardData }) {
         className="rounded-2xl px-5 py-4 max-w-[320px] mx-auto text-center mb-2"
         style={{
           background: "#1E1E2E",
-          border: "1px solid rgba(107, 138, 122, 0.2)",
+          border: "1px solid rgba(196, 120, 100, 0.35)",
         }}
       >
         <div
           className="text-[12px] mb-2 tracking-wide"
-          style={{ color: "#6B8A7A" }}
+          style={{ color: "#C49080" }}
         >
           핵심 기준
         </div>

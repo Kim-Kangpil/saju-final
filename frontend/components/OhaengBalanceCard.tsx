@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import type { OhaengVisualData, OhaengElementItem } from "../data/elementDistributionAnalysis";
 
 const STATUS_COLOR: Record<string, string> = {
-  "강함": "#C8C0A8",
-  "적당": "#E8C87A",
-  "보완": "#7EB8A0",
   "취약": "#E89A7A",
+  "약함": "#E8B89A",
+  "보통": "#E8C87A",
+  "강함": "#7EB8A0",
+  "매우 강함": "#C8C0A8",
+  "과다": "#A78BD4",
 };
 
 function getPentagonPoints(
@@ -44,7 +46,8 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
 
   const dataPts = elements.map((el, i) => {
     const angle = ((-90 + i * 72) * Math.PI) / 180;
-    const r = animate ? (el.count / el.max) * maxR : 0;
+    const capped = Math.min(el.count, el.max);
+    const r = animate ? (capped / el.max) * maxR : 0;
     return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
   });
 
@@ -421,7 +424,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   <div
                     style={{
                       height: "100%",
-                      width: animate ? `${(el.count / el.max) * 100}%` : "0%",
+                      width: animate ? `${(Math.min(el.count, el.max) / el.max) * 100}%` : "0%",
                       background: el.color,
                       borderRadius: "99px",
                       transition: `width 1s cubic-bezier(0.25,1,0.5,1) ${0.6 + i * 0.1}s`,

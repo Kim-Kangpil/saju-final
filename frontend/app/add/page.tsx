@@ -23,7 +23,7 @@ import { dayPillarTexts } from "../../data/dayPillarAnimal";
 import { getCoreValuesParagraph, getCoreValuesCompassData } from "../../data/coreValuesAnalysis";
 import { getStrengthWeaknessParagraph, getStrengthWeaknessVisualData } from "../../data/strengthWeaknessAnalysis";
 import { getLatentTalentAptitudeParagraph, getAptitudeSpectrumData } from "../../data/latentTalentAptitude";
-import { getElementDistributionParagraph } from "../../data/elementDistributionAnalysis";
+import { getElementDistributionParagraph, getElementDistributionVisualData } from "../../data/elementDistributionAnalysis";
 import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
 import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
 import { getAncestorParentParagraph } from "../../data/ancestorParentFortune";
@@ -37,6 +37,7 @@ import { FaceSplitCard } from "../../components/FaceSplitCard";
 import { CompassCard } from "../../components/CompassCard";
 import { StrengthCard } from "../../components/StrengthCard";
 import { TalentSpectrumCard } from "../../components/TalentSpectrumCard";
+import { OhaengBalanceCard } from "../../components/OhaengBalanceCard";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -1441,6 +1442,11 @@ export default function Page() {
     return getAptitudeSpectrumData(result);
   }, [result]);
 
+  const elementDistributionVisualData = useMemo(() => {
+    if (!result) return null;
+    return getElementDistributionVisualData(result, selectedChar);
+  }, [result, selectedChar]);
+
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     if (!loggedIn) {
@@ -2573,6 +2579,9 @@ export default function Page() {
                                                   )}
                                                   {c.id === "talent_aptitude" && aptitudeSpectrumData && (
                                                     <TalentSpectrumCard data={aptitudeSpectrumData} />
+                                                  )}
+                                                  {c.id === "talent_elements" && elementDistributionVisualData && (
+                                                    <OhaengBalanceCard data={elementDistributionVisualData} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

@@ -251,3 +251,130 @@ export function getElementDistributionParagraph(
 
   return lines.join("\n\n").trim();
 }
+
+// --- 오각형 시각화용 (오행 분포 차트) ---
+
+/** 오행 순서: 오각형 꼭짓점 = 木(위) → 火 → 土 → 金 → 水 (시계방향) */
+const ELEMENT_VISUAL_ORDER = ["木", "火", "土", "金", "水"] as const;
+
+const EL_KEY: Record<string, string> = {
+  "木": "목", "火": "화", "土": "토", "金": "금", "水": "수",
+};
+
+const EL_COLOR: Record<string, string> = {
+  "木": "#7EB8A0", "火": "#E89A7A", "土": "#E8C87A", "金": "#C8C0A8", "水": "#7EB8D4",
+};
+
+const EL_GLOW: Record<string, string> = {
+  "木": "#7EB8A055", "火": "#E89A7A55", "土": "#E8C87A55", "金": "#C8C0A855", "水": "#7EB8D455",
+};
+
+/** 십신별 짧은 "의미" (오행 시각화 한 줄) */
+const TEN_GOD_MEANING: Record<string, string> = {
+  비겁: "결단하고 협력하는 힘",
+  식상: "표현하고 드러내는 힘",
+  재성: "결과를 만드는 힘",
+  관성: "맡은 일을 다하는 힘",
+  인성: "배우고 쌓는 힘",
+};
+
+/** status별 짧은 desc (HTML 제거, 첫 문장 또는 50자 내) */
+function getShortDesc(tenGod: string, status: string, tone: ElementDistToneKey): string {
+  const strip = (s: string) => s.replace(/<[^>]+>/g, "").trim();
+  if (status === "강함" || status === "적당") {
+    const raw = strip(TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "");
+    const first = raw.split(/[.]/)[0] ?? raw;
+    return (first.length > 48 ? first.slice(0, 47) + "…" : first) + (first.endsWith(".") ? "" : ".");
+  }
+  if (status === "보완" || status === "취약") {
+    const raw = strip(TEN_GOD_ABSENT[tenGod]?.[tone] ?? "");
+    const first = raw.split(/[.。]/)[0] ?? raw;
+    return (first.length > 52 ? first.slice(0, 51) + "…" : first) + (first.endsWith(".") ? "" : ".");
+  }
+  return "";
+}
+
+/** status별 짧은 tip 한 줄 */
+const TEN_GOD_TIP: Record<string, Record<string, string>> = {
+  비겁: {
+    강함: "한발 물러서 보는 순간을 갖으면 방향이 오래 갑니다.",
+    적당: "이 기질을 의식해서 키우면 중요한 순간에 빛나요.",
+    보완: "작은 결정부터 스스로 내리는 연습을 해보세요.",
+    취약: "작은 결정부터 스스로 내리고, 함께할 일을 늘려보세요.",
+  },
+  식상: {
+    강함: "듣는 시간과 끝까지 마무리하는 습관을 두세요.",
+    적당: "말과 표현을 늘릴수록 당신만의 색이 분명해져요.",
+    보완: "하고 싶은 말을 꾸준히 꺼내는 연습이 필요해요.",
+    취약: "말과 표현을 늘릴수록 당신만의 색이 분명해져요.",
+  },
+  재성: {
+    강함: "나누고 쉬는 시간을 갖으면 기운이 오래 유지돼요.",
+    적당: "이 기질을 의식해서 키우면 중요한 순간에 빛나요.",
+    보완: "작은 것부터 정리하고 한 가지씩 결과를 챙기세요.",
+    취약: "작은 것부터 정리하고 한 가지씩 결과를 챙기세요.",
+  },
+  관성: {
+    강함: "역할을 나누고 스스로에게 여유를 주세요.",
+    적당: "규칙을 지키고 믿음을 주는 힘이 있어요.",
+    보완: "작은 역할부터 맡아 보시면 재능이 서서히 드러나요.",
+    취약: "작은 규칙부터 지켜 보시고 맡은 일을 끝까지 해보세요.",
+  },
+  인성: {
+    강함: "작은 것부터 행동에 옮기면 균형이 잡혀요.",
+    적당: "공부하고 견디며 쌓는 힘이 강해요.",
+    보완: "배우고 싶은 걸 하나 정해서 조금씩 쌓아 가보세요.",
+    취약: "생각에 머물지 말고 작은 것부터 행동에 옮기세요.",
+  },
+};
+
+export interface OhaengElementItem {
+  key: string;
+  label: string;
+  count: number;
+  max: number;
+  color: string;
+  glow: string;
+  meaning: string;
+  desc: string;
+  tip: string;
+  status: "강함" | "적당" | "보완" | "취약";
+}
+
+export interface OhaengVisualData {
+  elements: OhaengElementItem[];
+}
+
+export function getElementDistributionVisualData(
+  pillars: SajuPillarsForElement,
+  tone: ElementDistToneKey
+): OhaengVisualData | null {
+  const count = countByElement(pillars);
+  const dayElement = getDayStemElement(pillars);
+  const elementAsTenGod = (dayElement ? ELEMENT_AS_TEN_GOD[dayElement] : null) ?? ELEMENT_AS_TEN_GOD["木"];
+
+  const elements: OhaengElementItem[] = ELEMENT_VISUAL_ORDER.map((el) => {
+    const n = Math.min(count[el] ?? 0, 8);
+    const tenGod = elementAsTenGod[el] ?? "";
+    const status: OhaengElementItem["status"] =
+      n >= 4 ? "강함" : n >= 2 ? "적당" : n === 1 ? "보완" : "취약";
+    const meaning = tenGod ? (TEN_GOD_MEANING[tenGod] ?? "") : "";
+    const desc = getShortDesc(tenGod, status, tone);
+    const tip = tenGod ? (TEN_GOD_TIP[tenGod]?.[status] ?? "이 기운을 의식해서 키우면 중요한 순간에 빛나요.") : "";
+
+    return {
+      key: EL_KEY[el] ?? el,
+      label: el,
+      count: n,
+      max: 4,
+      color: EL_COLOR[el] ?? "#6B8A7A",
+      glow: EL_GLOW[el] ?? "#6B8A7A55",
+      meaning,
+      desc,
+      tip,
+      status,
+    };
+  });
+
+  return { elements };
+}

@@ -229,29 +229,16 @@ export function getTenGodAbilityParagraph(
     if (block) main.push(block);
   }
 
-  const introEmpathy = "아마 스스로도 이런 능력을 느껴왔을 수 있어요. 사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이에요. ";
-  const introReality = "사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다. ";
-  const introFun = "주변에서 이런 말 들은 적 있을 수 있어. 사주에 보이는 건 결함이 아니라 특정 상황에서 강점이 되는 거야. ";
-  const timeAxisEmpathy = "\n\n이 능력들은 경험이 쌓일수록 더 큰 강점으로 작용해요. 시간이 지날수록 그 힘이 더 분명하게 드러납니다.";
-  const timeAxisReality = "\n\n경험이 쌓일수록 더 큰 강점으로 작용합니다.";
-  const timeAxisFun = "\n\n이 능력들은 쌓일수록 더 큰 강점으로 작용해. 시간 지날수록 그 힘이 더 분명하게 드러나.";
-
   if (main.length === 0) {
-    if (tone === "empathy") return introEmpathy + "당신 사주에서 두 개 이상 겹쳐 나오는 십성이 뚜렷하지 않아요. 여러 기운이 고르게 섞여 있어, 상황에 맞게 다양한 능력을 쓰기 좋은 구조예요. 관심 있는 분야를 하나씩 경험해 보시면 그중에서도 잘 맞는 능력이 드러날 거예요." + timeAxisEmpathy;
-    if (tone === "reality") return introReality + "십신이 고르게 분포하여 특정 영역이 두드러지지 않습니다. 상황에 따른 다양한 역량 발휘가 가능한 구조입니다." + timeAxisReality;
-    return introFun + "십성이 고르게 있어서 딱 하나가 튀진 않아. 여러 거 해 보면서 잘 맞는 거 찾으면 돼." + timeAxisFun;
+    if (tone === "empathy") return "당신 사주에서 두 개 이상 겹쳐 나오는 십성이 뚜렷하지 않아요. 여러 기운이 고르게 섞여 있어, 상황에 맞게 다양한 능력을 쓰기 좋은 구조예요. 관심 있는 분야를 하나씩 경험해 보시면 그중에서도 잘 맞는 능력이 드러날 거예요.";
+    if (tone === "reality") return "십신이 고르게 분포하여 특정 영역이 두드러지지 않습니다. 상황에 따른 다양한 역량 발휘가 가능한 구조입니다.";
+    return "십성이 고르게 있어서 딱 하나가 튀진 않아. 여러 거 해 보면서 잘 맞는 거 찾으면 돼.";
   }
 
   if (main.length === 1) {
     const mid = Math.floor(main[0].length / 2);
     const [p1, p2] = splitAtSentenceBoundary(main[0], mid);
-    const body = [p1, p2].join("\n\n").trim();
-    if (tone === "empathy") return introEmpathy + body + timeAxisEmpathy;
-    if (tone === "reality") return introReality + body + timeAxisReality;
-    return introFun + body + timeAxisFun;
+    return [p1, p2].join("\n\n").trim();
   }
-  const body = [main[0], main[1]].join("\n\n").trim();
-  if (tone === "empathy") return introEmpathy + body + timeAxisEmpathy;
-  if (tone === "reality") return introReality + body + timeAxisReality;
-  return introFun + body + timeAxisFun;
+  return [main[0], main[1]].join("\n\n").trim();
 }

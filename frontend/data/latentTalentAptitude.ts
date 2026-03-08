@@ -258,22 +258,17 @@ export function getLatentTalentAptitudeParagraph(
   let intro: string;
   if (tone === "empathy") {
     intro = info.touchu
-      ? "아마 스스로도 이런 끌림을 느껴왔을 수 있어요. 사주는 운명을 단정하는 게 아니라, 당신이 어떤 방식으로 강해지는지 보여주는 지도예요. 태어난 달에 담긴 <strong>기운</strong>이 그대로 잘 드러나는 편이에요. "
-      : "아마 스스로도 이런 끌림을 느껴왔을 수 있어요. 태어난 달에 담긴 <strong>기운</strong>이 아직 표면에 잘 드러나지 않을 수 있어요. 그만큼 그쪽 능력을 의식해서 키우시면 중요한 순간에 더 큰 힘이 됩니다. ";
+      ? "태어난 달에 담긴 <strong>기운</strong>이 그대로 잘 드러나는 편이에요. "
+      : "태어난 달에 담긴 <strong>기운</strong>이 아직 표면에 잘 드러나지 않을 수 있어요. 그만큼 그쪽 능력을 의식해서 키우시면 중요한 순간에 더 큰 힘이 됩니다. ";
   } else if (tone === "reality") {
     intro = info.touchu
-      ? "사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다. 태어난 달의 <strong>기운</strong>이 잘 드러나는 구조입니다. "
+      ? "태어난 달의 <strong>기운</strong>이 잘 드러나는 구조입니다. "
       : "태어난 달의 <strong>기운</strong>이 아직 잘 드러나지 않는 구조입니다. 해당 영역을 의식해서 키우면 중요한 순간에 더 큰 역량으로 작용합니다. ";
   } else {
     intro = info.touchu
-      ? "주변에서 이런 말 들은 적 있을 수 있어. 태어난 달에 담긴 <strong>기운</strong>이 잘 드러나는 타입이야. "
+      ? "태어난 달에 담긴 <strong>기운</strong>이 잘 드러나는 타입이야. "
       : "태어난 달에 담긴 <strong>기운</strong>이 아직 잘 안 드러날 수 있어. 그쪽 능력을 키우면 중요한 순간에 더 큰 힘이 돼. ";
   }
 
-  const timeAxis: Record<AptitudeToneKey, string> = {
-    empathy: " 이 기질은 경험이 쌓일수록 더 큰 강점으로 작용하고, 시간이 지날수록 그 힘이 더 분명하게 드러납니다.",
-    reality: " 경험이 쌓일수록 더 큰 강점으로 작용합니다.",
-    fun: " 이 기질은 쌓일수록 더 큰 강점으로 작용해. 시간 지날수록 그 힘이 더 분명하게 드러나.",
-  };
-  return intro + body + timeAxis[tone];
+  return intro + body;
 }

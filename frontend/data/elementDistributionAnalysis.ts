@@ -224,7 +224,6 @@ export function getElementDistributionParagraph(
 
   // 순서: 많은 것(4+) → 적당한 것(2~3) → 적은 것(0~1). 해석 원칙: 결함 X → 능력·시간축.
   if (tone === "empathy") {
-    lines.push("아마 스스로도 이런 분포를 느껴왔을 수 있어요. 사주에서 보이는 기운은 결함이 아니라, 특정 상황에서 강점이 되는 능력이에요.");
     lines.push(`여덟 글자 속에 ${countParts}가 있어요.`);
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
     if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
@@ -232,9 +231,7 @@ export function getElementDistributionParagraph(
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 분포해 있어, 한쪽으로 치우치지 않고 상황에 맞게 쓰기 좋은 편이에요.");
     }
-    lines.push("이 기운들은 경험이 쌓일수록 더 큰 강점으로 작용해요. 시간이 지날수록 그 힘이 더 분명하게 드러납니다.");
   } else if (tone === "reality") {
-    lines.push("사주에서 보이는 기운은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다.");
     lines.push(`분포: ${countParts}.`);
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
     if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
@@ -243,7 +240,6 @@ export function getElementDistributionParagraph(
       lines.push("목·화·토·금·수가 전반적으로 균형 잡혀 있습니다.");
     }
   } else {
-    lines.push("주변에서 이런 말을 들은 적이 있을 수 있어. 기운은 결함이 아니라 특정 상황에서 강점이 되는 거야.");
     lines.push(`니한테는 ${countParts}야.`);
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
     if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
@@ -251,7 +247,6 @@ export function getElementDistributionParagraph(
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 있어서 한쪽만 튀지 않고 쓰기 좋은 편이야.");
     }
-    lines.push("이 기운들은 쌓일수록 더 큰 강점으로 작용해. 시간 지날수록 그 힘이 더 분명하게 드러나.");
   }
 
   return lines.join("\n\n").trim();

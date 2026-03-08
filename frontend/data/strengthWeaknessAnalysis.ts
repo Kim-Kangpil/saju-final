@@ -178,7 +178,6 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
   const lines: string[] = [];
 
   if (tone === "empathy") {
-    lines.push("아마 스스로도 이런 면을 느껴왔을 수 있어요. 사주에서 보이는 기질은 결함이 아니라, 특정 상황에서 강점이 되는 능력이에요.");
     if (moderate.length > 0 || many.length > 0) {
       lines.push("<strong>강점</strong>이 이런 식으로 드러나는 편이에요.");
     }
@@ -199,9 +198,7 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
     } else if (moderate.length > 0 || many.length > 0) {
       lines.push("전반적으로 고른 편이라, 상황에 맞게 여러 강점을 쓰기 좋아요.");
     }
-    lines.push("이 기질들은 경험이 쌓일수록 더 큰 강점으로 작용해요. 시간이 지날수록 그 힘이 더 분명하게 드러납니다.");
   } else if (tone === "reality") {
-    lines.push("사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다.");
     if (moderate.length > 0 || many.length > 0) {
       lines.push("<strong>강점</strong>은 대략 이렇게 드러납니다.");
     }
@@ -223,7 +220,6 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
       lines.push("전반적으로 고른 편이라 상황에 맞게 여러 강점을 활용하기 유리합니다.");
     }
   } else {
-    lines.push("주변에서 이런 말을 들은 적이 있을 수 있어. 사주에 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 거야.");
     if (moderate.length > 0 || many.length > 0) {
       lines.push("<strong>강점</strong>이 이렇게 보이는 편이야.");
     }
@@ -244,7 +240,6 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
     } else if (moderate.length > 0 || many.length > 0) {
       lines.push("전반적으로 고른 편이라 상황에 맞게 여러 강점 쓰기 좋아.");
     }
-    lines.push("이 기질들은 쌓일수록 더 큰 강점으로 작용해. 시간 지날수록 그 힘이 더 분명하게 드러나.");
   }
 
   return lines.join("\n\n").trim();

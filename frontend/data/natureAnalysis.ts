@@ -182,14 +182,8 @@ export function analyzeNature(
   const yinYangKey = getYinYangKey(yangCount, yinCount, gender);
   const yinYangText = YIN_YANG_BALANCE[genderKey][yinYangKey]?.[tone] || "";
 
-  // 해석 원칙: 마지막에 시간축 추가 (기질은 쌓일수록 더 큰 강점)
-  const timeAxis: Record<CharKey, string> = {
-    empathy: "\n\n아마 스스로도 이런 면을 느껴왔을 수 있어요. 사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이에요. 이 기질은 경험이 쌓일수록 더 큰 강점으로 작용하고, 시간이 지날수록 그 힘이 더 분명하게 드러납니다.",
-    reality: "\n\n사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다.",
-    fun: "\n\n주변에서 이런 말 들은 적 있을 수 있어. 이 기질은 결함이 아니라 특정 상황에서 강점이 되는 거야. 쌓일수록 더 큰 강점으로 작용하고, 시간 지날수록 그 힘이 더 분명하게 드러나.",
-  };
   return {
-    text: `${dayStemText}\n\n${yinYangText}${timeAxis[tone]}`,
+    text: `${dayStemText}\n\n${yinYangText}`,
     yangCount,
     yinCount,
   };

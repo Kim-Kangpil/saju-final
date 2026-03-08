@@ -294,20 +294,24 @@ export function getCharismaSocialInfluenceParagraph(
     intellect: scoreToLevel(intellect),
   };
   const typeRow = getType(levels);
-  const parts: string[] = [typeRow.lead[tone]];
-  parts.push(AXIS_TEXTS.charisma[levels.charisma][tone]);
-  parts.push(AXIS_TEXTS.public[levels.public][tone]);
-  parts.push(AXIS_TEXTS.intellect[levels.intellect][tone]);
+  const p1 = [typeRow.lead[tone], AXIS_TEXTS.charisma[levels.charisma][tone]].filter(Boolean).join(" ").trim();
+  const p2 = [AXIS_TEXTS.public[levels.public][tone], AXIS_TEXTS.intellect[levels.intellect][tone]].filter(Boolean).join(" ").trim();
+  const correctionParts: string[] = [];
+  if (levels.charisma === "F") correctionParts.push(F_CORRECTION.charisma[tone]);
+  if (levels.public === "F") correctionParts.push(F_CORRECTION.public[tone]);
+  if (levels.intellect === "F") correctionParts.push(F_CORRECTION.intellect[tone]);
+  if (charismaChongKe) correctionParts.push(CHONG_KE_CORRECTION.charisma[tone]);
+  if (publicChongKe) correctionParts.push(CHONG_KE_CORRECTION.public[tone]);
+  if (intellectChongKe) correctionParts.push(CHONG_KE_CORRECTION.intellect[tone]);
+  const closing = CLOSING_FOR_LENGTH[tone];
+  const p3 = correctionParts.length > 0 ? (correctionParts.join(" ") + " " + closing).trim() : "";
 
-  if (levels.charisma === "F") parts.push(F_CORRECTION.charisma[tone]);
-  if (levels.public === "F") parts.push(F_CORRECTION.public[tone]);
-  if (levels.intellect === "F") parts.push(F_CORRECTION.intellect[tone]);
-  if (charismaChongKe) parts.push(CHONG_KE_CORRECTION.charisma[tone]);
-  if (publicChongKe) parts.push(CHONG_KE_CORRECTION.public[tone]);
-  if (intellectChongKe) parts.push(CHONG_KE_CORRECTION.intellect[tone]);
-
-  let out = parts.filter(Boolean).join(" ");
-  out = out + " " + CLOSING_FOR_LENGTH[tone];
+  let out: string;
+  if (p3) {
+    out = [p1, p2, p3].filter(Boolean).join("\n\n");
+  } else {
+    out = [p1, p2].filter(Boolean).join("\n\n") + (p2 ? " " : "") + closing;
+  }
   if (out.length > 650) {
     out = out.slice(0, 600).trim();
     const last = out.lastIndexOf(".");

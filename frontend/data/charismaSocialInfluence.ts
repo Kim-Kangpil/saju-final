@@ -268,6 +268,13 @@ const CHONG_KE_CORRECTION: Record<Axis3Key, Record<CharismaToneKey, string>> = {
   intellect: { empathy: "지적 권위가 있지만 전달 과정에서 마찰이 생겨요. 소통 방식을 다듬으면 영향력이 확장돼요.", reality: "지적 권위가 있으나 전달 과정에서 마찰이 생깁니다. 소통 방식을 다듬으면 영향력이 확장됩니다.", fun: "지적 권위 있는데 전달할 때 마찰 생겨. 소통 방식 다듬으면 영향력 커져." },
 };
 
+// 600자 맞추기용 마무리 문장 (기존 내용 유지, 길이만 보강)
+const CLOSING_FOR_LENGTH: Record<CharismaToneKey, string> = {
+  empathy: "이런 영향력은 경험이 쌓이고 맞는 상황이 오면 더 분명하게 드러날 수 있어요. 당신이 가진 축을 알아두면 그때 더 잘 쓰게 돼요.",
+  reality: "이러한 영향력은 경험이 쌓이고 상황이 맞을수록 더 분명하게 드러나는 구조입니다. 가진 축을 인지해 두면 활용도가 높아집니다.",
+  fun: "이런 영향력은 경험 쌓이고 상황 맞을수록 더 잘 나와. 내가 가진 축 알아두면 그때 제대로 쓸 수 있어.",
+};
+
 /**
  * 카리스마·사회적 영향력 통변 (최종판). 3축 점수 → 레벨 → 유형 + 축별 해석 + 보정. ~600자.
  */
@@ -300,8 +307,9 @@ export function getCharismaSocialInfluenceParagraph(
   if (intellectChongKe) parts.push(CHONG_KE_CORRECTION.intellect[tone]);
 
   let out = parts.filter(Boolean).join(" ");
+  out = out + " " + CLOSING_FOR_LENGTH[tone];
   if (out.length > 650) {
-    out = parts.filter(Boolean).join(" ").slice(0, 600).trim();
+    out = out.slice(0, 600).trim();
     const last = out.lastIndexOf(".");
     if (last > 480) out = out.slice(0, last + 1);
   }

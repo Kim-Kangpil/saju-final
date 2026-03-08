@@ -33,58 +33,56 @@ export function FaceSplitCard({
   return (
     <div className="mx-auto w-full max-w-[420px] rounded-[28px] border border-stone-200/80 bg-[#f6f3e8] shadow-[0_10px_30px_rgba(0,0,0,0.06)]">
       <div className="px-4 sm:px-5 py-4 sm:py-5 overflow-visible">
-        {/* 원형 비주얼 축소, 라벨은 원 안쪽으로 */}
+        {/* 원형 비주얼: 상=겉(밝은 회색), 하=속(어두운 색). 요소 간 겹침 없이 여백 확보 */}
         <div className="relative mx-auto mb-3 sm:mb-4 flex h-[180px] sm:h-[200px] w-[180px] sm:w-[200px] items-center justify-center flex-shrink-0">
           {/* 바깥 링 */}
           <div className="absolute inset-0 rounded-full border-[8px] border-white/70 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]" />
 
-          {/* 왼쪽 반원 - 사회적 가면 */}
+          {/* 위쪽 반원 - 겉 (사회적 가면, 밝은 회색) */}
           <div className="absolute inset-0 overflow-hidden rounded-full">
-            <div className="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-b from-[#a8a2f0] to-[#8e88e8]" />
+            <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4]" />
           </div>
 
-          {/* 오른쪽 반원 - 실제 기질 */}
+          {/* 아래쪽 반원 - 속 (실제 기질, 어두운 색) */}
           <div className="absolute inset-0 overflow-hidden rounded-full">
-            <div className="absolute inset-y-0 right-0 w-1/2 bg-gradient-to-b from-[#efd88a] to-[#e1bf58]" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-b from-[#374151] to-[#1f2937]" />
           </div>
 
           {/* 부드러운 오버레이 */}
-          <div className="absolute inset-[8px] rounded-full bg-white/18 backdrop-blur-[1px]" />
+          <div className="absolute inset-[8px] rounded-full bg-white/10 backdrop-blur-[1px]" />
 
-          {/* 중앙 분리선 */}
-          <div className="absolute z-10 h-[75%] w-[1.5px] rounded-full bg-white/80 shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
+          {/* 중앙 가로 분리선 */}
+          <div className="absolute left-[12%] right-[12%] top-1/2 z-10 h-[1.5px] -translate-y-1/2 rounded-full bg-white/60 shadow-[0_0_10px_rgba(255,255,255,0.6)]" />
 
-          {/* 중앙 코어 */}
-          <div className="absolute z-20 flex h-[64px] sm:h-[72px] w-[64px] sm:w-[72px] flex-col items-center justify-center rounded-full border border-white/70 bg-[#fffdf8]/90 shadow-[0_6px_20px_rgba(0,0,0,0.08)] backdrop-blur">
-            <p className="text-[8px] sm:text-[9px] font-medium tracking-tight text-stone-400">겉과 속</p>
-            <p className="mt-0.5 text-center text-[10px] sm:text-[12px] font-bold leading-tight text-stone-700">
+          {/* 중앙 코어: 크기 제한해 상·하 라벨과 겹치지 않음 */}
+          <div className="absolute left-1/2 top-1/2 z-20 flex h-[48px] sm:h-[52px] w-[48px] sm:w-[52px] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border border-stone-300/80 bg-[#fffdf8] shadow-[0_4px_16px_rgba(0,0,0,0.12)] backdrop-blur">
+            <p className="text-[7px] sm:text-[8px] font-medium tracking-tight text-stone-500">겉 vs 속</p>
+            <p className="mt-0.5 text-center text-[8px] sm:text-[10px] font-bold leading-tight text-stone-700">
               {socialKeyword}
               <br />
-              <span className="text-stone-400">vs</span>
+              <span className="text-stone-400">|</span>
               <br />
               {realKeyword}
             </p>
           </div>
 
-          {/* 왼쪽 라벨 - 카드 안쪽(원 왼쪽 가장자리 안) */}
-          <div className="absolute left-1 top-1/2 z-20 flex -translate-y-1/2 flex-col items-start gap-0.5 max-w-[72px] sm:max-w-[80px]">
-            <span className="rounded-full bg-[#f3f0ff] px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium text-[#645dd6] shadow-sm whitespace-nowrap">
-              🎭 사회적 가면
+          {/* 위쪽 라벨: 상단 여백(top-3)으로 코어와 간격 확보 */}
+          <div className="absolute left-1/2 top-3 z-20 flex -translate-x-1/2 flex-col items-center gap-1 max-w-[88px] sm:max-w-[96px]">
+            <span className="rounded-full bg-stone-200/90 px-1.5 py-0.5 text-[7px] sm:text-[8px] font-medium text-stone-600 shadow-sm whitespace-nowrap">
+              🎭 겉
             </span>
-            <div className="rounded-lg border border-[#d8d2ff] bg-white/90 px-1.5 py-0.5 text-left shadow-sm">
-              <p className="text-[7px] sm:text-[8px] text-stone-400">겉</p>
-              <p className="text-[10px] sm:text-[11px] font-bold text-[#5e58c9] leading-tight">{socialLabel}</p>
+            <div className="rounded-md border border-stone-300 bg-white/95 px-1.5 py-0.5 text-center shadow-sm">
+              <p className="text-[9px] sm:text-[10px] font-bold text-stone-700 leading-tight">{socialLabel}</p>
             </div>
           </div>
 
-          {/* 오른쪽 라벨 - 카드 안쪽(원 오른쪽 가장자리 안) */}
-          <div className="absolute right-1 top-1/2 z-20 flex -translate-y-1/2 flex-col items-end gap-0.5 max-w-[72px] sm:max-w-[80px]">
-            <span className="rounded-full bg-[#fff4cf] px-1.5 py-0.5 text-[8px] sm:text-[9px] font-medium text-[#c28a17] shadow-sm whitespace-nowrap">
-              🧠 실제 기질
+          {/* 아래쪽 라벨: 하단 여백(bottom-3)으로 코어와 간격 확보 */}
+          <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-1 max-w-[88px] sm:max-w-[96px]">
+            <span className="rounded-full bg-stone-700/90 px-1.5 py-0.5 text-[7px] sm:text-[8px] font-medium text-stone-200 shadow-sm whitespace-nowrap">
+              🧠 속
             </span>
-            <div className="rounded-lg border border-[#f1de9c] bg-white/90 px-1.5 py-0.5 text-right shadow-sm">
-              <p className="text-[7px] sm:text-[8px] text-stone-400">속</p>
-              <p className="text-[10px] sm:text-[11px] font-bold text-[#c28a17] leading-tight">{realLabel}</p>
+            <div className="rounded-md border border-stone-600 bg-stone-800/95 px-1.5 py-0.5 text-center shadow-sm">
+              <p className="text-[9px] sm:text-[10px] font-bold text-stone-100 leading-tight">{realLabel}</p>
             </div>
           </div>
         </div>

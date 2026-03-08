@@ -27,6 +27,7 @@ import { getElementDistributionParagraph } from "../../data/elementDistributionA
 import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
 import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
 import { getAncestorParentParagraph } from "../../data/ancestorParentFortune";
+import { getCharismaSocialInfluenceParagraph } from "../../data/charismaSocialInfluence";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -1299,6 +1300,10 @@ export default function Page() {
         if (it.key === "parents" && result) {
           const content = getAncestorParentParagraph(result, gender, selectedChar);
           return asContent("relation_parents", it.title, content, it.icon, "local");
+        }
+        if (it.key === "charisma" && result) {
+          const content = getCharismaSocialInfluenceParagraph(result, selectedChar);
+          return asContent("relation_charisma", it.title, content, it.icon, "local");
         }
         return asReady(`relation_${it.key}`, it.title, it.icon);
       }),

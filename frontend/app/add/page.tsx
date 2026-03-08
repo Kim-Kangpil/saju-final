@@ -25,6 +25,7 @@ import { getStrengthWeaknessParagraph } from "../../data/strengthWeaknessAnalysi
 import { getLatentTalentAptitudeParagraph } from "../../data/latentTalentAptitude";
 import { getElementDistributionParagraph } from "../../data/elementDistributionAnalysis";
 import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
+import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -506,7 +507,7 @@ const MEGA_SECTIONS: Record<
     title: "관계와 환경의 에너지",
     icon: "🤝",
     items: [
-      { key: "comm", title: "타인과의 소통법과 커뮤니케이션 방식", icon: "💬" },
+      { key: "comm", title: "인간관계 스타일", icon: "💬" },
       { key: "parents", title: "조상의 혼은 부모운", icon: "👪" },
       { key: "charisma", title: "카리스마와 사회적 영향력", icon: "👑" },
       { key: "hapchung", title: "지지 합과 충의 본색", icon: "⚡" },
@@ -1295,9 +1296,13 @@ export default function Page() {
         }
         return asReady(`talent_${it.key}`, it.title, it.icon);
       }),
-      relation: MEGA_SECTIONS.relation.items.map((it) =>
-        asReady(`relation_${it.key}`, it.title, it.icon)
-      ),
+      relation: MEGA_SECTIONS.relation.items.map((it) => {
+        if (it.key === "comm" && result) {
+          const content = getRelationshipStyleParagraph(result, selectedChar);
+          return asContent("relation_comm", it.title, content, it.icon, "local");
+        }
+        return asReady(`relation_${it.key}`, it.title, it.icon);
+      }),
       insight: MEGA_SECTIONS.insight.items.map((it) =>
         asReady(`insight_${it.key}`, it.title, it.icon)
       ),

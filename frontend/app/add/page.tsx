@@ -21,7 +21,7 @@ import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
 import { TODAY_ANALYSIS, analyzeTodayFortune } from "../../data/todayAnalysis";
 import { dayPillarTexts } from "../../data/dayPillarAnimal";
 import { getCoreValuesParagraph, getCoreValuesCompassData } from "../../data/coreValuesAnalysis";
-import { getStrengthWeaknessParagraph } from "../../data/strengthWeaknessAnalysis";
+import { getStrengthWeaknessParagraph, getStrengthWeaknessVisualData } from "../../data/strengthWeaknessAnalysis";
 import { getLatentTalentAptitudeParagraph } from "../../data/latentTalentAptitude";
 import { getElementDistributionParagraph } from "../../data/elementDistributionAnalysis";
 import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
@@ -35,6 +35,7 @@ import Head from 'next/head';
 import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";
 import { FaceSplitCard } from "../../components/FaceSplitCard";
 import { CompassCard } from "../../components/CompassCard";
+import { StrengthCard } from "../../components/StrengthCard";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -193,9 +194,10 @@ function stemMeta(stem: string): { el: Element; pol: Polarity } | null {
   return map[stem] ?? null;
 }
 
+/** 지지(月支 등)의 정기(本氣) — 일간 기준 십성 계산용. 子는 癸(음수), 亥는 壬(양수). */
 function branchMainStem(branch: string): string | null {
   const map: Record<string, string> = {
-    子: "壬",
+    子: "癸",
     丑: "己",
     寅: "甲",
     卯: "乙",
@@ -1428,6 +1430,11 @@ export default function Page() {
     );
   }, [result, selectedChar]);
 
+  const strengthWeakVisualData = useMemo(() => {
+    if (!result) return null;
+    return getStrengthWeaknessVisualData(result, selectedChar);
+  }, [result, selectedChar]);
+
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     if (!loggedIn) {
@@ -2554,6 +2561,9 @@ export default function Page() {
                                                       yinCount={natureYinCount}
                                                       size={220}
                                                     />
+                                                  )}
+                                                  {c.id === "talent_strengthWeak" && strengthWeakVisualData && (
+                                                    <StrengthCard data={strengthWeakVisualData} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

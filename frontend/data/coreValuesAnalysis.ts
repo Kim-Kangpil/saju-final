@@ -147,6 +147,20 @@ export const TEN_GOD_SHORT_DESC: Record<string, string> = {
   정인: "배움·자격·역할",
 };
 
+/** 십신(월지→일간 육친)별 핵심 기준 문구 — 나침반 "핵심 기준" 인용문 */
+export const TEN_GOD_SUMMARY: Record<string, string> = {
+  비견: "함께 가는 방향이 나다운가",
+  겁재: "한계를 넘어서고 있는가",
+  식신: "몸으로 쌓은 결과가 있는가",
+  상관: "새로움이 살아 있는가",
+  편재: "흐름을 타고 기회가 열리는가",
+  정재: "기반이 든든한가",
+  편관: "압박을 견디며 단단해지는가",
+  정관: "믿음과 규칙이 지켜지는가",
+  편인: "깊은 통찰이 살아 있는가",
+  정인: "배움과 인정이 쌓이는가",
+};
+
 /** 괄호 안 한글을 추출해 조사 기준으로 사용 (예: "子(자수)" → "자수") */
 function josaBase(text: string): string {
   const m = text.match(/\(([^)]+)\)$/);
@@ -181,7 +195,7 @@ export function getCoreValuesCompassData(
   const sipsung = monthStem ? getTenGod(dayStemHanja, monthStem) : "";
   const sipsungDesc = sipsung ? (TEN_GOD_SHORT_DESC[sipsung] ?? sipsung) : "";
   const keywords = COMPASS_KEYWORDS[monthBranchHanja] ?? ["방향", "가치", "선택", "기준", "삶"];
-  const summary = "나다운 마음이 살아있는가";
+  const summary = sipsung ? (TEN_GOD_SUMMARY[sipsung] ?? "나다운 마음이 살아있는가") : "나다운 마음이 살아있는가";
   const tenGodRow = sipsung ? TEN_GOD_CORE_MEANINGS[sipsung] : null;
   const tenGodMeaning = tenGodRow?.[tone] ?? "";
   const desc =

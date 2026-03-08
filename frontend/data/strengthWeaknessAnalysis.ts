@@ -89,6 +89,43 @@ const MANY_PLAIN: Record<string, Record<StrengthWeakToneKey, string>> = {
   },
 };
 
+/** 게이지용: 십신별 라벨·아이콘·한 줄 설명 (시각화 카드용) */
+const TEN_GOD_ORDER = ["비겁", "식상", "재성", "관성", "인성"] as const;
+
+const STRENGTH_LABEL: Record<string, string> = {
+  비겁: "자아 & 동료",
+  식상: "표현 & 재능",
+  재성: "현실감각 & 결과",
+  관성: "책임 & 역할",
+  인성: "배움 & 인내",
+};
+
+const STRENGTH_ICON: Record<string, string> = {
+  비겁: "🤝",
+  식상: "✨",
+  재성: "💰",
+  관성: "🏛",
+  인성: "📚",
+};
+
+/** 게이지 한 줄 설명 (톤 무관, 짧게) */
+const STRENGTH_DESC: Record<string, string> = {
+  비겁: "스스로 결단하고 동료와 협력하는 힘",
+  식상: "말과 재능을 밖으로 꺼내는 표현력",
+  재성: "돈·결과를 다루고 정리하는 현실감각",
+  관성: "맡은 것을 끝까지 하고 믿음을 받는 태도",
+  인성: "깊이 쌓고 견디는 배움·인내심",
+};
+
+/** 보완 포인트 카드용: 십신별 짧은 팁 문구 */
+const WEAKNESS_TIP: Record<string, string> = {
+  비겁: "작은 결단 → 주체성 → 협력하는 힘",
+  식상: "짧은 표현 → 재능 드러내기 → 당신만의 색",
+  재성: "작은 완료 → 현실 감각 → 더 큰 결과",
+  관성: "작은 역할 → 책임감 → 믿음 주는 역량",
+  인성: "하나씩 쌓기 → 인내 → 깊이 있는 판단",
+};
+
 /** 0개 — 해당 기운이 적을 때: 결함이 아니라, 그쪽 능력을 키우면 중요한 순간에 더 큰 힘이 됨(전략적 성향) */
 const ABSENT_PLAIN: Record<string, Record<StrengthWeakToneKey, string>> = {
   비겁: {
@@ -146,6 +183,17 @@ function countElementsByRow(pillars: SajuPillars): Record<string, number> {
 function getDayStemElement(pillars: SajuPillars): string {
   const stem = pillars.day?.cheongan?.hanja?.[0] ?? "";
   return stem ? (STEM_TO_ELEMENT[stem] ?? "木") : "木";
+}
+
+/** 오행 개수 → 게이지 점수 (0~8 → 20~98). 0=보완, 2~3=적당, 4+=강함 */
+function countToScore(n: number): number {
+  if (n <= 0) return 22;
+  if (n === 1) return 42;
+  if (n === 2) return 65;
+  if (n === 3) return 78;
+  if (n === 4) return 88;
+  if (n === 5) return 93;
+  return 98;
 }
 
 /** 오행 개수별 구분: 적당(2~3), 많음(4+), 없음(0) */
@@ -243,4 +291,83 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
   }
 
   return lines.join("\n\n").trim();
+}
+
+// --- 시각화 카드용 데이터 (십성 ↔ 게이지 1:1 매핑) ---
+
+export interface StrengthWeaknessVisualStrength {
+  label: string;
+  value: number;
+  icon: string;
+  desc: string;
+  tenGod: string;
+}
+
+export interface StrengthWeaknessVisualWeakness {
+  label: string;
+  icon: string;
+  desc: string;
+  tip: string;
+  tenGod: string;
+}
+
+export interface StrengthWeaknessVisualData {
+  strengths: StrengthWeaknessVisualStrength[];
+  weakness: StrengthWeaknessVisualWeakness;
+}
+
+/**
+ * 나의 강점과 약점 시각화용 데이터. 일간 기준 오행 개수 → 십성별 점수(0~100)로 변환.
+ * strengths: 비겁·식상·재성·관성·인성 순서 고정. 각 점수는 해당 십성(오행)이 사주에 몇 개 있느냐에 따라 결정.
+ * weakness: 점수가 가장 낮은 십성 1개를 보완 포인트로 사용.
+ */
+export function getStrengthWeaknessVisualData(
+  pillars: SajuPillars,
+  tone: StrengthWeakToneKey
+): StrengthWeaknessVisualData {
+  const count = countElementsByRow(pillars);
+  const dayElement = getDayStemElement(pillars);
+  const elementToTenGod = ELEMENT_AS_TEN_GOD[dayElement] ?? ELEMENT_AS_TEN_GOD["木"];
+
+  // 십신 순서대로 해당 오행 개수 → 점수
+  const strengths: StrengthWeaknessVisualStrength[] = [];
+  const elements = ["木", "火", "土", "金", "水"] as const;
+  const tenGodToElement: Record<string, string> = {};
+  for (const el of elements) {
+    const tg = elementToTenGod[el];
+    if (tg) tenGodToElement[tg] = el;
+  }
+
+  for (const tenGod of TEN_GOD_ORDER) {
+    const el = tenGodToElement[tenGod] ?? "木";
+    const n = count[el] ?? 0;
+    strengths.push({
+      label: STRENGTH_LABEL[tenGod] ?? tenGod,
+      value: countToScore(n),
+      icon: STRENGTH_ICON[tenGod] ?? "•",
+      desc: STRENGTH_DESC[tenGod] ?? "",
+      tenGod,
+    });
+  }
+
+  // 보완 포인트: value가 가장 낮은 십성 1개 (동점이면 첫 번째)
+  const minValue = Math.min(...strengths.map((s) => s.value));
+  const weakIndex = strengths.findIndex((s) => s.value === minValue);
+  const weakTenGod = weakIndex >= 0 ? strengths[weakIndex].tenGod : "인성";
+  const absentText = ABSENT_PLAIN[weakTenGod]?.[tone] ?? "";
+  const descPlain = absentText.replace(/<[^>]+>/g, "").trim();
+  // 첫 문장만 사용하거나 120자 이내로 자르기
+  const descShort =
+    descPlain.length > 120 ? descPlain.slice(0, 117) + "…" : descPlain;
+
+  return {
+    strengths,
+    weakness: {
+      label: "보완 포인트",
+      icon: "🔧",
+      desc: descShort,
+      tip: WEAKNESS_TIP[weakTenGod] ?? "작은 것부터 → 습관 → 큰 힘",
+      tenGod: weakTenGod,
+    },
+  };
 }

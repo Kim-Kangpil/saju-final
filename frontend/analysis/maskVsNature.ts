@@ -342,12 +342,17 @@ export function analyzeMaskVsNature(
   // extra 필드 끝 마침표 제거 헬퍼 (변환 후 문장 중간에 들어가므로)
   const extraClean = (str: string) => str.replace(/\.$/, "");
 
+  const timeAxisFun = "이런 겉과 속의 결은 결함이 아니라 상황에 따라 쓰는 전략이야. 경험이 쌓일수록 두 면 모두 더 큰 강점으로 작용하고, 시간이 지날수록 그 힘이 더 분명하게 드러나.";
+  const timeAxisReality = "겉과 속의 차이는 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다.";
+  const timeAxisEmpathy = "겉과 속이 다르게 보이는 건 결함이 아니라, 상황에 따라 어떤 능력을 쓰느냐가 달라지는 거예요. 경험이 쌓일수록 두 면 모두 더 큰 강점으로 작용하고, 시간이 지날수록 그 힘이 더 분명하게 드러납니다.";
+
   // ── fun (반말) ──────────────────────────────────────────────
   if (selectedChar === "fun") {
     const lines = [
+      `아마 스스로도 밖에서와 편할 때 모습이 다르다는 걸 느껴왔을 수 있어. 사주는 운명을 정하는 게 아니라, 네가 어떤 방식으로 강해지는지 보여주는 지도야.`,
       `밖에서는 ${maskLabel}이 먼저 드러나는 타입이야. ${extraClean(state.extra)}. ${state.lead} 주변은 너를 그쪽 이미지로 기억하기 쉬워. ${maskDesc}.`,
       `편해지면 결이 달라져. 이때는 ${natureLabel}이 훨씬 진하게 올라오는데, ${natureDesc}. 무의식적으로는 ${habitLabel}도 함께 나오고, ${habitDesc}.`,
-      `한 줄로 정리하면 ${combo.oneLiner}야. ${combo.detail} 사회에서는 이런 사람, 사적으로는 저런 사람 느낌이 동시에 살아. 둘 다 진짜 네 모습이야.`,
+      `한 줄로 정리하면 ${combo.oneLiner}야. ${combo.detail} 사회에서는 이런 사람, 사적으로는 저런 사람 느낌이 동시에 살아. 둘 다 진짜 네 모습이고, 그래서 중요한 순간에 상황에 맞는 능력을 쓰는 힘이 있어. ${timeAxisFun}`,
     ];
     return { text: joinLines(lines) };
   }
@@ -355,18 +360,20 @@ export function analyzeMaskVsNature(
   // ── reality (격식 · 정보 중심) ─────────────────────────────
   if (selectedChar === "reality") {
     const lines = [
+      `사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다.`,
       `공적 자리에서는 ${maskLabel}이 먼저 드러납니다. ${toFormal(extraClean(state.extra))}. ${state.lead} 주변은 당신을 그쪽 이미지로 기억하게 됩니다. ${toFormal(maskDesc)}.`,
       `편한 환경에서는 ${natureLabel}이 주도권을 잡습니다. ${toFormal(natureDesc)}. 무의식에서는 ${habitLabel}이 반복 패턴으로 나타나고, ${toFormal(habitDesc)}.`,
-      `정리하면 ${combo.oneLiner}입니다. ${toFormal(combo.detail)} 두 면 모두 실제 기질이며, 어느 쪽이 더 진짜인지 고민할 필요는 없습니다.`,
+      `정리하면 ${combo.oneLiner}입니다. ${toFormal(combo.detail)} 두 면 모두 실제 기질이며, 상황에 따라 어떤 역량을 쓰느냐가 달라지는 구조입니다. ${timeAxisReality}`,
     ];
     return { text: joinLines(lines) };
   }
 
   // ── empathy (공감형 · 자연스러운 -요/-에요 말투) ──────────
   const lines = [
+    `아마 스스로도 밖에서와 편할 때 모습이 다르다는 걸 느껴왔을 수 있어요. 사주는 운명을 단정하는 게 아니라, 당신이 어떤 방식으로 강해지는 사람인지 보여주는 지도예요.`,
     `밖에서는 ${maskLabel}이 자연스럽게 먼저 드러나는 편이에요. ${toEmpathy(extraClean(state.extra))}. ${state.lead} 주변에서는 그쪽 이미지로 기억하기 쉬워요. ${toEmpathy(maskDesc)}.`,
     `편해지면 결이 달라지는 편이에요. 이때는 ${natureLabel}이 훨씬 진하게 올라오는데, ${toEmpathy(natureDesc)}. 무의식적으로는 ${habitLabel}도 함께 올라오고, ${toEmpathy(habitDesc)}.`,
-    `한 줄로 요약하면 ${combo.oneLiner}예요. ${toEmpathy(combo.detail)} 둘 중 하나가 가짜가 아니라 상황에 따라 스위치가 바뀌는 타입이라서, 알수록 폭이 넓은 사람처럼 느껴질 수 있어요.`,
+    `한 줄로 요약하면 ${combo.oneLiner}예요. ${toEmpathy(combo.detail)} 둘 다 진짜 당신의 모습이라서, 중요한 순간에 상황에 맞는 능력을 쓰는 힘이 있어요. ${timeAxisEmpathy}`,
   ];
   return { text: joinLines(lines) };
 }

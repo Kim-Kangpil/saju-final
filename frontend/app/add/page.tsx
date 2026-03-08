@@ -1086,7 +1086,14 @@ export default function Page() {
     const dayPillarKey = result.day.cheongan.hangul + result.day.jiji.hangul;
     const texts = dayPillarTexts[dayPillarKey];
     if (!texts) return null;
-    return texts[selectedTone];
+    const raw = texts[selectedTone];
+    const timeAxis =
+      selectedTone === "empathy"
+        ? "\n\n이 기질은 경험이 쌓일수록 더 큰 강점으로 작용해요. 시간이 지날수록 그 힘이 더 분명하게 드러납니다."
+        : selectedTone === "reality"
+          ? "\n\n사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다."
+          : "\n\n이 기질은 쌓일수록 더 큰 강점으로 작용해. 시간 지날수록 그 힘이 더 분명하게 드러나.";
+    return raw + timeAxis;
   }, [result, selectedTone]);
 
   // 첫 문장에 포함된 색깔(예: 하늘빛, 초록빛)로 첫 문장만 해당 색상 적용

@@ -60,61 +60,61 @@ const STRENGTH_PLAIN: Record<string, Record<StrengthWeakToneKey, string>> = {
   },
 };
 
-/** 4개 이상 — 잘 쓸 수 있으나 과하면 조절 (이론: 특정 십신이 겹쳐 강하면 주된 무기, 과하면 부작용) */
+/** 4개 이상 — 강점이 큰 만큼, 상황에 맞게 쓰면 더 큰 무기(조절은 전략) */
 const MANY_PLAIN: Record<string, Record<StrengthWeakToneKey, string>> = {
   비겁: {
-    empathy: "<strong>돌파력</strong>이 세요. 동료와의 관계도 풍부해요. 다만 자기 영역을 지나치게 고집하면 멀어질 수 있으니, 때로 한발 물러서 보는 게 좋아요.",
-    reality: "<strong>주체성</strong>·동료 관계가 매우 강합니다. 과하면 고집으로 보일 수 있으니 조절이 유리합니다.",
-    fun: "스스로 나서고 사람이랑도 잘 어울려. 자기 영역만 지키려 하면 조금 물러나는 게 좋아.",
+    empathy: "<strong>돌파력</strong>이 세고 동료와의 관계도 풍부해요. 때로 한발 물러서 보는 순간이 있으면, 그만큼 <strong>방향을 유지하는 힘</strong>이 오래 갈 수 있어요. 이 기질은 경험이 쌓일수록 더 큰 강점으로 작용해요.",
+    reality: "<strong>주체성</strong>·동료 관계가 매우 강합니다. 상황에 따라 조절할수록 중요한 순간에 더 큰 역량으로 작용합니다.",
+    fun: "스스로 나서고 사람이랑도 잘 어울려. 가끔 한발 물러서 보면 방향 유지하는 힘이 오래 가. 이 기질은 쌓일수록 더 큰 강점이 돼.",
   },
   식상: {
-    empathy: "말과 재능이 넘쳐서 <strong>분위기를 이끌기</strong> 쉬워요. 다만 말이 행동보다 앞서면 마무리가 허술해질 수 있어요. 듣는 시간과 끝까지 가는 습관이 좋아요.",
-    reality: "<strong>표현·활동성</strong>이 매우 강합니다. 말이 앞서거나 마무리가 약해지면 듣기·실행 비중을 늘리면 유리합니다.",
-    fun: "말이랑 재능이 많아서 시작은 잘해. 말이 너무 앞서지 않게 조절하는 게 좋아.",
+    empathy: "말과 재능이 넘쳐서 <strong>분위기를 이끄는 힘</strong>이 있어요. 듣는 시간과 끝까지 가는 습관을 더하면 <strong>표현력</strong>과 <strong>실행력</strong>이 함께 커져요. 시간이 지날수록 이 능력이 더욱 분명하게 드러나요.",
+    reality: "<strong>표현·활동성</strong>이 매우 강합니다. 듣기·실행 비중을 늘릴수록 중요한 순간에 더 큰 강점으로 작용합니다.",
+    fun: "말이랑 재능이 많아서 분위기 이끄는 힘이 있어. 듣고 끝까지 하는 걸 더하면 표현력이랑 실행력이 같이 커져. 쌓일수록 더 잘 드러나.",
   },
   재성: {
-    empathy: "돈·결과·정리에 강해서 잘 쌓여요. 다만 재물에만 몰두하면 <strong>균형</strong>이 무너질 수 있어요. 나누어 쓰고 쉬는 게 좋아요.",
-    reality: "<strong>현실감각</strong>·재물 관리가 매우 강합니다. 여유를 두는 것이 유리합니다.",
-    fun: "돈이랑 결과 잘 챙겨서 잘 쌓여. 그거에만 매달리지 말고 나눠 쓰고 쉬는 게 좋아.",
+    empathy: "돈·결과·정리에 강해서 <strong>꾸준히 쌓는 힘</strong>이 잘 나와요. 나누어 쓰고 쉬는 시간을 갖으면 그만큼 <strong>오래 가는 현실감각</strong>이 됩니다. 이 기질은 경험이 쌓일수록 더 큰 강점으로 작용해요.",
+    reality: "<strong>현실감각</strong>·재물 관리가 매우 강합니다. 여유를 두면 중요한 순간에 더 오래 작동하는 역량이 됩니다.",
+    fun: "돈이랑 결과 잘 챙겨서 쌓는 힘이 있어. 나눠 쓰고 쉬는 걸 갖으면 오래 가는 현실감각이 돼. 쌓일수록 더 큰 강점이야.",
   },
   관성: {
-    empathy: "<strong>책임감</strong>이 커서 맡은 일을 끝까지 해요. 조직에서 인정받기 쉬워요. 다만 혼자만 짊어지면 부담이 될 수 있으니, 역할을 나누는 게 좋아요.",
-    reality: "<strong>책임·규율</strong>이 매우 강하게 발현됩니다. 역할 분담이 유리합니다.",
-    fun: "책임감이 커서 끝까지 해. 혼자 다 짊어지지 말고 나눠서 하면 좋아.",
+    empathy: "<strong>책임감</strong>이 커서 맡은 일을 끝까지 하는 힘이 있어요. 역할을 나누는 순간이 있으면, 그만큼 <strong>믿음을 주는 리더십</strong>이 오래 유지돼요. 시간이 지날수록 이 능력이 더욱 분명하게 드러나요.",
+    reality: "<strong>책임·규율</strong>이 매우 강하게 발현됩니다. 역할 분담을 할수록 중요한 순간에 더 큰 역량으로 작용합니다.",
+    fun: "책임감이 커서 끝까지 해. 역할 나누면 믿음 주는 리더십이 오래 가. 쌓일수록 더 잘 드러나.",
   },
   인성: {
-    empathy: "배움과 인내가 많아서 <strong>깊이</strong>가 쌓여요. 다만 생각만 하다가 실행 시기를 놓치기 쉬워요. 작은 것부터 행동에 옮기는 게 좋아요.",
-    reality: "<strong>학습·인내</strong>가 매우 강합니다. 실행 비중을 늘리면 유리합니다.",
-    fun: "배우고 쌓는 게 많아서 깊이 있어. 작은 거부터 해 보는 게 좋아.",
+    empathy: "배움과 인내가 많아서 <strong>깊이 쌓는 힘</strong>이 있어요. 작은 것부터 행동에 옮기면 <strong>생각을 실행으로 바꾸는 능력</strong>이 더해져요. 이 기질은 경험이 쌓일수록 더 큰 강점으로 작용해요.",
+    reality: "<strong>학습·인내</strong>가 매우 강합니다. 실행 비중을 늘릴수록 중요한 순간에 더 큰 강점으로 작용합니다.",
+    fun: "배우고 쌓는 게 많아서 깊이 쌓는 힘이 있어. 작은 거부터 해 보면 생각을 실행으로 바꾸는 능력이 더해져. 쌓일수록 더 큰 강점이야.",
   },
 };
 
-/** 0개 — 결여된 기운은 보완할 과제 (이론: 결여된 기운은 인생에서 보완해야 할 과제가 되기도 함). 비난 없이 */
+/** 0개 — 해당 기운이 적을 때: 결함이 아니라, 그쪽 능력을 키우면 중요한 순간에 더 큰 힘이 됨(전략적 성향) */
 const ABSENT_PLAIN: Record<string, Record<StrengthWeakToneKey, string>> = {
   비겁: {
-    empathy: "스스로 결단하기보다 남에 맞추는 일이 많을 수 있어요. 작은 것부터 ‘내가 정했다’고 말해 보거나, 친구·동료와의 관계를 조금씩 쌓아 보시면 좋아요.",
-    reality: "<strong>주체성</strong>·동료 관계를 의식적으로 키우면 보완에 도움이 됩니다.",
-    fun: "남한테 맞출 때가 많으면, 작은 거라도 내가 정했다고 말해 보거나 사람이랑 조금씩 쌓아 보면 좋겠어.",
+    empathy: "스스로 결단하는 상황이 익숙지 않다면, 작은 것부터 ‘내가 정했다’고 말해 보시면 <strong>결단력</strong>이 자연스럽게 길러져요. 친구·동료와의 관계를 조금씩 쌓아 가실수록 중요한 순간에 <strong>협력하는 힘</strong>이 더 분명해져요.",
+    reality: "<strong>주체성</strong>·동료 관계를 의식적으로 키우면 중요한 순간에 그만큼 더 큰 역량으로 작용합니다.",
+    fun: "스스로 정하는 걸 조금씩 늘려 보면 결단력이 길러지고, 사람이랑 할 일을 쌓을수록 협력하는 힘이 더 잘 나와.",
   },
   식상: {
-    empathy: "말이나 표현이 조금씩만 나올 수 있어요. 하고 싶은 말을 짧게라도 꾸준히 해 보시면, 재능이 더 드러나기 쉬워요.",
-    reality: "<strong>표현</strong>·재능을 의식적으로 발휘하면 보완에 도움이 됩니다.",
-    fun: "말이 조금만 나오면, 하고 싶은 말 짧게라도 꾸준히 해 보면 재능이 더 보일 거야.",
+    empathy: "하고 싶은 말을 짧게라도 꾸준히 꺼내 보시면, 그 자체가 <strong>재능을 드러내는 연습</strong>이에요. 말과 표현을 조금씩 늘릴수록 중요한 순간에 <strong>당신만의 색을 보여주는 힘</strong>이 더해져요.",
+    reality: "<strong>표현</strong>·재능을 의식적으로 발휘할수록 중요한 상황에서 더 큰 강점으로 작용합니다.",
+    fun: "하고 싶은 말을 조금씩이라도 꾸준히 해 보면 재능이 더 잘 드러나고, 그만큼 중요한 순간에 네 색을 보여주는 힘이 커져.",
   },
   재성: {
-    empathy: "하고 싶은 일이나 마음이 끌리는 쪽을 우선하게 되는 편일 수 있어요. 그럴 때는 작은 것부터 정리하고, 한 가지씩 결과를 챙기는 습관이 도움이 돼요.",
-    reality: "<strong>현실감각</strong>·결과 관리를 단계적으로 늘리면 보완에 도움이 됩니다.",
-    fun: "결과보다 하고 싶은 게 먼저일 수 있어. 그럴 땐 작은 거부터 정리하고 하나씩 챙겨 보는 습관이 도움 돼.",
+    empathy: "하고 싶은 일을 우선하게 되는 편이라면, 작은 것부터 정리하고 한 가지씩 결과를 챙기는 습관이 <strong>현실감각</strong>을 키워 줘요. 그렇게 쌓을수록 중요한 순간에 <strong>결과를 만들어내는 힘</strong>이 더 분명해져요.",
+    reality: "<strong>현실감각</strong>·결과 관리를 단계적으로 늘릴수록 중요한 순간에 더 큰 역량으로 작용합니다.",
+    fun: "작은 거부터 정리하고 하나씩 챙겨 보는 습관이 현실감각을 키워 주고, 그만큼 결과 만드는 힘이 커져.",
   },
   관성: {
-    empathy: "역할이나 규칙이 부담될 수 있어요. 작은 역할부터 맡아 보시면, 점점 편해져요.",
-    reality: "<strong>책임</strong>·규율을 소규모로 경험하면 보완에 도움이 됩니다.",
-    fun: "역할이랑 규칙이 부담되면, 작은 역할부터 맡아 보면 점점 편해져.",
+    empathy: "작은 역할부터 맡아 보시면, 그 경험이 <strong>책임을 지는 힘</strong>으로 쌓여요. 맡은 일을 해 나갈수록 중요한 순간에 <strong>믿음을 주는 역량</strong>이 더 잘 드러나요.",
+    reality: "<strong>책임</strong>·규율을 소규모로 경험할수록 중요한 순간에 더 큰 강점으로 작용합니다.",
+    fun: "작은 역할부터 맡아 보면 책임지는 힘이 쌓이고, 그만큼 중요한 순간에 믿음 주는 역량이 잘 나와.",
   },
   인성: {
-    empathy: "바쁘다 보면 배우고 쌓는 시간이 부족할 수 있어요. 배우고 싶은 걸 하나 정해서, 조금씩이라도 쌓아 가시면 좋아요.",
-    reality: "<strong>학습</strong>·인내를 꾸준히 쌓으면 보완에 도움이 됩니다.",
-    fun: "배우는 시간이 부족하면, 하나 정해서 조금씩이라도 쌓아 가면 좋겠어.",
+    empathy: "배우고 싶은 걸 하나 정해서 조금씩이라도 쌓아 가시면, 그게 <strong>견디고 성장하는 힘</strong>이에요. 꾸준히 쌓을수록 중요한 순간에 <strong>깊이 있는 판단력</strong>이 더 분명해져요.",
+    reality: "<strong>학습</strong>·인내를 꾸준히 쌓을수록 중요한 순간에 더 큰 역량으로 작용합니다.",
+    fun: "하나 정해서 조금씩이라도 쌓아 가면 견디고 성장하는 힘이 되고, 그만큼 중요한 순간에 깊이 있는 판단력이 잘 나와.",
   },
 };
 
@@ -178,6 +178,7 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
   const lines: string[] = [];
 
   if (tone === "empathy") {
+    lines.push("아마 스스로도 이런 면을 느껴왔을 수 있어요. 사주에서 보이는 기질은 결함이 아니라, 특정 상황에서 강점이 되는 능력이에요.");
     if (moderate.length > 0 || many.length > 0) {
       lines.push("<strong>강점</strong>이 이런 식으로 드러나는 편이에요.");
     }
@@ -194,11 +195,13 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
     }
     if (absent.length > 0) {
       const list = absent.map((el) => ABSENT_PLAIN[elementToTenGod[el]]?.[tone] ?? "").filter(Boolean).join(" ");
-      if (list) lines.push("<strong>보완</strong>해 보시면 좋은 부분은 이렇게요. " + list);
+      if (list) lines.push("이런 쪽을 의식해서 키우시면 중요한 순간에 더 큰 힘이 됩니다. " + list);
     } else if (moderate.length > 0 || many.length > 0) {
-      lines.push("부족한 부분이 뚜렷하지 않아서 전반적으로 고른 편이에요.");
+      lines.push("전반적으로 고른 편이라, 상황에 맞게 여러 강점을 쓰기 좋아요.");
     }
+    lines.push("이 기질들은 경험이 쌓일수록 더 큰 강점으로 작용해요. 시간이 지날수록 그 힘이 더 분명하게 드러납니다.");
   } else if (tone === "reality") {
+    lines.push("사주에서 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다.");
     if (moderate.length > 0 || many.length > 0) {
       lines.push("<strong>강점</strong>은 대략 이렇게 드러납니다.");
     }
@@ -215,11 +218,12 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
     }
     if (absent.length > 0) {
       const list = absent.map((el) => ABSENT_PLAIN[elementToTenGod[el]]?.[tone] ?? "").filter(Boolean).join(" ");
-      if (list) lines.push("<strong>보완</strong> 시 참고. " + list);
+      if (list) lines.push("이런 쪽을 키우면 중요한 순간에 더 큰 역량으로 작용합니다. " + list);
     } else {
-      lines.push("보완이 필요한 영역이 뚜렷하지 않습니다.");
+      lines.push("전반적으로 고른 편이라 상황에 맞게 여러 강점을 활용하기 유리합니다.");
     }
   } else {
+    lines.push("주변에서 이런 말을 들은 적이 있을 수 있어. 사주에 보이는 기질은 결함이 아니라 특정 상황에서 강점이 되는 거야.");
     if (moderate.length > 0 || many.length > 0) {
       lines.push("<strong>강점</strong>이 이렇게 보이는 편이야.");
     }
@@ -236,10 +240,11 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
     }
     if (absent.length > 0) {
       const list = absent.map((el) => ABSENT_PLAIN[elementToTenGod[el]]?.[tone] ?? "").filter(Boolean).join(" ");
-      if (list) lines.push("<strong>보완</strong>해 보면 좋은 거는 이렇게. " + list);
+      if (list) lines.push("이런 쪽을 키우면 중요한 순간에 더 큰 힘이 돼. " + list);
     } else if (moderate.length > 0 || many.length > 0) {
-      lines.push("부족한 부분이 뚜렷하지 않아서 전반적으로 고른 편이야.");
+      lines.push("전반적으로 고른 편이라 상황에 맞게 여러 강점 쓰기 좋아.");
     }
+    lines.push("이 기질들은 쌓일수록 더 큰 강점으로 작용해. 시간 지날수록 그 힘이 더 분명하게 드러나.");
   }
 
   return lines.join("\n\n").trim();

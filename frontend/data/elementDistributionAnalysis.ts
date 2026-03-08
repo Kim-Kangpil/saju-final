@@ -45,29 +45,29 @@ const EL_NAME_SUBJECT: Record<string, string> = {
 
 /** 십신별 강점 한 줄 (오행 분포에서 “해당 육친 → 강점” 서술용) */
 const TEN_GOD_STRENGTH: Record<string, Record<ElementDistToneKey, string>> = {
-  비겁: { empathy: "혼자서도 결단하고 동료와 어울리는 힘이 잘 나와요.", reality: "주체성·협력이 강점입니다.", fun: "스스로 나서고 동료랑 잘해." },
-  식상: { empathy: "말과 재능을 꺼내는 힘이 잘 나와요.", reality: "표현·재능 발휘가 강점입니다.", fun: "말이랑 재능 꺼내는 거 잘해." },
-  재성: { empathy: "꾸준히 모으고 정리하는 힘이 잘 나와요.", reality: "관리·결과 추구가 강점입니다.", fun: "쌓고 정리하는 거 잘해." },
-  관성: { empathy: "맡은 일을 끝까지 하고 믿음을 주는 힘이 잘 나와요.", reality: "책임·리더십이 강점입니다.", fun: "규칙 지키고 이끄는 거 잘해." },
-  인성: { empathy: "공부하고 견디며 쌓는 힘이 잘 나와요.", reality: "학습·인내가 강점입니다.", fun: "배우고 가르치는 거 잘해." },
+  비겁: { empathy: "<strong>혼자서도 결단하고 동료와 어울리는 힘</strong>이 잘 나와요.", reality: "<strong>주체성·협력</strong>이 강점입니다.", fun: "<strong>스스로 나서고 동료랑 잘하는</strong> 거 잘해." },
+  식상: { empathy: "<strong>말과 재능을 꺼내는 힘</strong>이 잘 나와요.", reality: "<strong>표현·재능 발휘</strong>가 강점입니다.", fun: "<strong>말이랑 재능 꺼내는</strong> 거 잘해." },
+  재성: { empathy: "<strong>꾸준히 모으고 정리하는 힘</strong>이 잘 나와요.", reality: "<strong>관리·결과 추구</strong>가 강점입니다.", fun: "<strong>쌓고 정리하는</strong> 거 잘해." },
+  관성: { empathy: "<strong>맡은 일을 끝까지 하고 믿음을 주는 힘</strong>이 잘 나와요.", reality: "<strong>책임·리더십</strong>이 강점입니다.", fun: "<strong>규칙 지키고 이끄는</strong> 거 잘해." },
+  인성: { empathy: "<strong>공부하고 견디며 쌓는 힘</strong>이 잘 나와요.", reality: "<strong>학습·인내</strong>가 강점입니다.", fun: "<strong>배우고 가르치는</strong> 거 잘해." },
 };
 
-/** 0~1개일 때 — 현실적 언어로 한 문장 설명 + 보완 제안 ("재물·결과 쪽 부족" 같은 추상어 대신) */
+/** 0~1개일 때 — 결함이 아니라, 해당 능력을 키우면 중요한 순간에 더 큰 힘이 됨 (핵심어 볼드) */
 const TEN_GOD_ABSENT: Record<string, Record<ElementDistToneKey, string>> = {
-  비겁: { empathy: "스스로 정하고 동료와 어울리는 게 어렵게 느껴질 수 있어요. 작은 것부터 스스로 결정해 보시고, 함께할 일을 조금씩 늘려 보시면 좋아요.", reality: "자기 결단·동료 관계를 늘리면 보완됩니다.", fun: "스스로 정하는 게 어렵면 작은 거부터 해 보고, 사람이랑 할 일을 늘려 봐." },
-  식상: { empathy: "말이나 재능을 밖으로 꺼내기가 쉽지 않을 수 있어요. 하고 싶은 말을 짧게라도 꾸준히 해 보시면 좋아요.", reality: "말·글·창작 기회를 늘리면 보완됩니다.", fun: "말 꺼내기 어렵면 짧게라도 꾸준히 해 봐." },
-  재성: { empathy: "돈을 모으거나 결과를 꾸준히 챙기는 게 잘 안 잡힐 수 있어요. 작은 것부터 정리하고, 한 가지씩 결과를 챙겨 보시면 좋아요.", reality: "정리·관리 경험을 늘리면 보완됩니다.", fun: "돈이랑 결과 챙기기 어렵면 작은 거부터 정리하고 하나씩 챙겨 봐." },
-  관성: { empathy: "규칙을 지키거나 맡은 일을 끝까지 하는 게 부담될 수 있어요. 작은 역할부터 맡아 보시면 좋아요.", reality: "소규모 책임·역할을 늘리면 보완됩니다.", fun: "역할·규칙이 부담되면 작은 거부터 맡아 봐." },
-  인성: { empathy: "공부하거나 참고 견디는 게 소홀해지기 쉬울 수 있어요. 배우고 싶은 걸 하나 정해서 조금씩이라도 쌓아 보시면 좋아요.", reality: "학습·쌓기 경험을 늘리면 보완됩니다.", fun: "배우고 견디는 게 어렵면 하나 정해서 조금씩 쌓아 봐." },
+  비겁: { empathy: "작은 것부터 스스로 결정해 보시고, 함께할 일을 조금씩 늘려 보시면 <strong>결단력</strong>과 <strong>협력하는 힘</strong>이 자연스럽게 길러져요. 경험이 쌓일수록 중요한 순간에 더 분명하게 드러나요.", reality: "<strong>자기 결단·동료 관계</strong>를 키우면 중요한 순간에 더 큰 역량으로 작용합니다.", fun: "작은 거부터 스스로 정하고 사람이랑 할 일을 늘려 보면 결단력이랑 협력하는 힘이 커져. 쌓일수록 더 잘 나와." },
+  식상: { empathy: "하고 싶은 말을 짧게라도 꾸준히 꺼내 보시면 <strong>재능을 드러내는 힘</strong>이 길러져요. 말과 표현을 늘릴수록 중요한 순간에 당신만의 색이 더 분명해져요.", reality: "<strong>말·글·창작 기회</strong>를 늘릴수록 중요한 순간에 더 큰 강점으로 작용합니다.", fun: "하고 싶은 말 짧게라도 꾸준히 해 보면 재능 드러내는 힘이 커져. 쌓일수록 더 잘 나와." },
+  재성: { empathy: "작은 것부터 정리하고 한 가지씩 결과를 챙겨 보시면 <strong>꾸준히 모으고 정리하는 힘</strong>이 쌓여요. 그만큼 중요한 순간에 결과를 만들어내는 능력이 더해져요.", reality: "<strong>정리·관리 경험</strong>을 늘릴수록 중요한 순간에 더 큰 역량으로 작용합니다.", fun: "작은 거부터 정리하고 하나씩 챙겨 보면 모으고 정리하는 힘이 쌓여. 쌓일수록 더 잘 나와." },
+  관성: { empathy: "작은 역할부터 맡아 보시면 <strong>맡은 일을 끝까지 하는 힘</strong>이 길러져요. 그 경험이 쌓일수록 중요한 순간에 믿음을 주는 역량으로 드러나요.", reality: "<strong>소규모 책임·역할</strong>을 늘릴수록 중요한 순간에 더 큰 강점으로 작용합니다.", fun: "작은 역할부터 맡아 보면 끝까지 하는 힘이 길러져. 쌓일수록 믿음 주는 역량이 잘 나와." },
+  인성: { empathy: "배우고 싶은 걸 하나 정해서 조금씩이라도 쌓아 가시면 <strong>견디고 쌓는 힘</strong>이 됩니다. 꾸준히 쌓을수록 중요한 순간에 깊이 있는 판단력이 더 분명해져요.", reality: "<strong>학습·쌓기 경험</strong>을 늘릴수록 중요한 순간에 더 큰 역량으로 작용합니다.", fun: "하나 정해서 조금씩 쌓아 가면 견디고 쌓는 힘이 돼. 쌓일수록 깊이 있는 판단력이 잘 나와." },
 };
 
-/** 4개 이상일 때 — 강점이자 조절 필요 (같은 말 반복 피함) */
+/** 4개 이상일 때 — 강점이자 조절 필요 (핵심어 볼드) */
 const TEN_GOD_MANY: Record<string, Record<ElementDistToneKey, string>> = {
-  비겁: { empathy: "다만 많으면 자기만 고집하기 쉬우니, 때로 한발 물러서 보시면 좋아요.", reality: "과하면 고집·독선으로 이어질 수 있으니 조절이 유리합니다.", fun: "많으면 고집되기 쉬우니까 한발 물러서 보는 게 좋아." },
-  식상: { empathy: "다만 많으면 말이 행동보다 앞서기 쉬우니, 듣고 끝까지 마무리하는 습관이 좋아요.", reality: "과하면 말이 앞서거나 마무리가 약해지니, 듣기·실행 비중을 늘리면 유리합니다.", fun: "많으면 말만 나오기 쉬우니까 듣고 끝까지 하는 거 챙겨." },
-  재성: { empathy: "다만 돈에만 몰두하면 균형이 무너질 수 있으니, 나누고 쉬는 시간을 갖으시면 좋아요.", reality: "과하면 집착·소모가 될 수 있으니 여유를 두는 것이 유리합니다.", fun: "많으면 그거만 하게 되니까 나누고 쉬는 거 잊지 마." },
-  관성: { empathy: "다만 혼자만 짊어지면 부담이 될 수 있으니, 역할을 나누시면 좋아요.", reality: "과하면 자기 억압·부담이 되니 역할 분담이 유리합니다.", fun: "많으면 혼자 다 짊어지게 되니까 나눠서 해." },
-  인성: { empathy: "다만 많으면 생각만 하다가 실행을 놓치기 쉬우니, 작은 것부터 행동에 옮기시면 좋아요.", reality: "과하면 우유부단·실행 지연이 되니 실행 비중을 늘리면 유리합니다.", fun: "많으면 생각만 하게 되니까 작은 거부터 해 봐." },
+  비겁: { empathy: "다만 많으면 <strong>자기만 고집</strong>하기 쉬우니, 때로 한발 물러서 보시면 좋아요.", reality: "과하면 <strong>고집·독선</strong>으로 이어질 수 있으니 조절이 유리합니다.", fun: "많으면 <strong>고집</strong>되기 쉬우니까 한발 물러서 보는 게 좋아." },
+  식상: { empathy: "다만 많으면 <strong>말이 행동보다 앞서기</strong> 쉬우니, 듣고 끝까지 마무리하는 습관이 좋아요.", reality: "과하면 <strong>말이 앞서거나 마무리</strong>가 약해지니, 듣기·실행 비중을 늘리면 유리합니다.", fun: "많으면 <strong>말만 나오기</strong> 쉬우니까 듣고 끝까지 하는 거 챙겨." },
+  재성: { empathy: "다만 <strong>돈에만 몰두</strong>하면 균형이 무너질 수 있으니, 나누고 쉬는 시간을 갖으시면 좋아요.", reality: "과하면 <strong>집착·소모</strong>가 될 수 있으니 여유를 두는 것이 유리합니다.", fun: "많으면 <strong>그거만 하게</strong> 되니까 나누고 쉬는 거 잊지 마." },
+  관성: { empathy: "다만 <strong>혼자만 짊어지면</strong> 부담이 될 수 있으니, 역할을 나누시면 좋아요.", reality: "과하면 <strong>자기 억압·부담</strong>이 되니 역할 분담이 유리합니다.", fun: "많으면 <strong>혼자 다 짊어지게</strong> 되니까 나눠서 해." },
+  인성: { empathy: "다만 많으면 <strong>생각만 하다가 실행을 놓치기</strong> 쉬우니, 작은 것부터 행동에 옮기시면 좋아요.", reality: "과하면 <strong>우유부단·실행 지연</strong>이 되니 실행 비중을 늘리면 유리합니다.", fun: "많으면 <strong>생각만 하게</strong> 되니까 작은 거부터 해 봐." },
 };
 
 /** 오행 코드 → 사용자용 설명 (목·화·토·금·수는 사용) */
@@ -205,48 +205,53 @@ export function getElementDistributionParagraph(
         weaknessLines.push(n === 0 ? `${EL_NAME_SUBJECT[el]} 없어서 ${complement}` : `${EL_NAME[el]} ${n}개라 ${complement}`);
       }
     } else if (n <= 3) {
-      // 2~3개: 적당 → 강점만
+      // 2~3개: 적당 → 강점만 (라벨 볼드)
       const strength = TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "";
-      if (tone === "empathy") strengthLines.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength}`);
-      else if (tone === "reality") strengthLines.push(`${EL_NAME[el]} ${n}개 → ${label}: ${strength}`);
-      else strengthLines.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength}`);
+      if (tone === "empathy") strengthLines.push(`${EL_NAME[el]} ${n}개는 <strong>${label}</strong>에 해당해서 ${strength}`);
+      else if (tone === "reality") strengthLines.push(`${EL_NAME[el]} ${n}개 → <strong>${label}</strong>: ${strength}`);
+      else strengthLines.push(`${EL_NAME[el]} ${n}개는 <strong>${label}</strong>에 해당해서 ${strength}`);
     } else {
-      // 4개 이상: 많음 → 강점이자 약점
+      // 4개 이상: 많음 → 강점이자 약점 (라벨 볼드)
       const strength = TEN_GOD_STRENGTH[tenGod]?.[tone] ?? "";
       const manyMsg = TEN_GOD_MANY[tenGod]?.[tone] ?? "";
-      if (tone === "empathy") manyLines.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength} ${manyMsg}`);
-      else if (tone === "reality") manyLines.push(`${EL_NAME[el]} ${n}개 → ${label}: ${strength} ${manyMsg}`);
-      else manyLines.push(`${EL_NAME[el]} ${n}개는 ${label}에 해당해서 ${strength} ${manyMsg}`);
+      if (tone === "empathy") manyLines.push(`${EL_NAME[el]} ${n}개는 <strong>${label}</strong>에 해당해서 ${strength} ${manyMsg}`);
+      else if (tone === "reality") manyLines.push(`${EL_NAME[el]} ${n}개 → <strong>${label}</strong>: ${strength} ${manyMsg}`);
+      else manyLines.push(`${EL_NAME[el]} ${n}개는 <strong>${label}</strong>에 해당해서 ${strength} ${manyMsg}`);
     }
   }
 
   const lines: string[] = [];
 
-  // 순서: 많은 것(4+) → 적당한 것(2~3) → 적은 것(0~1)
+  // 순서: 많은 것(4+) → 적당한 것(2~3) → 적은 것(0~1). 해석 원칙: 결함 X → 능력·시간축.
   if (tone === "empathy") {
+    lines.push("아마 스스로도 이런 분포를 느껴왔을 수 있어요. 사주에서 보이는 기운은 결함이 아니라, 특정 상황에서 강점이 되는 능력이에요.");
     lines.push(`여덟 글자 속에 ${countParts}가 있어요.`);
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
     if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
-    if (weaknessLines.length > 0) lines.push("이렇게 해 보시면 좋아요. " + weaknessLines.join(" "));
+    if (weaknessLines.length > 0) lines.push("이런 쪽을 의식해서 키우시면 중요한 순간에 더 큰 힘이 됩니다. " + weaknessLines.join(" "));
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 분포해 있어, 한쪽으로 치우치지 않고 상황에 맞게 쓰기 좋은 편이에요.");
     }
+    lines.push("이 기운들은 경험이 쌓일수록 더 큰 강점으로 작용해요. 시간이 지날수록 그 힘이 더 분명하게 드러납니다.");
   } else if (tone === "reality") {
+    lines.push("사주에서 보이는 기운은 결함이 아니라 특정 상황에서 강점이 되는 능력이며, 시간이 지날수록 그 힘이 더 분명해집니다.");
     lines.push(`분포: ${countParts}.`);
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
     if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
-    if (weaknessLines.length > 0) lines.push("부족(약점)·보완: " + weaknessLines.join(" "));
+    if (weaknessLines.length > 0) lines.push("이런 쪽을 키우면 중요한 순간에 더 큰 역량으로 작용합니다. " + weaknessLines.join(" "));
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 전반적으로 균형 잡혀 있습니다.");
     }
   } else {
+    lines.push("주변에서 이런 말을 들은 적이 있을 수 있어. 기운은 결함이 아니라 특정 상황에서 강점이 되는 거야.");
     lines.push(`니한테는 ${countParts}야.`);
     if (manyLines.length > 0) lines.push(manyLines.join(" "));
     if (strengthLines.length > 0) lines.push(strengthLines.join(" "));
-    if (weaknessLines.length > 0) lines.push("이렇게 해 보면 좋아. " + weaknessLines.join(" "));
+    if (weaknessLines.length > 0) lines.push("이런 쪽을 키우면 중요한 순간에 더 큰 힘이 돼. " + weaknessLines.join(" "));
     if (strengthLines.length === 0 && manyLines.length === 0 && weaknessLines.length === 0) {
       lines.push("목·화·토·금·수가 고르게 있어서 한쪽만 튀지 않고 쓰기 좋은 편이야.");
     }
+    lines.push("이 기운들은 쌓일수록 더 큰 강점으로 작용해. 시간 지날수록 그 힘이 더 분명하게 드러나.");
   }
 
   return lines.join("\n\n").trim();

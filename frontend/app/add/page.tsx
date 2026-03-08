@@ -1078,8 +1078,10 @@ export default function Page() {
         setNatureYangCount(natureResult.yangCount);
         setNatureYinCount(natureResult.yinCount);
 
-        // 🔥 사회적 가면 vs 실제 기질 분석 추가
+        // 🔥 사회적 가면 vs 실제 기질 분석 추가 (월간·월지·십이운성·시간·시지)
         const monthStemTenGod = tenGod(dayStem, result.month.cheongan.hanja);
+        const monthBranchMainStem = branchMainStem(result.month.jiji.hanja);
+        const monthBranchTenGod = monthBranchMainStem ? tenGod(dayStem, monthBranchMainStem) : "";
         const monthTwelveState = result.twelve_states?.month || "";
         const hourStemTenGod = tenGod(dayStem, result.hour.cheongan.hanja);
         const hourBranchMainStem = branchMainStem(result.hour.jiji.hanja);
@@ -1087,6 +1089,7 @@ export default function Page() {
 
         const maskVsNatureResult = analyzeMaskVsNature(
           monthStemTenGod,
+          monthBranchTenGod,
           monthTwelveState,
           hourStemTenGod,
           hourBranchTenGod,

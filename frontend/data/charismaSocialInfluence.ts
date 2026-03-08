@@ -307,4 +307,3 @@ export function getCharismaSocialInfluenceParagraph(
   }
   return out.trim();
 }
-<｜tool▁calls▁begin｜><｜tool▁call▁begin｜>

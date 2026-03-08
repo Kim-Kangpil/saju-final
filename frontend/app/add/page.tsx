@@ -33,6 +33,7 @@ import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
 import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";
+import { MaskVsNatureVisual } from "../../components/MaskVsNatureVisual";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -2501,6 +2502,11 @@ export default function Page() {
                                                       yinCount={natureYinCount}
                                                       size={220}
                                                     />
+                                                  )}
+                                                  {c.id === "identity_persona" && (
+                                                    <div className="flex flex-col items-center gap-1 my-2">
+                                                      <MaskVsNatureVisual size={200} className="max-w-[260px] w-full h-auto" />
+                                                    </div>
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

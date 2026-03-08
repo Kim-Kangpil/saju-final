@@ -112,7 +112,21 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
                     gap: "8px",
                   }}
                 >
-                  <span style={{ fontSize: "15px" }}>{s.icon}</span>
+                  <span
+                    style={{
+                      fontSize: "15px",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "8px",
+                      background: "rgba(232, 224, 208, 0.2)",
+                      filter: "brightness(1.15)",
+                    }}
+                  >
+                    {s.icon}
+                  </span>
                   <span
                     style={{
                       fontSize: "13px",

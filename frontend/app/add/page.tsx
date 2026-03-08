@@ -22,7 +22,7 @@ import { TODAY_ANALYSIS, analyzeTodayFortune } from "../../data/todayAnalysis";
 import { dayPillarTexts } from "../../data/dayPillarAnimal";
 import { getCoreValuesParagraph, getCoreValuesCompassData } from "../../data/coreValuesAnalysis";
 import { getStrengthWeaknessParagraph, getStrengthWeaknessVisualData } from "../../data/strengthWeaknessAnalysis";
-import { getLatentTalentAptitudeParagraph } from "../../data/latentTalentAptitude";
+import { getLatentTalentAptitudeParagraph, getAptitudeSpectrumData } from "../../data/latentTalentAptitude";
 import { getElementDistributionParagraph } from "../../data/elementDistributionAnalysis";
 import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
 import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
@@ -36,6 +36,7 @@ import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";
 import { FaceSplitCard } from "../../components/FaceSplitCard";
 import { CompassCard } from "../../components/CompassCard";
 import { StrengthCard } from "../../components/StrengthCard";
+import { TalentSpectrumCard } from "../../components/TalentSpectrumCard";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -1435,6 +1436,11 @@ export default function Page() {
     return getStrengthWeaknessVisualData(result, selectedChar);
   }, [result, selectedChar]);
 
+  const aptitudeSpectrumData = useMemo(() => {
+    if (!result) return null;
+    return getAptitudeSpectrumData(result);
+  }, [result]);
+
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     if (!loggedIn) {
@@ -2564,6 +2570,9 @@ export default function Page() {
                                                   )}
                                                   {c.id === "talent_strengthWeak" && strengthWeakVisualData && (
                                                     <StrengthCard data={strengthWeakVisualData} />
+                                                  )}
+                                                  {c.id === "talent_aptitude" && aptitudeSpectrumData && (
+                                                    <TalentSpectrumCard data={aptitudeSpectrumData} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

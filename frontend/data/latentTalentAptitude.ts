@@ -272,3 +272,130 @@ export function getLatentTalentAptitudeParagraph(
 
   return intro + body;
 }
+
+// --- 스펙트럼 시각화용 (x: 혼자↔사람, y: 지식↔실행) ---
+
+export interface AptitudeSpectrumData {
+  position: { x: number; y: number };
+  label: string;
+  desc: string;
+  tags: string[];
+  axes: {
+    left: string;
+    right: string;
+    top: string;
+    bottom: string;
+  };
+  quadrants: Array<{ label: string; sub: string; x: number; y: number }>;
+}
+
+const AXES = {
+  left: "혼자 하는 일",
+  right: "사람과 하는 일",
+  top: "지식형",
+  bottom: "실행형",
+};
+
+const QUADRANTS = [
+  { label: "연구자형", sub: "분석·집필·논문", x: 20, y: 20 },
+  { label: "강사·멘토형", sub: "강의·교육·컨설팅", x: 75, y: 20 },
+  { label: "전문 기술형", sub: "개발·제작·설계", x: 20, y: 75 },
+  { label: "현장 리더형", sub: "운영·관리·영업", x: 75, y: 75 },
+];
+
+/** 십신별 스펙트럼 위치(x,y 0~100) + 라벨·한줄설명·직무태그. touchu=false일 때 약간 중앙 쏠림(잠재). */
+const SPECTRUM_BY_TEN_GOD: Record<
+  string,
+  { x: number; y: number; xFail?: number; yFail?: number; label: string; desc: string; tags: string[] }
+> = {
+  비견: {
+    x: 22, y: 58,
+    xFail: 32, yFail: 55,
+    label: "독립·자기주도형",
+    desc: "스스로 결단하고 자기 페이스로 끌어가는 일이 잘 맞아요",
+    tags: ["독립", "자영", "프리랜서", "자기주도"],
+  },
+  겁재: {
+    x: 78, y: 72,
+    xFail: 68, yFail: 68,
+    label: "경쟁·도전형",
+    desc: "승부와 도전이 있는 일에서 잘 움직여요",
+    tags: ["영업", "스포츠", "승부", "도전"],
+  },
+  식신: {
+    x: 35, y: 45,
+    xFail: 42, yFail: 48,
+    label: "표현·창작형",
+    desc: "말하고 표현하며 결과를 만드는 일이 잘 맞아요",
+    tags: ["예술", "콘텐츠", "디자인", "교육", "창작"],
+  },
+  상관: {
+    x: 42, y: 28,
+    xFail: 48, yFail: 35,
+    label: "혁신·기획형",
+    desc: "틀을 넘어 새로 만드는 일이 잘 맞아요",
+    tags: ["스타트업", "연구", "기획", "컨설팅"],
+  },
+  편재: {
+    x: 88, y: 78,
+    xFail: 78, yFail: 75,
+    label: "기회·실전형",
+    desc: "움직이며 기회를 잡는 일이 잘 맞아요",
+    tags: ["영업", "사업", "유통", "네트워킹"],
+  },
+  정재: {
+    x: 38, y: 68,
+    xFail: 45, yFail: 65,
+    label: "정리·관리형",
+    desc: "꾸준히 쌓고 정리하는 일이 잘 맞아요",
+    tags: ["회계", "재무", "자산관리", "관리"],
+  },
+  편관: {
+    x: 82, y: 70,
+    xFail: 72, yFail: 68,
+    label: "리더·관리형",
+    desc: "사람을 이끄고 결정하는 일이 잘 맞아요",
+    tags: ["경영", "관리", "임원", "리더십"],
+  },
+  정관: {
+    x: 72, y: 58,
+    xFail: 62, yFail: 60,
+    label: "조직·책임형",
+    desc: "원칙과 책임을 지키는 일이 잘 맞아요",
+    tags: ["공무원", "대기업", "공공", "조직"],
+  },
+  편인: {
+    x: 22, y: 22,
+    xFail: 30, yFail: 28,
+    label: "연구·통찰형",
+    desc: "깊이 생각하고 남다른 시각을 쓰는 일이 잘 맞아요",
+    tags: ["철학", "심리", "연구", "집필"],
+  },
+  정인: {
+    x: 68, y: 25,
+    xFail: 58, yFail: 32,
+    label: "지식 나눔형",
+    desc: "배우고 정리해서 전달하는 일이 자연스럽게 잘 맞아요",
+    tags: ["교육", "연구", "강사", "멘토", "집필", "컨설팅", "강의"],
+  },
+};
+
+export function getAptitudeSpectrumData(pillars: SajuPillarsForAptitude): AptitudeSpectrumData | null {
+  const info = getAptitudeInfo(pillars);
+  if (!info) return null;
+
+  const row = SPECTRUM_BY_TEN_GOD[info.tenGod];
+  if (!row) return null;
+
+  const x = info.touchu ? row.x : (row.xFail ?? row.x);
+  const y = info.touchu ? row.y : (row.yFail ?? row.y);
+
+  return {
+    position: { x, y },
+    label: row.label,
+    desc: row.desc,
+    tags: row.tags,
+    axes: AXES,
+    quadrants: QUADRANTS,
+  };
+}

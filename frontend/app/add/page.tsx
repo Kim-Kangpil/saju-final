@@ -28,6 +28,7 @@ import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
 import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
 import { getAncestorParentParagraph } from "../../data/ancestorParentFortune";
 import { getCharismaSocialInfluenceParagraph } from "../../data/charismaSocialInfluence";
+import { getCharmPointParagraph } from "../../data/charmPointAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -512,7 +513,7 @@ const MEGA_SECTIONS: Record<
       { key: "comm", title: "인간관계 스타일", icon: "💬" },
       { key: "parents", title: "내 안에 흐르는 가장 단단한 유전자", icon: "👪" },
       { key: "charisma", title: "카리스마와 사회적 영향력", icon: "👑" },
-      { key: "hapchung", title: "지지 합과 충의 본색", icon: "⚡" },
+      { key: "hapchung", title: "사람들이 빠지는 나의 매력포인트", icon: "⚡" },
     ],
   },
   insight: {
@@ -1304,6 +1305,10 @@ export default function Page() {
         if (it.key === "charisma" && result) {
           const content = getCharismaSocialInfluenceParagraph(result, selectedChar);
           return asContent("relation_charisma", it.title, content, it.icon, "local");
+        }
+        if (it.key === "hapchung" && result) {
+          const content = getCharmPointParagraph(result, selectedChar);
+          return asContent("relation_hapchung", it.title, content, it.icon, "local");
         }
         return asReady(`relation_${it.key}`, it.title, it.icon);
       }),

@@ -24,7 +24,7 @@ import { getCoreValuesParagraph, getCoreValuesCompassData } from "../../data/cor
 import { getStrengthWeaknessParagraph, getStrengthWeaknessVisualData } from "../../data/strengthWeaknessAnalysis";
 import { getLatentTalentAptitudeParagraph, getAptitudeSpectrumData } from "../../data/latentTalentAptitude";
 import { getElementDistributionParagraph, getElementDistributionVisualData } from "../../data/elementDistributionAnalysis";
-import { getTenGodAbilityParagraph } from "../../data/tenGodAbilityAnalysis";
+import { getTenGodAbilityParagraph, getTenGodAbilityCardsData } from "../../data/tenGodAbilityAnalysis";
 import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
 import { getAncestorParentParagraph } from "../../data/ancestorParentFortune";
 import { getCharismaSocialInfluenceParagraph } from "../../data/charismaSocialInfluence";
@@ -38,6 +38,7 @@ import { CompassCard } from "../../components/CompassCard";
 import { StrengthCard } from "../../components/StrengthCard";
 import { TalentSpectrumCard } from "../../components/TalentSpectrumCard";
 import { OhaengBalanceCard } from "../../components/OhaengBalanceCard";
+import { TenGodAbilityCards } from "../../components/TenGodAbilityCards";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -1447,6 +1448,11 @@ export default function Page() {
     return getElementDistributionVisualData(result, selectedChar);
   }, [result, selectedChar]);
 
+  const tenGodAbilityCardsData = useMemo(() => {
+    if (!result) return null;
+    return getTenGodAbilityCardsData(result, selectedChar);
+  }, [result, selectedChar]);
+
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     if (!loggedIn) {
@@ -2582,6 +2588,9 @@ export default function Page() {
                                                   )}
                                                   {c.id === "talent_elements" && elementDistributionVisualData && (
                                                     <OhaengBalanceCard data={elementDistributionVisualData} />
+                                                  )}
+                                                  {c.id === "talent_tengod" && tenGodAbilityCardsData && (
+                                                    <TenGodAbilityCards data={tenGodAbilityCardsData} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

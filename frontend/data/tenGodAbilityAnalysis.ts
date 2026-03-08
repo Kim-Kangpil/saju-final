@@ -242,3 +242,205 @@ export function getTenGodAbilityParagraph(
   }
   return [main[0], main[1]].join("\n\n").trim();
 }
+
+// --- 카드 시각화용 (스와이프 카드) ---
+
+const TEN_GOD_ORDER = ["비견", "겁재", "식신", "상관", "편재", "정재", "편관", "정관", "편인", "정인"] as const;
+
+/** 십신별 카드 메타: 이모지, 능력명, 태그, 색, 한 줄 설명, 분야. */
+const TEN_GOD_CARD_META: Record<
+  string,
+  {
+    emoji: string;
+    ability: string;
+    tag: string;
+    tagColor: string;
+    descShort: Record<TenGodAbilityToneKey, string>;
+    fields: string[];
+  }
+> = {
+  비견: {
+    emoji: "🛤",
+    ability: "자기 길 개척",
+    tag: "CORE SKILL",
+    tagColor: "#A78BD4",
+    descShort: {
+      empathy: "자기 기준을 분명히 세우고 스스로 길을 개척하는 힘이 있어요. 독립적으로 결정하고 행동하는 능력이 뛰어나요.",
+      reality: "자기 기준을 세우고 스스로 길을 개척하는 힘이 뚜렷합니다. 창업, 프리랜서, 리더 환경에서 강점이 됩니다.",
+      fun: "자기 기준 세우고 스스로 길 개척하는 힘이 있어. 창업, 프리랜서, 리더처럼 방향 잡는 데서 강점이 돼.",
+    },
+    fields: ["창업", "프리랜서", "리더십", "개인 브랜드"],
+  },
+  겁재: {
+    emoji: "🤝",
+    ability: "판 키우기",
+    tag: "PEOPLE SKILL",
+    tagColor: "#7EB8A0",
+    descShort: {
+      empathy: "사람과 자원을 빠르게 끌어모으고 판을 키우는 힘이 있어요. 관계로 기회를 만들고 협력과 경쟁을 활용할 줄 알아요.",
+      reality: "사람과 자원을 끌어모으고 판을 키우는 힘이 뚜렷합니다. 영업, 네트워크, 투자에서 강점이 됩니다.",
+      fun: "사람이랑 자원 끌어모으고 판 키우는 힘이 있어. 영업, 투자, 공동 프로젝트 같은 데서 강점이 돼.",
+    },
+    fields: ["영업", "네트워크", "투자", "공동 프로젝트"],
+  },
+  식신: {
+    emoji: "📦",
+    ability: "생산·결과물",
+    tag: "PRODUCTION",
+    tagColor: "#E8C87A",
+    descShort: {
+      empathy: "꾸준히 생산하고 결과물을 만들어내는 힘이 있어요. 생각을 실제 결과로 바꾸는 생산력이 뛰어나요.",
+      reality: "꾸준히 생산하고 결과물을 만들어내는 힘이 뚜렷합니다. 콘텐츠, 기술, 창작에서 강점이 됩니다.",
+      fun: "꾸준히 생산하고 결과물 만드는 힘이 있어. 콘텐츠, 기술, 창작 같은 데서 강점이 돼.",
+    },
+    fields: ["콘텐츠", "글쓰기", "디자인", "개발"],
+  },
+  상관: {
+    emoji: "🧩",
+    ability: "틀 깨고 표현",
+    tag: "CREATIVE",
+    tagColor: "#E89A7A",
+    descShort: {
+      empathy: "기존 틀을 깨고 새로운 방식으로 표현하는 힘이 있어요. 말과 표현력이 강해 강한 인상을 남겨요.",
+      reality: "틀을 깨고 새로운 방식으로 표현하는 힘이 뚜렷합니다. 기획, 마케팅, 브랜딩에서 강점이 됩니다.",
+      fun: "틀 깨고 새 방식으로 표현하는 힘이 있어. 기획, 마케팅, 브랜딩 같은 데서 강점이 돼.",
+    },
+    fields: ["기획", "마케팅", "엔터", "브랜딩"],
+  },
+  편재: {
+    emoji: "⚡",
+    ability: "기회 포착",
+    tag: "OPPORTUNITY",
+    tagColor: "#7EB8D4",
+    descShort: {
+      empathy: "큰 기회를 포착하고 자원을 빠르게 움직이는 힘이 있어요. 시장 흐름을 읽고 수익 구조를 만드는 감각이 뛰어나요.",
+      reality: "기회 포착과 자원을 빠르게 움직이는 힘이 뚜렷합니다. 사업, 투자, 유통에서 강점이 됩니다.",
+      fun: "큰 기회 포착하고 자원 빠르게 움직이는 힘이 있어. 사업, 투자, 마케팅 같은 데서 강점이 돼.",
+    },
+    fields: ["사업", "투자", "유통", "마케팅"],
+  },
+  정재: {
+    emoji: "📊",
+    ability: "자원·가치 관리",
+    tag: "MANAGEMENT",
+    tagColor: "#C8C0A8",
+    descShort: {
+      empathy: "안정적으로 자원을 관리하고 가치를 축적하는 힘이 있어요. 계획을 세우고 꾸준히 실행하는 능력이 뛰어나요.",
+      reality: "자원 관리와 가치 축적 능력이 뚜렷합니다. 기업 운영, 재무, 경영에서 강점이 됩니다.",
+      fun: "자원 관리하고 가치 쌓는 힘이 있어. 재무, 경영 같은 데서 강점이 돼.",
+    },
+    fields: ["기업 운영", "재무", "자산관리", "경영"],
+  },
+  편관: {
+    emoji: "🎯",
+    ability: "위기·실행력",
+    tag: "EXECUTION",
+    tagColor: "#E89A7A",
+    descShort: {
+      empathy: "위기 상황에서 빠르게 판단하고 강하게 실행하는 힘이 있어요. 압박 속에서도 결정하고 행동하는 추진력이 뛰어나요.",
+      reality: "위기에서 빠르게 판단하고 강하게 실행하는 힘이 뚜렷합니다. 군, 스포츠, 스타트업에서 강점이 됩니다.",
+      fun: "위기에서 빠르게 판단하고 강하게 실행하는 힘이 있어. 군, 스포츠, 스타트업 같은 데서 강점이 돼.",
+    },
+    fields: ["군·경찰", "스포츠", "스타트업", "전략"],
+  },
+  정관: {
+    emoji: "🏛",
+    ability: "조직·책임",
+    tag: "ORGANIZATION",
+    tagColor: "#7EB8A0",
+    descShort: {
+      empathy: "조직을 안정적으로 운영하고 책임을 지는 힘이 있어요. 규칙과 시스템을 이해하고 공정하게 적용하는 능력이 뛰어나요.",
+      reality: "조직 운영과 책임 수행 능력이 뚜렷합니다. 공공, 대기업, 관리직에서 강점이 됩니다.",
+      fun: "조직 운영하고 책임 지는 힘이 있어. 공공, 대기업, 관리직 같은 데서 강점이 돼.",
+    },
+    fields: ["공공", "대기업", "관리직", "리더십"],
+  },
+  편인: {
+    emoji: "🔬",
+    ability: "통찰·구조 읽기",
+    tag: "ANALYSIS",
+    tagColor: "#A78BD4",
+    descShort: {
+      empathy: "깊이 있는 통찰과 독특한 시각으로 문제를 바라보는 힘이 있어요. 숨겨진 구조를 읽는 데 능해요.",
+      reality: "깊은 통찰과 독특한 시각이 뚜렷합니다. 기획, 분석, 연구, 전략에서 강점이 됩니다.",
+      fun: "깊은 통찰이랑 독특한 시각이 있어. 기획, 분석, 전략 같은 데서 강점이 돼.",
+    },
+    fields: ["기획", "분석", "연구", "전략"],
+  },
+  정인: {
+    emoji: "📚",
+    ability: "지식 체계화",
+    tag: "CORE SKILL",
+    tagColor: "#A78BD4",
+    descShort: {
+      empathy: "지식을 체계적으로 이해하고 사람을 안정적으로 지원하는 힘이 있어요. 복잡한 내용을 정리해 전달하는 능력이 있어요.",
+      reality: "지식 체계화와 사람 지원 능력이 뚜렷합니다. 교육, 연구, 상담, 전략 기획에서 강점이 됩니다.",
+      fun: "지식 이해하고 사람 지원하는 힘이 있어. 교육, 연구, 상담 같은 데서 강점이 돼.",
+    },
+    fields: ["교육", "연구", "강사", "멘토", "컨설팅"],
+  },
+};
+
+const ACCENT_GRADIENT: Record<string, string> = {
+  "#A78BD4": "linear-gradient(135deg, #1A1030 0%, #2A1A45 100%)",
+  "#7EB8A0": "linear-gradient(135deg, #0F1A18 0%, #1A2E28 100%)",
+  "#E8C87A": "linear-gradient(135deg, #1A1800 0%, #2E2A10 100%)",
+  "#E89A7A": "linear-gradient(135deg, #2A1810 0%, #3E2518 100%)",
+  "#7EB8D4": "linear-gradient(135deg, #0F1820 0%, #1A2A30 100%)",
+  "#C8C0A8": "linear-gradient(135deg, #1A1A14 0%, #2A2820 100%)",
+};
+
+function gradientFromAccent(accent: string): string {
+  return ACCENT_GRADIENT[accent] ?? `linear-gradient(135deg, #1A1428 0%, #2A2038 100%)`;
+}
+
+export interface TenGodAbilityCardItem {
+  emoji: string;
+  ability: string;
+  tag: string;
+  tagColor: string;
+  desc: string;
+  fields: string[];
+  bg: string;
+  accent: string;
+  glow: string;
+}
+
+export interface TenGodAbilityCardsData {
+  title: string;
+  cards: TenGodAbilityCardItem[];
+}
+
+/** 십성 개수 기준 상위 4개 십신을 카드 데이터로 반환. 동점이면 TEN_GOD_ORDER 순. */
+export function getTenGodAbilityCardsData(
+  pillars: SajuPillarsForTenGod,
+  tone: TenGodAbilityToneKey
+): TenGodAbilityCardsData | null {
+  const count = countTenGods(pillars);
+  const sorted = [...TEN_GOD_ORDER].sort((a, b) => (count[b] ?? 0) - (count[a] ?? 0));
+  const take = sorted.slice(0, 4);
+
+  const cards: TenGodAbilityCardItem[] = [];
+  for (const tg of take) {
+    const meta = TEN_GOD_CARD_META[tg];
+    if (!meta) continue;
+    const accent = meta.tagColor;
+    cards.push({
+      emoji: meta.emoji,
+      ability: meta.ability,
+      tag: meta.tag,
+      tagColor: accent,
+      desc: meta.descShort[tone] ?? meta.descShort.empathy,
+      fields: meta.fields,
+      bg: gradientFromAccent(accent),
+      accent,
+      glow: `${accent}22`,
+    });
+  }
+
+  if (cards.length === 0) return null;
+  return {
+    title: "십성으로 보는 주요 능력",
+    cards,
+  };
+}

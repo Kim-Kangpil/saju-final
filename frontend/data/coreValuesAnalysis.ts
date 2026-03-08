@@ -117,10 +117,88 @@ export interface GetCoreValuesParams {
   getTenGod: (dayStem: string, targetStem: string) => string;
 }
 
+/** 나침반 시각화용 — 월지별 5방위 키워드 (0°, 72°, 144°, 216°, 288°) */
+export const COMPASS_KEYWORDS: Record<string, [string, string, string, string, string]> = {
+  "子": ["정서", "친밀감", "유연함", "관계", "교류"],
+  "丑": ["안정", "현실감각", "신중함", "책임", "끈기"],
+  "寅": ["개척", "도전", "선구자", "추진력", "판을 여는 힘"],
+  "卯": ["관계", "조화", "미감", "균형", "간격"],
+  "辰": ["조정", "중재", "포괄", "리스크", "판 읽기"],
+  "巳": ["욕망", "성취", "분석", "집중", "목표"],
+  "午": ["표현", "카리스마", "존재감", "스포트라이트", "빛"],
+  "未": ["돌봄", "배려", "섬세함", "포근함", "따뜻함"],
+  "申": ["분석", "전략", "커리어", "효율", "성과"],
+  "酉": ["완성", "기준", "디테일", "정돈", "퀄리티"],
+  "戌": ["헌신", "의리", "정의감", "책임", "투지"],
+  "亥": ["이상", "영감", "감성", "직관", "신뢰"],
+};
+
+/** 십신별 짧은 설명 (나침반 뱃지용) */
+export const TEN_GOD_SHORT_DESC: Record<string, string> = {
+  비견: "동료·친구·동료성",
+  겁재: "경쟁·자극·추진",
+  식신: "꾸준함·생산·실천",
+  상관: "틀 깨기·창의·표현",
+  편재: "기회·인연·실전",
+  정재: "안정·책임·계획",
+  편관: "도전·압박·성장",
+  정관: "명예·신뢰·규칙",
+  편인: "사고·창의·통찰",
+  정인: "배움·자격·역할",
+};
+
 /** 괄호 안 한글을 추출해 조사 기준으로 사용 (예: "子(자수)" → "자수") */
 function josaBase(text: string): string {
   const m = text.match(/\(([^)]+)\)$/);
   return m ? m[1] : text;
+}
+
+export interface CoreValuesCompassData {
+  ji: string;
+  jiName: string;
+  sipsung: string;
+  sipsungDesc: string;
+  keywords: [string, string, string, string, string];
+  summary: string;
+  desc: string;
+}
+
+/**
+ * 나침반 시각화용 데이터 반환. 월지·일간 기준.
+ */
+export function getCoreValuesCompassData(
+  monthBranchHanja: string,
+  dayStemHanja: string,
+  getBranchMainStem: (branch: string) => string | null,
+  getTenGod: (dayStem: string, targetStem: string) => string,
+  tone: CoreValuesToneKey
+): CoreValuesCompassData | null {
+  if (!monthBranchHanja) return null;
+  const branchInfo = MONTH_BRANCH_ARCHETYPES[monthBranchHanja];
+  const branchName = branchInfo?.name ?? monthBranchHanja;
+  const jiName = josaBase(branchName);
+  const monthStem = getBranchMainStem(monthBranchHanja);
+  const sipsung = monthStem ? getTenGod(dayStemHanja, monthStem) : "";
+  const sipsungDesc = sipsung ? (TEN_GOD_SHORT_DESC[sipsung] ?? sipsung) : "";
+  const keywords = COMPASS_KEYWORDS[monthBranchHanja] ?? ["방향", "가치", "선택", "기준", "삶"];
+  const summary = "나다운 마음이 살아있는가";
+  const tenGodRow = sipsung ? TEN_GOD_CORE_MEANINGS[sipsung] : null;
+  const tenGodMeaning = tenGodRow?.[tone] ?? "";
+  const desc =
+    tone === "empathy"
+      ? "중요한 선택의 순간마다 이 가치가 지켜지는지를 기준으로 방향을 정하는 능력이 있어요."
+      : tone === "reality"
+        ? "중요한 선택 시점에는 해당 가치가 유지되는지, 자기 정체성이 살아 있는지를 기준으로 방향을 정하는 역량이 뚜렷합니다."
+        : "중요한 선택할 때마다 이 가치가 지켜지는지, 내 마음이 살아 있는지 보고 방향 정하는 능력이 있어.";
+  return {
+    ji: monthBranchHanja,
+    jiName,
+    sipsung: sipsung || "—",
+    sipsungDesc,
+    keywords,
+    summary,
+    desc: tenGodMeaning ? `이 가치를 기준으로 방향을 정하는 능력이 있어요.` : desc,
+  };
 }
 
 /**

@@ -20,7 +20,7 @@ import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis"
 import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
 import { TODAY_ANALYSIS, analyzeTodayFortune } from "../../data/todayAnalysis";
 import { dayPillarTexts } from "../../data/dayPillarAnimal";
-import { getCoreValuesParagraph } from "../../data/coreValuesAnalysis";
+import { getCoreValuesParagraph, getCoreValuesCompassData } from "../../data/coreValuesAnalysis";
 import { getStrengthWeaknessParagraph } from "../../data/strengthWeaknessAnalysis";
 import { getLatentTalentAptitudeParagraph } from "../../data/latentTalentAptitude";
 import { getElementDistributionParagraph } from "../../data/elementDistributionAnalysis";
@@ -34,6 +34,7 @@ import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추�
 import Head from 'next/head';
 import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";
 import { FaceSplitCard } from "../../components/FaceSplitCard";
+import { CompassCard } from "../../components/CompassCard";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -1415,6 +1416,18 @@ export default function Page() {
     gender,
   ]);
 
+  /** 삶의 나침반 시각화용 데이터 (월지·일간 기준) */
+  const coreValuesCompassData = useMemo(() => {
+    if (!result) return null;
+    return getCoreValuesCompassData(
+      result.month?.jiji?.hanja ?? "",
+      result.day?.cheongan?.hanja ?? "",
+      branchMainStem,
+      tenGod,
+      selectedChar
+    );
+  }, [result, selectedChar]);
+
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     if (!loggedIn) {
@@ -2524,6 +2537,14 @@ export default function Page() {
                                                       socialLabel={maskVsNatureLabels.social}
                                                       realLabel={maskVsNatureLabels.real}
                                                       habitLabel={maskVsNatureLabels.habit}
+                                                    />
+                                                  )}
+                                                  {c.id === "identity_values" && coreValuesCompassData && (
+                                                    <CompassCard
+                                                      data={{
+                                                        ...coreValuesCompassData,
+                                                        title: "삶의 핵심적인 가치관과 지향점",
+                                                      }}
                                                     />
                                                   )}
                                                   {c.id === "nature_text" && result && (

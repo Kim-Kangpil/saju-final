@@ -537,7 +537,7 @@ const MEGA_SECTIONS: Record<
     items: [
       { key: "gongmang", title: "공망 분석", icon: "🕳" },
       { key: "guiin", title: "주요 귀인 분석", icon: "👼" },
-      { key: "stress", title: "감정약점 및 보완법", icon: "🧘" },
+      { key: "stress", title: "감정 약점", icon: "🧘" },
     ],
   },
   solution: {
@@ -1467,8 +1467,14 @@ export default function Page() {
       );
     }
     if (emotionalWeakness) {
+      const emotionTitle =
+        selectedChar === "empathy"
+          ? "마음 약점"
+          : selectedChar === "reality"
+          ? "스트레스 포인트"
+          : "멘탈 약점";
       base.insight.unshift(
-        asContent("insight_emotion", "감정약점 및 보완법", emotionalWeakness, "🧘", "local")
+        asContent("insight_emotion", emotionTitle, emotionalWeakness, "🧘", "local")
       );
     }
     if (guiinAnalysis) {

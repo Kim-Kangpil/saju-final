@@ -223,7 +223,15 @@ export function GuiinStarMap(props: GuiinStarMapProps) {
 
   return (
     <div className="w-full flex flex-col items-center gap-3 py-2">
-      <div className="relative">
+      <div
+        className="relative rounded-2xl px-3 py-3"
+        style={{
+          background:
+            "radial-gradient(circle at 20% 0%, #221a42 0%, #0b071a 55%, #05030b 100%)",
+          boxShadow: "0 10px 20px rgba(0,0,0,0.25)",
+          border: "1px solid rgba(148, 163, 184, 0.5)",
+        }}
+      >
         {/* 유성 */}
         {shootingStars.map((s) => (
           <div
@@ -275,9 +283,10 @@ export function GuiinStarMap(props: GuiinStarMapProps) {
             cx={CX}
             cy={CY}
             r={R * 0.55}
-            fill="none"
+            fill="rgba(15,23,42,0.4)"
             stroke="#2A1F4A"
-            strokeWidth={0.5}
+            strokeWidth={0.6}
+            strokeOpacity={0.7}
           />
           <circle
             cx={CX}
@@ -285,8 +294,9 @@ export function GuiinStarMap(props: GuiinStarMapProps) {
             r={R * 0.8}
             fill="none"
             stroke="#1A1335"
-            strokeWidth={0.5}
+            strokeWidth={0.6}
             strokeDasharray="3 6"
+            strokeOpacity={0.4}
           />
 
           {/* 조합 연결선 — 삼덕 */}
@@ -421,21 +431,23 @@ export function GuiinStarMap(props: GuiinStarMapProps) {
                   />
                 )}
 
-                <text
-                  x={s.x}
-                  y={s.y + (s.y > CY ? 18 : -10)}
-                  textAnchor="middle"
-                  fontSize={8}
-                  fill={isActive ? s.meta.color : "#3D3360"}
-                  style={{
-                    opacity: mounted ? (isActive ? 1 : 0.5) : 0,
-                    transition: `opacity 0.4s ease ${delay}s`,
-                    fontFamily: "Georgia, serif",
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  {s.meta.name}
-                </text>
+                {isActive && (
+                  <text
+                    x={s.x}
+                    y={s.y + (s.y > CY ? 18 : -10)}
+                    textAnchor="middle"
+                    fontSize={8}
+                    fill={s.meta.color}
+                    style={{
+                      opacity: mounted ? 1 : 0,
+                      transition: `opacity 0.4s ease ${delay}s`,
+                      fontFamily: "Georgia, serif",
+                      letterSpacing: "0.5px",
+                    }}
+                  >
+                    {s.meta.name}
+                  </text>
+                )}
               </g>
             );
           })}
@@ -446,18 +458,19 @@ export function GuiinStarMap(props: GuiinStarMapProps) {
             y={CY - 4}
             textAnchor="middle"
             fontSize={18}
-            fill="#E8E0FF"
-            opacity={0.15}
+            fill="#E5E7EB"
+            opacity={0.16}
           >
             命
           </text>
           <text
             x={CX}
-            y={CY + 12}
+            y={CY + 14}
             textAnchor="middle"
-            fontSize={9}
-            fill="#9B89CC"
-            opacity={0.7}
+            fontSize={10}
+            fill="#F9FAFB"
+            opacity={0.95}
+            fontWeight="bold"
           >
             {activeKeys.length > 0 ? `${activeKeys.length}성 성립` : "귀인 없음"}
           </text>

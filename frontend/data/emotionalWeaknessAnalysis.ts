@@ -205,21 +205,42 @@ export function getEmotionalWeaknessParagraph(
     );
   }
 
-  const bodyParts: string[] = [];
+  const paraEmotion = describeEmotionAxis(inLvl, biLvl);
+  const paraGwan = describeGwanSeong(gwanLvl);
+  const paraSik = describeSikSang(sikLvl);
+  const paraJae = describeJaeSeong(jaeLvl);
 
-  // 1) 감정이 흔들리는 상황 — 인성/비겁 조합
-  bodyParts.push(describeEmotionAxis(inLvl, biLvl));
+  const bias = describeBias(detail);
+  const paraBias = bias.length > 0 ? bias.join(" ") : "";
 
-  // 2) 스트레스가 쌓이는 이유 — 관성
-  bodyParts.push(describeGwanSeong(gwanLvl));
+  const closingParts: string[] = [];
 
-  // 3) 감정이 폭발하는 방식 — 식상
-  bodyParts.push(describeSikSang(sikLvl));
+  if (tone === "fun") {
+    closingParts.push(
+      "이 감정 패턴들은 한 번에 고치려고 하기보다, '아 내가 이런 패턴이 있구나'를 알고 한두 군데만 의식적으로 다루기 시작하면 서서히 힘이 빠지는 구조야. 시간이 지날수록, 지금의 약점이 오히려 남들보다 감정에 섬세한 무기가 되는 쪽으로 바뀌어 가게 돼."
+    );
+  } else if (tone === "reality") {
+    closingParts.push(
+      "이 축들은 단기간에 바뀌기보다는, 패턴을 인식하고 작은 선택을 반복하면서 천천히 재구조화됩니다. 시간을 두고 자신만의 관리법을 만들어 갈수록, 같은 자극에서도 덜 흔들리고 더 전략적으로 감정을 활용하는 능력으로 전환될 수 있어요."
+    );
+  } else {
+    closingParts.push(
+      "이 감정 축들은 지금 이 모습 그대로 고정된 운명이 아니라, 시간이 흐르면서 조금씩 다루는 법을 익혀 가는 연습장에 가깝습니다. 오늘 이후로는 같은 상황을 만날 때마다 '아, 여기서 내 패턴이 올라오는구나'라고 알아차리는 것만으로도, 약점이 서서히 무기로 바뀌는 흐름을 만들 수 있어요."
+    );
+  }
 
-  // 4) 관계에서 소진되는 이유 — 재성
-  bodyParts.push(describeJaeSeong(jaeLvl));
+  const paragraphs = [
+    introParts.join(" "),
+    paraEmotion,
+    paraGwan,
+    [paraSik, paraJae, paraBias].filter((p) => p && p.trim().length > 0).join(" "),
+    closingParts.join(" "),
+  ].filter((p) => p && p.trim().length > 0);
 
-  // 편/정 비율에 따른 감정 색깔
+  return paragraphs.join("\n\n");
+}
+
+*** End Patch```} ***!
   const bias = describeBias(detail);
   if (bias.length > 0) {
     bodyParts.push(bias.join(" "));

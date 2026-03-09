@@ -31,6 +31,7 @@ interface DetectedStar {
   key: StarKey;
   name: string;
   count: number;
+  description: string;
 }
 
 // ✅ 역마살 (년지 기준) – sinsal 엔진과 동일
@@ -291,11 +292,17 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
     }
   }
   if (dohwaCount > 0) {
-    detected.push({ key: "dohwa", name: STAR_LABEL.dohwa, count: dohwaCount });
+    const description =
+      "사람들 사이에서 자연스럽게 눈에 띄고, 존재감과 매력을 에너지처럼 뿜어내는 성향이에요. 예술·표현·관계 영역에서 몸을 쓰면 시너지가 크게 나는 타입입니다.";
+    detected.push({
+      key: "dohwa",
+      name: STAR_LABEL.dohwa,
+      count: dohwaCount,
+      description,
+    });
     stars.push({
       name: STAR_LABEL.dohwa,
-      description:
-        "사람들 사이에서 자연스럽게 눈에 띄고, 존재감과 매력을 에너지처럼 뿜어내는 성향이에요. 예술·표현·관계 영역에서 몸을 쓰면 시너지가 크게 나는 타입입니다.",
+      description,
     });
   }
 
@@ -308,11 +315,17 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
     });
   }
   if (yeokmaCount > 0) {
-    detected.push({ key: "yeokma", name: STAR_LABEL.yeokma, count: yeokmaCount });
+    const description =
+      "환경이 자주 바뀌어도 금방 적응하고, 움직이면서 기회를 잡는 타입이에요. 이동·변화·새로운 판을 통해 성장하는 에너지가 강합니다.";
+    detected.push({
+      key: "yeokma",
+      name: STAR_LABEL.yeokma,
+      count: yeokmaCount,
+      description,
+    });
     stars.push({
       name: STAR_LABEL.yeokma,
-      description:
-        "환경이 자주 바뀌어도 금방 적응하고, 움직이면서 기회를 잡는 타입이에요. 이동·변화·새로운 판을 통해 성장하는 에너지가 강합니다.",
+      description,
     });
   }
 
@@ -325,11 +338,17 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
     });
   }
   if (hwagaeCount > 0) {
-    detected.push({ key: "hwagae", name: STAR_LABEL.hwagae, count: hwagaeCount });
+    const description =
+      "한 가지 주제에 깊이 파고들어 자기 세계를 만드는 힘이에요. 예술·연구·철학·종교처럼 깊이가 필요한 영역에서 명예를 쌓기 좋은 구조입니다.";
+    detected.push({
+      key: "hwagae",
+      name: STAR_LABEL.hwagae,
+      count: hwagaeCount,
+      description,
+    });
     stars.push({
       name: STAR_LABEL.hwagae,
-      description:
-        "한 가지 주제에 깊이 파고들어 자기 세계를 만드는 힘이에요. 예술·연구·철학·종교처럼 깊이가 필요한 영역에서 명예를 쌓기 좋은 구조입니다.",
+      description,
     });
   }
 

@@ -17,6 +17,7 @@ import { ELEMENT_ANALYSIS } from "../../data/elementAnalysis";
 import { RELATIONS_ANALYSIS, analyzeRelations } from "../../data/relationsAnalysis";
 import { SPECIAL_STARS_ANALYSIS, analyzeSpecialStars } from "../../data/specialStarsAnalysis";
 import { summarizeGongmang } from "../../data/gongmangAnalysis";
+import { getEmotionalWeaknessParagraph } from "../../data/emotionalWeaknessAnalysis";
 import { summarizeGuiin } from "../../data/guiinAnalysis";
 import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis";
 import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
@@ -535,7 +536,7 @@ const MEGA_SECTIONS: Record<
     items: [
       { key: "gongmang", title: "공망 분석", icon: "🕳" },
       { key: "guiin", title: "주요 귀인 분석", icon: "👼" },
-      { key: "stress", title: "스트레스 취약 지점과 마음 관리법", icon: "🧘" },
+      { key: "stress", title: "감정약점 및 보완법", icon: "🧘" },
     ],
   },
   solution: {
@@ -699,6 +700,7 @@ export default function Page() {
   const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);
   const [maskVsNatureLabels, setMaskVsNatureLabels] = useState<{ social: string; real: string; habit: string } | null>(null);
   const [gongmangAnalysis, setGongmangAnalysis] = useState<string | null>(null);
+  const [emotionalWeakness, setEmotionalWeakness] = useState<string | null>(null);
   const [guiinAnalysis, setGuiinAnalysis] = useState<string | null>(null);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
   useEffect(() => {
@@ -1110,6 +1112,26 @@ export default function Page() {
         );
         setGongmangAnalysis(gongTxt);
 
+        // 감정 약점 및 보완 포인트
+        const emotionalTxt = getEmotionalWeaknessParagraph({
+          dayStem,
+          stems: [
+            result.year.cheongan.hanja,
+            result.month.cheongan.hanja,
+            result.day.cheongan.hanja,
+            result.hour.cheongan.hanja,
+          ],
+          branches: [
+            result.year.jiji.hanja,
+            result.month.jiji.hanja,
+            result.day.jiji.hanja,
+            result.hour.jiji.hanja,
+          ],
+          tone: selectedChar,
+          tenGod,
+        });
+        setEmotionalWeakness(emotionalTxt);
+
         // 주요 귀인 분석
         const guiinTxt = summarizeGuiin(
           dayStem,
@@ -1443,6 +1465,11 @@ export default function Page() {
     if (gongmangAnalysis) {
       base.insight.unshift(
         asContent("insight_gongmang", "공망 분석", gongmangAnalysis, "🕳", "local")
+      );
+    }
+    if (emotionalWeakness) {
+      base.insight.unshift(
+        asContent("insight_emotion", "감정약점 및 보완법", emotionalWeakness, "🧘", "local")
       );
     }
     if (guiinAnalysis) {

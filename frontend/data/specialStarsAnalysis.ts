@@ -374,11 +374,8 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
               (acc, s) => acc + s.count,
               0
             )}회 구성).`,
-            detected
-              .map(
-                (s) =>
-                  `- ${s.name}: ${s.count}회 작동 가능 → "${s.description}"`
-              )
+            stars
+              .map((s) => `- ${s.name}: ${s.description}`)
               .join("\n"),
             "이 조합은 극단적인 한 방보다는, 관계·이동·집중·표현 상황에서 선택적으로 가속도가 붙는 구조에 가깝습니다.",
             "경험이 쌓일수록 어떤 환경에서 어떤 신살이 잘 켜지는지 스스로 패턴을 알게 되고, 그때마다 리스크는 줄이고 장점만 뽑아 쓰는 쪽으로 튜닝해 가기 좋습니다.",

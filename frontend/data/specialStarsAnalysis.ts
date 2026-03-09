@@ -752,7 +752,7 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
 
     const empathy =
       [
-        "이미 스스로 느껴왔던 성향과, 이번에 잡힌 신살들이 크게 다르지 않을 거예요.",
+        "당신이 가지고 있는 여러 신살 가운데, 지금은 특히 핵심적으로 작동하는 몇 가지를 중심으로 풀어볼게요.",
         explainUnits.join(" "),
         "이 기운들은 운명을 고정시키는 것이 아니라, 어떤 상황에서 무엇을 더 잘할 수 있는지 알려 주는 선택지에 가깝습니다. 나이가 들수록 언제 힘을 세우고 언제 빼야 하는지 감이 잡히면서, 같은 신살이 점점 더 의식적인 무기로 변해 가는 흐름이에요.",
       ].join(" ");
@@ -777,7 +777,7 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
 
     const funParts: string[] = [];
     funParts.push(
-      `야, 너 사주에 지금 ${names} 이런 카드들이 박혀 있거든. 이게 단순히 흉·길 딱지라기보단, 상황 맞을 때 터지는 스킬셋에 가까워.`
+      `야, 네가 가진 여러 신살 중에서 특히 핵심 스킬로 쓸 만한 애들만 골라서 먼저 얘기해 줄게. 전체 카드 풀은 더 넓지만, 지금은 메인 무기 위주로 보는 느낌이라고 생각하면 돼.`
     );
     main.forEach((s) => {
       const info = STAR_INFO[s.key];

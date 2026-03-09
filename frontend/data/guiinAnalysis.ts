@@ -176,7 +176,6 @@ const WOLGONG_FROM_MONTH_GROUP: Record<string, string> = {
   亥: "庚", // 亥卯未
   巳: "甲", // 巳酉丑
 };
-const YANG_STEMS = new Set(["甲", "丙", "庚", "壬"]);
 
 function getWolgongStem(monthBranch: string): string | null {
   if ("申子辰".includes(monthBranch)) return WOLGONG_FROM_MONTH_GROUP["申"];
@@ -274,20 +273,19 @@ const SAMGI_SEQUENCES: Array<{ type: SamgiType; seq: [string, string, string] }>
   { type: "지하", seq: ["壬", "癸", "辛"] },
 ];
 
-function checkSamgi(stems: string[]): SamgiType | null {
+function checkSamgi(
+  stems: string[]
+): { type: SamgiType; pos: "연월일" | "월일시" } | null {
   if (stems.length < 3) return null;
-  const triples: [string, string, string][] = [
-    [stems[0], stems[1], stems[2]], // 연월일
-    [stems[1], stems[2], stems[3]], // 월일시
+  const triples: Array<{ pos: "연월일" | "월일시"; t: [string, string, string] }> = [
+    { pos: "연월일", t: [stems[0], stems[1], stems[2]] },
+    { pos: "월일시", t: [stems[1], stems[2], stems[3]] },
   ];
-  for (const t of SAMGI_SEQUENCES) {
-    if (
-      triples.some(
-        ([a, b, c]) =>
-          a === t.seq[0] && b === t.seq[1] && c === t.seq[2]
-      )
-    ) {
-      return t.type;
+  for (const { type, seq } of SAMGI_SEQUENCES) {
+    for (const { pos, t } of triples) {
+      if (t[0] === seq[0] && t[1] === seq[1] && t[2] === seq[2]) {
+        return { type, pos };
+      }
     }
   }
   return null;
@@ -402,7 +400,7 @@ export function detectGuiin(
 
   // 8) 월공 (양간만)
   const wolgongStem = getWolgongStem(monthBranch);
-  if (wolgongStem && YANG_STEMS.has(wolgongStem)) {
+  if (wolgongStem) {
     (["년", "월", "일", "시"] as PillarPos[]).forEach((pos) => {
       if (stemByPos[pos] === wolgongStem) {
         pushOnce("wolgong", pos);
@@ -464,7 +462,7 @@ export function detectGuiin(
   // 14) 삼기귀인
   const samgi = checkSamgi(stems);
   if (samgi) {
-    pushOnce("samgi", samgi === "천상" ? "연월일" : "월일시", samgi);
+    pushOnce("samgi", samgi.pos, samgi.type);
   }
 
   return result;
@@ -599,48 +597,68 @@ export function summarizeGuiin(
     picked.push(k);
   }
 
-  const parts: string[] = [];
-
+  const introParts: string[] = [];
   if (tone === "fun") {
-    parts.push("귀인 쪽을 보면, 인생에 '특정 장면마다 조용히 도와주는 조연들'이 어떻게 붙어 있는지가 보여.");
+    introParts.push(
+      "귀인 쪽을 보면, 인생에 '특정 장면마다 조용히 도와주는 조연들'이 어떻게 붙어 있는지가 보여."
+    );
   } else if (tone === "reality") {
-    parts.push("이 사주는 몇 가지 대표적인 길신을 통해, 위기와 기회 국면에서 어떤 식으로 힘이 모이는지가 비교적 분명하게 드러납니다.");
+    introParts.push(
+      "이 사주는 몇 가지 대표적인 길신을 통해, 위기와 기회 국면에서 어떤 식으로 힘이 모이는지가 비교적 분명하게 드러납니다."
+    );
   } else {
-    parts.push("귀인성들은 '운이 대신 살아 주는 별'이라기보다, 특정 상황에서 당신의 선택과 관계를 더 유리한 방향으로 밀어 주는 힘으로 작동해요.");
+    introParts.push(
+      "귀인성들은 '운이 대신 살아 주는 별'이라기보다, 특정 상황에서 당신의 선택과 관계를 더 유리한 방향으로 밀어 주는 힘으로 작동해요."
+    );
   }
 
+  const bodyParts: string[] = [];
+
   if (hasSamDeok) {
-    const chunk =
-      "천을귀인·천덕귀인·월덕귀인이 함께 있는 이른바 삼덕 구조라, 위기 때마다 사람·제도·타이밍이 묘하게 맞아떨어지는 경험을 하기 쉬운 편입니다. 힘들어도 막판에 길이 열리거나, '덕 본 일'이 반복해서 쌓이면서 나이가 들수록 보호막이 더욱 두꺼워지는 흐름이에요.";
-    parts.push(chunk);
+    bodyParts.push(
+      "천을귀인·천덕귀인·월덕귀인이 함께 있는 이른바 삼덕 구조라, 위기 때마다 사람·제도·타이밍이 묘하게 맞아떨어지는 경험을 하기 쉬운 편입니다. 힘들어도 막판에 길이 열리거나, '덕 본 일'이 반복해서 쌓이면서 나이가 들수록 보호막이 더욱 두꺼워지는 흐름이에요."
+    );
   }
 
   if (hasRokPair) {
-    const chunk =
-      "건록과 암록이 동시에 자리해 있어서, 앞에서는 자력으로 버티고 뒤에서는 보이지 않는 복이 받쳐 주는 재복 구조를 이룹니다. 한때 재정적으로 요동쳐도 결국에는 다시 자리 잡고 회복되는 패턴으로 정리되기 좋습니다.";
-    parts.push(chunk);
+    bodyParts.push(
+      "건록과 암록이 동시에 자리해 있어서, 앞에서는 자력으로 버티고 뒤에서는 보이지 않는 복이 받쳐 주는 재복 구조를 이룹니다. 한때 재정적으로 요동쳐도 결국에는 다시 자리 잡고 회복되는 패턴으로 정리되기 좋습니다."
+    );
   }
 
   if (hasMunHak) {
-    const chunk =
-      "문창귀인과 학당귀인이 함께 있어, 배우고 표현하는 능력이 동시에 강하게 작동하는 타입이에요. 공부·자격·교육·콘텐츠 영역을 엮어서 가져가면, 지식과 표현이 서로를 살려 주는 형태로 커리어를 설계하기 좋습니다.";
-    parts.push(chunk);
+    bodyParts.push(
+      "문창귀인과 학당귀인이 함께 있어, 배우고 표현하는 능력이 동시에 강하게 작동하는 타입이에요. 공부·자격·교육·콘텐츠 영역을 엮어서 가져가면, 지식과 표현이 서로를 살려 주는 형태로 커리어를 설계하기 좋습니다."
+    );
   }
 
   for (const key of picked) {
     const text = summarizeByKey(key, byKey.get(key) || []);
-    if (text) parts.push(text);
+    if (text) bodyParts.push(text);
   }
 
+  const closingParts: string[] = [];
   if (tone === "fun") {
-    parts.push("이 귀인 구조는 한 번에 폭발하기보다는, 나이가 들수록 '아, 그래서 내가 여기까지 버텨왔구나' 하는 장면들로 조금씩 누적되는 타입이야.");
+    closingParts.push(
+      "이 귀인 구조는 한 번에 폭발하기보다는, 나이가 들수록 '아, 그래서 내가 여기까지 버텨왔구나' 하는 장면들로 조금씩 누적되는 타입이야."
+    );
   } else if (tone === "reality") {
-    parts.push("이런 길신들은 특정 연도 한두 해에만 반짝하는 것이 아니라, 생애 전반에 걸쳐 필요할 때마다 다른 형식으로 모습을 바꾸어 나타나면서 점진적으로 힘을 더해 가는 구조입니다.");
+    closingParts.push(
+      "이런 길신들은 특정 연도 한두 해에만 반짝하는 것이 아니라, 생애 전반에 걸쳐 필요할 때마다 다른 형식으로 모습을 바꾸어 나타나면서 점진적으로 힘을 더해 가는 구조입니다."
+    );
   } else {
-    parts.push("결국 이 귀인 구조는 시간이 지날수록 더 자연스럽게 작동해서, 어느 순간 돌아보면 '내가 혼자였던 적은 거의 없었구나'라는 감각으로 이어지게 됩니다.");
+    closingParts.push(
+      "결국 이 귀인 구조는 시간이 지날수록 더 자연스럽게 작동해서, 어느 순간 돌아보면 '내가 혼자였던 적은 거의 없었구나'라는 감각으로 이어지게 됩니다."
+    );
   }
 
-  return parts.join(" ");
+  const paragraphs = [
+    introParts.join(" "),
+    bodyParts.join(" "),
+    closingParts.join(" "),
+  ].filter((p) => p && p.trim().length > 0);
+
+  return paragraphs.join("\n\n");
 }
 
 

@@ -258,11 +258,17 @@ export function summarizeGongmang(
   const parts: string[] = [];
 
   if (tone === "fun") {
-    parts.push("공망 쪽은 이렇게 보면 돼. '어디가 비어 있냐' 보다는, 어디에 힘을 덜 써도 괜찮은지 보는 느낌이야.");
+    parts.push(
+      "공망 쪽은 이렇게 보면 돼. '어디가 비어 있냐' 보다는, 어디에 힘을 덜 써도 괜찮은지 보는 느낌이야."
+    );
   } else if (tone === "reality") {
-    parts.push("공망은 특정 영역의 집착을 비워 두는 대신, 다른 곳에 힘을 더 쓰게 만드는 구조로 볼 수 있어요.");
+    parts.push(
+      "공망은 특정 영역의 집착을 비워 두는 대신, 다른 곳에 힘을 더 쓰게 만드는 구조로 볼 수 있어요."
+    );
   } else {
-    parts.push("공망은 인생의 어떤 영역에서 힘을 조금 덜 써도 되는지, 어디를 가볍게 넘어가도 되는지를 보여주는 지점으로 볼 수 있어요.");
+    parts.push(
+      "공망은 인생의 어떤 영역에서 힘을 조금 덜 써도 되는지, 어디를 가볍게 넘어가도 되는지를 보여주는 지점으로 볼 수 있어요."
+    );
   }
 
   // 년지
@@ -304,10 +310,10 @@ export function summarizeGongmang(
     );
   }
 
-  const text = parts.join(" ");
+  const intro = parts[0] ?? "";
+  const body = parts.slice(1).join(" ");
 
-  // 길이 조정은 엄밀히 하지 않고, 300~400자 근처의 밀도를 맞추는 수준으로 둔다.
-  return text;
+  return [intro, body].filter((p) => p && p.trim().length > 0).join("\n\n");
 }
 
 

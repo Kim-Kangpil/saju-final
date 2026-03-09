@@ -750,12 +750,14 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
       })
       .filter(Boolean);
 
-    const empathy =
-      [
-        "당신이 가지고 있는 여러 신살 가운데, 지금은 특히 핵심적으로 작동하는 몇 가지를 중심으로 풀어볼게요.",
-        explainUnits.join(" "),
-        "이 기운들은 운명을 고정시키는 것이 아니라, 어떤 상황에서 무엇을 더 잘할 수 있는지 알려 주는 선택지에 가깝습니다. 나이가 들수록 언제 힘을 세우고 언제 빼야 하는지 감이 잡히면서, 같은 신살이 점점 더 의식적인 무기로 변해 가는 흐름이에요.",
-      ].join(" ");
+    const empathyIntro =
+      "당신이 가지고 있는 여러 신살 가운데, 지금은 특히 핵심적으로 작동하는 몇 가지를 중심으로 풀어볼게요.";
+    const empathyBody = explainUnits.join(" ");
+    const empathyClosing =
+      "이 기운들은 운명을 고정시키는 것이 아니라, 어떤 상황에서 무엇을 더 잘할 수 있는지 알려 주는 선택지에 가깝습니다. 나이가 들수록 언제 힘을 세우고 언제 빼야 하는지 감이 잡히면서, 같은 신살이 점점 더 의식적인 무기로 변해 가는 흐름이에요.";
+    const empathy = [empathyIntro + " " + empathyBody, empathyClosing]
+      .filter((p) => p && p.trim().length > 0)
+      .join("\n\n");
 
     const realityParts: string[] = [];
     realityParts.push(

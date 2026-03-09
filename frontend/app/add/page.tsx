@@ -1418,9 +1418,7 @@ export default function Page() {
         }
         return asReady(`relation_${it.key}`, it.title, it.icon);
       }),
-      insight: MEGA_SECTIONS.insight.items.map((it) =>
-        asReady(`insight_${it.key}`, it.title, it.icon)
-      ),
+      insight: [],
       solution: MEGA_SECTIONS.solution.items.map((it) =>
         asReady(`solution_${it.key}`, it.title, it.icon)
       ),

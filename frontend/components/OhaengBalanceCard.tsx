@@ -189,28 +189,19 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
             );
           })}
 
-          <text
-            x={cx}
-            y={cy - 6}
-            textAnchor="middle"
-            fontSize="9"
-            fill="#5c6b5c"
-            fontFamily="Georgia, serif"
-            letterSpacing="1"
-          >
-            오행
-          </text>
-          <text
-            x={cx}
-            y={cy + 7}
-            textAnchor="middle"
-            fontSize="9"
-            fill="#6B8A7A99"
-            fontFamily="Georgia, serif"
-          >
-            밸런스
-          </text>
         </svg>
+
+        <div
+          style={{
+            marginTop: "4px",
+            textAlign: "center",
+            fontSize: "10px",
+            color: "#5c6b5c",
+            letterSpacing: "1px",
+          }}
+        >
+          오행 밸런스
+        </div>
 
         <div
           style={{

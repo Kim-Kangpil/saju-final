@@ -244,3 +244,137 @@ export function getAncestorParentParagraph(
       ? "가문과 성장 환경이 물려준 뿌리가 있으며, 스스로 만드는 힘이 있는 구조입니다."
       : "가문이랑 성장 환경이 네게 물려준 뿌리가 있어. 스스로 만드는 힘이 있는 타입이야.";
 }
+
+// =========================
+// 시각화용 데이터 (가문·유전자 카드)
+// =========================
+
+export interface AncestorGeneItem {
+  icon: string;
+  label: string;
+  color: string;
+  desc: string;
+  keyword: string;
+}
+
+export interface AncestorVisualData {
+  family: string;
+  genes: AncestorGeneItem[];
+  closing: string;
+}
+
+type GeneKey = "knowledge" | "abundance" | "order" | "insight";
+
+const GENE_FROM_TEN_GOD: Record<string, GeneKey> = {
+  정인: "knowledge",
+  편인: "insight",
+  정관: "order",
+  편관: "order",
+  식신: "abundance",
+  정재: "abundance",
+  편재: "abundance",
+  상관: "insight",
+  비견: "insight",
+  겁재: "insight",
+};
+
+const GENE_META: Record<GeneKey, AncestorGeneItem> = {
+  knowledge: {
+    icon: "📜",
+    label: "학식 · 명예 · 전통",
+    color: "#C8C0A8",
+    desc: "교육열 높은 집안이거나 대를 이어온 뿌리에서 자랐을 수 있어요. 어머니의 영향력이나 정서적으로 안정된 환경이 기반이 됐을 가능성이 커요.",
+    keyword: "지식의 유산",
+  },
+  abundance: {
+    icon: "🌾",
+    label: "풍요 · 여유 · 문화",
+    color: "#E8C87A",
+    desc: "먹고 사는 것에 대한 불안이 상대적으로 적었거나, 예술·음식·생활문화가 발달한 따뜻한 분위기에서 자랐을 수 있어요.",
+    keyword: "여유의 유산",
+  },
+  order: {
+    icon: "⚖️",
+    label: "규율 · 질서 · 책임",
+    color: "#7EB8A0",
+    desc: "집안 내부에 규율과 질서가 있는 편이에요. 때로는 엄격하게 느껴졌을 수 있지만, 책임감과 약속을 지키는 습관이 뿌리 내렸을 가능성이 커요.",
+    keyword: "질서의 유산",
+  },
+  insight: {
+    icon: "🌙",
+    label: "독립 · 복잡 · 통찰",
+    color: "#A78BD4",
+    desc: "겉은 평범해도 속은 독립적이거나 복잡한 분위기가 있었을 수 있어요. 남들과 다른 시각과 스스로 정리하는 힘을 키우기 좋은 환경이었을 가능성이 커요.",
+    keyword: "통찰의 유산",
+  },
+};
+
+export function getAncestorParentVisualData(
+  pillars: SajuPillarsForAncestor,
+  _gender: "M" | "F",
+  tone: AncestorToneKey
+): AncestorVisualData | null {
+  const dayStem = pillars.day?.cheongan?.hanja?.trim?.()?.[0] ?? "";
+  if (!dayStem) return null;
+
+  const y = getPillar(pillars, "year");
+  const m = getPillar(pillars, "month");
+
+  const yearStemTg = tenGodFromStems(dayStem, y.stem);
+  const monthStemTg = tenGodFromStems(dayStem, m.stem);
+  const yearBranchTg = y.branchStem ? tenGodFromStems(dayStem, y.branchStem) : "";
+  const monthBranchTg = m.branchStem ? tenGodFromStems(dayStem, m.branchStem) : "";
+
+  const keys: string[] = [yearStemTg, monthStemTg, yearBranchTg, monthBranchTg].filter(Boolean);
+  if (!keys.length) {
+    return {
+      family: "스스로 서는 뿌리",
+      genes: [
+        {
+          icon: "🌱",
+          label: "자수성가 · 자립",
+          color: "#7EB8A0",
+          desc: "환경이 어떠하든 스스로 뿌리를 내려 가야 하는 구조예요. 그만큼 자립성과 자수성가의 힘이 강점으로 작용할 수 있어요.",
+          keyword: "자립의 유산",
+        },
+      ],
+      closing: CLOSING_BLOCK[tone],
+    };
+  }
+
+  const score: Record<GeneKey, number> = {
+    knowledge: 0,
+    abundance: 0,
+    order: 0,
+    insight: 0,
+  };
+
+  for (const tg of keys) {
+    const g = GENE_FROM_TEN_GOD[tg];
+    if (g) score[g] += 1;
+  }
+
+  const orderedKeys = (Object.keys(score) as GeneKey[]).sort(
+    (a, b) => (score[b] ?? 0) - (score[a] ?? 0)
+  );
+  const active = orderedKeys.filter((k) => score[k] > 0).slice(0, 4);
+  const useKeys = active.length ? active : orderedKeys.slice(0, 2);
+
+  const genes = useKeys.map((k) => GENE_META[k]);
+
+  const family =
+    useKeys[0] === "knowledge"
+      ? "이름 있는 뿌리"
+      : useKeys[0] === "abundance"
+        ? "여유 있는 뿌리"
+        : useKeys[0] === "order"
+          ? "믿을 수 있는 뿌리"
+          : "남다른 시선을 가진 뿌리";
+
+  return {
+    family,
+    genes,
+    closing: CLOSING_BLOCK[tone],
+  };
+}
+

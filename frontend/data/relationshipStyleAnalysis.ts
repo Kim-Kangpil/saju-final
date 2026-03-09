@@ -266,3 +266,204 @@ export function getRelationshipStyleParagraph(
   const p3 = s5 + (s5b ? " " + s5b : "");
   return [p1, p2, p3].join("\n\n").trim();
 }
+
+// =========================
+// 시각화용 데이터 (인간관계 스타일 게이지)
+// =========================
+
+export interface RelationshipGauge {
+  key: "empathy" | "boundary" | "trust" | "advice" | "energy";
+  label: string;
+  emoji: string;
+  value: number; // 0~100
+  color: string;
+  desc: string;
+  tip?: string | null;
+}
+
+export interface RelationshipStyleVisualData {
+  gauges: RelationshipGauge[];
+  type: string;
+  typeDesc: string;
+  caution: string;
+}
+
+function scoreFromRaw(raw: number, max: number): number {
+  const r = Math.max(0, Math.min(raw, max));
+  const ratio = r / max;
+  if (ratio >= 0.9) return 92;
+  if (ratio >= 0.7) return 82;
+  if (ratio >= 0.5) return 70;
+  if (ratio >= 0.3) return 55;
+  if (ratio > 0) return 40;
+  return 28;
+}
+
+const TYPE_BY_GROUP: Record<GroupKey, { type: string; desc: string }> = {
+  인성: {
+    type: "이해자형",
+    desc: "상대를 깊이 읽고 신뢰로 관계를 만드는 타입",
+  },
+  비겁: {
+    type: "동료형",
+    desc: "같이 움직이며 수평적인 유대를 만드는 타입",
+  },
+  식상: {
+    type: "분위기 메이커형",
+    desc: "표현과 분위기로 사람을 묶어 주는 타입",
+  },
+  재성: {
+    type: "관리자형",
+    desc: "사람과 일을 함께 정리하며 책임지는 타입",
+  },
+  관성: {
+    type: "신뢰 리더형",
+    desc: "기준과 책임으로 관계를 안정시키는 타입",
+  },
+};
+
+export function getRelationshipStyleVisualData(
+  pillars: SajuPillarsForRelationStyle,
+  tone: RelationStyleToneKey
+): RelationshipStyleVisualData | null {
+  const tgCount = countTenGods(pillars);
+  if (!Object.keys(tgCount).length) return null;
+  const groupCounts = getGroupCounts(tgCount);
+  const inCount = groupCounts["인성"] ?? 0;
+  const biCount = groupCounts["비겁"] ?? 0;
+  const sikCount = groupCounts["식상"] ?? 0;
+  const jaeCount = groupCounts["재성"] ?? 0;
+  const gwanCount = groupCounts["관성"] ?? 0;
+
+  // 대략 0~6 범위로 가정
+  const maxRaw = 6;
+
+  const empathyRaw = inCount * 1.6 + sikCount * 0.6;
+  const boundaryRaw = gwanCount * 1.4 + jaeCount * 0.8 - inCount * 0.6;
+  const trustRaw = gwanCount * 1.2 + inCount + jaeCount * 0.6;
+  const adviceRaw = inCount + sikCount * 0.9;
+  const energyRaw = biCount + sikCount + jaeCount * 0.7;
+
+  const empathyScore = scoreFromRaw(empathyRaw, maxRaw);
+  const boundaryScore = scoreFromRaw(boundaryRaw, maxRaw);
+  const trustScore = scoreFromRaw(trustRaw, maxRaw);
+  const adviceScore = scoreFromRaw(adviceRaw, maxRaw);
+  const energyScore = scoreFromRaw(energyRaw, maxRaw);
+
+  const gauges: RelationshipGauge[] = [
+    {
+      key: "empathy",
+      label: "공감력",
+      emoji: "🫶",
+      value: empathyScore,
+      color: "#A78BD4",
+      desc:
+        empathyScore >= 70
+          ? "상대 감정과 상황을 맥락으로 읽어서 쉽게 단정짓지 않는 편이에요."
+          : "공감은 있지만, 상황을 빠르게 읽고 현실 판단을 먼저 세우는 편이에요.",
+      tip:
+        empathyScore < 55
+          ? "판단을 하기 전에 한 번 더 '저 사람 입장'을 떠올려 보면 관계가 더 부드러워져요."
+          : null,
+    },
+    {
+      key: "boundary",
+      label: "경계력",
+      emoji: "🛡",
+      value: boundaryScore,
+      color: "#7EB8D4",
+      desc:
+        boundaryScore >= 70
+          ? "선과 기준이 있어서 관계 속에서 내 자리를 지키는 힘이 있어요."
+          : "상대를 먼저 생각하다 보니, 나의 한계를 나중에야 자각하는 편이에요.",
+      tip:
+        boundaryScore < 55
+          ? "힘들다고 느껴질 때는 대화를 잠시 멈추고, 나의 컨디션을 먼저 확인해 보는 게 좋아요."
+          : "기준이 분명하지만, 가끔은 여유를 두고 상대의 실수도 허용해 보면 관계가 더 편해져요.",
+    },
+    {
+      key: "trust",
+      label: "신뢰도",
+      emoji: "🤝",
+      value: trustScore,
+      color: "#7EB8A0",
+      desc:
+        trustScore >= 70
+          ? "약속과 책임을 지키는 편이라, 한 번 맺은 관계를 오래 가져가는 쪽이에요."
+          : "관계에 오래 묶이기보다는, 상황에 맞게 거리를 조절하며 움직이는 편이에요.",
+      tip:
+        trustScore < 55
+          ? "모든 관계를 오래 가져갈 필요는 없지만, 나에게 중요한 사람을 한두 명 정해 두면 힘이 돼요."
+          : null,
+    },
+    {
+      key: "advice",
+      label: "조언력",
+      emoji: "💡",
+      value: adviceScore,
+      color: "#E8C87A",
+      desc:
+        adviceScore >= 70
+          ? "이해와 정리를 동시에 해서, 조언·피드백을 해 줄 때 힘이 실리는 편이에요."
+          : "듣는 쪽이 더 편해서, 말보다 행동과 자세로 진심을 보여주는 스타일이에요.",
+      tip:
+        adviceScore < 55
+          ? "모든 말을 완벽하게 할 필요는 없어요. '내가 느낀 한 줄'만 나눠도 충분히 힘이 될 때가 많아요."
+          : null,
+    },
+    {
+      key: "energy",
+      label: "관계 체력",
+      emoji: "🔋",
+      value: energyScore,
+      color: "#E89A7A",
+      desc:
+        energyScore >= 70
+          ? "여러 사람과도 에너지를 나눌 수 있는 편이라, 관계 폭이 넓어지기 쉬워요."
+          : "에너지 소모가 빠른 편이라, 깊고 편한 몇 관계에 집중할 때 더 힘이 나요.",
+      tip:
+        energyScore < 55
+          ? "한 번에 많은 사람을 챙기기보다, 나를 편하게 해주는 관계 1~2개에 집중해도 충분해요."
+          : "에너지가 넉넉한 만큼, 스스로를 위한 휴식 시간도 일정에 같이 넣어두면 좋아요.",
+    },
+  ];
+
+  const [top] = pickTopTwoGroups(groupCounts);
+  const meta = TYPE_BY_GROUP[top];
+  const type = meta.type;
+  const typeDesc = meta.desc;
+
+  let caution: string;
+  const highEmpathy = empathyScore >= 70;
+  const lowBoundary = boundaryScore < 55;
+
+  if (highEmpathy && lowBoundary) {
+    caution =
+      tone === "fun"
+        ? "공감이 강한 만큼 나를 먼저 챙기는 연습이 필요해. 선을 그어 줄수록 관계가 더 오래가."
+        : tone === "empathy"
+          ? "공감이 강한 만큼 나를 먼저 챙기는 연습도 필요해요. 선을 한 번 그어 줄수록 관계가 더 오래 가요."
+          : "공감이 강점인 만큼, 나를 먼저 챙기는 습관을 들일수록 관계가 오래 지속되는 구조입니다.";
+  } else if (!highEmpathy && boundaryScore >= 70) {
+    caution =
+      tone === "fun"
+        ? "기준이 분명해서 든든하지만, 가끔은 한 걸음 다가가 주면 관계가 더 따뜻해져."
+        : tone === "empathy"
+          ? "기준이 분명해 든든하지만, 가끔은 한 걸음 다가가 주면 관계가 더 따뜻해져요."
+          : "기준과 경계가 분명해 든든하지만, 때로는 한 걸음 다가가는 시도가 관계를 더 따뜻하게 만듭니다.";
+  } else {
+    caution =
+      tone === "fun"
+        ? "지금의 관계 패턴이 약점이라기보다는, 상황에 따라 강점이 되는 무기야. 시간이 갈수록 이 무기를 쓰는 요령이 더 좋아질 거야."
+        : tone === "empathy"
+          ? "지금의 관계 패턴은 약점이라기보다, 상황에 따라 강점이 되는 무기예요. 시간이 지날수록 이 무기를 쓰는 요령이 더 좋아질 거예요."
+          : "현재 관계 패턴은 약점이라기보다, 상황에 따라 강점이 되는 무기입니다. 시간이 지날수록 이 무기를 쓰는 요령이 더 좋아지는 구조입니다.";
+  }
+
+  return {
+    gauges,
+    type,
+    typeDesc,
+    caution,
+  };
+}

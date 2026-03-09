@@ -319,3 +319,141 @@ export function getCharismaSocialInfluenceParagraph(
   }
   return out.trim();
 }
+
+// =========================
+// 시각화용 데이터 (카리스마 궤도 카드)
+// =========================
+
+export interface CharismaAxisVisual {
+  key: "charisma" | "presence" | "expression" | "charm";
+  label: string;
+  emoji: string;
+  level: LevelKey;
+  value: number; // 0~100
+  color: string;
+  orbit: number;
+  size: number;
+  desc: string;
+}
+
+export interface CharismaVisualData {
+  type: string;
+  typeDesc: string;
+  axes: CharismaAxisVisual[];
+  summary: string;
+}
+
+function axisScoreToPercent(score: number): number {
+  const max = 6; // 대략적인 상한
+  const r = Math.max(0, Math.min(score, max)) / max;
+  return Math.round(40 + r * 55); // 40~95 사이로 압축
+}
+
+function levelLabel(level: LevelKey): string {
+  if (level === "S") return "압도적";
+  if (level === "A") return "강함";
+  if (level === "B") return "있음";
+  if (level === "C") return "보통";
+  if (level === "D") return "잠재";
+  return "잠재";
+}
+
+export function getCharismaVisualData(
+  pillars: SajuPillarsForCharisma,
+  tone: CharismaToneKey
+): CharismaVisualData | null {
+  const dayStem = pillars.day?.cheongan?.hanja?.trim?.()?.[0] ?? "";
+  if (!dayStem) return null;
+
+  const positions = collectPositions(pillars, dayStem);
+  const {
+    charisma,
+    public: pub,
+    intellect,
+  } = computeThreeAxisScores(positions);
+
+  const levels: Record<Axis3Key, LevelKey> = {
+    charisma: scoreToLevel(charisma),
+    public: scoreToLevel(pub),
+    intellect: scoreToLevel(intellect),
+  };
+  const typeRow = getType(levels);
+
+  const type =
+    typeRow.lead[tone].includes("전문가형") ? "전문가형"
+    : typeRow.lead[tone].includes("인플루언서형") ? "인플루언서형"
+    : typeRow.lead[tone].includes("리더형") ? "리더형"
+    : typeRow.lead[tone].includes("전방위형") ? "전방위형"
+    : typeRow.lead[tone].includes("내면형") ? "내면형"
+    : "영향력형";
+
+  const typeDesc = typeRow.lead[tone].trim();
+
+  const charismaValue = axisScoreToPercent(charisma);
+  const publicValue = axisScoreToPercent(pub);
+  const intellectValue = axisScoreToPercent(intellect);
+
+  const axes: CharismaAxisVisual[] = [
+    {
+      key: "charisma",
+      label: "카리스마",
+      emoji: "⚡",
+      level: levels.charisma,
+      value: charismaValue,
+      color: "#A78BD4",
+      orbit: 72,
+      size: 52,
+      desc: AXIS_TEXTS.charisma[levels.charisma][tone],
+    },
+    {
+      key: "presence",
+      label: "존재감",
+      emoji: "🏛",
+      level: levels.charisma,
+      value: axisScoreToPercent(charisma * 0.6 + pub * 0.4),
+      color: "#7EB8A0",
+      orbit: 110,
+      size: 60,
+      desc:
+        tone === "empathy"
+          ? "책임감과 태도로 신뢰를 쌓는 쪽이에요. 한 번 맡은 자리에서 오래 기억되는 편이에요."
+          : tone === "reality"
+            ? "책임감과 태도로 신뢰를 쌓아 존재감을 만드는 구조입니다."
+            : "책임감이랑 태도로 신뢰 쌓아서 존재감 만드는 타입이야.",
+    },
+    {
+      key: "expression",
+      label: "표현력",
+      emoji: "💡",
+      level: levels.public,
+      value: publicValue,
+      color: "#E8C87A",
+      orbit: 90,
+      size: 54,
+      desc: AXIS_TEXTS.public[levels.public][tone],
+    },
+    {
+      key: "charm",
+      label: "매력도",
+      emoji: "✨",
+      level: levels.public,
+      value: axisScoreToPercent(pub * 0.6 + intellect * 0.4),
+      color: "#E89A7A",
+      orbit: 130,
+      size: 58,
+      desc:
+        levels.public === "C"
+          ? "직접적인 확산보다 깊은 관계에서 매력이 강하게 느껴지는 타입이에요."
+          : AXIS_TEXTS.public[levels.public][tone],
+    },
+  ];
+
+  const summary = CLOSING_FOR_LENGTH[tone];
+
+  return {
+    type,
+    typeDesc,
+    axes,
+    summary,
+  };
+}

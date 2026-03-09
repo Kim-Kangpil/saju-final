@@ -25,9 +25,9 @@ import { getStrengthWeaknessParagraph, getStrengthWeaknessVisualData } from "../
 import { getLatentTalentAptitudeParagraph, getAptitudeSpectrumData } from "../../data/latentTalentAptitude";
 import { getElementDistributionParagraph, getElementDistributionVisualData } from "../../data/elementDistributionAnalysis";
 import { getTenGodAbilityParagraph, getTenGodAbilityCardsData } from "../../data/tenGodAbilityAnalysis";
-import { getRelationshipStyleParagraph } from "../../data/relationshipStyleAnalysis";
-import { getAncestorParentParagraph } from "../../data/ancestorParentFortune";
-import { getCharismaSocialInfluenceParagraph } from "../../data/charismaSocialInfluence";
+import { getRelationshipStyleParagraph, getRelationshipStyleVisualData } from "../../data/relationshipStyleAnalysis";
+import { getAncestorParentParagraph, getAncestorParentVisualData } from "../../data/ancestorParentFortune";
+import { getCharismaSocialInfluenceParagraph, getCharismaVisualData } from "../../data/charismaSocialInfluence";
 import { getCharmPointParagraph } from "../../data/charmPointAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
@@ -39,6 +39,9 @@ import { StrengthCard } from "../../components/StrengthCard";
 import { TalentSpectrumCard } from "../../components/TalentSpectrumCard";
 import { OhaengBalanceCard } from "../../components/OhaengBalanceCard";
 import { TenGodAbilityCards } from "../../components/TenGodAbilityCards";
+import { RelationshipBalanceCard } from "../../components/RelationshipBalanceCard";
+import { FamilyDocumentCard } from "../../components/FamilyDocumentCard";
+import { CharismaOrbitCard } from "../../components/CharismaOrbitCard";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -1453,6 +1456,21 @@ export default function Page() {
     return getTenGodAbilityCardsData(result, selectedChar);
   }, [result, selectedChar]);
 
+  const relationshipVisualData = useMemo(() => {
+    if (!result) return null;
+    return getRelationshipStyleVisualData(result, selectedChar);
+  }, [result, selectedChar]);
+
+  const ancestorVisualData = useMemo(() => {
+    if (!result) return null;
+    return getAncestorParentVisualData(result, gender, selectedChar);
+  }, [result, gender, selectedChar]);
+
+  const charismaVisualData = useMemo(() => {
+    if (!result) return null;
+    return getCharismaVisualData(result, selectedChar);
+  }, [result, selectedChar]);
+
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     if (!loggedIn) {
@@ -2591,6 +2609,15 @@ export default function Page() {
                                                   )}
                                                   {c.id === "talent_tengod" && tenGodAbilityCardsData && (
                                                     <TenGodAbilityCards data={tenGodAbilityCardsData} />
+                                                  )}
+                                                  {c.id === "relation_comm" && relationshipVisualData && (
+                                                    <RelationshipBalanceCard data={relationshipVisualData} />
+                                                  )}
+                                                  {c.id === "relation_parents" && ancestorVisualData && (
+                                                    <FamilyDocumentCard data={ancestorVisualData} />
+                                                  )}
+                                                  {c.id === "relation_charisma" && charismaVisualData && (
+                                                    <CharismaOrbitCard data={charismaVisualData} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

@@ -152,12 +152,28 @@ export function buildAnalysis(input: EngineInput): EngineOutput {
   );
 
   // 6) 특수신살
-  const specialStarsAnalysis = analyzeSpecialStars(
-    result.day.jiji.hanja,
-    result.year.jiji.hanja,
-    result.month.jiji.hanja,
-    result.hour.jiji.hanja
-  );
+  const specialStarsAnalysis = analyzeSpecialStars(result.day.cheongan.hanja, [
+    {
+      pos: "년",
+      stem: result.year.cheongan.hanja,
+      branch: result.year.jiji.hanja,
+    },
+    {
+      pos: "월",
+      stem: result.month.cheongan.hanja,
+      branch: result.month.jiji.hanja,
+    },
+    {
+      pos: "일",
+      stem: result.day.cheongan.hanja,
+      branch: result.day.jiji.hanja,
+    },
+    {
+      pos: "시",
+      stem: result.hour.cheongan.hanja,
+      branch: result.hour.jiji.hanja,
+    },
+  ]);
 
   // 7) 오늘운(일간 오행 기준)
   const todayFortune = analyzeTodayFortune(hanjaToElement(dayStem), selectedChar);

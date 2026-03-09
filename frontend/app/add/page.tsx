@@ -16,6 +16,7 @@ import { CHARM_ANALYSIS, CHARM_BY_PILLAR } from "../../data/charmAnalysis";
 import { ELEMENT_ANALYSIS } from "../../data/elementAnalysis";
 import { RELATIONS_ANALYSIS, analyzeRelations } from "../../data/relationsAnalysis";
 import { SPECIAL_STARS_ANALYSIS, analyzeSpecialStars } from "../../data/specialStarsAnalysis";
+import { summarizeGongmang } from "../../data/gongmangAnalysis";
 import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis";
 import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
 import { TODAY_ANALYSIS, analyzeTodayFortune } from "../../data/todayAnalysis";
@@ -696,6 +697,7 @@ export default function Page() {
   const [natureYinCount, setNatureYinCount] = useState<number>(0);
   const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);
   const [maskVsNatureLabels, setMaskVsNatureLabels] = useState<{ social: string; real: string; habit: string } | null>(null);
+  const [gongmangAnalysis, setGongmangAnalysis] = useState<string | null>(null);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
   useEffect(() => {
     if (!loading) return;
@@ -1094,6 +1096,18 @@ export default function Page() {
         const todayResult = analyzeTodayFortune(hanjaToElement(dayStem), selectedChar);
         setTodayFortune(todayResult);
 
+        // 공망 분석
+        const gongTxt = summarizeGongmang(
+          {
+            year: result.year.cheongan.hanja + result.year.jiji.hanja,
+            month: result.month.cheongan.hanja + result.month.jiji.hanja,
+            day: result.day.cheongan.hanja + result.day.jiji.hanja,
+            hour: result.hour.cheongan.hanja + result.hour.jiji.hanja,
+          },
+          selectedChar
+        );
+        setGongmangAnalysis(gongTxt);
+
         const natureResult = NATURE_ANALYSIS.analyze(
           dayStem,
           [result.year, result.month, result.day, result.hour],
@@ -1402,6 +1416,11 @@ export default function Page() {
     if (specialStarsAnalysis?.[selectedChar]) {
       base.insight.unshift(
         asContent("stars_text", "특수신살/신살", specialStarsAnalysis[selectedChar], "⭐", "local")
+      );
+    }
+    if (gongmangAnalysis) {
+      base.insight.unshift(
+        asContent("insight_gongmang", "공망 분석", gongmangAnalysis, "🕳", "local")
       );
     }
     if (todayFortune?.advice) {

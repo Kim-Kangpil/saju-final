@@ -59,7 +59,8 @@ export function CompassCard({ data }: { data: CompassCardData }) {
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[420px]"
       style={{
-        background: "linear-gradient(160deg, #0F0F1A 0%, #1A1428 60%, #0F1A1A 100%)",
+        background: "linear-gradient(160deg, #f5f7f4 0%, #eef4ee 50%, #f0f4f2 100%)",
+        border: "1px solid rgba(107, 138, 122, 0.35)",
         padding: "20px 16px 24px",
       }}
     >
@@ -67,13 +68,13 @@ export function CompassCard({ data }: { data: CompassCardData }) {
       <div className="text-center mb-4">
         <div
           className="text-[10px] tracking-widest uppercase mb-1"
-          style={{ color: "#6B8A7A" }}
+          style={{ color: "#5a7a6a" }}
         >
           🧭 삶의 나침반
         </div>
         <div
           className="text-base font-bold tracking-tight"
-          style={{ color: "#E8E0D0" }}
+          style={{ color: "#3d4a3d" }}
         >
           {title}
         </div>

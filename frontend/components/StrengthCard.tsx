@@ -28,7 +28,7 @@ function GaugeBar({
     <div
       style={{
         height: "6px",
-        background: "#1E1E2E",
+        background: "#e0e8e0",
         borderRadius: "99px",
         overflow: "hidden",
         flex: 1,
@@ -75,8 +75,8 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
       <div
         style={{
           width: "100%",
-          background: "#13131F",
-          border: "1px solid #6B8A7A33",
+          background: "#f5f7f4",
+          border: "1px solid rgba(107, 138, 122, 0.35)",
           borderRadius: "20px",
           padding: "20px",
           marginBottom: "16px",
@@ -86,7 +86,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
           style={{
             fontSize: "10px",
             letterSpacing: "3px",
-            color: "#7EB8A0",
+            color: "#5a7a6a",
             textTransform: "uppercase",
             marginBottom: "18px",
           }}
@@ -121,8 +121,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
                       width: "28px",
                       height: "28px",
                       borderRadius: "8px",
-                      background: "rgba(232, 224, 208, 0.2)",
-                      filter: "brightness(1.15)",
+                      background: "rgba(126, 184, 160, 0.15)",
                     }}
                   >
                     {s.icon}
@@ -131,7 +130,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
                     style={{
                       fontSize: "13px",
                       fontWeight: 600,
-                      color: "#E8E0D0",
+                      color: "#3d4a3d",
                       letterSpacing: "-0.2px",
                     }}
                   >
@@ -161,7 +160,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
               <div
                 style={{
                   fontSize: "11px",
-                  color: "#6B7A72",
+                  color: "#5c6b5c",
                   marginTop: "5px",
                   letterSpacing: "0.2px",
                 }}
@@ -177,7 +176,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
           style={{
             marginTop: "22px",
             paddingTop: "16px",
-            borderTop: "1px solid #6B8A7A22",
+            borderTop: "1px solid rgba(107, 138, 122, 0.25)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -186,7 +185,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
           <span
             style={{
               fontSize: "11px",
-              color: "#6B8A7A",
+              color: "#5c6b5c",
               letterSpacing: "1px",
             }}
           >
@@ -216,7 +215,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
               style={{
                 fontSize: "15px",
                 fontWeight: 800,
-                color: "#E8E0D0",
+                color: "#3d4a3d",
                 marginLeft: "6px",
               }}
             >
@@ -230,8 +229,8 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
       <div
         style={{
           width: "100%",
-          background: "#1A1020",
-          border: "1px solid #E89A7A33",
+          background: "#fdf8f5",
+          border: "1px solid rgba(232, 154, 122, 0.45)",
           borderRadius: "20px",
           padding: "20px",
         }}
@@ -240,7 +239,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
           style={{
             fontSize: "10px",
             letterSpacing: "3px",
-            color: "#E89A7A",
+            color: "#b87a6a",
             textTransform: "uppercase",
             marginBottom: "14px",
           }}
@@ -263,7 +262,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
               style={{
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "#E8E0D0",
+                color: "#3d4a3d",
                 marginBottom: "8px",
               }}
             >
@@ -272,7 +271,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
             <div
               style={{
                 fontSize: "12px",
-                color: "#8A7A72",
+                color: "#5c6b5c",
                 lineHeight: 1.8,
                 marginBottom: "12px",
               }}
@@ -285,17 +284,17 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "6px",
-                background: "#E89A7A18",
-                border: "1px solid #E89A7A44",
+                background: "rgba(232, 154, 122, 0.15)",
+                border: "1px solid rgba(232, 154, 122, 0.45)",
                 borderRadius: "30px",
                 padding: "5px 12px",
               }}
             >
-              <span style={{ fontSize: "10px" }}>→</span>
+              <span style={{ fontSize: "10px", color: "#b87a6a" }}>→</span>
               <span
                 style={{
                   fontSize: "11px",
-                  color: "#E89A7A",
+                  color: "#a86a5a",
                   fontWeight: 600,
                   letterSpacing: "0.3px",
                 }}

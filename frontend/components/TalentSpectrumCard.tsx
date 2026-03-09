@@ -30,8 +30,8 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
       <div
         style={{
           width: "100%",
-          background: "#13131F",
-          border: "1px solid #6B8A7A33",
+          background: "#f5f7f4",
+          border: "1px solid rgba(107, 138, 122, 0.35)",
           borderRadius: "20px",
           padding: "24px",
           marginBottom: "16px",
@@ -49,7 +49,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
           <span
             style={{
               fontSize: "10px",
-              color: "#A78BD4",
+              color: "#7a6b9a",
               letterSpacing: "1px",
             }}
           >
@@ -69,7 +69,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
           <div
             style={{
               fontSize: "9px",
-              color: "#6B8A7A",
+              color: "#5c6b5c",
               letterSpacing: "0.5px",
               writingMode: "vertical-rl",
               transform: "rotate(180deg)",
@@ -86,9 +86,9 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
               flex: 1,
               aspectRatio: "1",
               position: "relative",
-              background: "#0F0F1A",
+              background: "#eef4ee",
               borderRadius: "12px",
-              border: "1px solid #6B8A7A22",
+              border: "1px solid rgba(107, 138, 122, 0.3)",
               overflow: "hidden",
             }}
           >
@@ -105,7 +105,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                   position: "absolute",
                   width: "50%",
                   height: "50%",
-                  background: `${q.color}08`,
+                  background: `${q.color}18`,
                   top: q.top,
                   bottom: q.bottom,
                   left: q.left,
@@ -122,7 +122,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                 left: 0,
                 right: 0,
                 height: "1px",
-                background: "#6B8A7A33",
+                background: "rgba(107, 138, 122, 0.4)",
               }}
             />
             <div
@@ -132,7 +132,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                 top: 0,
                 bottom: 0,
                 width: "1px",
-                background: "#6B8A7A33",
+                background: "rgba(107, 138, 122, 0.4)",
               }}
             />
 
@@ -160,7 +160,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                     style={{
                       fontSize: "10px",
                       fontWeight: "700",
-                      color: isTarget ? "#E8E0D0" : "#6B8A7A",
+                      color: isTarget ? "#3d4a3d" : "#6B8A7A",
                       letterSpacing: "-0.2px",
                       marginBottom: "2px",
                     }}
@@ -170,7 +170,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                   <div
                     style={{
                       fontSize: "8.5px",
-                      color: "#6B8A7A88",
+                      color: "#5c6b5c",
                     }}
                   >
                     {q.sub}
@@ -190,7 +190,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                 height: "48px",
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(circle, #A78BD444 0%, transparent 70%)",
+                  "radial-gradient(circle, rgba(167,139,212,0.25) 0%, transparent 70%)",
                 transition:
                   "left 1.2s cubic-bezier(0.34,1.56,0.64,1), top 1.2s cubic-bezier(0.34,1.56,0.64,1)",
                 pointerEvents: "none",
@@ -207,9 +207,9 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                 width: "14px",
                 height: "14px",
                 borderRadius: "50%",
-                background: "#A78BD4",
+                background: "#8b7aa8",
                 boxShadow:
-                  "0 0 0 3px #A78BD433, 0 0 16px #A78BD488",
+                  "0 0 0 3px rgba(139,122,168,0.4), 0 0 12px rgba(139,122,168,0.35)",
                 transition:
                   "left 1.2s cubic-bezier(0.34,1.56,0.64,1), top 1.2s cubic-bezier(0.34,1.56,0.64,1)",
                 zIndex: 10,
@@ -221,7 +221,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
           <div
             style={{
               fontSize: "9px",
-              color: "#6B8A7A",
+              color: "#5c6b5c",
               letterSpacing: "0.5px",
               writingMode: "vertical-rl",
               whiteSpace: "nowrap",
@@ -243,7 +243,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
           <span
             style={{
               fontSize: "10px",
-              color: "#E89A7A88",
+              color: "#b87a6a",
               letterSpacing: "1px",
             }}
           >
@@ -256,8 +256,8 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
       <div
         style={{
           width: "100%",
-          background: "#1A1428",
-          border: "1px solid #A78BD433",
+          background: "#f8f5fb",
+          border: "1px solid rgba(167,139,212,0.4)",
           borderRadius: "20px",
           padding: "20px",
           marginBottom: "14px",
@@ -271,8 +271,8 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
             width: "44px",
             height: "44px",
             borderRadius: "50%",
-            background: "radial-gradient(circle, #A78BD444, #A78BD411)",
-            border: "1.5px solid #A78BD466",
+            background: "linear-gradient(135deg, rgba(167,139,212,0.25), rgba(167,139,212,0.08))",
+            border: "1.5px solid rgba(167,139,212,0.5)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -287,7 +287,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
             style={{
               fontSize: "15px",
               fontWeight: "700",
-              color: "#E8E0D0",
+              color: "#3d4a3d",
               marginBottom: "4px",
             }}
           >
@@ -296,7 +296,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
           <div
             style={{
               fontSize: "12px",
-              color: "#8A7A9A",
+              color: "#5c6b5c",
               lineHeight: "1.6",
             }}
           >
@@ -318,12 +318,12 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
           <div
             key={i}
             style={{
-              background: "#13131F",
-              border: "1px solid #A78BD433",
+              background: "#f0edf5",
+              border: "1px solid rgba(167,139,212,0.4)",
               borderRadius: "30px",
               padding: "6px 14px",
               fontSize: "12px",
-              color: "#A78BD4",
+              color: "#6b5b7a",
               fontWeight: "500",
               opacity: animate ? 1 : 0,
               transform: animate ? "translateY(0)" : "translateY(6px)",

@@ -61,8 +61,8 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
       {/* 오각형 차트 */}
       <div
         style={{
-          background: "#13131F",
-          border: "1px solid #6B8A7A33",
+          background: "#f5f7f4",
+          border: "1px solid rgba(107, 138, 122, 0.35)",
           borderRadius: "20px",
           padding: "16px",
           marginBottom: "16px",
@@ -82,7 +82,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                 key={li}
                 points={pointsToStr(pts)}
                 fill="none"
-                stroke="#6B8A7A22"
+                stroke="rgba(107, 138, 122, 0.35)"
                 strokeWidth="1"
               />
             );
@@ -95,7 +95,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
               y1={cy}
               x2={pt.x}
               y2={pt.y}
-              stroke="#6B8A7A18"
+              stroke="rgba(107, 138, 122, 0.28)"
               strokeWidth="1"
             />
           ))}
@@ -128,7 +128,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   cy={pt.y}
                   r="5"
                   fill={el.color}
-                  stroke="#13131F"
+                  stroke="#f0f4f0"
                   strokeWidth="1.5"
                   style={{
                     cursor: "pointer",
@@ -156,8 +156,8 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   width="32"
                   height="26"
                   rx="8"
-                  fill={isSelected ? `${el.color}33` : "#1A1A2E"}
-                  stroke={isSelected ? el.color : "#6B8A7A33"}
+                  fill={isSelected ? `${el.color}33` : "#eef4ee"}
+                  stroke={isSelected ? el.color : "rgba(107, 138, 122, 0.4)"}
                   strokeWidth="1"
                   style={{ transition: "all 0.3s" }}
                 />
@@ -168,7 +168,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   dominantBaseline="middle"
                   fontSize="13"
                   fontWeight="700"
-                  fill={isSelected ? el.color : "#E8E0D0"}
+                  fill={isSelected ? el.color : "#3d4a3d"}
                   fontFamily="Georgia, serif"
                   style={{ transition: "fill 0.3s" }}
                 >
@@ -180,7 +180,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize="8"
-                  fill={el.count === 0 ? "#E89A7A" : "#6B8A7A"}
+                  fill={el.count === 0 ? "#b87a6a" : "#5c6b5c"}
                   fontFamily="Georgia, serif"
                 >
                   {el.count}개
@@ -194,7 +194,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
             y={cy - 6}
             textAnchor="middle"
             fontSize="9"
-            fill="#6B8A7A88"
+            fill="#5c6b5c"
             fontFamily="Georgia, serif"
             letterSpacing="1"
           >
@@ -205,7 +205,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
             y={cy + 7}
             textAnchor="middle"
             fontSize="9"
-            fill="#6B8A7A55"
+            fill="#6B8A7A99"
             fontFamily="Georgia, serif"
           >
             밸런스
@@ -234,7 +234,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   background: v,
                 }}
               />
-              <span style={{ fontSize: "9px", color: "#6B8A7A88" }}>{k}</span>
+              <span style={{ fontSize: "9px", color: "#5c6b5c" }}>{k}</span>
             </div>
           ))}
         </div>
@@ -244,8 +244,8 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
         <div
           style={{
             width: "100%",
-            background: "#13131F",
-            border: `1px solid ${elements[selected].color}44`,
+            background: "#f5f7f4",
+            border: `1px solid ${elements[selected].color}55`,
             borderRadius: "20px",
             padding: "20px",
           }}
@@ -280,7 +280,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                 style={{
                   fontSize: "14px",
                   fontWeight: 700,
-                  color: "#E8E0D0",
+                  color: "#3d4a3d",
                 }}
               >
                 {elements[selected].key}({elements[selected].label}) · {elements[selected].count}개
@@ -298,7 +298,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
           <div
             style={{
               fontSize: "12px",
-              color: "#8A8A9A",
+              color: "#5c6b5c",
               lineHeight: "1.7",
               marginBottom: "12px",
             }}
@@ -327,7 +327,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
               marginTop: "12px",
               textAlign: "center",
               fontSize: "10px",
-              color: "#6B8A7A55",
+              color: "#6B8A7A99",
               cursor: "pointer",
               letterSpacing: "1px",
             }}
@@ -352,8 +352,8 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
               onClick={() => setSelected(i)}
               onKeyDown={(e) => e.key === "Enter" && setSelected(i)}
               style={{
-                background: "#13131F",
-                border: `1px solid ${el.color}33`,
+                background: "#f5f7f4",
+                border: `1px solid ${el.color}44`,
                 borderRadius: "14px",
                 padding: "12px 16px",
                 display: "flex",
@@ -396,10 +396,10 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                     style={{
                       fontSize: "12px",
                       fontWeight: 600,
-                      color: "#E8E0D0",
-                    }}
-                  >
-                    {el.key} · {el.count}개
+                    color: "#3d4a3d",
+                  }}
+                >
+                  {el.key} · {el.count}개
                   </span>
                   <span
                     style={{
@@ -416,7 +416,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                 <div
                   style={{
                     height: "3px",
-                    background: "#1E1E2E",
+                    background: "#e0e8e0",
                     borderRadius: "99px",
                     overflow: "hidden",
                   }}
@@ -439,7 +439,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
             style={{
               textAlign: "center",
               fontSize: "10px",
-              color: "#6B8A7A44",
+              color: "#6B8A7A99",
               marginTop: "4px",
               letterSpacing: "1px",
             }}

@@ -97,8 +97,8 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             cx={cx}
             cy={cy}
             r={r - 2}
-            fill="#13131F"
-            stroke="rgba(196, 120, 100, 0.45)"
+            fill="#f5f7f4"
+            stroke="rgba(107, 138, 122, 0.45)"
             strokeWidth="1.5"
           />
           {/* 내부 링 */}
@@ -129,7 +129,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
                   dominantBaseline="middle"
                   fontSize={isTop ? "11" : "9.5"}
                   fontWeight={isTop ? "700" : "500"}
-                  fill={isTop ? "#A8D4B8" : "rgba(107, 138, 122, 0.6)"}
+                  fill={isTop ? "#5a7a6a" : "#6B8A7A"}
                   fontFamily="Georgia, 'Nanum Myeongjo', serif"
                 >
                   {label}
@@ -147,15 +147,15 @@ export function CompassCard({ data }: { data: CompassCardData }) {
           >
             <polygon
               points={`${cx},${cy - r * 0.52} ${cx - 7},${cy + 4} ${cx + 7},${cy + 4}`}
-              fill="#A8D4B8"
+              fill="#6B8A7A"
               opacity="0.95"
             />
             <polygon
               points={`${cx},${cy + r * 0.38} ${cx - 5},${cy - 4} ${cx + 5},${cy - 4}`}
-              fill="#3A4A40"
-              opacity="0.8"
+              fill="#5a7a6a"
+              opacity="0.9"
             />
-            <circle cx={cx} cy={cy} r="5" fill="#1A2820" stroke="#A8D4B8" strokeWidth="1.5" />
+            <circle cx={cx} cy={cy} r="5" fill="#5a7a6a" stroke="#6B8A7A" strokeWidth="1.5" />
           </g>
 
           {/* 중앙 지지·십성 */}
@@ -165,7 +165,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             textAnchor="middle"
             fontSize="22"
             fontWeight="800"
-            fill="#E8E0D0"
+            fill="#3d4a3d"
             fontFamily="Georgia, 'Nanum Myeongjo', serif"
           >
             {ji}
@@ -175,7 +175,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             y={cy + 6}
             textAnchor="middle"
             fontSize="9"
-            fill="rgba(107, 138, 122, 0.6)"
+            fill="#5c6b5c"
             fontFamily="Georgia, 'Nanum Myeongjo', serif"
             letterSpacing="1"
           >
@@ -186,7 +186,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             y={cy + 20}
             textAnchor="middle"
             fontSize="9"
-            fill="rgba(168, 212, 184, 0.53)"
+            fill="#5a7a6a"
             fontFamily="Georgia, 'Nanum Myeongjo', serif"
           >
             {sipsung}
@@ -216,7 +216,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
           style={{
             background: "rgba(168, 212, 184, 0.09)",
             border: "1px solid rgba(168, 212, 184, 0.27)",
-            color: "#A8D4B8",
+            color: "#5a7a6a",
           }}
         >
           {sipsung} · {sipsungDesc}
@@ -227,19 +227,19 @@ export function CompassCard({ data }: { data: CompassCardData }) {
       <div
         className="rounded-2xl px-5 py-4 max-w-[320px] mx-auto text-center mb-2"
         style={{
-          background: "#1E1E2E",
-          border: "1px solid rgba(196, 120, 100, 0.35)",
+          background: "#f5f7f4",
+          border: "1px solid rgba(107, 138, 122, 0.4)",
         }}
       >
         <div
           className="text-[12px] mb-2 tracking-wide"
-          style={{ color: "#C49080" }}
+          style={{ color: "#5a7a6a" }}
         >
           핵심 기준
         </div>
         <div
           className="text-[15px] font-bold tracking-tight mb-2"
-          style={{ color: "#E8E0D0" }}
+          style={{ color: "#3d4a3d" }}
         >
           &quot;{summary}&quot;
         </div>

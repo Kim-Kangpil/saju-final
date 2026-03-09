@@ -95,7 +95,7 @@ export function TenGodAbilityCards({ data }: { data: TenGodAbilityCardsData }) {
             style={{
               fontSize: "24px",
               fontWeight: 800,
-              color: "#E8E0D0",
+              color: "#3d4a3d",
               letterSpacing: "-0.5px",
               lineHeight: 1.2,
               transition: "color 0.4s",
@@ -108,7 +108,7 @@ export function TenGodAbilityCards({ data }: { data: TenGodAbilityCardsData }) {
         <div
           style={{
             fontSize: "13px",
-            color: "#9A9AB0",
+            color: "#5c6b5c",
             lineHeight: "1.8",
             flex: 1,
           }}
@@ -141,7 +141,7 @@ export function TenGodAbilityCards({ data }: { data: TenGodAbilityCardsData }) {
             bottom: "20px",
             right: "24px",
             fontSize: "11px",
-            color: `${card.accent}66`,
+            color: card.accent,
             fontWeight: 600,
             letterSpacing: "1px",
           }}
@@ -202,8 +202,8 @@ export function TenGodAbilityCards({ data }: { data: TenGodAbilityCardsData }) {
               width: "44px",
               height: "44px",
               borderRadius: "50%",
-              background: "#13131F",
-              border: `1px solid ${card.accent}33`,
+              background: "#f5f7f4",
+              border: `1px solid ${card.accent}55`,
               color:
                 i === 0
                   ? current === 0
@@ -232,7 +232,7 @@ export function TenGodAbilityCards({ data }: { data: TenGodAbilityCardsData }) {
         style={{
           marginTop: "16px",
           fontSize: "10px",
-          color: "#6B8A7A44",
+          color: "#6B8A7A99",
           letterSpacing: "1px",
           textAlign: "center",
         }}

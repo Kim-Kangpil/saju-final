@@ -382,16 +382,16 @@ const TEN_GOD_CARD_META: Record<
 };
 
 const ACCENT_GRADIENT: Record<string, string> = {
-  "#A78BD4": "linear-gradient(135deg, #1A1030 0%, #2A1A45 100%)",
-  "#7EB8A0": "linear-gradient(135deg, #0F1A18 0%, #1A2E28 100%)",
-  "#E8C87A": "linear-gradient(135deg, #1A1800 0%, #2E2A10 100%)",
-  "#E89A7A": "linear-gradient(135deg, #2A1810 0%, #3E2518 100%)",
-  "#7EB8D4": "linear-gradient(135deg, #0F1820 0%, #1A2A30 100%)",
-  "#C8C0A8": "linear-gradient(135deg, #1A1A14 0%, #2A2820 100%)",
+  "#A78BD4": "linear-gradient(135deg, #f5f0fa 0%, #ebe0f5 100%)",
+  "#7EB8A0": "linear-gradient(135deg, #eef5f2 0%, #e0efe8 100%)",
+  "#E8C87A": "linear-gradient(135deg, #faf8f0 0%, #f5f0e0 100%)",
+  "#E89A7A": "linear-gradient(135deg, #fdf8f5 0%, #f8efe8 100%)",
+  "#7EB8D4": "linear-gradient(135deg, #f0f7fa 0%, #e5f0f5 100%)",
+  "#C8C0A8": "linear-gradient(135deg, #f5f5f0 0%, #ebe8e0 100%)",
 };
 
 function gradientFromAccent(accent: string): string {
-  return ACCENT_GRADIENT[accent] ?? `linear-gradient(135deg, #1A1428 0%, #2A2038 100%)`;
+  return ACCENT_GRADIENT[accent] ?? "linear-gradient(135deg, #f5f0fa 0%, #ebe8f0 100%)";
 }
 
 export interface TenGodAbilityCardItem {

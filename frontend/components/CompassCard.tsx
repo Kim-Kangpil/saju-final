@@ -80,8 +80,19 @@ export function CompassCard({ data }: { data: CompassCardData }) {
         </div>
       </div>
 
+      {/* 나침반 의미 안내 */}
+      <div
+        className="text-center mb-3"
+        style={{ fontSize: "11px", color: "#5c6b5c", lineHeight: 1.5 }}
+      >
+        <span style={{ fontWeight: 600, color: "#3d4a3d" }}>↑ 나침반이 가리키는 방향</span>
+        <span> = 당신의 핵심 가치(태어난 달)</span>
+        <br />
+        <span style={{ color: "#6B8A7A" }}>다섯 글자 = 이 가치를 나타내는 키워드들</span>
+      </div>
+
       {/* 나침반 */}
-      <div className="relative w-[240px] h-[240px] mx-auto mb-5">
+      <div className="relative w-[240px] h-[240px] mx-auto mb-4">
         {/* 외곽 링 */}
         <div
           className="absolute rounded-full border"
@@ -103,15 +114,15 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             strokeWidth="1.5"
           />
           {/* 내부 링 */}
-          <circle cx={cx} cy={cy} r={r * 0.72} fill="none" stroke="rgba(107, 138, 122, 0.13)" strokeWidth="1" />
-          <circle cx={cx} cy={cy} r={r * 0.45} fill="none" stroke="rgba(107, 138, 122, 0.13)" strokeWidth="1" />
+          <circle cx={cx} cy={cy} r={r * 0.65} fill="none" stroke="rgba(107, 138, 122, 0.13)" strokeWidth="1" />
+          <circle cx={cx} cy={cy} r={r * 0.38} fill="none" stroke="rgba(107, 138, 122, 0.13)" strokeWidth="1" />
 
-          {/* 방위 눈금선 + 키워드 */}
+          {/* 방위 눈금선 + 키워드 (라벨을 바깥쪽으로 배치해 바늘과 겹치지 않게) */}
           {DIRECTIONS.map((d, i) => {
-            const inner = polarToXY(d.angle, r * 0.72, cx, cy);
+            const inner = polarToXY(d.angle, r * 0.65, cx, cy);
             const outer = polarToXY(d.angle, r * 0.92, cx, cy);
-            const pos = polarToXY(d.angle, r * 0.83, cx, cy);
-            const isTop = d.angle === 0;
+            const pos = polarToXY(d.angle, r * 0.88, cx, cy);
+            const isPointed = d.angle === 0;
             const label = keywords[i] ?? "";
             return (
               <g key={i}>
@@ -128,9 +139,9 @@ export function CompassCard({ data }: { data: CompassCardData }) {
                   y={pos.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize={isTop ? "11" : "9.5"}
-                  fontWeight={isTop ? "700" : "500"}
-                  fill={isTop ? "#5a7a6a" : "#6B8A7A"}
+                  fontSize={isPointed ? "11" : "9.5"}
+                  fontWeight={isPointed ? "700" : "500"}
+                  fill={isPointed ? "#3d4a3d" : "#6B8A7A"}
                   fontFamily="Georgia, 'Nanum Myeongjo', serif"
                 >
                   {label}
@@ -139,7 +150,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             );
           })}
 
-          {/* 나침반 바늘 */}
+          {/* 나침반 바늘 (중앙 글자 제거로 짧게 유지, 중앙은 작은 원만) */}
           <g
             transform={`rotate(${needleAngle}, ${cx}, ${cy})`}
             style={{
@@ -147,51 +158,17 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             }}
           >
             <polygon
-              points={`${cx},${cy - r * 0.52} ${cx - 7},${cy + 4} ${cx + 7},${cy + 4}`}
+              points={`${cx},${cy - r * 0.48} ${cx - 6},${cy + 2} ${cx + 6},${cy + 2}`}
               fill="#6B8A7A"
               opacity="0.95"
             />
             <polygon
-              points={`${cx},${cy + r * 0.38} ${cx - 5},${cy - 4} ${cx + 5},${cy - 4}`}
+              points={`${cx},${cy + r * 0.32} ${cx - 4},${cy - 2} ${cx + 4},${cy - 2}`}
               fill="#5a7a6a"
               opacity="0.9"
             />
-            <circle cx={cx} cy={cy} r="5" fill="#5a7a6a" stroke="#6B8A7A" strokeWidth="1.5" />
+            <circle cx={cx} cy={cy} r="6" fill="#eef4ee" stroke="#6B8A7A" strokeWidth="1.5" />
           </g>
-
-          {/* 중앙 지지·십성 */}
-          <text
-            x={cx}
-            y={cy - 14}
-            textAnchor="middle"
-            fontSize="22"
-            fontWeight="800"
-            fill="#3d4a3d"
-            fontFamily="Georgia, 'Nanum Myeongjo', serif"
-          >
-            {ji}
-          </text>
-          <text
-            x={cx}
-            y={cy + 6}
-            textAnchor="middle"
-            fontSize="9"
-            fill="#5c6b5c"
-            fontFamily="Georgia, 'Nanum Myeongjo', serif"
-            letterSpacing="1"
-          >
-            {jiName}
-          </text>
-          <text
-            x={cx}
-            y={cy + 20}
-            textAnchor="middle"
-            fontSize="9"
-            fill="#5a7a6a"
-            fontFamily="Georgia, 'Nanum Myeongjo', serif"
-          >
-            {sipsung}
-          </text>
         </svg>
 
         {/* 정착 후 글로우 */}
@@ -202,12 +179,32 @@ export function CompassCard({ data }: { data: CompassCardData }) {
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              width: "56px",
-              height: "56px",
-              background: "radial-gradient(circle, rgba(168, 212, 184, 0.13) 0%, transparent 70%)",
+              width: "48px",
+              height: "48px",
+              background: "radial-gradient(circle, rgba(168, 212, 184, 0.12) 0%, transparent 70%)",
             }}
           />
         )}
+      </div>
+
+      {/* 중앙 정보: 지지·지명·십성 (SVG 밖으로 분리해 겹침 방지) */}
+      <div
+        className="flex flex-col items-center gap-0.5 mb-4"
+        style={{
+          padding: "10px 16px",
+          background: "rgba(107, 138, 122, 0.08)",
+          borderRadius: "12px",
+          border: "1px solid rgba(107, 138, 122, 0.25)",
+        }}
+      >
+        <div style={{ fontSize: "10px", color: "#6B8A7A", letterSpacing: "0.5px", marginBottom: "2px" }}>
+          태어난 달(월지)
+        </div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: "6px", flexWrap: "wrap", justifyContent: "center" }}>
+          <span style={{ fontSize: "20px", fontWeight: 800, color: "#3d4a3d", fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>{ji}</span>
+          <span style={{ fontSize: "12px", color: "#5c6b5c", fontFamily: "Georgia, serif" }}>{jiName}</span>
+          <span style={{ fontSize: "11px", color: "#5a7a6a", fontWeight: 600 }}>· {sipsung}</span>
+        </div>
       </div>
 
       {/* 십성 뱃지 */}
@@ -246,7 +243,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
         </div>
         <div
           className="text-[11px] leading-relaxed"
-          style={{ color: "#8A8A9A" }}
+          style={{ color: "#5c6b5c" }}
         >
           {desc}
         </div>

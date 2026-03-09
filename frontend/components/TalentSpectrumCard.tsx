@@ -204,15 +204,16 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
                 left: `${dotPos.x}%`,
                 top: `${dotPos.y}%`,
                 transform: "translate(-50%, -50%)",
-                width: "14px",
-                height: "14px",
+                width: "11px",
+                height: "11px",
                 borderRadius: "50%",
-                background: "#8b7aa8",
-                boxShadow:
-                  "0 0 0 3px rgba(139,122,168,0.4), 0 0 12px rgba(139,122,168,0.35)",
+                background: "#ffffff",
+                border: "2px solid rgba(139,122,168,0.9)",
+                boxShadow: "0 0 8px rgba(139,122,168,0.35)",
                 transition:
                   "left 1.2s cubic-bezier(0.34,1.56,0.64,1), top 1.2s cubic-bezier(0.34,1.56,0.64,1)",
-                zIndex: 10,
+                zIndex: 3,
+                pointerEvents: "none",
               }}
             />
           </div>

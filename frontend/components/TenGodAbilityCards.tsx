@@ -117,7 +117,7 @@ export function TenGodAbilityCards({ data }: { data: TenGodAbilityCardsData }) {
         </div>
 
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {card.fields.map((f, i) => (
+          {card.fields.slice(0, 3).map((f, i) => (
             <div
               key={i}
               style={{

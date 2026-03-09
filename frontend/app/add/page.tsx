@@ -46,6 +46,7 @@ import { RelationshipBalanceCard } from "../../components/RelationshipBalanceCar
 import { FamilyDocumentCard } from "../../components/FamilyDocumentCard";
 import { CharismaOrbitCard } from "../../components/CharismaOrbitCard";
 import { CharmPerfumeCard } from "../../components/CharmPerfumeCard";
+import { GuiinStarMap } from "../../components/GuiinStarMap";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -2714,6 +2715,25 @@ export default function Page() {
                                                   )}
                                                   {c.id === "relation_hapchung" && charmVisualData && (
                                                     <CharmPerfumeCard data={charmVisualData} />
+                                                  )}
+
+                                                  {c.id === "insight_guiin" && result && (
+                                                    <GuiinStarMap
+                                                      dayStem={result.day.cheongan.hanja}
+                                                      monthBranch={result.month.jiji.hanja}
+                                                      stems={[
+                                                        result.year.cheongan.hanja,
+                                                        result.month.cheongan.hanja,
+                                                        result.day.cheongan.hanja,
+                                                        result.hour.cheongan.hanja,
+                                                      ]}
+                                                      branches={[
+                                                        result.year.jiji.hanja,
+                                                        result.month.jiji.hanja,
+                                                        result.day.jiji.hanja,
+                                                        result.hour.jiji.hanja,
+                                                      ]}
+                                                    />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

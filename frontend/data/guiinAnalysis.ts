@@ -443,7 +443,8 @@ export function detectGuiin(
   // 12) 태극귀인
   const taeTargets = getTaegeukBranches(dayStem);
   if (taeTargets.length > 0) {
-    (["년", "월", "일", "시"] as PillarPos[]).forEach((pos) => {
+    // 태극귀인은 일간 기준 + 년지/일지 위치에서만 성립
+    (["년", "일"] as PillarPos[]).forEach((pos) => {
       if (taeTargets.includes(branchByPos[pos])) {
         pushOnce("taegeuk", pos);
       }

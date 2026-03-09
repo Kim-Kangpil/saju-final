@@ -28,7 +28,7 @@ import { getTenGodAbilityParagraph, getTenGodAbilityCardsData } from "../../data
 import { getRelationshipStyleParagraph, getRelationshipStyleVisualData } from "../../data/relationshipStyleAnalysis";
 import { getAncestorParentParagraph, getAncestorParentVisualData } from "../../data/ancestorParentFortune";
 import { getCharismaSocialInfluenceParagraph, getCharismaVisualData } from "../../data/charismaSocialInfluence";
-import { getCharmPointParagraph } from "../../data/charmPointAnalysis";
+import { getCharmPointParagraph, getCharmVisualData } from "../../data/charmPointAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
 import Head from 'next/head';
@@ -42,6 +42,7 @@ import { TenGodAbilityCards } from "../../components/TenGodAbilityCards";
 import { RelationshipBalanceCard } from "../../components/RelationshipBalanceCard";
 import { FamilyDocumentCard } from "../../components/FamilyDocumentCard";
 import { CharismaOrbitCard } from "../../components/CharismaOrbitCard";
+import { CharmPerfumeCard } from "../../components/CharmPerfumeCard";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -1066,12 +1067,28 @@ export default function Page() {
         );
         setRelationsAnalysis(relationsResult);
 
-        const specialResult = analyzeSpecialStars(
-          result.day.jiji.hanja,
-          result.year.jiji.hanja,
-          result.month.jiji.hanja,
-          result.hour.jiji.hanja
-        );
+        const specialResult = analyzeSpecialStars(result.day.cheongan.hanja, [
+          {
+            pos: "년",
+            stem: result.year.cheongan.hanja,
+            branch: result.year.jiji.hanja,
+          },
+          {
+            pos: "월",
+            stem: result.month.cheongan.hanja,
+            branch: result.month.jiji.hanja,
+          },
+          {
+            pos: "일",
+            stem: result.day.cheongan.hanja,
+            branch: result.day.jiji.hanja,
+          },
+          {
+            pos: "시",
+            stem: result.hour.cheongan.hanja,
+            branch: result.hour.jiji.hanja,
+          },
+        ]);
         setSpecialStarsAnalysis(specialResult);
 
         const todayResult = analyzeTodayFortune(hanjaToElement(dayStem), selectedChar);
@@ -1469,6 +1486,11 @@ export default function Page() {
   const charismaVisualData = useMemo(() => {
     if (!result) return null;
     return getCharismaVisualData(result, selectedChar);
+  }, [result, selectedChar]);
+
+  const charmVisualData = useMemo(() => {
+    if (!result) return null;
+    return getCharmVisualData(result, selectedChar);
   }, [result, selectedChar]);
 
   async function requestInterpretation() {
@@ -2618,6 +2640,9 @@ export default function Page() {
                                                   )}
                                                   {c.id === "relation_charisma" && charismaVisualData && (
                                                     <CharismaOrbitCard data={charismaVisualData} />
+                                                  )}
+                                                  {c.id === "relation_hapchung" && charmVisualData && (
+                                                    <CharmPerfumeCard data={charmVisualData} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

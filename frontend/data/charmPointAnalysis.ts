@@ -339,3 +339,199 @@ export function getCharmPointParagraph(
   }
   return out.trim();
 }
+
+// =========================
+// 시각화용 데이터 (향수 카드)
+// =========================
+
+export interface CharmNoteItem {
+  keyword: string;
+  desc: string;
+}
+
+export interface CharmNote {
+  grade: "TOP" | "MIDDLE" | "BASE";
+  label: string;
+  color: string;
+  items: CharmNoteItem[];
+}
+
+export interface CharmVisualData {
+  name: string;
+  subtitle: string;
+  summary: string;
+  notes: CharmNote[];
+  strength: string;
+}
+
+const KEYWORD_POOL: Record<
+  "TOP" | "MIDDLE" | "BASE",
+  CharmNoteItem[]
+> = {
+  TOP: [
+    { keyword: "강렬한 첫인상", desc: "처음 만나는 순간부터 강렬한 인상을 남겨요." },
+    { keyword: "은은한 품격", desc: "처음 봤을 때부터 눈길을 끄는 외적 끌림이 있어요." },
+    { keyword: "조용한 존재감", desc: "말없이 있어도 공간을 채우는 분위기가 있어요." },
+    { keyword: "자유로운 에너지", desc: "활발하고 밝은 첫인상으로 사람들을 편하게 해요." },
+    { keyword: "신비로운 분위기", desc: "쉽게 파악되지 않는 묘한 매력이 있어요." },
+  ],
+  MIDDLE: [
+    { keyword: "편안한 온기", desc: "함께할수록 마음이 자연스럽게 열려요." },
+    { keyword: "재치있는 유머", desc: "가까워지면 의외의 유머감각이 빛나요." },
+    { keyword: "깊은 공감력", desc: "상대의 감정을 잘 읽고 맞춰주는 능력이 있어요." },
+    { keyword: "독특한 개성", desc: "가까워질수록 독창적인 면이 매력적으로 느껴져요." },
+    { keyword: "포용적 따뜻함", desc: "사람들이 앞에서 기대고 싶어지는 포용력이 있어요." },
+  ],
+  BASE: [
+    { keyword: "깊은 신뢰감", desc: "알면 알수록 믿음이 가는 사람으로 기억돼요." },
+    { keyword: "자연스러운 연결", desc: "억지 없이도 관계가 자연스럽게 형성돼요." },
+    { keyword: "오래가는 여운", desc: "헤어지고 나서도 계속 생각나는 매력이 있어요." },
+    { keyword: "한결같은 진심", desc: "시간이 지나도 변하지 않는 진심이 느껴져요." },
+    { keyword: "잊히지 않는 존재", desc: "한번 인연이 되면 오래 기억되는 타입이에요." },
+  ],
+};
+
+function pickFromPool(
+  level: "TOP" | "MIDDLE" | "BASE",
+  tags: string[],
+  count: number
+): CharmNoteItem[] {
+  const pool = KEYWORD_POOL[level];
+  if (!pool.length || count <= 0) return [];
+  const chosen: CharmNoteItem[] = [];
+  // 우선 태그에 맞는 키워드 우선 선택
+  for (const t of tags) {
+    const found = pool.find((p) => p.keyword === t);
+    if (found && !chosen.includes(found)) {
+      chosen.push(found);
+      if (chosen.length >= count) return chosen;
+    }
+  }
+  // 남는 자리는 순서대로 채우기
+  for (const p of pool) {
+    if (!chosen.includes(p)) {
+      chosen.push(p);
+      if (chosen.length >= count) break;
+    }
+  }
+  return chosen;
+}
+
+export function getCharmVisualData(
+  pillars: SajuPillarsForCharm,
+  tone: CharmToneKey
+): CharmVisualData | null {
+  const dayBranch = pillars.day?.jiji?.hanja?.trim?.()?.[0] ?? "";
+  const count = countTenGods(pillars);
+
+  const sikTotal = (count["식신"] ?? 0) + (count["상관"] ?? 0);
+  const jaeTotal = (count["편재"] ?? 0) + (count["정재"] ?? 0);
+  const gwanTotal = (count["정관"] ?? 0) + (count["편관"] ?? 0);
+  const inTotal = (count["정인"] ?? 0) + (count["편인"] ?? 0);
+
+  const dohwaS = hasDohwaStem(pillars, dayBranch);
+  const dohwaZ = hasDohwaBranch(pillars, dayBranch);
+  const stemHe = hasStemHe(pillars);
+  const zhiHe = hasZhiHe(pillars);
+
+  const core = pickCoreSentence(count, pillars, dayBranch);
+
+  // 향 이름/서브타이틀
+  let name = "따뜻한 포용향";
+  let subtitle = "Warm Embrace";
+  if (core.includes("힐링")) {
+    name = "편안한 힐링향";
+    subtitle = "Healing Comfort";
+  } else if (core.includes("강렬한 개성")) {
+    name = "개성 스파크향";
+    subtitle = "Electric Spark";
+  } else if (core.includes("사교적 매력")) {
+    name = "소셜 글로우향";
+    subtitle = "Social Glow";
+  } else if (core.includes("신뢰형 매력")) {
+    name = "신뢰 스톤향";
+    subtitle = "Steady Stone";
+  } else if (core.includes("품격이 느껴지는 아우라")) {
+    name = "노블 오라향";
+    subtitle = "Noble Aura";
+  } else if (core.includes("치명적 카리스마")) {
+    name = "페이탈 카리스마향";
+    subtitle = "Fatal Charisma";
+  } else if (core.includes("따뜻한 매력")) {
+    name = "따뜻한 포용향";
+    subtitle = "Warm Embrace";
+  } else if (core.includes("신비로운 매력")) {
+    name = "미스틱 문향";
+    subtitle = "Mystic Moon";
+  }
+
+  // 상단 요약 문장
+  const summary =
+    tone === "fun"
+      ? "사람들이 자연스럽게 마음을 열게 되는 매력 조합이야."
+      : tone === "empathy"
+        ? "사람들이 자연스럽게 마음을 열게 만드는 따뜻한 매력이 있어요."
+        : "사람들이 자연스럽게 마음을 열게 되는 매력 조합입니다.";
+
+  // TOP / MIDDLE / BASE 노트 태그 결정
+  const topTags: string[] = [];
+  if (dohwaS || dohwaZ) topTags.push("강렬한 첫인상", "신비로운 분위기");
+  else if (gwanTotal >= 2) topTags.push("은은한 품격", "조용한 존재감");
+  else if (sikTotal >= 2 || jaeTotal >= 2) topTags.push("자유로운 에너지", "강렬한 첫인상");
+
+  const middleTags: string[] = [];
+  if (inTotal >= 2) middleTags.push("편안한 온기", "포용적 따뜻함");
+  if (sikTotal >= 2) middleTags.push("재치있는 유머", "독특한 개성");
+  if (!middleTags.length) middleTags.push("깊은 공감력");
+
+  const baseTags: string[] = [];
+  if (inTotal >= 2 || jaeTotal >= 2) baseTags.push("깊은 신뢰감", "한결같은 진심");
+  baseTags.push("오래가는 여운");
+
+  const notes: CharmNote[] = [
+    {
+      grade: "TOP",
+      label: "첫인상 노트",
+      color: "#E8C87A",
+      items: pickFromPool("TOP", topTags, 2),
+    },
+    {
+      grade: "MIDDLE",
+      label: "가까워질수록 노트",
+      color: "#A78BD4",
+      items: pickFromPool("MIDDLE", middleTags, 2),
+    },
+    {
+      grade: "BASE",
+      label: "오래 남는 노트",
+      color: "#7EB8A0",
+      items: pickFromPool("BASE", baseTags, 2),
+    },
+  ];
+
+  // 핵심 매력 문장
+  let strength =
+    tone === "fun"
+      ? "겉에서 보이는 매력과, 가까워질수록 드러나는 깊은 끌림이 동시에 작동하는 타입이야."
+      : tone === "empathy"
+        ? "겉에서 보이는 매력과, 가까워질수록 드러나는 깊은 끌림이 동시에 작동하는 타입이에요."
+        : "겉으로 보이는 매력과, 가까워질수록 드러나는 깊은 끌림이 동시에 작동하는 구조입니다.";
+
+  if (dohwaS || dohwaZ) {
+    strength =
+      tone === "fun"
+        ? "외적 끌림이 강한 만큼, 가까워질수록 따뜻함과 신뢰가 더해지는 조합이야."
+        : tone === "empathy"
+          ? "외적 끌림이 강한 만큼, 가까워질수록 따뜻함과 신뢰가 더해지는 조합이에요."
+          : "외적 끌림이 강한 만큼, 가까워질수록 따뜻함과 신뢰가 더해지는 조합입니다.";
+  }
+
+  return {
+    name,
+    subtitle,
+    summary,
+    notes,
+    strength,
+  };
+}
+

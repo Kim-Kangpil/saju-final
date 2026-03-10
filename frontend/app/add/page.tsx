@@ -727,7 +727,6 @@ export default function Page() {
   const [guiinAnalysis, setGuiinAnalysis] = useState<string | null>(null);
   const [healthAnalysis, setHealthAnalysis] = useState<string | null>(null);
   const [luckyItems, setLuckyItems] = useState<string | null>(null);
-  const [healthAnalysis, setHealthAnalysis] = useState<string | null>(null);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
   useEffect(() => {
     if (!loading) return;
@@ -1237,26 +1236,6 @@ export default function Page() {
           tone: selectedChar,
         };
         setLuckyItems(getLuckyItemParagraph(luckyParams));
-
-        // 체질적인 건강 기운
-        const healthParams: HealthAnalysisParams = {
-          dayStem,
-          stems: [
-            result.year.cheongan.hanja,
-            result.month.cheongan.hanja,
-            result.day.cheongan.hanja,
-            result.hour.cheongan.hanja,
-          ] as [string, string, string, string],
-          branches: [
-            result.year.jiji.hanja,
-            result.month.jiji.hanja,
-            result.day.jiji.hanja,
-            result.hour.jiji.hanja,
-          ] as [string, string, string, string],
-          tone: selectedChar,
-          tenGod,
-        };
-        setHealthAnalysis(getHealthConstitutionParagraph(healthParams));
 
         const natureResult = NATURE_ANALYSIS.analyze(
           dayStem,

@@ -903,23 +903,19 @@ export default function Page() {
     alert('로그아웃되었습니다.');
   };
 
-  // 아코디언에는 재력과 사회적 무기(4개 항목)만 표시
+  // 아코디언: 여러 개 동시 오픈 가능, 자동 스크롤 없음, 모바일 터치·시각 강조
   const megaOrder: MegaKey[] = ["identity", "talent", "relation", "insight", "solution"];
-  const [openMega, setOpenMega] = useState<MegaKey | null>("identity");
-  const megaSectionRefs = useRef<Record<MegaKey, HTMLDivElement | null>>({
-    identity: null, talent: null, relation: null, insight: null, solution: null,
-  });
+  const [openMegaSet, setOpenMegaSet] = useState<Set<MegaKey>>(new Set(["identity"]));
+  const toggleMega = (k: MegaKey) => {
+    setOpenMegaSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+  };
   type GateStep = "idle" | "showSaju" | "needAuth" | "unlocked";
   const [gateStep, setGateStep] = useState<GateStep>("idle");
-
-  // 아코디언 열릴 때 해당 섹션으로 스크롤 (첫 문단이 보이도록)
-  useEffect(() => {
-    if (!openMega) return;
-    const t = setTimeout(() => {
-      megaSectionRefs.current[openMega]?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 350);
-    return () => clearTimeout(t);
-  }, [openMega]);
 
   useEffect(() => {
     if (isLoggedIn && gateStep === "needAuth") {
@@ -2583,18 +2579,26 @@ export default function Page() {
                           <div className="space-y-3">
                             {megaOrder.map((k) => {
                               const sec = MEGA_SECTIONS[k];
-                              const isOpen = openMega === k;
+                              const isOpen = openMegaSet.has(k);
                               const cards = megaCards[k] || [];
 
                               return (
                                 <div
                                   key={k}
-                                  ref={(el) => { megaSectionRefs.current[k] = el; }}
-                                  className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none"
+                                  className={cn(
+                                    "border-4 rounded-2xl overflow-hidden shadow-none transition-colors",
+                                    isOpen
+                                      ? "border-[#7a9b7c] bg-[#f8faf8] shadow-[0_2px_8px_rgba(85,107,47,0.12)]"
+                                      : "border-[#adc4af] bg-white"
+                                  )}
                                 >
                                   <button
-                                    onClick={() => setOpenMega(isOpen ? null : k)}
-                                    className="w-full p-3 sm:p-4 flex items-center justify-between hover:bg-[#f0f5f1] transition-colors"
+                                    type="button"
+                                    onClick={() => toggleMega(k)}
+                                    className={cn(
+                                      "w-full min-h-[48px] sm:min-h-[52px] p-3 sm:p-4 flex items-center justify-between transition-colors touch-manipulation",
+                                      isOpen ? "bg-[#eef4ee]" : "hover:bg-[#f0f5f1]"
+                                    )}
                                   >
                                     <p className="text-[10px] sm:text-[11px] font-bold text-[#556b2f] flex items-center gap-2">
                                       <span className="text-sm sm:text-base">{sec.icon}</span>
@@ -2602,22 +2606,26 @@ export default function Page() {
                                     </p>
                                     <motion.span
                                       animate={{ rotate: isOpen ? 180 : 0 }}
-                                      className="text-[10px] sm:text-xs text-[#556b2f]"
+                                      transition={{ duration: 0.18 }}
+                                      className="shrink-0 w-6 h-6 flex items-center justify-center text-[#556b2f]"
+                                      aria-hidden
                                     >
-                                      ▼
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#556b2f]" aria-hidden>
+                                        <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
                                     </motion.span>
                                   </button>
 
-                                  <AnimatePresence>
+                                  <AnimatePresence initial={false}>
                                     {isOpen && (
                                       <motion.div
                                         initial={{ height: 0, opacity: 0 }}
                                         animate={{ height: "auto", opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.25 }}
+                                        transition={{ duration: 0.18, ease: "easeOut" }}
                                         className="overflow-hidden"
                                       >
-                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0">
+                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0 max-h-[70vh] overflow-y-auto overscroll-contain">
                                           {cards.map((c) => (
                                             <div
                                               key={c.id}

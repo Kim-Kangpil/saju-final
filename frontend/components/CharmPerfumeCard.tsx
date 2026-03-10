@@ -161,7 +161,7 @@ export function CharmPerfumeCard({ data }: { data: CharmVisualData }) {
                 marginBottom: "6px",
               }}
             >
-              CHARM · PARFUM · EDITION
+              CHARM · PERFUME · EDITION
             </div>
             <div
               style={{

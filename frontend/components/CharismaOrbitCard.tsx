@@ -1,55 +1,40 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import type { CharismaVisualData } from "../data/charismaSocialInfluence";
 
-const INIT_ANGLES = [40, 160, 250, 340];
-const SPEEDS = [0.18, 0.12, 0.15, 0.1];
-
-const LEVEL_CONFIG: Record<string, { label: string; desc: string }> = {
-  S: { label: "S", desc: "압도적" },
-  A: { label: "A", desc: "강함" },
-  B: { label: "B", desc: "있음" },
-  C: { label: "C", desc: "보통" },
-  D: { label: "D", desc: "잠재" },
-  F: { label: "F", desc: "잠재" },
+const AXIS_SHORT_DESC: Record<string, string> = {
+  presence: "사람들이 자연스럽게 주목하게 되는 힘",
+  expression: "생각과 감정을 전달하고 퍼뜨리는 힘",
+  insight: "상황의 핵심을 읽고 납득시키는 힘",
 };
 
 export function CharismaOrbitCard({ data }: { data: CharismaVisualData }) {
-  const [angles, setAngles] = useState<number[]>(INIT_ANGLES);
-  const [selected, setSelected] = useState<number | null>(null);
   const [animate, setAnimate] = useState(false);
-  const rafRef = useRef<number | null>(null);
-  const anglesRef = useRef<number[]>(INIT_ANGLES);
-  const cx = 160;
-  const cy = 160;
+  const [selected, setSelected] = useState<number | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setAnimate(true), 300);
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => {
-    if (!animate) return;
-    const tick = () => {
-      anglesRef.current = anglesRef.current.map((a, i) => (a + SPEEDS[i]) % 360);
-      setAngles([...anglesRef.current]);
-      rafRef.current = window.requestAnimationFrame(tick);
-    };
-    rafRef.current = window.requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current != null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, [animate]);
+  const W = 260;
+  const H = 260;
+  const V_INSIGHT = { x: W / 2, y: 40 };
+  const V_PRESENCE = { x: 44, y: H - 48 };
+  const V_EXPRESSION = { x: W - 44, y: H - 48 };
 
-  const getPos = (angle: number, orbit: number) => {
-    const rad = (angle * Math.PI) / 180;
-    return {
-      x: cx + orbit * Math.cos(rad),
-      y: cy + orbit * Math.sin(rad),
-    };
+  const p = data.scores?.presence ?? 0;
+  const e = data.scores?.expression ?? 0;
+  const i = data.scores?.insight ?? 0;
+  const sum = p + e + i;
+  const wp = sum > 0 ? p / sum : 1 / 3;
+  const we = sum > 0 ? e / sum : 1 / 3;
+  const wi = sum > 0 ? i / sum : 1 / 3;
+
+  const dot = {
+    x: V_PRESENCE.x * wp + V_EXPRESSION.x * we + V_INSIGHT.x * wi,
+    y: V_PRESENCE.y * wp + V_EXPRESSION.y * we + V_INSIGHT.y * wi,
   };
 
   return (
@@ -57,402 +42,147 @@ export function CharismaOrbitCard({ data }: { data: CharismaVisualData }) {
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[360px]"
       style={{ fontFamily: "'Georgia', serif" }}
     >
-      {/* 헤더 */}
-      <div style={{ textAlign: "center", marginBottom: "16px" }}>
-        <div
-          style={{
-            fontSize: "10px",
-            letterSpacing: "3px",
-            color: "#6B6A8A",
-            textTransform: "uppercase",
-            marginBottom: "6px",
-          }}
-        >
-          👑 카리스마 분석
-        </div>
-        <div
-          style={{
-            fontSize: "16px",
-            fontWeight: 700,
-            color: "#3d3a4a",
-            letterSpacing: "-0.2px",
-          }}
-        >
-          카리스마와 사회적 영향력
-        </div>
+      {/* 1. 제목 + 한 줄 설명 */}
+      <div className="text-center mb-4">
+        <h3 className="text-[15px] font-bold text-[#3d3a4a] tracking-tight mb-1">
+          나의 영향력 지도
+        </h3>
+        <p className="text-[11px] text-[#6B6A8A] leading-relaxed px-1">
+          존재감, 표현력, 통찰력이 어떤 비율로 작동하는지 보여주는 지도예요.
+        </p>
       </div>
 
-      {/* 궤도 영역 */}
+      {/* 2. 유형 카드 */}
       <div
+        className="rounded-xl border-2 border-[#adc4af] bg-[#f8faf8] p-4 mb-4"
+        style={{ borderColor: "rgba(167,139,212,0.4)" }}
+      >
+        <div className="text-[13px] font-bold text-[#3d3a4a] mb-1.5">
+          {data.type}
+        </div>
+        <p className="text-[11px] text-[#5c5c7a] leading-relaxed">
+          {data.typeDesc}
+        </p>
+      </div>
+
+      {/* 3. 삼각형 */}
+      <div
+        className="relative mx-auto mb-4"
         style={{
-          position: "relative",
-          width: "320px",
-          height: "320px",
-          margin: "0 auto 16px",
+          width: `${W}px`,
+          height: `${H}px`,
+          maxWidth: "100%",
           background: "#f5f7f4",
-          borderRadius: "24px",
+          borderRadius: "20px",
           border: "1px solid rgba(107,138,122,0.35)",
         }}
       >
         <svg
-          width="320"
-          height="320"
-          viewBox="0 0 320 320"
+          width={W}
+          height={H}
+          viewBox={`0 0 ${W} ${H}`}
           style={{ position: "absolute", inset: 0 }}
         >
           <defs>
-            <radialGradient id="coreGlow" cx="50%" cy="50%">
-              <stop offset="0%" stopColor="#A78BD4" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#A78BD4" stopOpacity="0" />
+            <radialGradient id="dotGlow" cx="50%" cy="50%">
+              <stop offset="0%" stopColor="#556b2f" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#556b2f" stopOpacity="0" />
             </radialGradient>
           </defs>
 
-          {/* 궤도 링 */}
-          {data.axes.map((ax, i) => (
-            <circle
-              key={ax.key}
-              cx={cx}
-              cy={cy}
-              r={ax.orbit}
-              fill="none"
-              stroke={`${ax.color}22`}
-              strokeWidth="1"
-              strokeDasharray="4 6"
-            />
-          ))}
+          <polygon
+            points={`${V_PRESENCE.x},${V_PRESENCE.y} ${V_EXPRESSION.x},${V_EXPRESSION.y} ${V_INSIGHT.x},${V_INSIGHT.y}`}
+            fill="rgba(167,139,212,0.05)"
+            stroke="rgba(107,138,122,0.4)"
+            strokeWidth="1.2"
+          />
 
-          {/* 중심 글로우 */}
-          <circle cx={cx} cy={cy} r={44} fill="url(#coreGlow)" />
+          <text x={V_INSIGHT.x} y={V_INSIGHT.y - 12} textAnchor="middle" fontSize="10" fill="#6B6A8A">
+            통찰력
+          </text>
+          <text x={V_PRESENCE.x - 8} y={V_PRESENCE.y + 14} textAnchor="start" fontSize="10" fill="#6B6A8A">
+            존재감
+          </text>
+          <text x={V_EXPRESSION.x + 8} y={V_EXPRESSION.y + 14} textAnchor="end" fontSize="10" fill="#6B6A8A">
+            표현력
+          </text>
 
-          {/* 행성들 */}
-          {data.axes.map((ax, i) => {
-            const pos = getPos(angles[i], ax.orbit);
-            const isSelected = selected === i;
-            const half = ax.size / 2;
-            const levelConf = LEVEL_CONFIG[ax.level] ?? LEVEL_CONFIG["C"];
-
-            return (
-              <g
-                key={ax.key}
-                style={{ cursor: "pointer" }}
-                onClick={() => setSelected(isSelected ? null : i)}
-              >
-                {/* 글로우 */}
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={half + 6}
-                  fill={ax.color}
-                  opacity={isSelected ? 0.25 : 0.12}
-                />
-
-                {/* 행성 원 */}
-                <circle
-                  cx={pos.x}
-                  cy={pos.y}
-                  r={half}
-                  fill="#ffffff"
-                  stroke={ax.color}
-                  strokeWidth={isSelected ? 2 : 1.2}
-                />
-
-                {/* 이모지 */}
-                <text
-                  x={pos.x}
-                  y={pos.y - 6}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="14"
-                >
-                  {ax.emoji}
-                </text>
-
-                {/* 레벨 */}
-                <text
-                  x={pos.x}
-                  y={pos.y + 10}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="11"
-                  fontWeight={800}
-                  fill={ax.color}
-                  fontFamily="Georgia, serif"
-                >
-                  {levelConf.label}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* 중심 코어 */}
-          <g>
-            <circle
-              cx={cx}
-              cy={cy}
-              r={32}
-              fill="#ffffff"
-              stroke="#A78BD444"
-              strokeWidth={1.5}
-            />
-            <text
-              x={cx}
-              y={cy - 4}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="20"
-            >
-              👑
-            </text>
-            <text
-              x={cx}
-              y={cy + 14}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize="9"
-              fontWeight={700}
-              fill="#A78BD4"
-              letterSpacing="1"
-            >
-              {data.type}
-            </text>
-          </g>
+          <circle
+            cx={dot.x}
+            cy={dot.y}
+            r={14}
+            fill="url(#dotGlow)"
+            opacity={animate ? 0.7 : 0}
+          />
+          <circle
+            cx={dot.x}
+            cy={dot.y}
+            r={5}
+            fill="#ffffff"
+            stroke="#556b2f"
+            strokeWidth="1.5"
+            opacity={animate ? 1 : 0}
+          />
         </svg>
       </div>
 
-      {/* 선택된 축 상세 또는 2x2 요약 */}
-      {selected !== null ? (
-        <div
-          style={{
-            width: "100%",
-            background: "#f5f7f4",
-            borderRadius: "20px",
-            border: `1px solid ${data.axes[selected].color}44`,
-            padding: "16px 18px",
-            marginBottom: "10px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              marginBottom: "12px",
-            }}
-          >
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                background: `${data.axes[selected].color}15`,
-                border: `1px solid ${data.axes[selected].color}55`,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "20px",
-                flexShrink: 0,
-              }}
-            >
-              {data.axes[selected].emoji}
-            </div>
-            <div style={{ flex: 1 }}>
+      {/* 4. 3축 바 */}
+      <div className="space-y-2 mb-4">
+        {data.axes.map((ax) => (
+          <div key={ax.key} className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-[#3d3a4a] w-16 shrink-0">
+              {ax.label}
+            </span>
+            <div className="flex-1 h-2 bg-[#e2e8f0] rounded-full overflow-hidden">
               <div
+                className="h-full rounded-full transition-all duration-500"
                 style={{
-                  fontSize: "14px",
-                  fontWeight: 700,
-                  color: "#3d3a4a",
-                  marginBottom: "4px",
+                  width: `${ax.value}%`,
+                  backgroundColor: ax.color,
                 }}
-              >
-                {data.axes[selected].label}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    color: data.axes[selected].color,
-                    background: `${data.axes[selected].color}18`,
-                    padding: "2px 8px",
-                    borderRadius: "20px",
-                  }}
-                >
-                  {LEVEL_CONFIG[data.axes[selected].level]?.label ?? data.axes[selected].level}등급
-                </span>
-                <span
-                  style={{
-                    fontSize: "11px",
-                    color: "#6B6A8A",
-                  }}
-                >
-                  {LEVEL_CONFIG[data.axes[selected].level]?.desc ?? "보통"}
-                </span>
-              </div>
+              />
             </div>
-            <div style={{ width: "70px" }}>
-              <div
-                style={{
-                  height: "5px",
-                  background: "#e0e4f0",
-                  borderRadius: "99px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${data.axes[selected].value}%`,
-                    background: data.axes[selected].color,
-                    borderRadius: "99px",
-                    boxShadow: `0 0 8px ${data.axes[selected].color}55`,
-                  }}
-                />
-              </div>
-              <div
-                style={{
-                  fontSize: "10px",
-                  color: data.axes[selected].color,
-                  textAlign: "right",
-                  marginTop: "3px",
-                }}
-              >
-                {data.axes[selected].value}
-              </div>
-            </div>
+            <span className="text-[11px] font-bold shrink-0" style={{ color: ax.color, minWidth: 28 }}>
+              {ax.value}
+            </span>
           </div>
-          <div
-            style={{
-              fontSize: "12px",
-              color: "#5c5c7a",
-              lineHeight: 1.8,
-            }}
-          >
-            {data.axes[selected].desc}
-          </div>
-          <div
-            onClick={() => setSelected(null)}
-            style={{
-              marginTop: "10px",
-              textAlign: "center",
-              fontSize: "10px",
-              color: "#6B6A8A99",
-              cursor: "pointer",
-              letterSpacing: "1px",
-            }}
-          >
-            닫기
-          </div>
-        </div>
-      ) : (
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            gap: "8px",
-            flexWrap: "wrap",
-            marginBottom: "10px",
-          }}
-        >
-          {data.axes.map((ax, i) => (
-            <div
-              key={ax.key}
-              onClick={() => setSelected(i)}
-              style={{
-                flex: "1 1 calc(50% - 4px)",
-                background: "#f5f7f4",
-                border: `1px solid ${ax.color}33`,
-                borderRadius: "16px",
-                padding: "12px 12px 10px",
-                cursor: "pointer",
-                opacity: animate ? 1 : 0,
-                transform: animate ? "translateY(0)" : "translateY(6px)",
-                transition: `opacity 0.4s ${0.35 + i * 0.08}s, transform 0.4s ${0.35 + i * 0.08}s`,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "6px",
-                }}
-              >
-                <span style={{ fontSize: "16px" }}>{ax.emoji}</span>
-                <span
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 800,
-                    color: ax.color,
-                    background: `${ax.color}18`,
-                    padding: "1px 7px",
-                    borderRadius: "20px",
-                  }}
-                >
-                  {LEVEL_CONFIG[ax.level]?.label ?? ax.level}
-                </span>
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "#3d3a4a",
-                  marginBottom: "4px",
-                }}
-              >
-                {ax.label}
-              </div>
-              <div
-                style={{
-                  height: "3px",
-                  background: "#e0e4f0",
-                  borderRadius: "99px",
-                  overflow: "hidden",
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${ax.value}%`,
-                    background: ax.color,
-                    borderRadius: "99px",
-                    boxShadow: `0 0 6px ${ax.color}55`,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
+      </div>
+
+      {/* 5. 한 줄 해석 */}
+      {data.oneLiner && (
+        <p className="text-[11px] text-[#5c5c7a] leading-relaxed text-center mb-4 px-1">
+          {data.oneLiner}
+        </p>
       )}
 
-      {/* 요약 */}
-      <div
-        style={{
-          width: "100%",
-          background: "#f5f7f4",
-          border: "1px solid rgba(167,139,212,0.35)",
-          borderRadius: "16px",
-          padding: "12px 16px",
-          fontSize: "12px",
-          color: "#5c5c7a",
-          lineHeight: 1.7,
-          textAlign: "center",
-        }}
-      >
-        {data.summary}
+      {/* 6. 축 설명 카드 3개 */}
+      <div className="grid grid-cols-1 gap-2 mb-3">
+        {data.axes.map((ax, i) => (
+          <div
+            key={ax.key}
+            onClick={() => setSelected(selected === i ? null : i)}
+            className="rounded-xl border p-3 cursor-pointer transition-colors"
+            style={{
+              borderColor: `${ax.color}44`,
+              backgroundColor: selected === i ? `${ax.color}12` : "#f8faf8",
+            }}
+          >
+            <div className="text-[11px] font-bold mb-0.5" style={{ color: ax.color }}>
+              {ax.label}
+            </div>
+            <p className="text-[10px] text-[#6B6A8A] leading-snug">
+              {AXIS_SHORT_DESC[ax.key] ?? ax.desc.slice(0, 40)}
+            </p>
+            {selected === i && (
+              <p className="text-[10px] text-[#5c5c7a] mt-2 leading-relaxed">
+                {ax.desc}
+              </p>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div
-        style={{
-          marginTop: "10px",
-          fontSize: "10px",
-          color: "#6B6A8A99",
-          letterSpacing: "1px",
-          textAlign: "center",
-        }}
-      >
-        행성을 탭하면 영향력이 드러나는 방식을 볼 수 있어요
-      </div>
     </div>
   );
 }
-

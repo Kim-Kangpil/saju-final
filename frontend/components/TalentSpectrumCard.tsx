@@ -65,16 +65,16 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
             gap: "8px",
           }}
         >
-          {/* 왼쪽 라벨 */}
+          {/* 왼쪽 라벨 — 세로쓰기, 회전 없이 위→아래로 읽히게 */}
           <div
             style={{
               fontSize: "9px",
               color: "#5c6b5c",
               letterSpacing: "0.5px",
               writingMode: "vertical-rl",
-              transform: "rotate(180deg)",
               whiteSpace: "nowrap",
-              minWidth: "12px",
+              minWidth: "14px",
+              textAlign: "center",
             }}
           >
             ◀ {axes.left}

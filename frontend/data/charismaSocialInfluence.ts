@@ -1,8 +1,18 @@
 /**
- * 카리스마·사회적 영향력 (최종판).
- * STEP 1 십성 유무 → STEP 2 강도(천간 100% / 지지 70%, 충 -1 / 극 -0.5) → STEP 3 3축 점수
- * → STEP 4 사회적 영향력 지수 (3축 평균) → STEP 5 유형 분류 → STEP 6 해석 텍스트 → STEP 7 보정 문장.
- * 비겁은 일간 제외 추가 비겁 글자만 반영. ~600자.
+ * 카리스마·사회적 영향력 (영향력 삼각형 최종판).
+ *
+ * 고정 축: 존재감 / 표현력 / 통찰력
+ * - 존재감: 편관 2, 정관 1, 겁재 2, 비견 1
+ * - 표현력: 상관 2, 식신 1, 편재 2, 정재 1
+ * - 통찰력: 편인 2, 정인 1, 상관 2, 식신 1
+ *
+ * 가중치: 천간 1.0 / 지지 0.7
+ * 감점: 충 -1 / 극 -0.5
+ * 비겁 반영: 일간 본체 제외, 추가로 들어온 비견/겁재만 반영
+ *
+ * 레벨: S(4.0+) / A(3.0+) / B(2.0+) / C(1.0+) / D(>0) / F(0)
+ * 유형: 전방위형, 리더형 인플루언서, 권위 전문가형, 지식 인플루언서형, 리더형, 인플루언서형, 전문가형, 균형형, 잠재형
+ * 조합형 규칙: 1위 축 기준, 2위가 1위의 80% 이상이면 조합형으로 분류
  */
 
 export type CharismaToneKey = "empathy" | "reality" | "fun";
@@ -129,11 +139,11 @@ function collectPositions(pillars: SajuPillarsForCharisma, dayStem: string): Pos
 }
 
 // 축별 기본 점수 (십성 → 점수)
-const CHARISMA_BASE: Record<string, number> = { 편관: 2, 정관: 1, 겁재: 2, 비견: 1 };
-const PUBLIC_BASE: Record<string, number> = { 상관: 2, 식신: 1, 편재: 2, 정재: 1 };
-const INTELLECT_BASE: Record<string, number> = { 편인: 2, 정인: 1, 상관: 2, 식신: 1 };
+const PRESENCE_BASE: Record<string, number> = { 편관: 2, 정관: 1, 겁재: 2, 비견: 1 };
+const EXPRESSION_BASE: Record<string, number> = { 상관: 2, 식신: 1, 편재: 2, 정재: 1 };
+const INSIGHT_BASE: Record<string, number> = { 편인: 2, 정인: 1, 상관: 2, 식신: 1 };
 
-type Axis3Key = "charisma" | "public" | "intellect";
+export type Axis3Key = "presence" | "expression" | "insight";
 type LevelKey = "S" | "A" | "B" | "C" | "D" | "F";
 
 function scoreAxis(positions: Pos[], baseMap: Record<string, number>): { score: number; hadChongKe: boolean } {
@@ -165,107 +175,281 @@ function scoreToLevel(score: number): LevelKey {
   return "F";
 }
 
-// STEP 3: 3축 점수 계산 (식상은 대중·지적 양쪽에 반영)
+// STEP 3: 3축 점수 계산
 function computeThreeAxisScores(positions: Pos[]): {
-  charisma: number;
-  public: number;
-  intellect: number;
-  charismaChongKe: boolean;
-  publicChongKe: boolean;
-  intellectChongKe: boolean;
+  presence: number;
+  expression: number;
+  insight: number;
+  presenceChongKe: boolean;
+  expressionChongKe: boolean;
+  insightChongKe: boolean;
 } {
-  const c = scoreAxis(positions, CHARISMA_BASE);
-  const pub = scoreAxis(positions, PUBLIC_BASE);
-  const int = scoreAxis(positions, INTELLECT_BASE);
+  const p = scoreAxis(positions, PRESENCE_BASE);
+  const e = scoreAxis(positions, EXPRESSION_BASE);
+  const i = scoreAxis(positions, INSIGHT_BASE);
   return {
-    charisma: c.score,
-    public: pub.score,
-    intellect: int.score,
-    charismaChongKe: c.hadChongKe,
-    publicChongKe: pub.hadChongKe,
-    intellectChongKe: int.hadChongKe,
+    presence: p.score,
+    expression: e.score,
+    insight: i.score,
+    presenceChongKe: p.hadChongKe,
+    expressionChongKe: e.hadChongKe,
+    insightChongKe: i.hadChongKe,
   };
 }
 
-// STEP 5 유형 분류
-function getType(levels: Record<Axis3Key, LevelKey>): { lead: Record<CharismaToneKey, string> } {
-  const C = levels.charisma;
-  const P = levels.public;
-  const I = levels.intellect;
+function levelText(level: LevelKey): string {
+  if (level === "S") return "매우 강함";
+  if (level === "A") return "강한 편";
+  if (level === "B") return "분명히 있음";
+  if (level === "C") return "보통";
+  if (level === "D") return "잠재된 편";
+  return "거의 드러나지 않음";
+}
+
+function classifyType(
+  scores: Record<Axis3Key, number>,
+  levels: Record<Axis3Key, LevelKey>
+): { type: string; lead: Record<CharismaToneKey, string> } {
+  const p = scores.presence;
+  const e = scores.expression;
+  const i = scores.insight;
+
   const sa = (l: LevelKey) => l === "S" || l === "A";
   const bc = (l: LevelKey) => l === "B" || l === "C";
   const df = (l: LevelKey) => l === "D" || l === "F";
 
-  if (sa(C) && sa(P) && sa(I)) {
-    return { lead: { empathy: "모든 축이 강한 전방위형이에요. 시대를 이끄는 구조로 읽혀요. ", reality: "전방위형. 모든 축이 강한 구조입니다. ", fun: "전방위형이야. 다 강해. 시대 이끄는 타입. " } };
+  // 1) 전방위형: 세 축 모두 A 이상
+  if (sa(levels.presence) && sa(levels.expression) && sa(levels.insight)) {
+    return {
+      type: "전방위형",
+      lead: {
+        empathy:
+          "존재감·표현력·통찰력이 모두 강하게 작동하는 전방위형이에요. 사람을 끌어당기는 힘, 전달하는 힘, 납득시키는 힘이 함께 갖춰져 있어요.",
+        reality:
+          "전방위형입니다. 존재감·표현력·통찰력이 모두 강하게 작동하는 구조입니다.",
+        fun:
+          "전방위형이야. 끌어당기고, 퍼뜨리고, 납득시키는 힘이 다 같이 있어.",
+      },
+    };
   }
-  if (sa(C) && sa(P)) {
-    return { lead: { empathy: "권위와 대중성을 동시에 가진 지배형이에요. 정치인·셀럽형에 가까워요. ", reality: "지배형. 권위와 대중성 동시 보유입니다. ", fun: "지배형이야. 권위랑 대중성 둘 다 있어. " } };
+
+  // 2) 전반 중간: 균형형
+  if (bc(levels.presence) && bc(levels.expression) && bc(levels.insight)) {
+    return {
+      type: "균형형",
+      lead: {
+        empathy:
+          "세 축이 어느 한쪽으로 과하게 치우치지 않고 고르게 작동하는 균형형이에요. 상황에 따라 영향력이 드러나는 방식이 달라질 수 있어요.",
+        reality:
+          "균형형입니다. 세 축이 고르게 작동하여 상황에 따라 영향력이 드러나는 방식이 달라질 수 있습니다.",
+        fun:
+          "균형형이야. 상황에 따라 존재감/표현력/통찰력 중에 뭐가 더 앞에 나오기도 해.",
+      },
+    };
   }
-  if (sa(C) && sa(I)) {
-    return { lead: { empathy: "카리스마 있는 지식인, 권위 전문가형이에요. 강사·멘토형이에요. ", reality: "권위 전문가형. 카리스마 있는 지식인 구조입니다. ", fun: "권위 전문가형이야. 강사·멘토 타입. " } };
+
+  // 3) 전반 낮음: 잠재형
+  if (df(levels.presence) && df(levels.expression) && df(levels.insight)) {
+    return {
+      type: "잠재형",
+      lead: {
+        empathy:
+          "영향력이 겉으로 강하게 드러나는 구조는 아니지만, 역할과 환경이 맞아떨어지면 천천히 존재감이 커질 수 있는 잠재형이에요.",
+        reality:
+          "잠재형입니다. 영향력이 겉으로 강하게 드러나지는 않으나 역할·환경에 따라 점진적으로 커질 수 있습니다.",
+        fun:
+          "잠재형이야. 겉으로 확 세게 드러나진 않는데, 자리 잡으면 은근히 커져.",
+      },
+    };
   }
-  if (sa(P) && sa(I)) {
-    return { lead: { empathy: "콘텐츠와 전문성이 결합한 지식 인플루언서형이에요. ", reality: "지식 인플루언서형. 콘텐츠와 전문성 결합 구조입니다. ", fun: "지식 인플루언서형이야. 콘텐츠랑 전문성 둘 다. " } };
+
+  // 4) 조합형 규칙: 1위 축 기준, 2위가 80% 이상이면 조합형
+  const entries: Array<{ k: Axis3Key; v: number }> = ([
+    { k: "presence" as const, v: p },
+    { k: "expression" as const, v: e },
+    { k: "insight" as const, v: i },
+  ] satisfies Array<{ k: Axis3Key; v: number }>).sort((a, b) => b.v - a.v);
+
+  const top = entries[0];
+  const second = entries[1];
+  const ratio = top.v > 0 ? second.v / top.v : 0;
+
+  const combo = ratio >= 0.8;
+  if (combo) {
+    const a = top.k;
+    const b = second.k;
+    const isPE =
+      (a === "presence" && b === "expression") ||
+      (a === "expression" && b === "presence");
+    const isPI =
+      (a === "presence" && b === "insight") ||
+      (a === "insight" && b === "presence");
+    const isEI =
+      (a === "expression" && b === "insight") ||
+      (a === "insight" && b === "expression");
+
+    if (isPE) {
+      return {
+        type: "리더형 인플루언서",
+        lead: {
+          empathy:
+            "존재감과 표현력이 함께 높게 잡히는 리더형 인플루언서에 가까워요. 주목받는 힘과 메시지를 퍼뜨리는 힘이 같이 움직입니다.",
+          reality:
+            "리더형 인플루언서형입니다. 존재감과 표현력이 함께 높게 작동합니다.",
+          fun:
+            "리더형 인플루언서야. 눈에 띄고, 말/콘텐츠로 퍼지는 힘도 같이 있어.",
+        },
+      };
+    }
+    if (isPI) {
+      return {
+        type: "권위 전문가형",
+        lead: {
+          empathy:
+            "존재감과 통찰력이 함께 높게 잡히는 권위 전문가형이에요. 가볍기보다 묵직한 신뢰로 영향력이 만들어지는 편입니다.",
+          reality:
+            "권위 전문가형입니다. 존재감과 통찰력이 함께 높게 작동합니다.",
+          fun:
+            "권위 전문가형이야. 묵직한 신뢰랑 핵심 보는 힘이 같이 있어.",
+        },
+      };
+    }
+    if (isEI) {
+      return {
+        type: "지식 인플루언서형",
+        lead: {
+          empathy:
+            "표현력과 통찰력이 함께 높게 잡히는 지식 인플루언서형이에요. 이해한 걸 풀어내고 전달하는 능력이 강점으로 이어지기 쉽습니다.",
+          reality:
+            "지식 인플루언서형입니다. 표현력과 통찰력이 함께 높게 작동합니다.",
+          fun:
+            "지식 인플루언서형이야. 이해한 걸 잘 풀어내고 전달하는 힘이 같이 있어.",
+        },
+      };
+    }
   }
-  if (sa(C)) {
-    return { lead: { empathy: "권위와 존재감으로 이끄는 리더형이에요. ", reality: "리더형. 권위와 존재감으로 이끄는 구조입니다. ", fun: "리더형이야. 권위랑 존재감으로 이끄는 타입. " } };
+
+  // 5) 단일형: 1위 축으로 분류
+  if (top.k === "presence") {
+    return {
+      type: "리더형",
+      lead: {
+        empathy:
+          "존재감이 가장 강하게 잡히는 리더형이에요. 말을 많이 하지 않아도 분위기와 태도로 중심을 잡는 편입니다.",
+        reality:
+          "리더형입니다. 존재감이 가장 강하게 작동합니다.",
+        fun:
+          "리더형이야. 말 많이 안 해도 분위기랑 태도로 중심 잡는 편.",
+      },
+    };
   }
-  if (sa(P)) {
-    return { lead: { empathy: "표현과 확산으로 대중에게 퍼지는 인플루언서형이에요. ", reality: "인플루언서형. 표현과 확산으로 대중에게 퍼지는 구조입니다. ", fun: "인플루언서형이야. 표현으로 대중한테 퍼져. " } };
+  if (top.k === "expression") {
+    return {
+      type: "인플루언서형",
+      lead: {
+        empathy:
+          "표현력이 가장 강하게 잡히는 인플루언서형이에요. 말·콘텐츠·소통 방식으로 사람들의 반응을 끌어내기 쉽습니다.",
+        reality:
+          "인플루언서형입니다. 표현력이 가장 강하게 작동합니다.",
+        fun:
+          "인플루언서형이야. 말/콘텐츠로 연결되고 퍼지는 힘이 제일 강해.",
+      },
+    };
   }
-  if (sa(I)) {
-    return { lead: { empathy: "지식과 통찰로 신뢰를 얻는 전문가형이에요. ", reality: "전문가형. 지식과 통찰로 신뢰를 얻는 구조입니다. ", fun: "전문가형이야. 지식이랑 통찰로 신뢰 얻어. " } };
-  }
-  if (bc(C) && bc(P) && bc(I)) {
-    return { lead: { empathy: "특출난 축 없이 고르게 작동하는 균형형이에요. ", reality: "균형형. 고르게 작동하는 구조입니다. ", fun: "균형형이야. 고르게 작동해. " } };
-  }
-  if (df(C) && df(P) && df(I)) {
-    return { lead: { empathy: "드러나지 않지만 깊이가 있는 내면형이에요. 영향력이 잠재된 상태로 읽혀요. ", reality: "내면형. 드러나지 않지만 깊이가 있으며 잠재 상태입니다. ", fun: "내면형이야. 겉으로 안 나와도 깊이 있어. " } };
-  }
-  return { lead: { empathy: "카리스마·대중·지적 영향력이 조합된 구조로 읽혀요. ", reality: "3축 조합에 따른 영향력 구조입니다. ", fun: "카리스마·대중·지적이 조합된 타입이야. " } };
+  return {
+    type: "전문가형",
+    lead: {
+      empathy:
+        "통찰력이 가장 강하게 잡히는 전문가형이에요. 바로 눈에 띄기보다 알수록 신뢰가 쌓이는 흐름으로 영향력이 만들어집니다.",
+      reality:
+        "전문가형입니다. 통찰력이 가장 강하게 작동합니다.",
+      fun:
+        "전문가형이야. 알수록 신뢰가 쌓이고, 핵심 보는 힘이 제일 강해.",
+    },
+  };
 }
 
-// STEP 6 축별 해석 텍스트 (S/A/B/C/D/F)
-const AXIS_TEXTS: Record<Axis3Key, Record<LevelKey, Record<CharismaToneKey, string>>> = {
-  charisma: {
-    S: { empathy: "존재 자체가 권위예요. 말하지 않아도 공간을 장악하고 사람들이 자연스럽게 따라요. 타고난 카리스마로 조직과 집단의 중심이 되는 구조예요.", reality: "존재 자체가 권위입니다. 말하지 않아도 공간을 장악하고 사람들이 따릅니다. 타고난 카리스마로 조직·집단의 중심이 되는 구조입니다.", fun: "존재만으로 권위야. 말 안 해도 공간 장악하고 사람들이 따라. 타고난 카리스마로 중심 되는 타입이야." },
-    A: { empathy: "강한 카리스마와 리더십이 있어요. 신뢰와 압도감을 동시에 가져요. 사람들을 이끌고 방향을 제시하는 힘이 있어요.", reality: "강한 카리스마와 리더십. 신뢰와 압도감을 동시에 가지며 사람을 이끕니다.", fun: "카리스마랑 리더십 강해. 신뢰랑 압도감 둘 다 있어. 사람 이끄는 힘이 있어." },
-    B: { empathy: "카리스마가 있으나 상황에 따라 발휘돼요. 책임감과 존재감으로 사람들에게 인정받아요.", reality: "카리스마가 있으며 상황에 따라 발휘됩니다. 책임감과 존재감으로 인정받습니다.", fun: "카리스마 있는데 상황에 따라 나와. 책임감이랑 존재감으로 인정받아." },
-    C: { empathy: "전통적 카리스마보다 실력과 관계로 영향력을 만들어요. 드러내지 않아도 주변이 알아보는 타입이에요.", reality: "실력과 관계로 영향력을 만듭니다. 드러내지 않아도 주변이 알아봅니다.", fun: "실력이랑 관계로 영향력 만드는 타입이야. 안 나서도 알아봐." },
-    D: { empathy: "카리스마가 잠재된 상태예요. 특정 환경이나 시기에 폭발적으로 드러나는 구조예요.", reality: "카리스마가 잠재된 상태입니다. 특정 환경·시기에 폭발적으로 드러나는 구조입니다.", fun: "카리스마 잠재된 상태야. 특정 환경이나 시기에 폭발적으로 나와." },
-    F: { empathy: "카리스마 축은 작동하지 않아요. 대신 다른 축에서 영향력이 형성돼요.", reality: "카리스마 축은 작동하지 않습니다. 다른 축에서 영향력이 형성됩니다.", fun: "카리스마 축은 안 나와. 대신 다른 축에서 영향력 생겨." },
+const AXIS_DESC: Record<Axis3Key, Record<CharismaToneKey, string>> = {
+  presence: {
+    empathy:
+      "사람들이 자연스럽게 주목하게 되는 분위기가 있습니다. 굳이 많이 나서지 않아도 존재감이 느껴지는 편입니다.",
+    reality:
+      "사람들이 자연스럽게 주목하게 되는 분위기가 있습니다. 굳이 많이 나서지 않아도 존재감이 드러나는 편입니다.",
+    fun:
+      "말 많이 안 해도 분위기랑 태도에서 존재감이 느껴지는 편이야.",
   },
-  public: {
-    S: { empathy: "생각과 메시지가 사람들에게 자연스럽게 퍼져요. 사람과 자원이 모여드는 구조예요. 대중 플랫폼에서 가장 강하게 작동해요.", reality: "생각과 메시지가 사람에게 퍼집니다. 사람과 자원이 모여들며 대중 플랫폼에서 가장 강하게 작동합니다.", fun: "생각이랑 메시지가 사람한테 퍼져. 사람이랑 자원이 모여들어. 대중 플랫폼에서 제일 강해." },
-    A: { empathy: "강한 표현력과 확산력이 있어요. 콘텐츠나 대인관계에서 사람들을 끌어당기는 힘이 있어요.", reality: "강한 표현력과 확산력. 콘텐츠·대인관계에서 사람을 끌어당깁니다.", fun: "표현력이랑 확산력 강해. 콘텐츠나 관계로 사람 끌어당겨." },
-    B: { empathy: "대중 영향력이 있으나 선택적으로 발휘돼요. 특정 관계나 분야에서 강하게 작동해요.", reality: "대중 영향력이 있으며 선택적으로 발휘됩니다.", fun: "대중 영향력 있는데 선택적으로 나와. 특정 관계나 분야에서 강해." },
-    C: { empathy: "직접적 확산보다 깊은 관계로 영향력을 만들어요. 소수에게 강하게 작용하는 타입이에요.", reality: "깊은 관계로 영향력을 만듭니다. 소수에게 강하게 작용합니다.", fun: "넓이보다 깊이로 영향력 만드는 타입이야. 소수한테 강해." },
-    D: { empathy: "대중 영향력이 잠재된 상태예요. 표현 방식과 채널을 찾으면 확장돼요.", reality: "대중 영향력이 잠재된 상태입니다. 표현 방식·채널을 찾으면 확장됩니다.", fun: "대중 영향력 잠재된 상태야. 표현 방식이랑 채널 찾으면 커져." },
-    F: { empathy: "대중 영향력 축이 약해요. 대신 카리스마나 지적 영향력으로 보완돼요.", reality: "대중 영향력 축이 약합니다. 카리스마·지적 영향력으로 보완됩니다.", fun: "대중 영향력 축은 약해. 대신 카리스마나 지적 영향력으로 보완돼." },
+  expression: {
+    empathy:
+      "생각이나 감정을 전달하는 힘이 좋습니다. 말, 콘텐츠, 소통 방식에서 사람들의 반응을 끌어내기 쉽습니다.",
+    reality:
+      "생각이나 감정을 전달하는 힘이 좋습니다. 말·콘텐츠·소통 방식에서 반응을 끌어내기 쉽습니다.",
+    fun:
+      "말이나 콘텐츠로 반응 끌어내고 퍼뜨리는 힘이 있어.",
   },
-  intellect: {
-    S: { empathy: "생각을 바꾸게 만드는 힘이 있어요. 깊이 있는 통찰과 전달력이 결합해 사람들에게 오래 남는 영향을 줘요.", reality: "생각을 바꾸게 만드는 힘. 깊은 통찰과 전달력이 결합해 오래 남는 영향을 줍니다.", fun: "생각 바꾸게 만드는 힘이 있어. 통찰이랑 전달력이 맞아서 오래 남아." },
-    A: { empathy: "강한 지적 권위가 있어요. 전문성과 표현이 함께 작동해 신뢰를 얻어요.", reality: "강한 지적 권위. 전문성과 표현이 함께 작동해 신뢰를 얻습니다.", fun: "지적 권위 강해. 전문성이랑 표현이 같이 작동해서 신뢰 얻어." },
-    B: { empathy: "지적 영향력이 있으나 분야가 좁거나 선택적으로 발휘돼요.", reality: "지적 영향력이 있으며 분야가 좁거나 선택적으로 발휘됩니다.", fun: "지적 영향력 있는데 분야 좁거나 선택적으로 나와." },
-    C: { empathy: "지식보다 경험과 실행으로 신뢰를 얻는 타입이에요.", reality: "경험과 실행으로 신뢰를 얻는 구조입니다.", fun: "지식보다 경험이랑 실행으로 신뢰 얻어." },
-    D: { empathy: "지적 영향력이 잠재된 상태예요. 특정 주제나 분야를 파고들면 강해져요.", reality: "지적 영향력이 잠재된 상태입니다. 특정 주제·분야를 파고들면 강해집니다.", fun: "지적 영향력 잠재된 상태야. 주제나 분야 파고들면 강해져." },
-    F: { empathy: "지적 영향력 축이 약해요. 대신 카리스마나 대중성으로 영향력이 형성돼요.", reality: "지적 영향력 축이 약합니다. 카리스마·대중성으로 영향력이 형성됩니다.", fun: "지적 영향력 축은 약해. 대신 카리스마나 대중성으로 영향력 생겨." },
+  insight: {
+    empathy:
+      "상황의 핵심을 빨리 읽고 깊이 있게 이해하는 편입니다. 단순한 말보다 생각의 깊이에서 신뢰를 주기 쉽습니다.",
+    reality:
+      "상황의 핵심을 빠르게 읽고 깊이 있게 이해하는 편입니다. 생각의 깊이에서 신뢰를 주기 쉽습니다.",
+    fun:
+      "핵심을 빨리 읽고 깊게 이해하는 편이야. 알수록 신뢰 쌓이는 타입.",
   },
 };
 
 // STEP 7 F 레벨 보정
 const F_CORRECTION: Record<Axis3Key, Record<CharismaToneKey, string>> = {
-  charisma: { empathy: "권위나 존재감보다 메시지와 콘텐츠로 영향력을 만드는 구조예요.", reality: "권위나 존재감보다 메시지와 콘텐츠로 영향력을 만드는 구조입니다.", fun: "권위보다 메시지랑 콘텐츠로 영향력 만드는 타입이야." },
-  public: { empathy: "넓은 확산보다 깊은 신뢰 관계로 영향력이 형성되는 타입이에요.", reality: "넓은 확산보다 깊은 신뢰 관계로 영향력이 형성되는 타입입니다.", fun: "넓이보다 깊은 신뢰 관계로 영향력 생기는 타입이야." },
-  intellect: { empathy: "지식 기반보다 행동과 실행으로 사람들에게 영향을 주는 구조예요.", reality: "지식 기반보다 행동과 실행으로 사람에게 영향을 주는 구조입니다.", fun: "지식보다 행동이랑 실행으로 사람한테 영향 주는 타입이야." },
+  presence: {
+    empathy:
+      "존재감이 약하게 느껴질 때는, 말과 메시지(표현력) 또는 이해시키는 힘(통찰력)으로 영향력을 만드는 쪽이 더 잘 맞을 수 있어요.",
+    reality:
+      "존재감이 약하게 느껴질 때에는 표현력 또는 통찰력 쪽으로 영향력이 형성되는 경우가 많습니다.",
+    fun:
+      "존재감이 약해도 표현력/통찰력으로 영향력 만들 수 있어.",
+  },
+  expression: {
+    empathy:
+      "표현력이 약하게 느껴질 때는, 말의 양보다 무게(존재감)나 설득의 깊이(통찰력)로 영향력이 만들어질 수 있어요.",
+    reality:
+      "표현력이 약하게 느껴질 때에는 존재감 또는 통찰력으로 영향력이 형성될 수 있습니다.",
+    fun:
+      "표현이 약해도 존재감/통찰력으로 충분히 영향력 생겨.",
+  },
+  insight: {
+    empathy:
+      "통찰력이 약하게 느껴질 때는, 실행과 태도(존재감) 또는 관계·확산(표현력) 쪽으로 영향력이 만들어질 수 있어요.",
+    reality:
+      "통찰력이 약하게 느껴질 때에는 존재감 또는 표현력으로 영향력이 형성될 수 있습니다.",
+    fun:
+      "통찰이 약해도 존재감/표현력으로 영향력 만들 수 있어.",
+  },
 };
 
 // STEP 7 충·극 보정 문장
 const CHONG_KE_CORRECTION: Record<Axis3Key, Record<CharismaToneKey, string>> = {
-  charisma: { empathy: "카리스마가 있지만 특정 시기나 환경에서 불안정하게 작동해요. 안정된 기반을 만드는 것이 핵심 과제예요.", reality: "카리스마가 있으나 특정 시기·환경에서 불안정하게 작동합니다. 안정된 기반을 만드는 것이 핵심 과제입니다.", fun: "카리스마 있는데 시기나 환경에 따라 불안정해. 기반 만드는 게 중요해." },
-  public: { empathy: "영향력이 있지만 확산 과정에서 왜곡되거나 오해가 생기는 패턴이 있어요. 메시지를 명확히 하는 것이 중요해요.", reality: "영향력이 있으나 확산 과정에서 왜곡·오해가 생깁니다. 메시지를 명확히 하는 것이 중요합니다.", fun: "영향력 있는데 퍼질 때 왜곡되거나 오해 생겨. 메시지 명확히 하는 게 중요해." },
-  intellect: { empathy: "지적 권위가 있지만 전달 과정에서 마찰이 생겨요. 소통 방식을 다듬으면 영향력이 확장돼요.", reality: "지적 권위가 있으나 전달 과정에서 마찰이 생깁니다. 소통 방식을 다듬으면 영향력이 확장됩니다.", fun: "지적 권위 있는데 전달할 때 마찰 생겨. 소통 방식 다듬으면 영향력 커져." },
+  presence: {
+    empathy:
+      "존재감 축은 분명히 있지만, 충·극 영향으로 컨디션이나 환경에 따라 들쭉날쭉해질 수 있어요. 기준이 되는 루틴과 역할을 만들어 두면 훨씬 안정적으로 힘이 잡힙니다.",
+    reality:
+      "존재감 축은 있으나 충·극 영향으로 환경에 따라 변동성이 커질 수 있습니다. 루틴과 역할을 고정하면 안정적으로 작동합니다.",
+    fun:
+      "존재감은 있는데 환경 따라 들쭉날쭉할 수 있어. 루틴 잡으면 훨씬 안정돼.",
+  },
+  expression: {
+    empathy:
+      "표현력 축이 있어도 충·극 영향이 있으면 전달 과정에서 오해가 생기기 쉬워요. 핵심 문장을 짧게 정리해 두면 확산이 더 깔끔해집니다.",
+    reality:
+      "표현력 축이 있으나 충·극 영향으로 전달 과정에서 오해가 생길 수 있습니다. 메시지를 간결하게 정리하는 것이 도움이 됩니다.",
+    fun:
+      "표현력은 있는데 퍼질 때 오해 생길 수 있어. 핵심 문장 짧게 정리해두면 좋아.",
+  },
+  insight: {
+    empathy:
+      "통찰력 축이 있어도 충·극이 있으면 설명이 날카롭게 느껴지거나 마찰이 생길 수 있어요. 전달 톤을 조금만 부드럽게 조절하면 설득력이 크게 살아납니다.",
+    reality:
+      "통찰력 축이 있으나 충·극 영향으로 전달 과정에서 마찰이 생길 수 있습니다. 전달 톤을 조절하면 설득력이 강화됩니다.",
+    fun:
+      "통찰은 있는데 말이 날카롭게 들릴 수 있어. 톤만 조금 다듬으면 설득력 확 살아.",
+  },
 };
 
 // 600자 맞추기용 마무리 문장 (기존 내용 유지, 길이만 보강)
@@ -286,23 +470,44 @@ export function getCharismaSocialInfluenceParagraph(
   if (!dayStem) return "";
 
   const positions = collectPositions(pillars, dayStem);
-  const { charisma, public: pub, intellect, charismaChongKe, publicChongKe, intellectChongKe } = computeThreeAxisScores(positions);
+  const {
+    presence,
+    expression,
+    insight,
+    presenceChongKe,
+    expressionChongKe,
+    insightChongKe,
+  } = computeThreeAxisScores(positions);
 
   const levels: Record<Axis3Key, LevelKey> = {
-    charisma: scoreToLevel(charisma),
-    public: scoreToLevel(pub),
-    intellect: scoreToLevel(intellect),
+    presence: scoreToLevel(presence),
+    expression: scoreToLevel(expression),
+    insight: scoreToLevel(insight),
   };
-  const typeRow = getType(levels);
-  const p1 = [typeRow.lead[tone], AXIS_TEXTS.charisma[levels.charisma][tone]].filter(Boolean).join(" ").trim();
-  const p2 = [AXIS_TEXTS.public[levels.public][tone], AXIS_TEXTS.intellect[levels.intellect][tone]].filter(Boolean).join(" ").trim();
+  const scores: Record<Axis3Key, number> = { presence, expression, insight };
+  const typeRow = classifyType(scores, levels);
+
+  const axisSummary =
+    tone === "fun"
+      ? `존재감 ${presence.toFixed(1)}점(${levelText(levels.presence)}), 표현력 ${expression.toFixed(1)}점(${levelText(levels.expression)}), 통찰력 ${insight.toFixed(1)}점(${levelText(levels.insight)})`
+      : `존재감 ${presence.toFixed(1)}점(${levelText(levels.presence)}), 표현력 ${expression.toFixed(1)}점(${levelText(levels.expression)}), 통찰력 ${insight.toFixed(1)}점(${levelText(levels.insight)})`;
+
+  const p1 = [typeRow.lead[tone], axisSummary].filter(Boolean).join(" ").trim();
+  const p2 = [
+    AXIS_DESC.presence[tone],
+    AXIS_DESC.expression[tone],
+    AXIS_DESC.insight[tone],
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
   const correctionParts: string[] = [];
-  if (levels.charisma === "F") correctionParts.push(F_CORRECTION.charisma[tone]);
-  if (levels.public === "F") correctionParts.push(F_CORRECTION.public[tone]);
-  if (levels.intellect === "F") correctionParts.push(F_CORRECTION.intellect[tone]);
-  if (charismaChongKe) correctionParts.push(CHONG_KE_CORRECTION.charisma[tone]);
-  if (publicChongKe) correctionParts.push(CHONG_KE_CORRECTION.public[tone]);
-  if (intellectChongKe) correctionParts.push(CHONG_KE_CORRECTION.intellect[tone]);
+  if (levels.presence === "F") correctionParts.push(F_CORRECTION.presence[tone]);
+  if (levels.expression === "F") correctionParts.push(F_CORRECTION.expression[tone]);
+  if (levels.insight === "F") correctionParts.push(F_CORRECTION.insight[tone]);
+  if (presenceChongKe) correctionParts.push(CHONG_KE_CORRECTION.presence[tone]);
+  if (expressionChongKe) correctionParts.push(CHONG_KE_CORRECTION.expression[tone]);
+  if (insightChongKe) correctionParts.push(CHONG_KE_CORRECTION.insight[tone]);
   const closing = CLOSING_FOR_LENGTH[tone];
   const p3 = correctionParts.length > 0 ? (correctionParts.join(" ") + " " + closing).trim() : "";
 
@@ -325,28 +530,78 @@ export function getCharismaSocialInfluenceParagraph(
 // =========================
 
 export interface CharismaAxisVisual {
-  key: "charisma" | "presence" | "expression" | "charm";
+  key: Axis3Key;
   label: string;
   emoji: string;
   level: LevelKey;
   value: number; // 0~100
   color: string;
-  orbit: number;
-  size: number;
   desc: string;
 }
+
+/** UI용 한 줄 해석 (삼각형 아래 안내 문장) */
+const TYPE_ONE_LINER: Record<string, Record<CharismaToneKey, string>> = {
+  전방위형: {
+    empathy: "세 축이 고르게 강해서, 상황에 따라 어떤 방식으로든 영향력이 잘 드러나요.",
+    reality: "세 축이 고르게 강해 상황에 따라 다양한 방식으로 영향력이 드러납니다.",
+    fun: "세 축이 다 강해서 상황에 따라 어떤 식으로든 영향력 잘 나와.",
+  },
+  "리더형 인플루언서": {
+    empathy: "내 영향력은 존재감과 표현력이 함께 작동할 때 가장 잘 드러나요.",
+    reality: "존재감과 표현력이 함께 작동할 때 영향력이 가장 잘 드러납니다.",
+    fun: "존재감이랑 표현력이 같이 작동할 때 제일 잘 드러나.",
+  },
+  "권위 전문가형": {
+    empathy: "존재감과 통찰력이 함께할 때 말의 무게감이 잘 살아나요.",
+    reality: "존재감과 통찰력이 함께할 때 말의 무게감이 잘 살아납니다.",
+    fun: "존재감이랑 통찰력이 맞을 때 말 무게감 잘 살아나.",
+  },
+  "지식 인플루언서형": {
+    empathy: "표현력과 통찰력이 맞아떨어질 때 설명과 설득이 잘 통해요.",
+    reality: "표현력과 통찰력이 맞아떨어질 때 설명과 설득이 잘 통합니다.",
+    fun: "표현력이랑 통찰력이 맞을 때 설명·설득 잘 통해.",
+  },
+  리더형: {
+    empathy: "나는 '존재감' 쪽으로 더 기울어 있는 편이에요.",
+    reality: "존재감 쪽으로 더 기울어 있는 편입니다.",
+    fun: "나는 존재감 쪽으로 더 기울어 있어.",
+  },
+  인플루언서형: {
+    empathy: "말과 콘텐츠로 퍼지는 '표현력'이 강하게 작동해요.",
+    reality: "말과 콘텐츠로 퍼지는 표현력이 강하게 작동합니다.",
+    fun: "말이랑 콘텐츠로 퍼지는 표현력이 제일 강해.",
+  },
+  전문가형: {
+    empathy: "상황을 읽고 핵심을 짚는 '통찰력'이 영향력의 중심이에요.",
+    reality: "상황을 읽고 핵심을 짚는 통찰력이 영향력의 중심입니다.",
+    fun: "통찰력이 영향력의 중심이야. 핵심 잘 짚어.",
+  },
+  균형형: {
+    empathy: "세 축이 비교적 고르게 작동하는 편이에요.",
+    reality: "세 축이 비교적 고르게 작동하는 편입니다.",
+    fun: "세 축이 고르게 작동하는 편이야.",
+  },
+  잠재형: {
+    empathy: "특정 역할이나 환경이 맞을 때 영향력이 서서히 드러나는 편이에요.",
+    reality: "특정 역할·환경이 맞을 때 영향력이 서서히 드러나는 편입니다.",
+    fun: "역할이랑 환경 맞을 때 영향력이 서서히 나오는 편이야.",
+  },
+};
 
 export interface CharismaVisualData {
   type: string;
   typeDesc: string;
   axes: CharismaAxisVisual[];
+  scores: Record<Axis3Key, number>;
   summary: string;
+  /** 삼각형 아래 한 줄 해석 */
+  oneLiner: string;
 }
 
+/** 사용자 표시용 0~100 점수 (내부 0~6 기준) */
 function axisScoreToPercent(score: number): number {
-  const max = 6; // 대략적인 상한
-  const r = Math.max(0, Math.min(score, max)) / max;
-  return Math.round(40 + r * 55); // 40~95 사이로 압축
+  const r = Math.max(0, Math.min(score, 6)) / 6;
+  return Math.round(r * 100);
 }
 
 function levelLabel(level: LevelKey): string {
@@ -367,93 +622,65 @@ export function getCharismaVisualData(
 
   const positions = collectPositions(pillars, dayStem);
   const {
-    charisma,
-    public: pub,
-    intellect,
+    presence,
+    expression,
+    insight,
   } = computeThreeAxisScores(positions);
 
   const levels: Record<Axis3Key, LevelKey> = {
-    charisma: scoreToLevel(charisma),
-    public: scoreToLevel(pub),
-    intellect: scoreToLevel(intellect),
+    presence: scoreToLevel(presence),
+    expression: scoreToLevel(expression),
+    insight: scoreToLevel(insight),
   };
-  const typeRow = getType(levels);
+  const scores: Record<Axis3Key, number> = { presence, expression, insight };
+  const typeRow = classifyType(scores, levels);
 
-  const type =
-    typeRow.lead[tone].includes("전문가형") ? "전문가형"
-    : typeRow.lead[tone].includes("인플루언서형") ? "인플루언서형"
-    : typeRow.lead[tone].includes("리더형") ? "리더형"
-    : typeRow.lead[tone].includes("전방위형") ? "전방위형"
-    : typeRow.lead[tone].includes("내면형") ? "내면형"
-    : "영향력형";
-
+  const type = typeRow.type;
   const typeDesc = typeRow.lead[tone].trim();
-
-  const charismaValue = axisScoreToPercent(charisma);
-  const publicValue = axisScoreToPercent(pub);
-  const intellectValue = axisScoreToPercent(intellect);
 
   const axes: CharismaAxisVisual[] = [
     {
-      key: "charisma",
-      label: "카리스마",
-      emoji: "⚡",
-      level: levels.charisma,
-      value: charismaValue,
-      color: "#A78BD4",
-      orbit: 72,
-      size: 52,
-      desc: AXIS_TEXTS.charisma[levels.charisma][tone],
-    },
-    {
       key: "presence",
       label: "존재감",
-      emoji: "🏛",
-      level: levels.charisma,
-      value: axisScoreToPercent(charisma * 0.6 + pub * 0.4),
-      color: "#7EB8A0",
-      orbit: 110,
-      size: 60,
-      desc:
-        tone === "empathy"
-          ? "책임감과 태도로 신뢰를 쌓는 쪽이에요. 한 번 맡은 자리에서 오래 기억되는 편이에요."
-          : tone === "reality"
-            ? "책임감과 태도로 신뢰를 쌓아 존재감을 만드는 구조입니다."
-            : "책임감이랑 태도로 신뢰 쌓아서 존재감 만드는 타입이야.",
+      emoji: "🧲",
+      level: levels.presence,
+      value: axisScoreToPercent(presence),
+      color: "#A78BD4",
+      desc: AXIS_DESC.presence[tone],
     },
     {
       key: "expression",
       label: "표현력",
-      emoji: "💡",
-      level: levels.public,
-      value: publicValue,
-      color: "#E8C87A",
-      orbit: 90,
-      size: 54,
-      desc: AXIS_TEXTS.public[levels.public][tone],
+      emoji: "📣",
+      level: levels.expression,
+      value: axisScoreToPercent(expression),
+      color: "#E8B768",
+      desc: AXIS_DESC.expression[tone],
     },
     {
-      key: "charm",
-      label: "매력도",
-      emoji: "✨",
-      level: levels.public,
-      value: axisScoreToPercent(pub * 0.6 + intellect * 0.4),
-      color: "#E89A7A",
-      orbit: 130,
-      size: 58,
-      desc:
-        levels.public === "C"
-          ? "직접적인 확산보다 깊은 관계에서 매력이 강하게 느껴지는 타입이에요."
-          : AXIS_TEXTS.public[levels.public][tone],
+      key: "insight",
+      label: "통찰력",
+      emoji: "🔎",
+      level: levels.insight,
+      value: axisScoreToPercent(insight),
+      color: "#7DB8B2",
+      desc: AXIS_DESC.insight[tone],
     },
   ];
 
   const summary = CLOSING_FOR_LENGTH[tone];
+  const oneLiner =
+    TYPE_ONE_LINER[type]?.[tone] ??
+    (tone === "fun"
+      ? "존재감·표현력·통찰력 비율에 따라 영향력이 드러나요."
+      : "존재감·표현력·통찰력 비율에 따라 영향력이 드러납니다.");
 
   return {
     type,
     typeDesc,
     axes,
+    scores,
     summary,
+    oneLiner,
   };
 }

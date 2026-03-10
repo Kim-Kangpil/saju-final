@@ -48,7 +48,6 @@ import { getCharismaSocialInfluenceParagraph, getCharismaVisualData } from "../.
 import { getCharmPointParagraph, getCharmVisualData } from "../../data/charmPointAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
-import { getHealthConstitutionParagraph, type HealthAnalysisParams } from "../../data/healthConstitutionAnalysis";
 import { getLuckyItemParagraph, type LuckyItemParams } from "../../data/luckyItemAnalysis";
 import Head from 'next/head';
 import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";

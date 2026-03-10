@@ -725,7 +725,6 @@ export default function Page() {
   const [natureYangCount, setNatureYangCount] = useState<number>(0);
   const [natureYinCount, setNatureYinCount] = useState<number>(0);
   const [summaryGuide, setSummaryGuide] = useState<string | null>(null);
-  const [summaryGuide, setSummaryGuide] = useState<string | null>(null);
   const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);
   const [maskVsNatureLabels, setMaskVsNatureLabels] = useState<{ social: string; real: string; habit: string } | null>(null);
   const [gongmangAnalysis, setGongmangAnalysis] = useState<string | null>(null);

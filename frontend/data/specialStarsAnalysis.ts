@@ -38,7 +38,6 @@ export type SpecialStarKey =
   | "jaesal"
   | "cheonsal"
   | "jisal"
-  | "nyeonsal"
   | "wolSal"
   | "mangsin"
   | "jangseong"
@@ -98,7 +97,6 @@ const STAR_LABEL: Record<SpecialStarKey, string> = {
   jaesal: "재살",
   cheonsal: "천살",
   jisal: "지살",
-  nyeonsal: "년살",
   wolSal: "월살",
   mangsin: "망신살",
   jangseong: "장성살",
@@ -217,13 +215,6 @@ const STAR_INFO: Partial<
     caution:
       "자주 옮겨 다니다 보면 ‘나는 어디에도 속하지 않는다’는 느낌이 올 수 있어요. 공간을 자주 바꾸더라도, 마음의 거점이 되는 사람·취미·루틴을 만들어 두면 지살이 훨씬 편안해집니다.",
   },
-  nyeonsal: {
-    core: "도화와 같은 지지를 쓰지만, 감정 소모와 색정 쪽에 초점이 더 맞춰진 기운이에요.",
-    positive:
-      "이성 관계에서 존재감이 크고, 감정 교류의 경험치가 빨리 쌓입니다. 사랑을 통해 자신과 타인을 깊이 이해하게 되는 경우도 많아요.",
-    caution:
-      "감정이 곧 행동이 되지 않도록, 관계의 속도와 범위를 스스로 정해 두는 것이 도움이 됩니다. ‘지키고 싶은 삶의 영역’을 먼저 잡아 두면, 년살의 에너지와 삶이 덜 충돌합니다.",
-  },
   wolSal: {
     core: "고생과 막힘을 통해 실력을 다지는, 답답하지만 성장형 기운이에요.",
     positive:
@@ -287,29 +278,6 @@ function detectSpecialStars(
   const dayPillar = dayStem + dayBranch;
 
   const detected: DetectedStar[] = [];
-
-  // ---------- C형: 도화살 ----------
-  const DOHWA_REQUIRED: Record<string, string[]> = {
-    "子": ["亥", "卯", "未"],
-    "午": ["寅", "戌"],
-    "卯": ["亥", "未"],
-    "酉": ["巳", "丑"],
-  };
-  branches.forEach((b) => {
-    const req = DOHWA_REQUIRED[b];
-    if (!req) return;
-    const hasPair = branches.some((x) => x !== b && req.includes(x));
-    if (hasPair) {
-      if (!detected.find((d) => d.key === "dohwa")) {
-        detected.push({
-          key: "dohwa",
-          name: STAR_LABEL.dohwa,
-          count: 1,
-          description: "",
-        });
-      }
-    }
-  });
 
   // ---------- C형: 역마살 ----------
   const YEOKMA_REQUIRED: Record<string, string[]> = {
@@ -635,10 +603,11 @@ function detectSpecialStars(
       description: "",
     });
   }
+  // NOTE: 년살 맵핑(지지)은 그대로 사용하되, 표기는 도화살로 통일
   if (nyeon > 0) {
     detected.push({
-      key: "nyeonsal",
-      name: STAR_LABEL.nyeonsal,
+      key: "dohwa",
+      name: STAR_LABEL.dohwa,
       count: nyeon,
       description: "",
     });
@@ -695,7 +664,6 @@ const STAR_ORDER: SpecialStarKey[] = [
   "jaesal",
   "cheonsal",
   "jisal",
-  "nyeonsal",
   "wolSal",
   "mangsin",
   "jangseong",
@@ -767,7 +735,6 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
       "jaesal",
       "cheonsal",
       "jisal",
-      "nyeonsal",
       "wolSal",
       "mangsin",
       "jangseong",

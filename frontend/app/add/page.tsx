@@ -15,7 +15,12 @@ import {
 import { CHARM_ANALYSIS, CHARM_BY_PILLAR } from "../../data/charmAnalysis";
 import { ELEMENT_ANALYSIS } from "../../data/elementAnalysis";
 import { RELATIONS_ANALYSIS, analyzeRelations } from "../../data/relationsAnalysis";
-import { SPECIAL_STARS_ANALYSIS, analyzeSpecialStars } from "../../data/specialStarsAnalysis";
+import {
+  SPECIAL_STARS_ANALYSIS,
+  analyzeSpecialStars,
+  getSpecialStarsVisualData,
+  type SpecialStarVisualCard,
+} from "../../data/specialStarsAnalysis";
 import { summarizeGongmang, getGongmangVisualData, GongmangVisualSlot } from "../../data/gongmangAnalysis";
 import {
   getEmotionalWeaknessParagraph,
@@ -54,6 +59,7 @@ import { CharmPerfumeCard } from "../../components/CharmPerfumeCard";
 import { GuiinStarMap } from "../../components/GuiinStarMap";
 import { EmotionTriggerMap } from "../../components/EmotionTriggerMap";
 import { GongmangStructureMap } from "../../components/GongmangStructureMap";
+import { SpecialStarsMap } from "../../components/SpecialStarsMap";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -701,6 +707,7 @@ export default function Page() {
   const [strengthAnalysis, setStrengthAnalysis] = useState<any>(null);
   const [relationsAnalysis, setRelationsAnalysis] = useState<any>(null);
   const [specialStarsAnalysis, setSpecialStarsAnalysis] = useState<any>(null);
+  const [specialStarsVisual, setSpecialStarsVisual] = useState<SpecialStarVisualCard[] | null>(null);
   const [todayFortune, setTodayFortune] = useState<any>(null);
   const [natureAnalysis, setNatureAnalysis] = useState<string | null>(null);
   const [natureYangCount, setNatureYangCount] = useState<number>(0);
@@ -1102,6 +1109,30 @@ export default function Page() {
           },
         ]);
         setSpecialStarsAnalysis(specialResult);
+        setSpecialStarsVisual(
+          getSpecialStarsVisualData(result.day.cheongan.hanja, [
+            {
+              pos: "년",
+              stem: result.year.cheongan.hanja,
+              branch: result.year.jiji.hanja,
+            },
+            {
+              pos: "월",
+              stem: result.month.cheongan.hanja,
+              branch: result.month.jiji.hanja,
+            },
+            {
+              pos: "일",
+              stem: result.day.cheongan.hanja,
+              branch: result.day.jiji.hanja,
+            },
+            {
+              pos: "시",
+              stem: result.hour.cheongan.hanja,
+              branch: result.hour.jiji.hanja,
+            },
+          ])
+        );
 
         const todayResult = analyzeTodayFortune(hanjaToElement(dayStem), selectedChar);
         setTodayFortune(todayResult);
@@ -2767,6 +2798,10 @@ export default function Page() {
                                                         result.hour.jiji.hanja,
                                                       ]}
                                                     />
+                                                  )}
+
+                                                  {c.id === "stars_text" && specialStarsVisual && (
+                                                    <SpecialStarsMap cards={specialStarsVisual} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

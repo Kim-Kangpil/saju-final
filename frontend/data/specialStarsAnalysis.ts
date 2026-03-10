@@ -26,7 +26,7 @@ export interface SpecialStarPillar {
 // 이 카드에서는 "특수신살/신살"만 다루고,
 // 귀인·월공 등은 별도 섹션에서 처리한다.
 // (필요 시 여기서만 StarKey 확장하면 됨)
-type StarKey =
+export type SpecialStarKey =
   | "dohwa"
   | "hongyeom"
   | "yeokma"
@@ -48,7 +48,7 @@ type StarKey =
   | "gwasuk";
 
 interface DetectedStar {
-  key: StarKey;
+  key: SpecialStarKey;
   name: string;
   count: number;
   description: string;
@@ -86,7 +86,7 @@ const HWAGAE: Record<string, string> = {
   "未": "未",
 };
 
-const STAR_LABEL: Record<StarKey, string> = {
+const STAR_LABEL: Record<SpecialStarKey, string> = {
   dohwa: "도화살",
   hongyeom: "홍염살",
   yeokma: "역마살",
@@ -118,7 +118,7 @@ type SpecialStarsResult = {
 // 각 신살별 해석 베이스 (핵심/긍정/주의를 나중에 톤에 맞게 조합해서 사용)
 const STAR_INFO: Partial<
   Record<
-    StarKey,
+    SpecialStarKey,
     {
       core: string;
       positive: string;
@@ -671,6 +671,63 @@ function detectSpecialStars(
   return detected;
 }
 
+export type SpecialStarCardState = "active" | "inactive";
+
+export interface SpecialStarVisualCard {
+  key: SpecialStarKey;
+  name: string;
+  state: SpecialStarCardState;
+  count: number;
+  ability: string; // 한 줄 요약
+}
+
+const STAR_ORDER: SpecialStarKey[] = [
+  "dohwa",
+  "hongyeom",
+  "yeokma",
+  "hwagae",
+  "yangin",
+  "goegang",
+  "baekho",
+  "guimun",
+  "wonjin",
+  "geobsal",
+  "jaesal",
+  "cheonsal",
+  "jisal",
+  "nyeonsal",
+  "wolSal",
+  "mangsin",
+  "jangseong",
+  "goran",
+  "gwasuk",
+];
+
+export function getSpecialStarsVisualData(
+  dayStem: string,
+  pillars: SpecialStarPillar[]
+): SpecialStarVisualCard[] {
+  const detected = detectSpecialStars(dayStem, pillars);
+  const byKey = new Map<SpecialStarKey, DetectedStar>();
+  detected.forEach((d) => byKey.set(d.key, d));
+
+  return STAR_ORDER.map((key) => {
+    const hit = byKey.get(key);
+    const info = STAR_INFO[key];
+    const ability =
+      (info?.core ?? "").replace(/\s+/g, " ").trim() ||
+      "삶의 특정 상황에서 작동하는 변수형 기운";
+
+    return {
+      key,
+      name: STAR_LABEL[key],
+      state: hit ? "active" : "inactive",
+      count: hit?.count ?? 0,
+      ability,
+    };
+  });
+}
+
 // 신살 판정 + 해석 생성 함수
 // 오버로드 1: 새 구조 (일간 + 기둥 배열)
 export function analyzeSpecialStars(
@@ -694,7 +751,7 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
     const detected = detectSpecialStars(dayStem, pillars);
 
     // 우선순위: 일주 계열 → 일간 계열 → 삼합 계열 → 조합형 → E형
-    const PRIORITY: StarKey[] = [
+    const PRIORITY: SpecialStarKey[] = [
       "goegang",
       "baekho",
       "goran",

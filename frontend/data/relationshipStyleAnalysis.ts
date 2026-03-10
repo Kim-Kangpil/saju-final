@@ -369,7 +369,7 @@ export function getRelationshipStyleVisualData(
     {
       key: "boundary",
       label: "선긋기 능력",
-      emoji: "🛡",
+      emoji: "🧱",
       value: boundaryScore,
       color: "#7EB8D4",
       desc:

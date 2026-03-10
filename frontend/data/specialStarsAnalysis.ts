@@ -181,9 +181,9 @@ const STAR_INFO: Partial<
       "원진이 걸린 육친과는 ‘완전 이해’를 기대하기보다는, 서로 다른 지점을 인정하는 쪽이 더 건강해요. 거리를 조절하면서도 완전히 끊지 않는 균형을 찾을수록, 이 긴장은 성장의 자극제가 됩니다.",
   },
   hongyeom: {
-    core: "이성을 끌어당기는 농밀한 매력, 관계의 온도를 높이는 기운이에요.",
+    core: "불특정 다수에게 인기 있는 도화살과 달리, 특정 사람의 시선을 집중적으로 끌어당기는 강한 유혹의 매력이에요.",
     positive:
-      "관능적인 분위기와 정서적 표현력이 풍부해, 사랑의 감정을 진하게 느끼고 나눌 수 있습니다. 애정 표현을 통해 상대에게 위로와 설렘을 주는 힘이 있습니다.",
+      "관능적인 분위기와 정서적 표현력이 살아 있어서, 마음을 움직이는 ‘결정타’가 되는 한마디·표정·연출을 만들어 내기 쉬워요. 특정 타깃에게 강하게 작동하는 만큼, 연예·방송·콘텐츠·인플루언서처럼 ‘관심을 모으는 직업’에서 존재감을 키우는 데 유리하게 쓰일 수 있습니다.",
     caution:
       "감정의 강도가 높다 보니 관계가 복잡해지기 쉬워요. 나의 진짜 필요와 순간의 감정 충동을 구분하는 연습을 할수록, 홍염은 소모가 아니라 힘을 채우는 연애로 변해 갑니다.",
   },
@@ -347,21 +347,22 @@ function detectSpecialStars(
   }
 
   // ---------- B형: 홍염살 ----------
-  const HONGYEOM_MAP: Record<string, string> = {
-    "甲": "午",
-    "乙": "申",
-    "丙": "寅",
-    "丁": "未",
-    "戊": "辰",
-    "己": "辰",
-    "庚": "戌",
-    "辛": "酉",
-    "壬": "子",
-    "癸": "申",
+  const HONGYEOM_MAP: Record<string, string[]> = {
+    // 사용자 기준표 반영 (복수 허용)
+    "甲": ["午", "申"],
+    "乙": ["午"],
+    "丙": ["寅"],
+    "丁": ["未"],
+    "戊": ["辰"],
+    "己": ["辰"],
+    "庚": ["申", "戌"],
+    "辛": ["酉"],
+    "壬": ["申", "子"],
+    "癸": ["申"],
   };
-  const hongBranch = HONGYEOM_MAP[dayStem];
-  if (hongBranch) {
-    const cnt = branches.filter((b) => b === hongBranch).length;
+  const hongTargets = HONGYEOM_MAP[dayStem];
+  if (hongTargets && hongTargets.length > 0) {
+    const cnt = branches.filter((b) => hongTargets.includes(b)).length;
     if (cnt > 0) {
       detected.push({
         key: "hongyeom",

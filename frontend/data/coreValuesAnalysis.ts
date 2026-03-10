@@ -24,6 +24,22 @@ export const MONTH_BRANCH_ARCHETYPES: Record<string, MonthBranchArchetype> = {
   "亥": { name: "亥(해수)", keywords: "이상과 영감, 깊은 감성, 보이지 않는 것을 신뢰하는 직관" },
 };
 
+/** 월지별 '짧은 대표 키워드(본문 선노출용)' */
+export const MONTH_BRANCH_CORE_LABEL: Record<string, string> = {
+  "子": "정서와 관계",
+  "丑": "안정과 현실감각",
+  "寅": "도전과 개척",
+  "卯": "조화와 감각",
+  "辰": "조정과 균형",
+  "巳": "성취와 집중",
+  "午": "표현과 존재감",
+  "未": "배려와 따뜻함",
+  "申": "전략과 효율",
+  "酉": "완성도와 기준",
+  "戌": "책임과 신념",
+  "亥": "이상과 직관",
+};
+
 /** 한글 마지막 글자 받침 여부 — 조사 선택용 */
 function hasBatchim(c: string): boolean {
   const code = c.charCodeAt(0);
@@ -39,14 +55,14 @@ function josaEunNeun(word: string): string {
   return hasBatchim(word[word.length - 1]) ? "은" : "는";
 }
 
-/** 말투별 문단 템플릿 — 450~500자, 2~3문단. 공감 도입·능력 연결·시간축 포함. {{branchName}}, {{branchNameJosa}}, {{keywords}}, {{tenGod}}, {{tenGodMeaning}}, {{tenGodMeaningJosa}} 치환 */
+/** 말투별 문단 템플릿 — 450~500자, 2~3문단. 공감 도입·능력 연결·시간축 포함. {{coreLabel}}, {{branchName}}, {{branchNameJosa}}, {{keywords}}, {{tenGod}}, {{tenGodMeaning}}, {{tenGodMeaningJosa}} 치환 */
 const CORE_VALUES_TEMPLATE: Record<CoreValuesToneKey, string> = {
   empathy:
-    "당신의 <strong>삶의 엔진</strong>은 {{branchName}}에서 가장 잘 드러납니다. 이 자리는 <strong>삶의 핵심적인 가치관과 지향점</strong>을 담는 자리예요. {{branchName}}{{branchNameJosa}} <strong>{{keywords}}</strong> 쪽으로 끌리기 때문에, 일상의 선택과 방향 설정에서도 이 성향이 반복적으로 나타나곤 해요. 일간 기준 월지는 ‘{{tenGod}}’에 해당하는 자리라 {{tenGodMeaning}}{{tenGodMeaningJosa}} <strong>핵심 가치</strong>로 두고 길을 선택하는 경향이 있어요. 그래서 중요한 선택의 순간마다 이 가치가 지켜지는지, 나다운 마음이 살아 있는지를 기준으로 방향을 정하는 <strong>능력</strong>이 있어요. 그런 점이 당신을 일관되게 이끄는 <strong>나침반</strong> 역할을 해요.",
+    "당신의 <strong>삶의 엔진</strong>은 <strong>{{coreLabel}}</strong>을 중요하게 여기는 방향에서 가장 잘 드러납니다. 이 자리는 <strong>삶의 핵심적인 가치관과 지향점</strong>을 담는 자리예요. 사주 구조에서는 이 흐름이 <strong>{{branchName}}</strong>과 연결됩니다. {{branchName}}{{branchNameJosa}} <strong>{{keywords}}</strong> 쪽으로 끌리기 때문에, 일상의 선택과 방향 설정에서도 이 성향이 반복적으로 나타나곤 해요. 일간 기준 월지는 ‘{{tenGod}}’에 해당하는 자리라 {{tenGodMeaning}}{{tenGodMeaningJosa}} <strong>핵심 가치</strong>로 두고 길을 선택하는 경향이 있어요. 그래서 중요한 선택의 순간마다 이 가치가 지켜지는지, 나다운 마음이 살아 있는지를 기준으로 방향을 정하는 <strong>능력</strong>이 있어요. 그런 점이 당신을 일관되게 이끄는 <strong>나침반</strong> 역할을 해요.",
   reality:
-    "당신의 <strong>삶의 엔진</strong>은 {{branchName}}에서 가장 잘 드러납니다. 이 자리는 <strong>삶의 핵심적인 가치관과 지향점</strong>을 담는 자리예요. {{branchName}}{{branchNameJosa}} <strong>{{keywords}}</strong> 쪽으로 끌리기 때문에, 일상의 선택과 방향 설정에서도 이 성향이 반복적으로 나타나는 구조예요. 일간 기준 월지는 ‘{{tenGod}}’에 해당하는 자리라 {{tenGodMeaning}}{{tenGodMeaningJosa}} <strong>핵심 가치</strong>로 두고 경로를 선택하는 경향이 있습니다. 중요한 선택 시점에는 해당 가치가 유지되는지, 자기 정체성이 살아 있는지를 기준으로 방향을 정하는 <strong>의사결정 역량</strong>이 뚜렷합니다. 이 구조가 일관성을 만듭니다.",
+    "당신의 <strong>삶의 엔진</strong>은 <strong>{{coreLabel}}</strong>을 중심으로 움직이는 구조에서 가장 잘 드러납니다. 이 자리는 <strong>삶의 핵심적인 가치관과 지향점</strong>을 보여주는 영역이고, 사주 구조에서는 <strong>{{branchName}}</strong>과 연결됩니다. {{branchName}}{{branchNameJosa}} <strong>{{keywords}}</strong> 쪽으로 끌리기 때문에, 일상의 선택과 방향 설정에서도 이 성향이 반복적으로 나타나는 구조예요. 일간 기준 월지는 ‘{{tenGod}}’에 해당하는 자리라 {{tenGodMeaning}}{{tenGodMeaningJosa}} <strong>핵심 가치</strong>로 두고 경로를 선택하는 경향이 있습니다. 중요한 선택 시점에는 해당 가치가 유지되는지, 자기 정체성이 살아 있는지를 기준으로 방향을 정하는 <strong>의사결정 역량</strong>이 뚜렷합니다. 이 구조가 일관성을 만듭니다.",
   fun:
-    "네 <strong>삶의 엔진</strong>은 {{branchName}}에서 제일 잘 드러나. 이 자리가 <strong>삶의 핵심적인 가치관과 지향점</strong>을 보여주는 자리라서, {{branchName}}{{branchNameJosa}} <strong>{{keywords}}</strong> 쪽으로 끌려서 일상에서 선택할 때도 이 성향이 자꾸 나오는 편이야. 월지는 ‘{{tenGod}}’에 해당하는 자리라서 {{tenGodMeaning}}{{tenGodMeaningJosa}} <strong>핵심 가치</strong>로 두고 길 고르는 경향이 있어. 중요한 선택할 때마다 이 가치가 지켜지는지, 내 마음이 살아 있는지 보고 방향 정하는 <strong>능력</strong>이 있어. 그게 네 <strong>나침반</strong> 역할을 해.",
+    "네 <strong>삶의 엔진</strong>은 <strong>{{coreLabel}}</strong> 쪽에서 제일 잘 돌아가. 이 자리가 <strong>삶의 핵심 가치관과 지향점</strong>을 보여주는 자리인데, 사주에서는 이 흐름을 <strong>{{branchName}}</strong>으로 읽어. {{branchName}}{{branchNameJosa}} <strong>{{keywords}}</strong> 쪽으로 끌려서 일상에서 선택할 때도 이 성향이 자꾸 나오는 편이야. 월지는 ‘{{tenGod}}’에 해당하는 자리라서 {{tenGodMeaning}}{{tenGodMeaningJosa}} <strong>핵심 가치</strong>로 두고 길 고르는 경향이 있어. 중요한 선택할 때마다 이 가치가 지켜지는지, 내 마음이 살아 있는지 보고 방향 정하는 <strong>능력</strong>이 있어. 그게 네 <strong>나침반</strong> 역할을 해.",
 };
 
 /** 십신별 핵심 가치 한 줄 — 3가지 말투 */
@@ -224,6 +240,7 @@ export function getCoreValuesParagraph(params: GetCoreValuesParams): string {
   const branchInfo = MONTH_BRANCH_ARCHETYPES[monthBranchHanja];
   const branchName = branchInfo?.name ?? (monthBranchHanja || "월지");
   const keywords = branchInfo?.keywords ?? "자기만의 방식으로 삶의 방향을 만들어 가는 기질";
+  const coreLabel = MONTH_BRANCH_CORE_LABEL[monthBranchHanja] ?? "나만의 가치 기준";
   const monthStem = getBranchMainStem(monthBranchHanja);
   const tenGodName = monthStem ? getTenGod(dayStemHanja, monthStem) : "";
   const tenGodRow = tenGodName ? TEN_GOD_CORE_MEANINGS[tenGodName] : null;
@@ -234,6 +251,7 @@ export function getCoreValuesParagraph(params: GetCoreValuesParams): string {
 
   const template = CORE_VALUES_TEMPLATE[tone];
   return template
+    .replace(/\{\{coreLabel\}\}/g, coreLabel)
     .replace(/\{\{branchName\}\}/g, branchName)
     .replace(/\{\{branchNameJosa\}\}/g, branchNameJosa)
     .replace(/\{\{keywords\}\}/g, keywords)

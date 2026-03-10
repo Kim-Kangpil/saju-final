@@ -261,7 +261,7 @@ const TEN_GOD_CARD_META: Record<
 > = {
   비견: {
     emoji: "🛤",
-    ability: "자기 길 개척",
+    ability: "자기주도력",
     tag: "CORE SKILL",
     tagColor: "#A78BD4",
     descShort: {
@@ -273,7 +273,7 @@ const TEN_GOD_CARD_META: Record<
   },
   겁재: {
     emoji: "🤝",
-    ability: "판 키우기",
+    ability: "판 장악력",
     tag: "PEOPLE SKILL",
     tagColor: "#7EB8A0",
     descShort: {
@@ -285,7 +285,7 @@ const TEN_GOD_CARD_META: Record<
   },
   식신: {
     emoji: "📦",
-    ability: "생산·결과물",
+    ability: "지속 생산력",
     tag: "PRODUCTION",
     tagColor: "#E8C87A",
     descShort: {
@@ -297,7 +297,7 @@ const TEN_GOD_CARD_META: Record<
   },
   상관: {
     emoji: "🧩",
-    ability: "틀 깨고 표현",
+    ability: "창의 표현력",
     tag: "CREATIVE",
     tagColor: "#E89A7A",
     descShort: {
@@ -309,7 +309,7 @@ const TEN_GOD_CARD_META: Record<
   },
   편재: {
     emoji: "⚡",
-    ability: "기회 포착",
+    ability: "기회 포착력",
     tag: "OPPORTUNITY",
     tagColor: "#7EB8D4",
     descShort: {
@@ -321,7 +321,7 @@ const TEN_GOD_CARD_META: Record<
   },
   정재: {
     emoji: "📊",
-    ability: "자원·가치 관리",
+    ability: "안정 관리력",
     tag: "MANAGEMENT",
     tagColor: "#C8C0A8",
     descShort: {
@@ -333,7 +333,7 @@ const TEN_GOD_CARD_META: Record<
   },
   편관: {
     emoji: "🎯",
-    ability: "위기·실행력",
+    ability: "압박 실행력",
     tag: "EXECUTION",
     tagColor: "#E89A7A",
     descShort: {
@@ -345,7 +345,7 @@ const TEN_GOD_CARD_META: Record<
   },
   정관: {
     emoji: "🏛",
-    ability: "조직·책임",
+    ability: "책임 리더십",
     tag: "ORGANIZATION",
     tagColor: "#7EB8A0",
     descShort: {
@@ -357,7 +357,7 @@ const TEN_GOD_CARD_META: Record<
   },
   편인: {
     emoji: "🔬",
-    ability: "통찰·구조 읽기",
+    ability: "구조 통찰력",
     tag: "ANALYSIS",
     tagColor: "#A78BD4",
     descShort: {

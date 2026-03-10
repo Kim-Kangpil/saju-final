@@ -1281,145 +1281,149 @@ export default function Page() {
         });
 
         // 7) 종합 요약 및 인생 가이드용 요약 데이터 계산 + GPT 호출
-        (async () => {
-          try {
-            const elemCount: Record<"목" | "화" | "토" | "금" | "수", number> = {
-              목: 0,
-              화: 0,
-              토: 0,
-              금: 0,
-              수: 0,
-            };
-            const STEM_TO_EL: Record<string, "목" | "화" | "토" | "금" | "수"> = {
-              甲: "목",
-              乙: "목",
-              丙: "화",
-              丁: "화",
-              戊: "토",
-              己: "토",
-              庚: "금",
-              辛: "금",
-              壬: "수",
-              癸: "수",
-            };
-            const BRANCH_TO_EL: Record<string, "목" | "화" | "토" | "금" | "수"> = {
-              寅: "목",
-              卯: "목",
-              巳: "화",
-              午: "화",
-              辰: "토",
-              戌: "토",
-              丑: "토",
-              未: "토",
-              申: "금",
-              酉: "금",
-              子: "수",
-              亥: "수",
-            };
+        try {
+          const elemCount: Record<"목" | "화" | "토" | "금" | "수", number> = {
+            목: 0,
+            화: 0,
+            토: 0,
+            금: 0,
+            수: 0,
+          };
+          const STEM_TO_EL: Record<string, "목" | "화" | "토" | "금" | "수"> = {
+            甲: "목",
+            乙: "목",
+            丙: "화",
+            丁: "화",
+            戊: "토",
+            己: "토",
+            庚: "금",
+            辛: "금",
+            壬: "수",
+            癸: "수",
+          };
+          const BRANCH_TO_EL: Record<string, "목" | "화" | "토" | "금" | "수"> = {
+            寅: "목",
+            卯: "목",
+            巳: "화",
+            午: "화",
+            辰: "토",
+            戌: "토",
+            丑: "토",
+            未: "토",
+            申: "금",
+            酉: "금",
+            子: "수",
+            亥: "수",
+          };
 
-            const stems = [
-              result.year.cheongan.hanja,
-              result.month.cheongan.hanja,
-              result.day.cheongan.hanja,
-              result.hour.cheongan.hanja,
-            ];
-            const branches = [
-              result.year.jiji.hanja,
-              result.month.jiji.hanja,
-              result.day.jiji.hanja,
-              result.hour.jiji.hanja,
-            ];
+          const stems = [
+            result.year.cheongan.hanja,
+            result.month.cheongan.hanja,
+            result.day.cheongan.hanja,
+            result.hour.cheongan.hanja,
+          ];
+          const branches = [
+            result.year.jiji.hanja,
+            result.month.jiji.hanja,
+            result.day.jiji.hanja,
+            result.hour.jiji.hanja,
+          ];
 
-            stems.forEach((s) => {
-              const el = STEM_TO_EL[s[0]];
-              if (el) elemCount[el] += 1;
-            });
-            branches.forEach((b) => {
-              const el = BRANCH_TO_EL[b[0]];
-              if (el) elemCount[el] += 1;
-            });
+          stems.forEach((s) => {
+            const el = STEM_TO_EL[s[0]];
+            if (el) elemCount[el] += 1;
+          });
+          branches.forEach((b) => {
+            const el = BRANCH_TO_EL[b[0]];
+            if (el) elemCount[el] += 1;
+          });
 
-            const sipsungInit: Record<
-              "비견" | "겁재" | "식신" | "상관" | "정재" | "편재" | "정관" | "편관" | "정인" | "편인",
-              number
-            > = {
-              비견: 0,
-              겁재: 0,
-              식신: 0,
-              상관: 0,
-              정재: 0,
-              편재: 0,
-              정관: 0,
-              편관: 0,
-              정인: 0,
-              편인: 0,
-            };
-            const sipsungCount = { ...sipsungInit };
-            const inc = (name: string) => {
-              if (name && (sipsungCount as any)[name] !== undefined) {
-                (sipsungCount as any)[name] += 1;
-              }
-            };
-            stems.forEach((s) => {
-              inc(tenGod(dayStem, s));
-            });
-            branches.forEach((b) => {
-              const main = branchMainStem(b);
-              if (main) inc(tenGod(dayStem, main));
-            });
-
-            const branchSet = new Set(branches);
-            const hasPair = (a: string, b: string) => branchSet.has(a) && branchSet.has(b);
-
-            const chung: ("자오충" | "묘유충" | "진술충" | "인신충" | "사해충" | "축미충")[] = [];
-            if (hasPair("子", "午")) chung.push("자오충");
-            if (hasPair("卯", "酉")) chung.push("묘유충");
-            if (hasPair("辰", "戌")) chung.push("진술충");
-            if (hasPair("寅", "申")) chung.push("인신충");
-            if (hasPair("巳", "亥")) chung.push("사해충");
-            if (hasPair("丑", "未")) chung.push("축미충");
-
-            const hyung: ("인사신" | "축술미" | "자묘형")[] = [];
-            if (branchSet.has("寅") && branchSet.has("巳") && branchSet.has("申")) hyung.push("인사신");
-            if (branchSet.has("丑") && branchSet.has("戌") && branchSet.has("未")) hyung.push("축술미");
-            if (hasPair("子", "卯")) hyung.push("자묘형");
-
-            const shingangLevel =
-              strengthResult?.type === "신강"
-                ? "신강"
-                : strengthResult?.type === "신약"
-                ? "신약"
-                : ("중간" as const);
-
-            const summaryInput: SummaryInput = {
-              dayStem,
-              elements: elemCount,
-              sipsung: sipsungCount,
-              chung,
-              hyung,
-              shingang: shingangLevel,
-            };
-
-            const promptData = buildSummaryPromptData(summaryInput);
-            const userPrompt = buildSummaryUserPrompt(promptData);
-
-            const summaryRes = await fetch(`${API_BASE}/saju/summary-gpt`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                system: SUMMARY_SYSTEM_PROMPT,
-                user: userPrompt,
-              }),
-            });
-            const summaryJson = await summaryRes.json();
-            if (summaryJson?.summary) {
-              setSummaryGuide(summaryJson.summary);
+          const sipsungInit: Record<
+            "비견" | "겁재" | "식신" | "상관" | "정재" | "편재" | "정관" | "편관" | "정인" | "편인",
+            number
+          > = {
+            비견: 0,
+            겁재: 0,
+            식신: 0,
+            상관: 0,
+            정재: 0,
+            편재: 0,
+            정관: 0,
+            편관: 0,
+            정인: 0,
+            편인: 0,
+          };
+          const sipsungCount = { ...sipsungInit };
+          const inc = (name: string) => {
+            if (name && (sipsungCount as any)[name] !== undefined) {
+              (sipsungCount as any)[name] += 1;
             }
-          } catch (e) {
-            console.error("종합 요약 생성 오류:", e);
-            setSummaryGuide(null);
-          }
-        })();
+          };
+          stems.forEach((s) => {
+            inc(tenGod(dayStem, s));
+          });
+          branches.forEach((b) => {
+            const main = branchMainStem(b);
+            if (main) inc(tenGod(dayStem, main));
+          });
+
+          const branchSet = new Set(branches);
+          const hasPair = (a: string, b: string) => branchSet.has(a) && branchSet.has(b);
+
+          const chung: ("자오충" | "묘유충" | "진술충" | "인신충" | "사해충" | "축미충")[] = [];
+          if (hasPair("子", "午")) chung.push("자오충");
+          if (hasPair("卯", "酉")) chung.push("묘유충");
+          if (hasPair("辰", "戌")) chung.push("진술충");
+          if (hasPair("寅", "申")) chung.push("인신충");
+          if (hasPair("巳", "亥")) chung.push("사해충");
+          if (hasPair("丑", "未")) chung.push("축미충");
+
+          const hyung: ("인사신" | "축술미" | "자묘형")[] = [];
+          if (branchSet.has("寅") && branchSet.has("巳") && branchSet.has("申")) hyung.push("인사신");
+          if (branchSet.has("丑") && branchSet.has("戌") && branchSet.has("未")) hyung.push("축술미");
+          if (hasPair("子", "卯")) hyung.push("자묘형");
+
+          const shingangLevel =
+            strengthResult?.type === "신강"
+              ? "신강"
+              : strengthResult?.type === "신약"
+              ? "신약"
+              : ("중간" as const);
+
+          const summaryInput: SummaryInput = {
+            dayStem,
+            elements: elemCount,
+            sipsung: sipsungCount,
+            chung,
+            hyung,
+            shingang: shingangLevel,
+          };
+
+          const promptData = buildSummaryPromptData(summaryInput);
+          const userPrompt = buildSummaryUserPrompt(promptData);
+
+          fetch(`${API_BASE}/saju/summary-gpt`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              system: SUMMARY_SYSTEM_PROMPT,
+              user: userPrompt,
+            }),
+          })
+            .then((res) => res.json())
+            .then((summaryJson) => {
+              if (summaryJson?.summary) {
+                setSummaryGuide(summaryJson.summary);
+              }
+            })
+            .catch((e) => {
+              console.error("종합 요약 생성 오류:", e);
+              setSummaryGuide(null);
+            });
+        } catch (e) {
+          console.error("종합 요약 준비 오류:", e);
+          setSummaryGuide(null);
+        }
 
       } catch (error) {
         console.error("대운세운 분석 오류:", error);

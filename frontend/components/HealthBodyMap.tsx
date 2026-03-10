@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Image from "next/image";
 import type { HealthBodyMapData, BodyPoint } from "../data/healthConstitutionAnalysis";
 
 interface HealthBodyMapProps {
@@ -30,90 +31,68 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
         <span className="text-[9px] text-[#8a9a78]">진한 색 = 에너지 집중</span>
       </div>
 
-      {/* SVG 바디맵 */}
-      <div className="relative w-40 mx-auto">
-        <svg viewBox="0 0 100 220" xmlns="http://www.w3.org/2000/svg" className="w-full drop-shadow-sm">
-          <defs>
-            <linearGradient id="hb-bg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#ddeedd" />
-              <stop offset="100%" stopColor="#c5d9c0" />
-            </linearGradient>
-          </defs>
+      {/* 이미지 기반 바디맵 */}
+      <div className="relative w-40 mx-auto aspect-[10/22]">
+        <Image
+          src="/health-body.png"
+          alt="체질 바디맵 실루엣"
+          fill
+          className="object-contain"
+          priority={false}
+        />
 
-          {/* 사용자 제공 실루엣 이미지 (public/health-body.png 기준) */}
-          <image
-            href="/health-body.png"
-            x="0"
-            y="0"
-            width="100"
-            height="220"
-            preserveAspectRatio="xMidYMid meet"
-            opacity="0.98"
-          />
-
-          {/* 포인트 마커 */}
-          {bodyPoints.map((p) => (
-            <g
-              key={p.id}
-              style={{ cursor: "pointer" }}
-              onMouseEnter={() => setHovered(p.id)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              {/* danger 맥동 링 */}
-              {p.status === "danger" && (
-                <circle cx={p.position.x} cy={p.position.y} r="9" fill={p.color} opacity="0.25">
-                  <animate attributeName="r" values="7;12;7" dur="1.8s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="0.3;0;0.3" dur="1.8s" repeatCount="indefinite" />
-                </circle>
-              )}
-
-              {/* 마커 원 */}
-              <circle
-                cx={p.position.x}
-                cy={p.position.y}
-                r={hovered === p.id ? 7 : 5.5}
-                fill={p.color}
-                stroke="white"
-                strokeWidth="1.5"
-                style={{ transition: "r 0.2s" }}
+        {bodyPoints.map((p) => (
+          <div
+            key={p.id}
+            className="absolute"
+            style={{
+              left: `${p.position.x}%`,
+              top: `${p.position.y}%`,
+              transform: "translate(-50%, -50%)",
+              cursor: "pointer",
+            }}
+            onMouseEnter={() => setHovered(p.id)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            {p.status === "danger" && (
+              <div
+                className="rounded-full"
+                style={{
+                  width: 18,
+                  height: 18,
+                  backgroundColor: p.color,
+                  opacity: 0.25,
+                  boxShadow: `0 0 0 4px ${p.color}40`,
+                }}
               />
+            )}
+            <div
+              className="rounded-full border border-white shadow-sm"
+              style={{
+                width: hovered === p.id ? 14 : 11,
+                height: hovered === p.id ? 14 : 11,
+                backgroundColor: p.color,
+                transition: "all 0.18s ease",
+                marginTop: p.status === "danger" ? -16 : 0,
+                marginLeft: p.status === "danger" ? -16 : 0,
+              }}
+            />
 
-              {/* 호버 툴팁 */}
-              {hovered === p.id && (
-                <g>
-                  <rect
-                    x={p.position.x > 60 ? p.position.x - 38 : p.position.x + 9}
-                    y={p.position.y - 12}
-                    width="38"
-                    height="18"
-                    rx="4"
-                    fill="#1a2e1a"
-                    opacity="0.88"
-                  />
-                  <text
-                    x={p.position.x > 60 ? p.position.x - 19 : p.position.x + 28}
-                    y={p.position.y - 2}
-                    textAnchor="middle"
-                    fontSize="5.5"
-                    fill="white"
-                    fontWeight="bold"
-                  >
-                    {p.organ}
-                  </text>
-                  <text
-                    x={p.position.x > 60 ? p.position.x - 19 : p.position.x + 28}
-                    y={p.position.y + 5}
-                    textAnchor="middle"
-                    fontSize="4.5"
-                    fill="#bbddbb"
-                  >
-                    {statusLabel(p.status)}
-                  </text>
-                </g>
-              )}
-            </g>
-          ))}
-        </svg>
+            {hovered === p.id && (
+              <div
+                className="absolute z-10 px-2 py-[3px] rounded-md bg-[#1a2e1a]/90 text-white text-[8px] leading-snug"
+                style={{
+                  whiteSpace: "nowrap",
+                  left: p.position.x > 60 ? "-100%" : "0%",
+                  top: -18,
+                }}
+              >
+                <span className="font-semibold mr-1">{p.organ}</span>
+                <span className="text-[7px] text-[#bbddbb]">{statusLabel(p.status)}</span>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       {/* 범례 */}

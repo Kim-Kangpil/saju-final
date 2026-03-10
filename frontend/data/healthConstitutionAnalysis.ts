@@ -524,21 +524,28 @@ export interface HealthBodyMapData {
 }
 
 const BODY_POINT_BASE: Record<BodyPoint["id"], { organ: string; element: Element; position: BodyPointPosition }> = {
-  brain: { organ: "뇌·신경", element: "water", position: { x: 50, y: 8 } },
+  // 머리 위쪽 1/10 구간
+  brain: { organ: "뇌·신경", element: "water", position: { x: 50, y: 9 } },
   eye: { organ: "눈·시신경", element: "wood", position: { x: 50, y: 16 } },
   nose: { organ: "코·기관지", element: "metal", position: { x: 50, y: 22 } },
+  // 가슴 중심부
   heart: { organ: "심장", element: "fire", position: { x: 52, y: 32 } },
-  lung: { organ: "폐", element: "metal", position: { x: 44, y: 30 } },
-  liver: { organ: "간·담", element: "wood", position: { x: 45, y: 40 } },
-  stomach: { organ: "위장", element: "earth", position: { x: 50, y: 45 } },
-  spleen: { organ: "비장·췌장", element: "earth", position: { x: 55, y: 47 } },
+  lung: { organ: "폐", element: "metal", position: { x: 44, y: 29 } },
+  // 상복부
+  liver: { organ: "간·담", element: "wood", position: { x: 45, y: 39 } },
+  stomach: { organ: "위장", element: "earth", position: { x: 50, y: 46 } },
+  spleen: { organ: "비장·췌장", element: "earth", position: { x: 55, y: 48 } },
+  // 복부/장기
   smallIntestine: { organ: "소장", element: "fire", position: { x: 50, y: 55 } },
-  largeIntestine: { organ: "대장", element: "metal", position: { x: 50, y: 62 } },
-  kidney: { organ: "신장", element: "water", position: { x: 45, y: 70 } },
-  bladder: { organ: "방광·생식", element: "water", position: { x: 50, y: 80 } },
-  spine: { organ: "척추·뼈", element: "water", position: { x: 50, y: 38 } },
-  skin: { organ: "피부", element: "metal", position: { x: 32, y: 34 } },
-  blood: { organ: "혈관·혈액", element: "fire", position: { x: 50, y: 35 } },
+  largeIntestine: { organ: "대장", element: "metal", position: { x: 50, y: 61 } },
+  // 허리·골반 부위
+  kidney: { organ: "신장", element: "water", position: { x: 45, y: 68 } },
+  bladder: { organ: "방광·생식", element: "water", position: { x: 50, y: 77 } },
+  // 척추·피부·혈류
+  spine: { organ: "척추·뼈", element: "water", position: { x: 50, y: 37 } },
+  skin: { organ: "피부", element: "metal", position: { x: 33, y: 33 } },
+  blood: { organ: "혈관·혈액", element: "fire", position: { x: 50, y: 34 } },
+  // 전신 면역/체력
   immunity: { organ: "면역·회복력", element: "water", position: { x: 50, y: 25 } },
   stamina: { organ: "기초 체력", element: "earth", position: { x: 50, y: 88 } },
 };

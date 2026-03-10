@@ -478,3 +478,486 @@ export function getHealthConstitutionParagraph(params: HealthAnalysisParams): st
   return paras.join("\n\n").trim();
 }
 
+// =====================================================
+// 체질 바디맵 시각화용 데이터
+// =====================================================
+
+export type BodyPointStatus = "danger" | "caution" | "strength";
+
+export interface BodyPointPosition {
+  x: number;
+  y: number;
+}
+
+export interface BodyPoint {
+  id:
+    | "brain"
+    | "eye"
+    | "nose"
+    | "heart"
+    | "lung"
+    | "liver"
+    | "stomach"
+    | "spleen"
+    | "smallIntestine"
+    | "largeIntestine"
+    | "kidney"
+    | "bladder"
+    | "spine"
+    | "skin"
+    | "blood"
+    | "immunity"
+    | "stamina";
+  organ: string;
+  element: Element;
+  color: string;
+  status: BodyPointStatus;
+  reason: string;
+  desc: string;
+  position: BodyPointPosition;
+}
+
+export interface HealthBodyMapData {
+  bodyPoints: BodyPoint[];
+  bodyType: string;
+  recovery: "약" | "보통" | "강";
+}
+
+const BODY_POINT_BASE: Record<BodyPoint["id"], { organ: string; element: Element; position: BodyPointPosition }> = {
+  brain: { organ: "뇌·신경", element: "water", position: { x: 50, y: 5 } },
+  eye: { organ: "눈·시신경", element: "wood", position: { x: 44, y: 10 } },
+  nose: { organ: "코·기관지", element: "metal", position: { x: 50, y: 14 } },
+  heart: { organ: "심장", element: "fire", position: { x: 46, y: 28 } },
+  lung: { organ: "폐", element: "metal", position: { x: 38, y: 26 } },
+  liver: { organ: "간·담", element: "wood", position: { x: 42, y: 33 } },
+  stomach: { organ: "위장", element: "earth", position: { x: 50, y: 36 } },
+  spleen: { organ: "비장·췌장", element: "earth", position: { x: 44, y: 38 } },
+  smallIntestine: { organ: "소장", element: "fire", position: { x: 50, y: 42 } },
+  largeIntestine: { organ: "대장", element: "metal", position: { x: 54, y: 44 } },
+  kidney: { organ: "신장", element: "water", position: { x: 44, y: 44 } },
+  bladder: { organ: "방광·생식", element: "water", position: { x: 50, y: 52 } },
+  spine: { organ: "척추·뼈", element: "water", position: { x: 50, y: 35 } },
+  skin: { organ: "피부", element: "metal", position: { x: 35, y: 30 } },
+  blood: { organ: "혈관·혈액", element: "fire", position: { x: 48, y: 32 } },
+  immunity: { organ: "면역·회복력", element: "water", position: { x: 50, y: 24 } },
+  stamina: { organ: "기초 체력", element: "earth", position: { x: 50, y: 60 } },
+};
+
+const ELEMENT_STATUS_COLOR: Record<Element, { danger: string; caution: string; strength: string }> = {
+  wood: {
+    danger: "#E8724A",
+    caution: "#A8C97F",
+    strength: "#4CAF50",
+  },
+  fire: {
+    danger: "#E53935",
+    caution: "#FFB74D",
+    strength: "#FF7043",
+  },
+  earth: {
+    danger: "#C8A96E",
+    caution: "#FFD54F",
+    strength: "#8D6E63",
+  },
+  metal: {
+    danger: "#B0B0B0",
+    caution: "#E0E0E0",
+    strength: "#CFD8DC",
+  },
+  water: {
+    danger: "#1565C0",
+    caution: "#64B5F6",
+    strength: "#4FC3F7",
+  },
+};
+
+type BodyReasonCode =
+  | "오행과다"
+  | "오행부족"
+  | "월지체질"
+  | "충"
+  | "형"
+  | "인성강"
+  | "신강";
+
+interface BodyPointAgg {
+  id: BodyPoint["id"];
+  dangerSources: number;
+  cautionSources: number;
+  strengthSources: number;
+  reasons: Set<BodyReasonCode>;
+}
+
+function ensureAgg(map: Map<BodyPoint["id"], BodyPointAgg>, id: BodyPoint["id"]): BodyPointAgg {
+  const existing = map.get(id);
+  if (existing) return existing;
+  const created: BodyPointAgg = {
+    id,
+    dangerSources: 0,
+    cautionSources: 0,
+    strengthSources: 0,
+    reasons: new Set<BodyReasonCode>(),
+  };
+  map.set(id, created);
+  return created;
+}
+
+function pickMainReason(reasons: Set<BodyReasonCode>): BodyReasonCode | "기타" {
+  const order: BodyReasonCode[] = ["충", "형", "오행과다", "월지체질", "오행부족", "인성강", "신강"];
+  for (const r of order) {
+    if (reasons.has(r)) return r;
+  }
+  return "기타";
+}
+
+function buildBodyPointDesc(
+  organ: string,
+  element: Element,
+  status: BodyPointStatus,
+  reason: BodyReasonCode | "기타"
+): string {
+  const statusText: Record<BodyPointStatus, string> = {
+    danger: "주의가 필요한 부위입니다.",
+    caution: "꾸준한 관리가 필요한 부위입니다.",
+    strength: "타고난 강점 부위입니다.",
+  };
+
+  const elementKo = ELEMENT_KO[element];
+
+  const reasonText: Record<BodyReasonCode | "기타", string> = {
+    오행과다: `${elementKo} 기운이 과하게 몰려 과열·염증 경향이 있습니다.`,
+    오행부족: `${elementKo} 기운이 부족해 기능이 약해지기 쉬운 구조입니다.`,
+    월지체질: `태어난 계절 환경상 이 부위가 민감하게 반응하는 체질입니다.`,
+    충: `에너지 충돌 구조로 이 부위에 긴장이 반복되기 쉽습니다.`,
+    형: `비틀린 에너지 구조로 만성적인 기능 이상이 나타나기 쉽습니다.`,
+    인성강: `회복력과 면역력이 타고난 강점으로 작용합니다.`,
+    신강: `기초 체력이 좋고 회복이 빠른 구조입니다.`,
+    기타: "",
+  };
+
+  return `${organ}은(는) ${statusText[status]} ${reasonText[reason]}`.trim();
+}
+
+// 월지별 바디맵 취약 부위
+const MONTH_BODY_POINTS: Record<
+  string,
+  Array<{ id: BodyPoint["id"]; status: BodyPointStatus }>
+> = {
+  "子": [
+    { id: "kidney", status: "caution" },
+    { id: "bladder", status: "caution" },
+  ],
+  "亥": [
+    { id: "kidney", status: "caution" },
+    { id: "bladder", status: "caution" },
+    { id: "spine", status: "caution" },
+  ],
+  "丑": [{ id: "stomach", status: "caution" }],
+  "寅": [
+    { id: "liver", status: "caution" },
+    { id: "eye", status: "caution" },
+  ],
+  "卯": [
+    { id: "liver", status: "caution" },
+    { id: "eye", status: "caution" },
+  ],
+  "辰": [
+    { id: "stomach", status: "caution" },
+    { id: "skin", status: "caution" },
+  ],
+  "巳": [
+    { id: "heart", status: "danger" },
+    { id: "blood", status: "danger" },
+  ],
+  "午": [
+    { id: "heart", status: "danger" },
+    { id: "blood", status: "danger" },
+  ],
+  "未": [{ id: "stomach", status: "caution" }],
+  "申": [
+    { id: "lung", status: "caution" },
+    { id: "nose", status: "caution" },
+    { id: "skin", status: "caution" },
+  ],
+  "酉": [
+    { id: "lung", status: "caution" },
+    { id: "nose", status: "caution" },
+    { id: "skin", status: "caution" },
+  ],
+  "戌": [
+    { id: "stomach", status: "caution" },
+    { id: "skin", status: "caution" },
+    { id: "spine", status: "caution" },
+  ],
+};
+
+// 충·형 → 바디맵 부위
+const CHONG_BODY_POINTS: Record<
+  string,
+  { ids: BodyPoint["id"][]; status: BodyPointStatus }
+> = {
+  "子午충": { ids: ["heart", "kidney"], status: "danger" },
+  "丑未충": { ids: ["stomach", "spleen"], status: "danger" },
+  "寅申충": { ids: ["liver", "lung"], status: "danger" },
+  "卯酉충": { ids: ["liver", "eye", "lung"], status: "danger" },
+  "辰戌충": { ids: ["stomach", "spine"], status: "danger" },
+  "巳亥충": { ids: ["heart", "kidney"], status: "danger" },
+  "寅巳申삼형": { ids: ["lung", "liver"], status: "danger" },
+  "丑戌未삼형": { ids: ["stomach", "spleen", "skin"], status: "danger" },
+  "子卯자형": { ids: ["kidney", "liver"], status: "caution" },
+};
+
+function detectChongHyung(branches: [string, string, string, string]): string[] {
+  const [yearBranch, monthBranch, dayBranch, hourBranch] = branches;
+  const all = [yearBranch, monthBranch, dayBranch, hourBranch];
+  const set = new Set(all);
+  const results: string[] = [];
+
+  const has = (a: string, b: string) => set.has(a) && set.has(b);
+
+  if (has("子", "午")) results.push("子午충");
+  if (has("丑", "未")) results.push("丑未충");
+  if (has("寅", "申")) results.push("寅申충");
+  if (has("卯", "酉")) results.push("卯酉충");
+  if (has("辰", "戌")) results.push("辰戌충");
+  if (has("巳", "亥")) results.push("巳亥충");
+
+  if (set.has("寅") && set.has("巳") && set.has("申")) results.push("寅巳申삼형");
+  if (set.has("丑") && set.has("戌") && set.has("未")) results.push("丑戌未삼형");
+  if (has("子", "卯")) results.push("子卯자형");
+
+  return results;
+}
+
+export function getHealthBodyMapData(params: HealthAnalysisParams): HealthBodyMapData {
+  const { dayStem, stems, branches, tenGod } = params;
+  const [, monthStem, ,] = stems;
+  const [yearBranch, monthBranch, dayBranch, hourBranch] = branches;
+
+  // 1) 오행 분포
+  const elementCount = countElementsFromPillars(stems, branches);
+
+  // 과다/부족 오행
+  const overElements: Element[] = [];
+  const underElements: Element[] = [];
+  (Object.entries(elementCount) as [Element, number][]).forEach(([el, n]) => {
+    if (n >= 3) overElements.push(el);
+    if (n <= 1) underElements.push(el);
+  });
+
+  // 2) 신강/신약 & 인성
+  const { deukRyeong, deukJi, deukSe } = computeDeukRyeongJiSe(dayStem, stems, branches, tenGod);
+  const shin = classifyShinState(deukRyeong, deukJi, deukSe);
+  const { count: inseongCount } = countInseong(dayStem, stems, branches, tenGod);
+
+  // 3) 월지 체질
+  const monthEnv = MONTH_ENV_LABEL[monthBranch] ?? "";
+
+  // 4) 충·형 구조
+  const chongHyungList = detectChongHyung(branches);
+
+  const aggMap = new Map<BodyPoint["id"], BodyPointAgg>();
+
+  // --- 오행 과다 → danger ---
+  for (const el of overElements) {
+    if (el === "wood") {
+      const a1 = ensureAgg(aggMap, "liver");
+      a1.dangerSources++;
+      a1.reasons.add("오행과다");
+      const a2 = ensureAgg(aggMap, "eye");
+      a2.dangerSources++;
+      a2.reasons.add("오행과다");
+    } else if (el === "fire") {
+      const a1 = ensureAgg(aggMap, "heart");
+      a1.dangerSources++;
+      a1.reasons.add("오행과다");
+      const a2 = ensureAgg(aggMap, "blood");
+      a2.dangerSources++;
+      a2.reasons.add("오행과다");
+    } else if (el === "earth") {
+      const a1 = ensureAgg(aggMap, "stomach");
+      a1.dangerSources++;
+      a1.reasons.add("오행과다");
+      const a2 = ensureAgg(aggMap, "spleen");
+      a2.dangerSources++;
+      a2.reasons.add("오행과다");
+    } else if (el === "metal") {
+      const a1 = ensureAgg(aggMap, "lung");
+      a1.dangerSources++;
+      a1.reasons.add("오행과다");
+      const a2 = ensureAgg(aggMap, "nose");
+      a2.dangerSources++;
+      a2.reasons.add("오행과다");
+      const a3 = ensureAgg(aggMap, "largeIntestine");
+      a3.dangerSources++;
+      a3.reasons.add("오행과다");
+    } else if (el === "water") {
+      const a1 = ensureAgg(aggMap, "kidney");
+      a1.dangerSources++;
+      a1.reasons.add("오행과다");
+      const a2 = ensureAgg(aggMap, "bladder");
+      a2.dangerSources++;
+      a2.reasons.add("오행과다");
+    }
+  }
+
+  // --- 오행 부족 → caution ---
+  for (const el of underElements) {
+    if (el === "wood") {
+      const a1 = ensureAgg(aggMap, "liver");
+      a1.cautionSources++;
+      a1.reasons.add("오행부족");
+      const a2 = ensureAgg(aggMap, "eye");
+      a2.cautionSources++;
+      a2.reasons.add("오행부족");
+    } else if (el === "fire") {
+      const a1 = ensureAgg(aggMap, "heart");
+      a1.cautionSources++;
+      a1.reasons.add("오행부족");
+      const a2 = ensureAgg(aggMap, "blood");
+      a2.cautionSources++;
+      a2.reasons.add("오행부족");
+    } else if (el === "earth") {
+      const a1 = ensureAgg(aggMap, "stomach");
+      a1.cautionSources++;
+      a1.reasons.add("오행부족");
+      const a2 = ensureAgg(aggMap, "spleen");
+      a2.cautionSources++;
+      a2.reasons.add("오행부족");
+    } else if (el === "metal") {
+      const a1 = ensureAgg(aggMap, "lung");
+      a1.cautionSources++;
+      a1.reasons.add("오행부족");
+      const a2 = ensureAgg(aggMap, "skin");
+      a2.cautionSources++;
+      a2.reasons.add("오행부족");
+      const a3 = ensureAgg(aggMap, "largeIntestine");
+      a3.cautionSources++;
+      a3.reasons.add("오행부족");
+    } else if (el === "water") {
+      const a1 = ensureAgg(aggMap, "kidney");
+      a1.cautionSources++;
+      a1.reasons.add("오행부족");
+      const a2 = ensureAgg(aggMap, "brain");
+      a2.cautionSources++;
+      a2.reasons.add("오행부족");
+      const a3 = ensureAgg(aggMap, "spine");
+      a3.cautionSources++;
+      a3.reasons.add("오행부족");
+    }
+  }
+
+  // --- 월지 체질 ---
+  const monthPoints = MONTH_BODY_POINTS[monthBranch];
+  if (monthPoints) {
+    for (const mp of monthPoints) {
+      const a = ensureAgg(aggMap, mp.id);
+      if (mp.status === "danger") a.dangerSources++;
+      if (mp.status === "caution") a.cautionSources++;
+      a.reasons.add("월지체질");
+    }
+  }
+
+  // --- 충·형 ---
+  for (const key of chongHyungList) {
+    const cfg = CHONG_BODY_POINTS[key];
+    if (!cfg) continue;
+    for (const id of cfg.ids) {
+      const a = ensureAgg(aggMap, id);
+      if (cfg.status === "danger") a.dangerSources++;
+      if (cfg.status === "caution") a.cautionSources++;
+      if (key.endsWith("삼형") || key.endsWith("자형")) {
+        a.reasons.add("형");
+      } else {
+        a.reasons.add("충");
+      }
+    }
+  }
+
+  // --- 인성 회복력 strength 포인트 ---
+  if (inseongCount >= 2) {
+    const a = ensureAgg(aggMap, "immunity");
+    a.strengthSources++;
+    a.reasons.add("인성강");
+  }
+
+  // --- 신강/신약 기초 체력 포인트 ---
+  if (shin === "신강" || shin === "극신약" || shin === "신약") {
+    const a = ensureAgg(aggMap, "stamina");
+    if (shin === "신강") {
+      a.strengthSources++;
+      a.reasons.add("신강");
+    } else {
+      a.cautionSources++;
+      a.reasons.add("신강");
+    }
+  }
+
+  // --- 최종 상태 결정 + 최대 5개 필터 ---
+  const allAgg = Array.from(aggMap.values()).map((a) => {
+    let status: BodyPointStatus | null = null;
+    if (a.dangerSources > 0) {
+      status = "danger";
+    } else if (a.cautionSources >= 2) {
+      status = "danger";
+    } else if (a.cautionSources === 1) {
+      status = "caution";
+    } else if (a.strengthSources > 0) {
+      status = "strength";
+    }
+    return { ...a, status };
+  });
+
+  const filtered = allAgg.filter((a) => a.status !== null) as Array<
+    BodyPointAgg & { status: BodyPointStatus }
+  >;
+
+  // 우선순위 정렬
+  filtered.sort((a, b) => {
+    const score = (x: BodyPointAgg & { status: BodyPointStatus }) => {
+      let s = 0;
+      if (x.status === "danger") s += 4;
+      if (x.status === "caution") s += 2;
+      if (x.status === "strength") s += 1;
+      s += x.dangerSources + x.cautionSources + x.strengthSources * 0.5;
+      return -s;
+    };
+    return score(a) - score(b);
+  });
+
+  const top5 = filtered.slice(0, 5);
+
+  const bodyPoints: BodyPoint[] = top5.map((a) => {
+    const base = BODY_POINT_BASE[a.id];
+    const status = a.status;
+    const mainReason = pickMainReason(a.reasons);
+    const color = ELEMENT_STATUS_COLOR[base.element][status];
+    const desc = buildBodyPointDesc(base.organ, base.element, status, mainReason);
+    return {
+      id: a.id,
+      organ: base.organ,
+      element: base.element,
+      color,
+      status,
+      reason: mainReason,
+      desc,
+      position: base.position,
+    };
+  });
+
+  const bodyType = monthEnv ? monthEnv.split("(")[0].trim() : "기본 체질";
+
+  let recovery: "약" | "보통" | "강" = "보통";
+  if (inseongCount === 0 && (shin === "신약" || shin === "극신약")) {
+    recovery = "약";
+  } else if (inseongCount >= 2 && shin === "신강") {
+    recovery = "강";
+  }
+
+  return {
+    bodyPoints,
+    bodyType,
+    recovery,
+  };
+}
+

@@ -30,7 +30,9 @@ import {
 } from "../../data/emotionalWeaknessAnalysis";
 import {
   getHealthConstitutionParagraph,
+  getHealthBodyMapData,
   type HealthAnalysisParams,
+  type HealthBodyMapData,
 } from "../../data/healthConstitutionAnalysis";
 import { summarizeGuiin } from "../../data/guiinAnalysis";
 import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis";
@@ -65,6 +67,7 @@ import { GuiinStarMap } from "../../components/GuiinStarMap";
 import { EmotionTriggerMap } from "../../components/EmotionTriggerMap";
 import { GongmangStructureMap } from "../../components/GongmangStructureMap";
 import { SpecialStarsMap } from "../../components/SpecialStarsMap";
+import { HealthBodyMap } from "../../components/HealthBodyMap";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -713,6 +716,7 @@ export default function Page() {
   const [relationsAnalysis, setRelationsAnalysis] = useState<any>(null);
   const [specialStarsAnalysis, setSpecialStarsAnalysis] = useState<any>(null);
   const [specialStarsVisual, setSpecialStarsVisual] = useState<SpecialStarVisualCard[] | null>(null);
+  const [healthBodyMap, setHealthBodyMap] = useState<HealthBodyMapData | null>(null);
   const [todayFortune, setTodayFortune] = useState<any>(null);
   const [natureAnalysis, setNatureAnalysis] = useState<string | null>(null);
   const [natureYangCount, setNatureYangCount] = useState<number>(0);
@@ -1217,6 +1221,7 @@ export default function Page() {
           tenGod,
         };
         setHealthAnalysis(getHealthConstitutionParagraph(healthParams));
+        setHealthBodyMap(getHealthBodyMapData(healthParams));
 
         // 행운의 아이템
         const luckyParams: LuckyItemParams = {
@@ -2854,6 +2859,10 @@ export default function Page() {
 
                                                   {c.id === "stars_text" && specialStarsVisual && (
                                                     <SpecialStarsMap cards={specialStarsVisual} />
+                                                  )}
+
+                                                  {c.id === "solution_health" && healthBodyMap && (
+                                                    <HealthBodyMap data={healthBodyMap} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

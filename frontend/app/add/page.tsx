@@ -21,6 +21,7 @@ import {
   getEmotionalWeaknessParagraph,
   getEmotionTriggers,
   EmotionTriggers,
+  EmotionalWeaknessParams,
 } from "../../data/emotionalWeaknessAnalysis";
 import { summarizeGuiin } from "../../data/guiinAnalysis";
 import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis";
@@ -1120,7 +1121,7 @@ export default function Page() {
         setGongmangAnalysis(gongTxt);
 
         // 감정 약점 및 보완 포인트
-        const emotionalParams = {
+        const emotionalParams: EmotionalWeaknessParams = {
           dayStem,
           stems: [
             result.year.cheongan.hanja,
@@ -1136,7 +1137,7 @@ export default function Page() {
           ],
           tone: selectedChar,
           tenGod,
-        } as const;
+        };
 
         const emotionalTxt = getEmotionalWeaknessParagraph(emotionalParams);
         setEmotionalWeakness(emotionalTxt);

@@ -72,13 +72,8 @@ export function GuiinStarMap(props: GuiinStarMapProps) {
     byKey.set(h.key, arr);
   });
 
-  const activeCount = byKey.size;
-
   return (
     <div className="w-full flex flex-col items-center gap-3 py-2">
-      <p className="text-[11px] font-medium text-[#556b2f]">
-        {activeCount > 0 ? `${activeCount}성 성립` : "성립된 귀인 없음"}
-      </p>
       <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-2">
         {GUIIN_ORDER.map((key) => {
           const active = byKey.has(key);

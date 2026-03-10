@@ -1622,6 +1622,9 @@ export default function Page() {
     setInterpLoading(true);
     setLoading(true);
     setErr("");
+    // 로딩 시작 시 기본 문구와 진행률 바로 세팅
+    setLoadingProgress(0);
+    setLoadingMessage("사주 해석을 준비하는 중이에요...");
 
     const char = CHARACTERS[selectedChar];
     const stages = char.progressMessages;
@@ -1696,6 +1699,7 @@ export default function Page() {
       clearInterval(progressInterval);
       setLoadingProgress(100);  // 🔥 완료되면 100%
       setLoading(false);
+      setLoadingMessage("");
       setInterpLoading(false);
     }
   }

@@ -1,0 +1,113 @@
+"use client";
+
+import { EmotionTriggers } from "../data/emotionalWeaknessAnalysis";
+
+type EmotionTriggerMapProps = {
+  triggers: EmotionTriggers;
+};
+
+const TRIGGER_LABELS: {
+  key: keyof EmotionTriggers;
+  icon: string;
+  label: string;
+}[] = [
+  { key: "evaluation", icon: "🎓", label: "평가 상황" },
+  { key: "mistake", icon: "⚠️", label: "실수 상황" },
+  { key: "authority", icon: "👔", label: "권위 관계" },
+  { key: "expectation", icon: "🎯", label: "기대 부담" },
+  { key: "unfamiliar", icon: "🌫", label: "낯선 환경" },
+];
+
+export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
+  const values = Object.values(triggers);
+  const maxVal = Math.max(...values, 1);
+
+  const getRatio = (key: keyof EmotionTriggers) =>
+    maxVal === 0 ? 0 : triggers[key] / maxVal;
+
+  const barWidth = (key: keyof EmotionTriggers) => {
+    const ratio = getRatio(key);
+    const min = 0.2;
+    const w = (min + ratio * (1 - min)) * 100;
+    return `${w}%`;
+  };
+
+  return (
+    <div className="mt-2 space-y-3">
+      <p className="text-[11px] font-medium text-[#556b2f]">
+        내 마음이 흔들리는 순간
+      </p>
+
+      {/* 감정 트리거 지도 */}
+      <div className="relative mx-auto mt-1 flex h-40 w-full max-w-[220px] items-center justify-center">
+        {/* 중심 점 */}
+        <div className="h-6 w-6 rounded-full bg-[#556b2f]" />
+
+        {/* 세로 축 */}
+        <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#d4e0d5]" />
+        {/* 가로 축 */}
+        <div className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-[#d4e0d5]" />
+
+        {/* 평가 (위) */}
+        <div className="absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-[11px]">
+          <span
+            className="text-base"
+            style={{ opacity: 0.5 + getRatio("evaluation") * 0.5 }}
+          >
+            🎓
+          </span>
+        </div>
+
+        {/* 실수 (아래) */}
+        <div className="absolute bottom-0 left-1/2 flex translate-y-1/2 -translate-x-1/2 flex-col items-center text-[11px]">
+          <span
+            className="text-base"
+            style={{ opacity: 0.5 + getRatio("mistake") * 0.5 }}
+          >
+            ⚠️
+          </span>
+        </div>
+
+        {/* 권위 (왼쪽) */}
+        <div className="absolute left-0 top-1/2 flex -translate-y-1/2 -translate-x-1/2 flex-col items-center text-[11px]">
+          <span
+            className="text-base"
+            style={{ opacity: 0.5 + getRatio("authority") * 0.5 }}
+          >
+            👔
+          </span>
+        </div>
+
+        {/* 기대 (오른쪽) */}
+        <div className="absolute right-0 top-1/2 flex -translate-y-1/2 translate-x-1/2 flex-col items-center text-[11px]">
+          <span
+            className="text-base"
+            style={{ opacity: 0.5 + getRatio("expectation") * 0.5 }}
+          >
+            🎯
+          </span>
+        </div>
+      </div>
+
+      {/* 감정 민감도 바 */}
+      <div className="space-y-1 pt-1">
+        <p className="text-[11px] font-medium text-[#556b2f]">감정 민감도</p>
+        {TRIGGER_LABELS.map(({ key, icon, label }) => (
+          <div key={key} className="flex items-center gap-2">
+            <div className="flex w-32 items-center gap-1 text-[10px] text-[#475569]">
+              <span>{icon}</span>
+              <span>{label}</span>
+            </div>
+            <div className="flex-1 overflow-hidden rounded-full bg-[#e2e8f0] h-1.5">
+              <div
+                className="h-1.5 rounded-full bg-[#64748b]"
+                style={{ width: barWidth(key) }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+

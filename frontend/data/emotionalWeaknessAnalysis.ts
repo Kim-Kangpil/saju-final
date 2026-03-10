@@ -197,7 +197,7 @@ export function getEmotionalWeaknessParagraph(
     );
   } else if (tone === "reality") {
     introParts.push(
-      "사람마다 마음이 흔들리는 지점은 다르다. 사주에서는 이를 성격 문제가 아니라 타고난 에너지와 심리 구조로 본다. 이 분석에서는 해당 사주에서 감정이 예민하게 반응하기 쉬운 지점과 마음 부담이 커질 수 있는 상황을 살펴본다."
+      "사람마다 마음이 흔들리는 지점은 다릅니다. 사주에서는 이를 성격 문제가 아니라 타고난 에너지와 심리 구조로 봅니다. 이 분석에서는 해당 사주에서 감정이 예민하게 반응하기 쉬운 지점과 마음 부담이 커질 수 있는 상황을 살펴봅니다."
     );
   } else {
     introParts.push(
@@ -238,5 +238,28 @@ export function getEmotionalWeaknessParagraph(
   ].filter((p) => p && p.trim().length > 0);
 
   return paragraphs.join("\n\n");
+}
+
+// 감정 트리거 지도용 강도 값
+export interface EmotionTriggers {
+  evaluation: number; // 평가 상황 (관성 + 인성)
+  mistake: number; // 실수 경험 (관성)
+  authority: number; // 권위 관계 (관성)
+  expectation: number; // 기대 부담 (재성 + 관성)
+  unfamiliar: number; // 낯선 환경 (인성)
+}
+
+export function getEmotionTriggers(
+  params: EmotionalWeaknessParams
+): EmotionTriggers {
+  const { inSeong, gwanSeong, jaeSeong } = countTenGods(params);
+
+  const evaluation = inSeong + gwanSeong;
+  const mistake = gwanSeong;
+  const authority = gwanSeong;
+  const expectation = jaeSeong + gwanSeong;
+  const unfamiliar = inSeong;
+
+  return { evaluation, mistake, authority, expectation, unfamiliar };
 }
 

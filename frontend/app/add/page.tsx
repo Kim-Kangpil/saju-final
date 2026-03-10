@@ -17,7 +17,11 @@ import { ELEMENT_ANALYSIS } from "../../data/elementAnalysis";
 import { RELATIONS_ANALYSIS, analyzeRelations } from "../../data/relationsAnalysis";
 import { SPECIAL_STARS_ANALYSIS, analyzeSpecialStars } from "../../data/specialStarsAnalysis";
 import { summarizeGongmang } from "../../data/gongmangAnalysis";
-import { getEmotionalWeaknessParagraph } from "../../data/emotionalWeaknessAnalysis";
+import {
+  getEmotionalWeaknessParagraph,
+  getEmotionTriggers,
+  EmotionTriggers,
+} from "../../data/emotionalWeaknessAnalysis";
 import { summarizeGuiin } from "../../data/guiinAnalysis";
 import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis";
 import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
@@ -47,6 +51,7 @@ import { FamilyDocumentCard } from "../../components/FamilyDocumentCard";
 import { CharismaOrbitCard } from "../../components/CharismaOrbitCard";
 import { CharmPerfumeCard } from "../../components/CharmPerfumeCard";
 import { GuiinStarMap } from "../../components/GuiinStarMap";
+import { EmotionTriggerMap } from "../../components/EmotionTriggerMap";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -702,6 +707,7 @@ export default function Page() {
   const [maskVsNatureLabels, setMaskVsNatureLabels] = useState<{ social: string; real: string; habit: string } | null>(null);
   const [gongmangAnalysis, setGongmangAnalysis] = useState<string | null>(null);
   const [emotionalWeakness, setEmotionalWeakness] = useState<string | null>(null);
+  const [emotionTriggers, setEmotionTriggers] = useState<EmotionTriggers | null>(null);
   const [guiinAnalysis, setGuiinAnalysis] = useState<string | null>(null);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
   useEffect(() => {
@@ -1114,7 +1120,7 @@ export default function Page() {
         setGongmangAnalysis(gongTxt);
 
         // 감정 약점 및 보완 포인트
-        const emotionalTxt = getEmotionalWeaknessParagraph({
+        const emotionalParams = {
           dayStem,
           stems: [
             result.year.cheongan.hanja,
@@ -1130,8 +1136,11 @@ export default function Page() {
           ],
           tone: selectedChar,
           tenGod,
-        });
+        } as const;
+
+        const emotionalTxt = getEmotionalWeaknessParagraph(emotionalParams);
         setEmotionalWeakness(emotionalTxt);
+        setEmotionTriggers(getEmotionTriggers(emotionalParams));
 
         // 주요 귀인 분석
         const guiinTxt = summarizeGuiin(
@@ -2721,6 +2730,10 @@ export default function Page() {
                                                   )}
                                                   {c.id === "relation_hapchung" && charmVisualData && (
                                                     <CharmPerfumeCard data={charmVisualData} />
+                                                  )}
+
+                                                  {c.id === "insight_emotion" && emotionTriggers && (
+                                                    <EmotionTriggerMap triggers={emotionTriggers} />
                                                   )}
 
                                                   {c.id === "insight_guiin" && result && (

@@ -16,7 +16,7 @@ import { CHARM_ANALYSIS, CHARM_BY_PILLAR } from "../../data/charmAnalysis";
 import { ELEMENT_ANALYSIS } from "../../data/elementAnalysis";
 import { RELATIONS_ANALYSIS, analyzeRelations } from "../../data/relationsAnalysis";
 import { SPECIAL_STARS_ANALYSIS, analyzeSpecialStars } from "../../data/specialStarsAnalysis";
-import { summarizeGongmang } from "../../data/gongmangAnalysis";
+import { summarizeGongmang, getGongmangVisualData, GongmangVisualSlot } from "../../data/gongmangAnalysis";
 import {
   getEmotionalWeaknessParagraph,
   getEmotionTriggers,
@@ -53,6 +53,7 @@ import { CharismaOrbitCard } from "../../components/CharismaOrbitCard";
 import { CharmPerfumeCard } from "../../components/CharmPerfumeCard";
 import { GuiinStarMap } from "../../components/GuiinStarMap";
 import { EmotionTriggerMap } from "../../components/EmotionTriggerMap";
+import { GongmangStructureMap } from "../../components/GongmangStructureMap";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
@@ -707,6 +708,7 @@ export default function Page() {
   const [maskVsNatureAnalysis, setMaskVsNatureAnalysis] = useState<string | null>(null);
   const [maskVsNatureLabels, setMaskVsNatureLabels] = useState<{ social: string; real: string; habit: string } | null>(null);
   const [gongmangAnalysis, setGongmangAnalysis] = useState<string | null>(null);
+  const [gongmangVisual, setGongmangVisual] = useState<GongmangVisualSlot[] | null>(null);
   const [emotionalWeakness, setEmotionalWeakness] = useState<string | null>(null);
   const [emotionTriggers, setEmotionTriggers] = useState<EmotionTriggers | null>(null);
   const [guiinAnalysis, setGuiinAnalysis] = useState<string | null>(null);
@@ -1109,17 +1111,15 @@ export default function Page() {
         setTodayFortune(todayResult);
 
         // 공망 분석
-        const gongTxt = summarizeGongmang(
-          {
-            year: result.year.cheongan.hanja + result.year.jiji.hanja,
-            month: result.month.cheongan.hanja + result.month.jiji.hanja,
-            day: result.day.cheongan.hanja + result.day.jiji.hanja,
-            hour: result.hour.cheongan.hanja + result.hour.jiji.hanja,
-          },
-          selectedChar,
-          dayStem
-        );
+        const gongPillars = {
+          year: result.year.cheongan.hanja + result.year.jiji.hanja,
+          month: result.month.cheongan.hanja + result.month.jiji.hanja,
+          day: result.day.cheongan.hanja + result.day.jiji.hanja,
+          hour: result.hour.cheongan.hanja + result.hour.jiji.hanja,
+        };
+        const gongTxt = summarizeGongmang(gongPillars, selectedChar, dayStem);
         setGongmangAnalysis(gongTxt);
+        setGongmangVisual(getGongmangVisualData(gongPillars, dayStem));
 
         // 감정 약점 및 보완 포인트
         const emotionalParams: EmotionalWeaknessParams = {
@@ -2732,6 +2732,10 @@ export default function Page() {
                                                   )}
                                                   {c.id === "relation_hapchung" && charmVisualData && (
                                                     <CharmPerfumeCard data={charmVisualData} />
+                                                  )}
+
+                                                  {c.id === "insight_gongmang" && gongmangVisual && (
+                                                    <GongmangStructureMap slots={gongmangVisual} />
                                                   )}
 
                                                   {c.id === "insight_emotion" && emotionTriggers && (

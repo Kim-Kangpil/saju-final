@@ -178,7 +178,7 @@ export function analyzeGongmang(pillars: {
 
 type CharKey = "empathy" | "reality" | "fun";
 
-type GongmangState = "none" | "full" | "released";
+export type GongmangState = "none" | "full" | "released";
 
 // 십성 계산용 간단 오행/음양 매핑
 type Element = "wood" | "fire" | "earth" | "metal" | "water";
@@ -253,7 +253,7 @@ function tenGodFromStems(dayStem: string, targetStem: string): string {
   return "";
 }
 
-type BroadTenGroup = "인성" | "비겁" | "관성" | "식상" | "재성";
+export type BroadTenGroup = "인성" | "비겁" | "관성" | "식상" | "재성";
 
 function broadGroupFromBranch(dayStem: string, branch: string): BroadTenGroup | null {
   const main = branchMainStemForGong(branch);
@@ -296,6 +296,69 @@ function hasHapOrChung(target: string, others: string[]): boolean {
     if (target === b && others.includes(a)) return true;
   }
   return false;
+}
+
+export interface GongmangVisualSlot {
+  pos: GongmangPos;
+  state: GongmangState;
+  group: BroadTenGroup | null;
+}
+
+export function getGongmangVisualData(
+  pillars: { year: string; month: string; day: string; hour: string },
+  dayStemForTenGod?: string
+): GongmangVisualSlot[] | null {
+  const analysis = analyzeGongmang(pillars);
+  if (!analysis) return null;
+
+  const { year, month, day, hour } = pillars;
+  const { branch: yearBranch } = splitPillar(year);
+  const { branch: monthBranch } = splitPillar(month);
+  const { branch: dayBranch } = splitPillar(day);
+  const { branch: hourBranch } = splitPillar(hour);
+
+  const allBranches = [yearBranch, monthBranch, dayBranch, hourBranch].filter(Boolean);
+
+  const byPos: Record<GongmangPos, GongmangState> = {
+    년: "none",
+    월: "none",
+    일: "none",
+    시: "none",
+  };
+
+  (["년", "월", "일", "시"] as GongmangPos[]).forEach((pos) => {
+    const hitsHere = analysis.sources.flatMap((s) =>
+      s.hits.filter((h) => h.pos === pos)
+    );
+    if (hitsHere.length === 0) {
+      byPos[pos] = "none";
+      return;
+    }
+    const branchesHere = hitsHere.map((h) => h.branch);
+    const others = allBranches.filter((b) => !branchesHere.includes(b));
+    const anyReleased = branchesHere.some((br) => hasHapOrChung(br, others));
+    byPos[pos] = anyReleased ? "released" : "full";
+  });
+
+  const branchByPos: Record<GongmangPos, string> = {
+    년: yearBranch,
+    월: monthBranch,
+    일: dayBranch,
+    시: hourBranch,
+  };
+
+  const result: GongmangVisualSlot[] = (["년", "월", "일", "시"] as GongmangPos[]).map(
+    (pos) => {
+      const state = byPos[pos];
+      const group =
+        state === "none" || !dayStemForTenGod
+          ? null
+          : broadGroupFromBranch(dayStemForTenGod, branchByPos[pos]);
+      return { pos, state, group };
+    }
+  );
+
+  return result;
 }
 
 export function summarizeGongmang(

@@ -23,8 +23,17 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
       </div>
 
       <div className="relative w-full pt-[130%] rounded-2xl bg-gradient-to-b from-[#f9fafb] via-[#eef4ee] to-[#e5ece5] overflow-hidden">
-        <div className="absolute inset-x-[32%] top-[12%] bottom-[20%] bg-white/70 border border-[#cbd5c0] rounded-full" />
-        <div className="absolute inset-x-[40%] top-[18%] bottom-[32%] bg-white/90 rounded-full" />
+        {/* 머리 */}
+        <div className="absolute left-1/2 top-[14%] w-[18%] aspect-[1/1] -translate-x-1/2 rounded-full bg-white/90 border border-[#d1d5db]" />
+        {/* 목 */}
+        <div className="absolute left-1/2 top-[25%] w-[8%] h-[6%] -translate-x-1/2 bg-white/90" />
+        {/* 어깨 + 상체 */}
+        <div className="absolute inset-x-[30%] top-[26%] bottom-[26%] bg-white/85 rounded-[999px] border border-[#d1d5db]" />
+        {/* 골반/다리 */}
+        <div className="absolute inset-x-[38%] top-[50%] bottom-[10%] bg-white/95 rounded-[999px] border border-[#d1d5db]" />
+        {/* 팔 실루엣 (양쪽) */}
+        <div className="absolute left-[28%] top-[32%] bottom-[30%] w-[10%] bg-white/70 rounded-[999px]" />
+        <div className="absolute right-[28%] top-[32%] bottom-[30%] w-[10%] bg-white/70 rounded-[999px]" />
 
         {bodyPoints.map((p: BodyPoint) => (
           <div

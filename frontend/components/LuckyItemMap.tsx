@@ -197,9 +197,16 @@ const ELEMENT_ORDER: ElementKo[] = ["목", "화", "토", "금", "수"];
 interface LuckyItemMapProps {
   stems: [string, string, string, string];
   branches: [string, string, string, string];
+  gender: "M" | "F";
 }
 
-export function LuckyItemMap({ stems, branches }: LuckyItemMapProps) {
+function filterItemsByGender(items: string[], gender: "M" | "F"): string[] {
+  if (gender === "F") return items;
+  // 남성(M)인 경우 립/립제품 등 명시적으로 여성 화장품 느낌이 강한 항목은 제외
+  return items.filter((item) => !item.includes("립"));
+}
+
+export function LuckyItemMap({ stems, branches, gender }: LuckyItemMapProps) {
   const [selected, setSelected] = useState<ElementKo | null>(null);
   const [animated, setAnimated] = useState(false);
 
@@ -337,7 +344,7 @@ export function LuckyItemMap({ stems, branches }: LuckyItemMapProps) {
               추천 아이템
             </div>
             <div className="flex flex-col gap-1.5">
-              {ELEMENT_META[primary].items.map((item, i) => (
+              {filterItemsByGender(ELEMENT_META[primary].items, gender).map((item, i) => (
                 <div
                   key={i}
                   className="text-[11px] text-[#333333] px-2.5 py-1.5 rounded-lg bg-white"
@@ -404,7 +411,9 @@ export function LuckyItemMap({ stems, branches }: LuckyItemMapProps) {
           </div>
 
           <div className="flex flex-wrap gap-1.5">
-            {ELEMENT_META[secondary].items.slice(0, 3).map((item, i) => (
+            {filterItemsByGender(ELEMENT_META[secondary].items, gender)
+              .slice(0, 3)
+              .map((item, i) => (
               <div
                 key={i}
                 className="text-[11px] text-[#555555] px-2.5 py-1 rounded-full bg-white"

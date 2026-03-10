@@ -2880,11 +2880,8 @@ export default function Page() {
                                                         result.day.jiji.hanja,
                                                         result.hour.jiji.hanja,
                                                       ]}
+                                                      gender={gender}
                                                     />
-                                                  )}
-
-                                                  {c.id === "solution_health" && healthBodyMap && (
-                                                    <HealthBodyMap data={healthBodyMap} />
                                                   )}
 
                                                   {c.title === "일주 동물의 형상과 본성" ? (

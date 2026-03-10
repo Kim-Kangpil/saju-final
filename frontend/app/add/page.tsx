@@ -28,6 +28,10 @@ import {
   EmotionTriggers,
   EmotionalWeaknessParams,
 } from "../../data/emotionalWeaknessAnalysis";
+import {
+  getHealthConstitutionParagraph,
+  type HealthAnalysisParams,
+} from "../../data/healthConstitutionAnalysis";
 import { summarizeGuiin } from "../../data/guiinAnalysis";
 import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis";
 import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
@@ -44,6 +48,8 @@ import { getCharismaSocialInfluenceParagraph, getCharismaVisualData } from "../.
 import { getCharmPointParagraph, getCharmVisualData } from "../../data/charmPointAnalysis";
 import { NATURE_ANALYSIS } from "../../data/natureAnalysis";
 import { analyzeMaskVsNature } from "../../analysis/maskVsNature";  // 🔥 추가
+import { getHealthConstitutionParagraph, type HealthAnalysisParams } from "../../data/healthConstitutionAnalysis";
+import { getLuckyItemParagraph, type LuckyItemParams } from "../../data/luckyItemAnalysis";
 import Head from 'next/head';
 import { SajuEnergyWheel } from "../../components/SajuEnergyWheel";
 import { FaceSplitCard } from "../../components/FaceSplitCard";
@@ -719,6 +725,9 @@ export default function Page() {
   const [emotionalWeakness, setEmotionalWeakness] = useState<string | null>(null);
   const [emotionTriggers, setEmotionTriggers] = useState<EmotionTriggers | null>(null);
   const [guiinAnalysis, setGuiinAnalysis] = useState<string | null>(null);
+  const [healthAnalysis, setHealthAnalysis] = useState<string | null>(null);
+  const [luckyItems, setLuckyItems] = useState<string | null>(null);
+  const [healthAnalysis, setHealthAnalysis] = useState<string | null>(null);
   const [showCharacterSelect, setShowCharacterSelect] = useState(false);
   useEffect(() => {
     if (!loading) return;
@@ -1191,6 +1200,64 @@ export default function Page() {
         );
         setGuiinAnalysis(guiinTxt);
 
+        // 체질적인 건강 기운
+        const healthParams: HealthAnalysisParams = {
+          dayStem,
+          stems: [
+            result.year.cheongan.hanja,
+            result.month.cheongan.hanja,
+            result.day.cheongan.hanja,
+            result.hour.cheongan.hanja,
+          ] as [string, string, string, string],
+          branches: [
+            result.year.jiji.hanja,
+            result.month.jiji.hanja,
+            result.day.jiji.hanja,
+            result.hour.jiji.hanja,
+          ] as [string, string, string, string],
+          tone: selectedChar,
+          tenGod,
+        };
+        setHealthAnalysis(getHealthConstitutionParagraph(healthParams));
+
+        // 행운의 아이템
+        const luckyParams: LuckyItemParams = {
+          stems: [
+            result.year.cheongan.hanja,
+            result.month.cheongan.hanja,
+            result.day.cheongan.hanja,
+            result.hour.cheongan.hanja,
+          ] as [string, string, string, string],
+          branches: [
+            result.year.jiji.hanja,
+            result.month.jiji.hanja,
+            result.day.jiji.hanja,
+            result.hour.jiji.hanja,
+          ] as [string, string, string, string],
+          tone: selectedChar,
+        };
+        setLuckyItems(getLuckyItemParagraph(luckyParams));
+
+        // 체질적인 건강 기운
+        const healthParams: HealthAnalysisParams = {
+          dayStem,
+          stems: [
+            result.year.cheongan.hanja,
+            result.month.cheongan.hanja,
+            result.day.cheongan.hanja,
+            result.hour.cheongan.hanja,
+          ] as [string, string, string, string],
+          branches: [
+            result.year.jiji.hanja,
+            result.month.jiji.hanja,
+            result.day.jiji.hanja,
+            result.hour.jiji.hanja,
+          ] as [string, string, string, string],
+          tone: selectedChar,
+          tenGod,
+        };
+        setHealthAnalysis(getHealthConstitutionParagraph(healthParams));
+
         const natureResult = NATURE_ANALYSIS.analyze(
           dayStem,
           [result.year, result.month, result.day, result.hour],
@@ -1458,9 +1525,15 @@ export default function Page() {
         return asReady(`relation_${it.key}`, it.title, it.icon);
       }),
       insight: [],
-      solution: MEGA_SECTIONS.solution.items.map((it) =>
-        asReady(`solution_${it.key}`, it.title, it.icon)
-      ),
+      solution: MEGA_SECTIONS.solution.items.map((it) => {
+        if (it.key === "health" && healthAnalysis) {
+          return asContent("solution_health", it.title, healthAnalysis, it.icon, "local");
+        }
+        if (it.key === "lucky" && luckyItems) {
+          return asContent("solution_lucky", it.title, luckyItems, it.icon, "local");
+        }
+        return asReady(`solution_${it.key}`, it.title, it.icon);
+      }),
     };
 
     // 🔥 사회적 가면 vs 실제 기질 추가
@@ -1520,11 +1593,6 @@ export default function Page() {
         asContent("insight_guiin", "주요 귀인 분석", guiinAnalysis, "👼", "local")
       );
     }
-    if (todayFortune?.advice) {
-      const txt = `행운의 색: ${todayFortune.luckyColor}\n행운의 숫자: ${todayFortune.luckyNumber}\n행운의 방향: ${todayFortune.luckyDirection}\n\n오늘의 조언:\n${todayFortune.advice}`;
-      base.solution.unshift(asContent("today_text", "오늘의 처방", txt, "💊", "local"));
-    }
-
     // 🔥 나머지 GPT 해석들은 기존처럼 제목 기반으로 섹션 분류
     //    단, core_values 섹션은 위에서 이미 values 슬롯에 꽂았으니 여기서는 제외
     const elementTitles = Object.values(ELEMENT_ANALYSIS).map((e) => e.title);

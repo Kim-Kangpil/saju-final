@@ -56,15 +56,18 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
 
       {/* 감정 트리거 지도 */}
       <div className="relative mx-auto mt-1 flex h-40 w-full max-w-[220px] items-center justify-center">
-        {/* 중심 점 (현재 감정 트리거의 방향) */}
+        {/* 중심 포인트 (현재 감정 트리거의 방향) */}
         <div
-          className="absolute h-3 w-3 rounded-full bg-[#556b2f] shadow-sm"
+          className="absolute flex h-5 w-5 items-center justify-center text-[13px]"
           style={{
             left: centerX,
             top: centerY,
+            transform: "translate(-50%, -50%)",
             transition: "left 0.3s ease, top 0.3s ease",
           }}
-        />
+        >
+          <span className="inline-block animate-heartPulse drop-shadow-sm">💗</span>
+        </div>
 
         {/* 세로 축 */}
         <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#d4e0d5]" />
@@ -130,6 +133,25 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
           </div>
         ))}
       </div>
+      <style jsx>{`
+        @keyframes heartPulse {
+          0% {
+            transform: scale(1) rotate(0deg);
+          }
+          35% {
+            transform: scale(1.08) rotate(-2deg);
+          }
+          70% {
+            transform: scale(1) rotate(1deg);
+          }
+          100% {
+            transform: scale(1) rotate(0deg);
+          }
+        }
+        .animate-heartPulse {
+          animation: heartPulse 1.6s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

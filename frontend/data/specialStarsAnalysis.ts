@@ -767,20 +767,34 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
     });
     const main = sorted.slice(0, 3);
 
-    const explainUnits = main
-      .map((s) => {
-        const info = STAR_INFO[s.key];
-        if (!info) return "";
-        return `${s.name}은(는) ${info.core} ${info.positive}`;
-      })
-      .filter(Boolean);
-
     const empathyIntro =
       "당신이 가지고 있는 여러 신살 가운데, 지금은 특히 핵심적으로 작동하는 몇 가지를 중심으로 풀어볼게요.";
-    const empathyBody = explainUnits.join(" ");
+
+    const starParas: string[] = [];
+    main.forEach((s) => {
+      const info = STAR_INFO[s.key];
+      if (!info) return;
+      starParas.push(`${s.name}은(는) ${info.core} ${info.positive}`);
+    });
+
     const empathyClosing =
       "이 기운들은 운명을 고정시키는 것이 아니라, 어떤 상황에서 무엇을 더 잘할 수 있는지 알려 주는 선택지에 가깝습니다. 나이가 들수록 언제 힘을 세우고 언제 빼야 하는지 감이 잡히면서, 같은 신살이 점점 더 의식적인 무기로 변해 가는 흐름이에요.";
-    const empathy = [empathyIntro + " " + empathyBody, empathyClosing]
+
+    // 문단 수를 3~4개 정도로 맞추기 위한 정리
+    const empathyParts: string[] = [];
+    empathyParts.push(empathyIntro);
+
+    if (starParas.length === 1) {
+      empathyParts.push(starParas[0]);
+    } else if (starParas.length === 2) {
+      empathyParts.push(starParas[0], starParas[1]);
+    } else if (starParas.length >= 3) {
+      empathyParts.push(starParas[0], [starParas[1], starParas[2]].join(" "));
+    }
+
+    empathyParts.push(empathyClosing);
+
+    const empathy = empathyParts
       .filter((p) => p && p.trim().length > 0)
       .join("\n\n");
 

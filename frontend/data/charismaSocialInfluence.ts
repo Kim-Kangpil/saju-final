@@ -487,10 +487,15 @@ export function getCharismaSocialInfluenceParagraph(
   const scores: Record<Axis3Key, number> = { presence, expression, insight };
   const typeRow = classifyType(scores, levels);
 
+  const lp = levelText(levels.presence);
+  const le = levelText(levels.expression);
+  const li = levelText(levels.insight);
   const axisSummary =
     tone === "fun"
-      ? `존재감 ${presence.toFixed(1)}점(${levelText(levels.presence)}), 표현력 ${expression.toFixed(1)}점(${levelText(levels.expression)}), 통찰력 ${insight.toFixed(1)}점(${levelText(levels.insight)})`
-      : `존재감 ${presence.toFixed(1)}점(${levelText(levels.presence)}), 표현력 ${expression.toFixed(1)}점(${levelText(levels.expression)}), 통찰력 ${insight.toFixed(1)}점(${levelText(levels.insight)})`;
+      ? `존재감은 ${lp} 쪽이고, 표현력은 ${le} 느낌, 통찰력은 ${li} 쪽에 힘이 실려 있는 편이야.`
+      : tone === "reality"
+        ? `존재감은 ${lp} 수준으로, 표현력은 ${le}, 통찰력은 ${li} 축이 두드러지는 구조입니다.`
+        : `존재감은 ${lp} 쪽이고, 표현력은 ${le}, 통찰력은 ${li} 축에 힘이 실려 있는 흐름이에요.`;
 
   const p1 = [typeRow.lead[tone], axisSummary].filter(Boolean).join(" ").trim();
   const p2 = [

@@ -67,6 +67,7 @@ import { GuiinStarMap } from "../../components/GuiinStarMap";
 import { EmotionTriggerMap } from "../../components/EmotionTriggerMap";
 import { GongmangStructureMap } from "../../components/GongmangStructureMap";
 import { SpecialStarsMap } from "../../components/SpecialStarsMap";
+import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
 import BackgroundScene from "@/components/add/BackgroundScene";
 import LoginCard from "@/components/add/LoginCard";
@@ -2859,6 +2860,27 @@ export default function Page() {
 
                                                   {c.id === "stars_text" && specialStarsVisual && (
                                                     <SpecialStarsMap cards={specialStarsVisual} />
+                                                  )}
+
+                                                  {c.id === "solution_health" && healthBodyMap && (
+                                                    <HealthBodyMap data={healthBodyMap} />
+                                                  )}
+
+                                                  {c.id === "solution_lucky" && result && (
+                                                    <LuckyItemMap
+                                                      stems={[
+                                                        result.year.cheongan.hanja,
+                                                        result.month.cheongan.hanja,
+                                                        result.day.cheongan.hanja,
+                                                        result.hour.cheongan.hanja,
+                                                      ]}
+                                                      branches={[
+                                                        result.year.jiji.hanja,
+                                                        result.month.jiji.hanja,
+                                                        result.day.jiji.hanja,
+                                                        result.hour.jiji.hanja,
+                                                      ]}
+                                                    />
                                                   )}
 
                                                   {c.id === "solution_health" && healthBodyMap && (

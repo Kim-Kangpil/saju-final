@@ -1838,7 +1838,8 @@ export default function Page() {
             <div
               className="absolute left-0 right-0 bottom-0 top-[64px]"
               style={{
-                backgroundImage: "url('/images/hamster-forest.png')",
+                backgroundImage:
+                  "image-set(url('/images/hamster-forest.webp') type('image/webp') 1x, url('/images/hamster-forest.png') type('image/png') 1x)",
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
@@ -1902,7 +1903,8 @@ export default function Page() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    backgroundImage: "url('/images/hamster-forest.png')",
+                    backgroundImage:
+                      "image-set(url('/images/hamster-forest.webp') type('image/webp') 1x, url('/images/hamster-forest.png') type('image/png') 1x)",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",

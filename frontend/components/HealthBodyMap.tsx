@@ -40,90 +40,15 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
             </linearGradient>
           </defs>
 
-          {/* 머리 */}
-          <ellipse cx="50" cy="18" rx="13" ry="15" fill="url(#hb-bg)" stroke="#9ab89a" strokeWidth="0.9" />
-
-          {/* 목 */}
-          <rect x="45" y="31" width="10" height="9" rx="2" fill="url(#hb-bg)" stroke="#9ab89a" strokeWidth="0.7" />
-
-          {/* 몸통 */}
-          <path
-            d="M27,39 C22,42 20,50 20,58 L20,115 C20,122 27,125 35,125 L65,125 C73,125 80,122 80,115 L80,58 C80,50 78,42 73,39 Z"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.9"
-          />
-
-          {/* 왼팔 */}
-          <path
-            d="M27,42 C20,46 15,58 14,72 L13,100 C12,106 15,109 19,108 C23,107 24,103 25,97 L27,72 C28,60 30,52 33,46 Z"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.7"
-          />
-          {/* 왼손 */}
-          <ellipse
-            cx="16"
-            cy="111"
-            rx="4.5"
-            ry="5.5"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.6"
-          />
-
-          {/* 오른팔 */}
-          <path
-            d="M73,42 C80,46 85,58 86,72 L87,100 C88,106 85,109 81,108 C77,107 76,103 75,97 L73,72 C72,60 70,52 67,46 Z"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.7"
-          />
-          {/* 오른손 */}
-          <ellipse
-            cx="84"
-            cy="111"
-            rx="4.5"
-            ry="5.5"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.6"
-          />
-
-          {/* 왼 다리 */}
-          <path
-            d="M35,124 C33,128 31,138 30,152 L28,185 C27,191 31,194 36,193 C41,192 43,187 43,181 L44,152 L48,152 L48,124 Z"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.7"
-          />
-          {/* 왼 발 */}
-          <ellipse
-            cx="34"
-            cy="196"
-            rx="8"
-            ry="4"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.6"
-          />
-
-          {/* 오른 다리 */}
-          <path
-            d="M65,124 C67,128 69,138 70,152 L72,185 C73,191 69,194 64,193 C59,192 57,187 57,181 L56,152 L52,152 L52,124 Z"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.7"
-          />
-          {/* 오른 발 */}
-          <ellipse
-            cx="66"
-            cy="196"
-            rx="8"
-            ry="4"
-            fill="url(#hb-bg)"
-            stroke="#9ab89a"
-            strokeWidth="0.6"
+          {/* 사용자 제공 실루엣 이미지 (public/health-body.png 기준) */}
+          <image
+            href="/health-body.png"
+            x="0"
+            y="0"
+            width="100"
+            height="220"
+            preserveAspectRatio="xMidYMid meet"
+            opacity="0.98"
           />
 
           {/* 포인트 마커 */}

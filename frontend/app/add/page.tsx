@@ -1116,7 +1116,8 @@ export default function Page() {
             day: result.day.cheongan.hanja + result.day.jiji.hanja,
             hour: result.hour.cheongan.hanja + result.hour.jiji.hanja,
           },
-          selectedChar
+          selectedChar,
+          dayStem
         );
         setGongmangAnalysis(gongTxt);
 

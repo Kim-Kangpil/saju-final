@@ -180,6 +180,94 @@ type CharKey = "empathy" | "reality" | "fun";
 
 type GongmangState = "none" | "full" | "released";
 
+// 십성 계산용 간단 오행/음양 매핑
+type Element = "wood" | "fire" | "earth" | "metal" | "water";
+type Polarity = "yang" | "yin";
+
+const STEM_META: Record<string, { el: Element; pol: Polarity }> = {
+  甲: { el: "wood", pol: "yang" },
+  乙: { el: "wood", pol: "yin" },
+  丙: { el: "fire", pol: "yang" },
+  丁: { el: "fire", pol: "yin" },
+  戊: { el: "earth", pol: "yang" },
+  己: { el: "earth", pol: "yin" },
+  庚: { el: "metal", pol: "yang" },
+  辛: { el: "metal", pol: "yin" },
+  壬: { el: "water", pol: "yang" },
+  癸: { el: "water", pol: "yin" },
+};
+
+function produces(a: Element, b: Element): boolean {
+  const next: Record<Element, Element> = {
+    wood: "fire",
+    fire: "earth",
+    earth: "metal",
+    metal: "water",
+    water: "wood",
+  };
+  return next[a] === b;
+}
+
+function controls(a: Element, b: Element): boolean {
+  const map: Record<Element, Element> = {
+    wood: "earth",
+    fire: "metal",
+    earth: "water",
+    metal: "wood",
+    water: "fire",
+  };
+  return map[a] === b;
+}
+
+// 지지 본기 → 천간 (십성 계산용)
+function branchMainStemForGong(branch: string): string | null {
+  const map: Record<string, string> = {
+    子: "癸",
+    丑: "己",
+    寅: "甲",
+    卯: "乙",
+    辰: "戊",
+    巳: "丙",
+    午: "丁",
+    未: "己",
+    申: "庚",
+    酉: "辛",
+    戌: "戊",
+    亥: "壬",
+  };
+  return map[branch] ?? null;
+}
+
+function tenGodFromStems(dayStem: string, targetStem: string): string {
+  const dm = STEM_META[dayStem];
+  const tm = STEM_META[targetStem];
+  if (!dm || !tm) return "";
+
+  const samePol = dm.pol === tm.pol;
+
+  if (dm.el === tm.el) return samePol ? "비견" : "겁재";
+  if (produces(dm.el, tm.el)) return samePol ? "식신" : "상관";
+  if (produces(tm.el, dm.el)) return samePol ? "편인" : "정인";
+  if (controls(dm.el, tm.el)) return samePol ? "편재" : "정재";
+  if (controls(tm.el, dm.el)) return samePol ? "편관" : "정관";
+  return "";
+}
+
+type BroadTenGroup = "인성" | "비겁" | "관성" | "식상" | "재성";
+
+function broadGroupFromBranch(dayStem: string, branch: string): BroadTenGroup | null {
+  const main = branchMainStemForGong(branch);
+  if (!main) return null;
+  const tg = tenGodFromStems(dayStem, main);
+  if (!tg) return null;
+  if (tg === "정인" || tg === "편인") return "인성";
+  if (tg === "비견" || tg === "겁재") return "비겁";
+  if (tg === "정관" || tg === "편관") return "관성";
+  if (tg === "식신" || tg === "상관") return "식상";
+  if (tg === "정재" || tg === "편재") return "재성";
+  return null;
+}
+
 const SIX_HAP: Array<[string, string]> = [
   ["子", "丑"],
   ["寅", "亥"],
@@ -212,7 +300,8 @@ function hasHapOrChung(target: string, others: string[]): boolean {
 
 export function summarizeGongmang(
   pillars: { year: string; month: string; day: string; hour: string },
-  tone: CharKey = "empathy"
+  tone: CharKey = "empathy",
+  dayStemForTenGod?: string
 ): string | null {
   const analysis = analyzeGongmang(pillars);
   const { year, month, day, hour } = pillars;
@@ -271,10 +360,241 @@ export function summarizeGongmang(
     );
   }
 
+  // 년·월·시간별 기본 해석
+  const yearState = byPos["년"];
+  const monthState = byPos["월"];
+  const hourState = byPos["시"];
+
+  // 공망 육친까지 고려한 상세 해석은 공감 톤 + 일간 정보가 있을 때만 사용
+  if (tone === "empathy" && dayStemForTenGod) {
+    const yearGroup = yearState === "none" ? null : broadGroupFromBranch(dayStemForTenGod, yearBranch);
+    const monthGroup = monthState === "none" ? null : broadGroupFromBranch(dayStemForTenGod, monthBranch);
+    const hourGroup = hourState === "none" ? null : broadGroupFromBranch(dayStemForTenGod, hourBranch);
+
+    // 년주: 조상·부모·초기 환경
+    if (yearState === "none") {
+      parts.push(
+        "년지 쪽은 조상·부모 기반이 비교적 안정적으로 작동하는 편이라, 뿌리 자체가 크게 흔들리는 그림은 아니에요."
+      );
+    } else if (yearState === "full") {
+      let middle = "";
+      switch (yearGroup) {
+        case "인성":
+          middle =
+            "이 자리에 인성 기능이 공망이면, 부모에게서 받는 정서적 지지가 상대적으로 약하게 느껴질 수 있어요. 대신 어린 시절부터 스스로 마음을 다루는 법을 익히면서, 감정적으로 독립적인 사람이 되기 쉬운 구조입니다.";
+          break;
+        case "재성":
+          middle =
+            "이 자리에 재성 기능이 공망이면, 집안의 경제 기반이 늘 일정하게 느껴지지 않을 수 있어요. 그만큼 일찍부터 '내 힘으로 벌어야 한다'는 감각이 생기면서, 현실 감각과 생존력이 강하게 자라기 쉽습니다.";
+          break;
+        case "관성":
+          middle =
+            "이 자리에 관성 기능이 공망이면, 부모의 통제나 기준이 느슨하게 느껴지거나 일찍부터 스스로 판단해야 하는 장면이 많았을 수 있어요. 그 경험이 나중에는 남의 기준보다 자기 기준을 세우는 힘으로 작동합니다.";
+          break;
+        case "식상":
+          middle =
+            "이 자리에 식상 기능이 공망이면, 집안 분위기가 자유롭거나 방임적으로 흘렀을 가능성이 있어요. 덕분에 남다른 개성과 표현력은 잘 자라는 대신, 스스로 삶의 구조를 세워 가야 하는 과제가 함께 따라옵니다.";
+          break;
+        case "비겁":
+          middle =
+            "이 자리에 비겁 기능이 공망이면, 형제나 가까운 가족과의 유대가 다소 느슨하게 느껴질 수 있어요. 대신 혈연에만 기대지 않고 다양한 관계망 속에서 스스로를 지키는 힘이 커지기 쉽습니다.";
+          break;
+        default:
+          middle =
+            "년지가 공망에 걸려 있어서, 어린 시절부터 집안이나 부모의 틀에 기대기보다는 스스로 길을 만들어 온 느낌이 강할 수 있어요.";
+      }
+      parts.push(
+        "년주는 조상·부모·초기 환경과 연결되는 자리예요. " +
+          middle +
+          " 가문이나 부모의 틀에만 기댄다기보다, 스스로 삶의 기반을 만들어 가는 힘이 크게 작동하는 편입니다."
+      );
+    } else {
+      let middle = "";
+      switch (yearGroup) {
+        case "인성":
+          middle =
+            "인성 기능의 공망이 합·충으로 어느 정도 풀려 있어, 부모 정서에 과도하게 기대지도, 완전히 끊기지도 않은 적당한 거리감이 만들어지기 쉽습니다.";
+          break;
+        case "재성":
+          middle =
+            "재성 공망이 해공된 구조라, 집안 재정이 들쭉날쭉해 보여도 결국에는 기본 틀을 유지할 수 있는 흐름으로 귀결되기 쉽습니다.";
+          break;
+        case "관성":
+          middle =
+            "관성 공망이 해공되어, 부모의 기준에서 완전히 벗어나지는 않으면서도 스스로 선택할 수 있는 여지가 비교적 넓게 열려 있는 편이에요.";
+          break;
+        case "식상":
+          middle =
+            "식상 공망이 풀린 형태라, 집안 분위기가 자유로우면서도 기본적인 선은 지켜지는 쪽으로 균형을 잡기 좋습니다.";
+          break;
+        case "비겁":
+          middle =
+            "비겁 공망이 해공된 구조라, 형제·가족 간의 유대가 느슨하게만 흘러가지는 않고, 필요할 때 서로를 도와 줄 수 있는 선에서 관계가 유지되기 쉽습니다.";
+          break;
+        default:
+          middle =
+            "년지에 공망 기운이 있지만 합·충으로 어느 정도 해소되어, 실제로는 조상·부모와의 인연이 완전히 끊기기보다는 적당한 거리감 속에서 스스로 서는 쪽으로 힘이 씁니다.";
+      }
+      parts.push(
+        "년주는 조상·부모·초기 환경과 연결되는 자리예요. " + middle
+      );
+    }
+
+    // 월주: 사회 환경·직장·자리 잡는 과정
+    if (monthState === "none") {
+      parts.push(
+        "월지에는 공망이 강하게 걸려 있지 않아, 직장·사회생활의 기본 틀은 비교적 안정적으로 잡히는 편이에요."
+      );
+    } else if (monthState === "full") {
+      let middle = "";
+      switch (monthGroup) {
+        case "관성":
+          middle =
+            "관성 기능이 공망이면, 조직의 틀이나 위계에 오래 붙어 있기보다 자신에게 맞는 방식을 찾아 이동하는 흐름으로 나타나기 쉽습니다. 남들이 보기엔 자리 잡는 속도가 느려 보여도, 본인에게 맞는 환경을 찾는 데 더 에너지를 쓰는 타입이에요.";
+          break;
+        case "재성":
+          middle =
+            "재성 기능이 공망이면, 경제 기반을 한 번에 단단히 구축하기보다는 여러 경험을 거치며 점진적으로 쌓아 가는 경향이 나타납니다. 다만 그 과정에서 돈보다 경험과 배움을 더 중시하는 태도가 강점이 됩니다.";
+          break;
+        case "식상":
+          middle =
+            "식상 기능이 공망이면, 자신의 능력을 한 자리에서 곧바로 펼치기보다는 환경을 탐색하며 늦게 드러내는 패턴이 있습니다. 대신 한 번 자신에게 맞는 무대를 찾으면 표현력이 크게 살아나는 구조예요.";
+          break;
+        case "비겁":
+          middle =
+            "비겁 기능이 공망이면, 동료나 팀워크에 과도하게 기대기보다 혼자 책임지는 방식으로 일을 처리하는 경향이 있습니다. 덕분에 독립적인 커리어를 만들기에는 유리한 구조예요.";
+          break;
+        case "인성":
+          middle =
+            "인성 기능이 공망이면, 회사나 조직에서 받는 보호나 가이드가 상대적으로 약하게 느껴질 수 있어요. 대신 스스로 정보를 찾고 배우는 능력이 강하게 자라면서, 시간이 갈수록 자신만의 방식으로 일하는 틀을 만들어 갑니다.";
+          break;
+        default:
+          middle =
+            "월지가 공망이면, 청년기와 사회 초반에 기반을 잡기까지 시행착오가 많을 수 있어요.";
+      }
+      parts.push(
+        "월주는 사회 환경과 직업, 자리를 잡는 과정과 연결되는 자리예요. " +
+          middle +
+          " 초반에는 돌아가는 길이 길어 보이더라도, 그만큼 나중에 선택하는 자리에서는 '여기가 내 자리다'라는 감각이 뚜렷해지는 구조입니다."
+      );
+    } else {
+      let middle = "";
+      switch (monthGroup) {
+        case "관성":
+          middle =
+            "관성 공망이 해공된 구조라, 조직의 틀에서 완전히 이탈하기보다는 필요할 때는 안정적인 틀 안에, 필요할 때는 독립적으로 움직이는 유연성이 생기기 쉽습니다.";
+          break;
+        case "재성":
+          middle =
+            "재성 공망이 어느 정도 풀려 있어, 초기에는 수입과 지출이 들쭉날쭉해도 시간이 갈수록 자신에게 맞는 수입 구조로 정리되기 좋은 편입니다.";
+          break;
+        case "식상":
+          middle =
+            "식상 공망이 해소된 형태라, 표현의 타이밍이 늦게 잡히더라도 결국에는 적절한 무대를 만나 자신의 능력을 펼칠 가능성이 큽니다.";
+          break;
+        case "비겁":
+          middle =
+            "비겁 공망이 해공되어, 동료와의 관계가 완전히 끊기기보다는 느슨하지만 필요한 순간에는 힘을 모을 수 있는 형태로 유지되기 쉽습니다.";
+          break;
+        case "인성":
+          middle =
+            "인성 공망이 해공된 구조라, 조직의 보호를 과도하게 의존하지도, 완전히 고립되지도 않고, 스스로 길을 찾되 필요한 도움은 받을 수 있는 균형을 만들기 좋습니다.";
+          break;
+        default:
+          middle =
+            "월지 공망이 합·충으로 어느 정도 풀려 있어서, 초반에는 자리 잡는 과정이 다소 지연되더라도 결국은 자신에게 맞는 환경을 찾아가는 흐름으로 정리되기 쉽습니다.";
+      }
+      parts.push(
+        "월주는 사회 환경과 직업, 자리를 잡는 과정과 연결되는 자리예요. " + middle
+      );
+    }
+
+    // 시주: 자녀·말년·개인 시간
+    if (hourState === "none") {
+      parts.push(
+        "시지에는 공망이 두드러지지 않아, 자녀 인연과 노년의 기반이 비교적 안정적으로 이어질 가능성이 큽니다."
+      );
+    } else if (hourState === "full") {
+      let middle = "";
+      switch (hourGroup) {
+        case "식상":
+          middle =
+            "식상 기능이 공망이면, 자녀와의 관계나 말년의 활동에서 '내가 모든 것을 책임져야 한다'는 부담을 조금 덜 지게 되는 경향이 있습니다. 대신 각자 삶을 존중하면서 거리를 두고 지내는 편안한 흐름으로 이어지기 쉬워요.";
+          break;
+        case "재성":
+          middle =
+            "재성 기능이 공망이면, 말년에 재정적으로 크게 치고 올라가는 그림보다는, 필요한 만큼만 유지하면서 단촐하게 사는 방향으로 정리되기 쉽습니다. 그만큼 물질보다는 시간과 마음의 여유에 더 가치를 두게 되는 구조예요.";
+          break;
+        case "관성":
+          middle =
+            "관성 기능이 공망이면, 나이가 들수록 사회적 역할이나 직함에서 한 발 물러나, 규칙과 책임에서 자유로워지는 흐름이 강하게 나타날 수 있어요. 말년에는 '해야 한다'보다 '어떻게 살고 싶은가'가 더 중요해지는 타입입니다.";
+          break;
+        case "인성":
+          middle =
+            "인성 기능이 공망이면, 말년에 혼자 있는 시간이 많아지거나 조용한 시간을 더 선호하게 될 수 있어요. 그 고요함이 오히려 사색과 내적인 성장을 깊게 만드는 기반이 되기도 합니다.";
+          break;
+        case "비겁":
+          middle =
+            "비겁 기능이 공망이면, 말년에 인간관계가 단출하게 정리되기 쉽습니다. 대신 소수의 관계에 에너지를 쓰면서, 내 사람 몇 명과 깊이 있는 시간을 보내는 쪽으로 삶이 정리되는 구조예요.";
+          break;
+        default:
+          middle =
+            "시지가 공망이면, 자녀와의 물리적 거리나 말년의 생활 패턴에서 다소 고독을 느낄 수 있어요. 대신 세속적인 기대에서 한 발 떨어져, 내 페이스대로 조용히 삶을 정리할 수 있는 자유가 함께 주어지는 구조이기도 합니다.";
+      }
+      parts.push(
+        "시주는 자녀·말년·개인 시간과 연결되는 자리예요. " + middle
+      );
+    } else {
+      let middle = "";
+      switch (hourGroup) {
+        case "식상":
+          middle =
+            "식상 공망이 해공된 구조라, 자녀와의 관계가 완전히 끊기기보다는 각자의 삶을 존중하면서도 필요한 순간에는 가까워지는 형태로 유지되기 쉽습니다.";
+          break;
+        case "재성":
+          middle =
+            "재성 공망이 해소되어, 말년의 재정이 극단적으로 비거나 넘치기보다는, 적당한 수준에서 유지되는 흐름으로 정리되기 좋습니다.";
+          break;
+        case "관성":
+          middle =
+            "관성 공망이 해공된 형태라, 말년에 사회적 역할에서 완전히 이탈하지는 않으면서도, 이전보다 훨씬 가벼운 책임감으로 자신의 시간을 구성할 수 있습니다.";
+          break;
+        case "인성":
+          middle =
+            "인성 공망이 해공되어, 혼자 있는 시간과 누군가와 함께하는 시간이 무게를 나눠 가지는 쪽으로 균형을 잡기 쉽습니다.";
+          break;
+        case "비겁":
+          middle =
+            "비겁 공망이 해공된 구조라, 관계를 과도하게 넓히기보다는, 오래 이어질 사람들과의 인연만 남기는 식으로 말년의 인간관계가 정리되기 쉽습니다.";
+          break;
+        default:
+          middle =
+            "시지 공망이 해공되어, 자녀·노년과 관련된 영역이 완전히 비워지기보다는 '적당히 거리를 둔 편안한 관계' 쪽으로 정리되기 쉽습니다.";
+      }
+      parts.push(
+        "시주는 자녀·말년·개인 시간과 연결되는 자리예요. " + middle
+      );
+    }
+
+    const intro = parts[0] ?? "";
+    const detail = parts.slice(1);
+    const closing =
+      "결국 공망은 완전한 결핍이라기보다, 그 영역에서 모든 것을 꽉 채우려 하지 않아도 되는 삶의 여백에 가깝습니다. 어디에 힘을 빼고 어디에 더 써야 할지를 알아차릴수록, 같은 공망이 점점 더 전략적인 선택지로 변해 가게 돼요.";
+
+    const paragraphs = [intro, ...detail, closing].filter(
+      (p) => p && p.trim().length > 0
+    );
+    return paragraphs.join("\n\n");
+  }
+
+  // 공감 톤이 아니거나 일간 정보가 없을 때는 기존 요약 유지 (궁 중심)
+
   // 년지
-  if (byPos["년"] === "none") {
-    parts.push("년지 쪽은 조상·부모 기반이 비교적 안정적으로 작동하는 편이라, 뿌리 자체가 크게 흔들리는 그림은 아니에요.");
-  } else if (byPos["년"] === "full") {
+  if (yearState === "none") {
+    parts.push(
+      "년지 쪽은 조상·부모 기반이 비교적 안정적으로 작동하는 편이라, 뿌리 자체가 크게 흔들리는 그림은 아니에요."
+    );
+  } else if (yearState === "full") {
     parts.push(
       "년지가 공망에 걸려 있어서, 어린 시절부터 집안이나 부모의 틀에 기대기보다는 스스로 길을 만들어 온 느낌이 강할 수 있어요. 덕분에 '내 힘으로 여기까지 왔다'는 자존감이 크게 자라기 좋은 구조입니다."
     );
@@ -285,9 +605,11 @@ export function summarizeGongmang(
   }
 
   // 월지
-  if (byPos["월"] === "none") {
-    parts.push("월지에는 공망이 강하게 걸려 있지 않아, 직장·사회생활의 기본 틀은 비교적 안정적으로 잡히는 편이에요.");
-  } else if (byPos["월"] === "full") {
+  if (monthState === "none") {
+    parts.push(
+      "월지에는 공망이 강하게 걸려 있지 않아, 직장·사회생활의 기본 틀은 비교적 안정적으로 잡히는 편이에요."
+    );
+  } else if (monthState === "full") {
     parts.push(
       "월지가 공망이면, 청년기와 사회 초반에 기반을 잡기까지 시행착오가 많을 수 있어요. 다만 이 과정에서 '어디에 오래 머물러야 하는지'를 더 정확히 알게 되기 때문에, 한 번 자리를 잡으면 쉽게 무너지지 않는 장점이 생깁니다."
     );
@@ -298,9 +620,11 @@ export function summarizeGongmang(
   }
 
   // 시지
-  if (byPos["시"] === "none") {
-    parts.push("시지에는 공망이 두드러지지 않아, 자녀 인연과 노년의 기반이 비교적 안정적으로 이어질 가능성이 큽니다.");
-  } else if (byPos["시"] === "full") {
+  if (hourState === "none") {
+    parts.push(
+      "시지에는 공망이 두드러지지 않아, 자녀 인연과 노년의 기반이 비교적 안정적으로 이어질 가능성이 큽니다."
+    );
+  } else if (hourState === "full") {
     parts.push(
       "시지가 공망이면, 자녀와의 물리적 거리나 말년의 생활 패턴에서 다소 고독을 느낄 수 있어요. 대신 세속적인 기대에서 한 발 떨어져, 내 페이스대로 조용히 삶을 정리할 수 있는 자유가 함께 주어지는 구조이기도 합니다."
     );
@@ -312,7 +636,6 @@ export function summarizeGongmang(
 
   const intro = parts[0] ?? "";
   const body = parts.slice(1).join(" ");
-
   return [intro, body].filter((p) => p && p.trim().length > 0).join("\n\n");
 }
 

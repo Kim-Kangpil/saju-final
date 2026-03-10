@@ -25,6 +25,22 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
   const getRatio = (key: keyof EmotionTriggers) =>
     maxVal === 0 ? 0 : triggers[key] / maxVal;
 
+  // 중심 점 위치 계산 (위/아래, 좌/우 민감도 차이)
+  const evalR = getRatio("evaluation");
+  const mistakeR = getRatio("mistake");
+  const authorityR = getRatio("authority");
+  const expectationR = getRatio("expectation");
+
+  // 세로: 평가(위) - 실수(아래), 가로: 기대(오른쪽) - 권위(왼쪽)
+  const v = evalR - mistakeR; // 위가 클수록 +, 아래가 클수록 -
+  const h = expectationR - authorityR; // 오른쪽이 클수록 +, 왼쪽이 클수록 -
+
+  const MAX_OFFSET_X = 32; // px
+  const MAX_OFFSET_Y = 26; // px
+
+  const centerX = `calc(50% + ${h * MAX_OFFSET_X}px)`;
+  const centerY = `calc(50% + ${-v * MAX_OFFSET_Y}px)`;
+
   const barWidth = (key: keyof EmotionTriggers) => {
     const ratio = getRatio(key);
     const min = 0.2;
@@ -40,8 +56,15 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
 
       {/* 감정 트리거 지도 */}
       <div className="relative mx-auto mt-1 flex h-40 w-full max-w-[220px] items-center justify-center">
-        {/* 중심 점 */}
-        <div className="h-6 w-6 rounded-full bg-[#556b2f]" />
+        {/* 중심 점 (현재 감정 트리거의 방향) */}
+        <div
+          className="absolute h-3 w-3 rounded-full bg-[#556b2f] shadow-sm"
+          style={{
+            left: centerX,
+            top: centerY,
+            transition: "left 0.3s ease, top 0.3s ease",
+          }}
+        />
 
         {/* 세로 축 */}
         <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#d4e0d5]" />

@@ -523,31 +523,28 @@ export interface HealthBodyMapData {
   recovery: "약" | "보통" | "강";
 }
 
+// 실루엣 비율 10:22 기준 — y축: 얼굴(0~18) / 몸통(20~58) / 다리·하부(60~100)
 const BODY_POINT_BASE: Record<BodyPoint["id"], { organ: string; element: Element; position: BodyPointPosition }> = {
-  // 머리 위쪽 1/10 구간
-  brain: { organ: "뇌·신경", element: "water", position: { x: 50, y: 9 } },
-  eye: { organ: "눈·시신경", element: "wood", position: { x: 50, y: 16 } },
-  nose: { organ: "코·기관지", element: "metal", position: { x: 50, y: 22 } },
-  // 가슴 중심부
-  heart: { organ: "심장", element: "fire", position: { x: 52, y: 32 } },
-  lung: { organ: "폐", element: "metal", position: { x: 44, y: 29 } },
-  // 상복부
-  liver: { organ: "간·담", element: "wood", position: { x: 45, y: 39 } },
-  stomach: { organ: "위장", element: "earth", position: { x: 50, y: 46 } },
-  spleen: { organ: "비장·췌장", element: "earth", position: { x: 55, y: 48 } },
-  // 복부/장기
-  smallIntestine: { organ: "소장", element: "fire", position: { x: 50, y: 55 } },
-  largeIntestine: { organ: "대장", element: "metal", position: { x: 50, y: 61 } },
-  // 허리·골반 부위
-  kidney: { organ: "신장", element: "water", position: { x: 45, y: 68 } },
-  bladder: { organ: "방광·생식", element: "water", position: { x: 50, y: 77 } },
-  // 척추·피부·혈류
-  spine: { organ: "척추·뼈", element: "water", position: { x: 50, y: 37 } },
-  skin: { organ: "피부", element: "metal", position: { x: 33, y: 33 } },
-  blood: { organ: "혈관·혈액", element: "fire", position: { x: 50, y: 34 } },
-  // 전신 면역/체력
-  immunity: { organ: "면역·회복력", element: "water", position: { x: 50, y: 25 } },
-  stamina: { organ: "기초 체력", element: "earth", position: { x: 50, y: 88 } },
+  // ——— 얼굴 구간 (y 5~18) ———
+  brain: { organ: "뇌·신경", element: "water", position: { x: 50, y: 5 } },
+  eye: { organ: "눈·시신경", element: "wood", position: { x: 50, y: 11 } },
+  nose: { organ: "코·기관지", element: "metal", position: { x: 50, y: 16 } },
+  // ——— 몸통 구간 (y 24~56) ———
+  immunity: { organ: "면역·회복력", element: "water", position: { x: 50, y: 24 } },
+  lung: { organ: "폐", element: "metal", position: { x: 38, y: 27 } },
+  heart: { organ: "심장", element: "fire", position: { x: 50, y: 28 } },
+  blood: { organ: "혈관·혈액", element: "fire", position: { x: 50, y: 30 } },
+  spine: { organ: "척추·뼈", element: "water", position: { x: 50, y: 35 } },
+  skin: { organ: "피부", element: "metal", position: { x: 28, y: 32 } },
+  liver: { organ: "간·담", element: "wood", position: { x: 42, y: 38 } },
+  stomach: { organ: "위장", element: "earth", position: { x: 50, y: 42 } },
+  spleen: { organ: "비장·췌장", element: "earth", position: { x: 58, y: 44 } },
+  smallIntestine: { organ: "소장", element: "fire", position: { x: 50, y: 52 } },
+  // ——— 다리·하부 구간 (y 60~92) ———
+  largeIntestine: { organ: "대장", element: "metal", position: { x: 50, y: 58 } },
+  kidney: { organ: "신장", element: "water", position: { x: 48, y: 64 } },
+  bladder: { organ: "방광·생식", element: "water", position: { x: 50, y: 72 } },
+  stamina: { organ: "기초 체력", element: "earth", position: { x: 50, y: 92 } },
 };
 
 const ELEMENT_STATUS_COLOR: Record<Element, { danger: string; caution: string; strength: string }> = {

@@ -527,15 +527,9 @@ function detectSpecialStars(
     wood: "巳",
     metal: "亥",
   };
-  // 도화살(년살): 년지·일지의 삼합 그룹에 따라 "도화 지지"가 다름. 그 지지가 사주에 있을 때만 활성.
-  // 申子辰(water)→酉, 寅午戌(fire)→卯, 亥卯未(wood)→子, 巳酉丑(metal)→午
-  // 예: 자(子)가 2개 있어도, 년·일지가 申/子/辰이면 찾는 도화 지지는 酉 → 酉가 없으면 비활성.
-  const NYEONSAL_TARGET: Record<SamhapGroup, string> = {
-    water: "酉",
-    fire: "卯",
-    wood: "子",
-    metal: "午",
-  };
+  // 도화살: 사용자 UX 기준으로 단순 판정(자·오·묘·유 중 하나라도 있으면 활성)
+  // 기존의 삼합(년살) 기반 판정은 사용자가 이해하기 어렵다는 피드백으로 제거.
+  const DOHWA_SIMPLE_BRANCHES = ["子", "午", "卯", "酉"] as const;
   const WOLSAL_TARGET: Record<SamhapGroup, string> = {
     water: "戌",
     fire: "辰",
@@ -559,7 +553,6 @@ function detectSpecialStars(
     jae = 0,
     cheon = 0,
     ji = 0,
-    nyeon = 0,
     wol = 0,
     mang = 0,
     jang = 0;
@@ -569,7 +562,6 @@ function detectSpecialStars(
     if (branches.includes(JAESAL_TARGET[g])) jae += 1;
     if (branches.includes(CHEONSAL_TARGET[g])) cheon += 1;
     if (branches.includes(JISAL_TARGET[g])) ji += 1;
-    if (branches.includes(NYEONSAL_TARGET[g])) nyeon += 1;
     if (branches.includes(WOLSAL_TARGET[g])) wol += 1;
     if (branches.includes(MANGSIN_TARGET[g])) mang += 1;
     if (branches.includes(JANGSEONG_TARGET[g])) jang += 1;
@@ -607,12 +599,15 @@ function detectSpecialStars(
       description: "",
     });
   }
-  // 도화살 = 년지·일지 삼합 기준 "도화 지지"가 지지 4곳 중에 있을 때 활성 (갯수만큼 count)
-  if (nyeon > 0) {
+  // 도화살(단순): 子/午/卯/酉 중 포함된 개수만큼 count
+  const dohwaCnt = branches.filter((b) =>
+    (DOHWA_SIMPLE_BRANCHES as readonly string[]).includes(b)
+  ).length;
+  if (dohwaCnt > 0) {
     detected.push({
       key: "dohwa",
       name: STAR_LABEL.dohwa,
-      count: nyeon,
+      count: dohwaCnt,
       description: "",
     });
   }

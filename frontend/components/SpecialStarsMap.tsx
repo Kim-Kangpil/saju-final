@@ -39,9 +39,8 @@ export function SpecialStarsMap({ cards }: { cards: SpecialStarVisualCard[] }) {
         })}
       </div>
 
-      <div className="text-[10px] text-[#6B6A8A] text-center leading-snug px-1 space-y-1">
-        <p>활성화된 신살은 “강점이 잘 켜지는 상황”을 알려주는 카드로 보면 더 실용적이에요.</p>
-        <p className="text-[9px] text-[#8a9a8a]">도화·역마·화개: 년·일지 삼합 기준 해당 지지가 사주에 있을 때 활성 (예: 申子辰→酉, 亥卯未→子)</p>
+      <div className="text-[10px] text-[#6B6A8A] text-center leading-snug px-1">
+        활성화된 신살은 “강점이 잘 켜지는 상황”을 알려주는 카드로 보면 더 실용적이에요.
       </div>
     </div>
   );

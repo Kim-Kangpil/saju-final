@@ -57,12 +57,9 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
   }, []);
 
   const { strengths, weakness } = data;
-  const avgScore =
-    strengths.length > 0
-      ? Math.round(
-          strengths.reduce((a, s) => a + s.value, 0) / strengths.length
-        )
-      : 0;
+  const strongest = strengths.length > 0
+    ? strengths.reduce((a, b) => (a.value >= b.value ? a : b))
+    : null;
 
   return (
     <div
@@ -139,14 +136,20 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
                 </div>
                 <span
                   style={{
-                    fontSize: "12px",
-                    fontWeight: 700,
-                    color: GAUGE_COLORS[i] ?? GAUGE_COLORS[0],
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color:
+                      s.level === "강함"
+                        ? "#5a7a6a"
+                        : s.level === "보통"
+                          ? "#6b7c6b"
+                          : "#8a9a8a",
                     opacity: animate ? 1 : 0,
                     transition: `opacity 0.5s ${0.3 + i * 0.15}s`,
+                    letterSpacing: "0.3px",
                   }}
                 >
-                  {s.value}
+                  {s.level}
                 </span>
               </div>
 
@@ -171,56 +174,42 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
           ))}
         </div>
 
-        {/* 종합 강점 지수 */}
+        {/* 상대 강도 요약: 숫자 없이 "가장 잘 발휘되는 영역" / "보완할 영역"만 안내 */}
         <div
           style={{
             marginTop: "22px",
             paddingTop: "16px",
             borderTop: "1px solid rgba(107, 138, 122, 0.25)",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
+            flexDirection: "column",
+            gap: "6px",
           }}
         >
-          <span
+          {strongest && (
+            <div
+              style={{
+                fontSize: "11px",
+                color: "#5c6b5c",
+                letterSpacing: "0.2px",
+                lineHeight: 1.5,
+              }}
+            >
+              <span style={{ color: "#5a7a6a", fontWeight: 600 }}>잘 발휘되는 영역</span>
+              {" · "}
+              {strongest.label}
+            </div>
+          )}
+          <div
             style={{
               fontSize: "11px",
               color: "#5c6b5c",
-              letterSpacing: "1px",
+              letterSpacing: "0.2px",
+              lineHeight: 1.5,
             }}
           >
-            종합 강점 지수
-          </span>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            {strengths.map((s, i) => (
-              <div
-                key={s.tenGod}
-                style={{
-                  width: "4px",
-                  height: `${12 + (s.value / 100) * 16}px`,
-                  background: GAUGE_COLORS[i] ?? GAUGE_COLORS[0],
-                  borderRadius: "2px",
-                  opacity: animate ? 0.85 : 0,
-                  transition: `opacity 0.5s ${1.2 + i * 0.1}s, height 0.8s`,
-                }}
-              />
-            ))}
-            <span
-              style={{
-                fontSize: "15px",
-                fontWeight: 800,
-                color: "#3d4a3d",
-                marginLeft: "6px",
-              }}
-            >
-              {avgScore}
-            </span>
+            <span style={{ color: "#b87a6a", fontWeight: 600 }}>보완하면 좋은 영역</span>
+            {" · "}
+            {weakness.label}
           </div>
         </div>
       </div>

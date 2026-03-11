@@ -185,7 +185,7 @@ function getDayStemElement(pillars: SajuPillars): string {
   return stem ? (STEM_TO_ELEMENT[stem] ?? "木") : "木";
 }
 
-/** 오행 개수 → 게이지 점수 (0~8 → 20~98). 0=보완, 2~3=적당, 4+=강함 */
+/** 오행 개수 → 게이지 비율용 점수 (0~100). 바 표시 길이만 사용, 숫자 노출 안 함 */
 function countToScore(n: number): number {
   if (n <= 0) return 22;
   if (n === 1) return 42;
@@ -194,6 +194,13 @@ function countToScore(n: number): number {
   if (n === 4) return 88;
   if (n === 5) return 93;
   return 98;
+}
+
+/** 오행 개수 → 레벨 라벨 (점수 대신 "상대적으로 낮다"만 전달) */
+function countToLevel(n: number): StrengthLevel {
+  if (n <= 1) return "보완";
+  if (n <= 3) return "보통";
+  return "강함";
 }
 
 /** 오행 개수별 구분: 적당(2~3), 많음(4+), 없음(0) */
@@ -295,9 +302,13 @@ export function getStrengthWeaknessParagraph(pillars: SajuPillars, tone: Strengt
 
 // --- 시각화 카드용 데이터 (십성 ↔ 게이지 1:1 매핑) ---
 
+/** 게이지용 구간: 0~1개=보완, 2~3개=보통, 4개+=강함 (점수 대신 상대 강도만 전달) */
+export type StrengthLevel = "보완" | "보통" | "강함";
+
 export interface StrengthWeaknessVisualStrength {
   label: string;
   value: number;
+  level: StrengthLevel;
   icon: string;
   desc: string;
   tenGod: string;
@@ -344,6 +355,7 @@ export function getStrengthWeaknessVisualData(
     strengths.push({
       label: STRENGTH_LABEL[tenGod] ?? tenGod,
       value: countToScore(n),
+      level: countToLevel(n),
       icon: STRENGTH_ICON[tenGod] ?? "•",
       desc: STRENGTH_DESC[tenGod] ?? "",
       tenGod,

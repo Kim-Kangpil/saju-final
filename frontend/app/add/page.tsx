@@ -2826,7 +2826,7 @@ export default function Page() {
                                 <div
                                   key={k}
                                   className={cn(
-                                    "border-4 rounded-2xl overflow-hidden shadow-none transition-colors",
+                                    "border-4 rounded-2xl overflow-hidden shadow-none transition-colors mb-6",
                                     isOpen
                                       ? "border-[#7a9b7c] bg-[#f8faf8] shadow-[0_2px_8px_rgba(85,107,47,0.12)]"
                                       : "border-[#adc4af] bg-white"
@@ -2865,7 +2865,7 @@ export default function Page() {
                                         transition={{ duration: 0.18, ease: "easeOut" }}
                                         className="overflow-hidden"
                                       >
-                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0 max-h-[70vh] overflow-y-auto overscroll-contain">
+                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0 max-h-[70vh] overflow-y-auto overscroll-contain pb-24 sm:pb-16">
                                           {cards.map((c) => (
                                             <div
                                               key={c.id}

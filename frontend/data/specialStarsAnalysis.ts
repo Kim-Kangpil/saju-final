@@ -527,6 +527,9 @@ function detectSpecialStars(
     wood: "巳",
     metal: "亥",
   };
+  // 도화살(년살): 년지·일지의 삼합 그룹에 따라 "도화 지지"가 다름. 그 지지가 사주에 있을 때만 활성.
+  // 申子辰(water)→酉, 寅午戌(fire)→卯, 亥卯未(wood)→子, 巳酉丑(metal)→午
+  // 예: 자(子)가 2개 있어도, 년·일지가 申/子/辰이면 찾는 도화 지지는 酉 → 酉가 없으면 비활성.
   const NYEONSAL_TARGET: Record<SamhapGroup, string> = {
     water: "酉",
     fire: "卯",
@@ -604,7 +607,7 @@ function detectSpecialStars(
       description: "",
     });
   }
-  // NOTE: 년살 맵핑(지지)은 그대로 사용하되, 표기는 도화살로 통일
+  // 도화살 = 년지·일지 삼합 기준 "도화 지지"가 지지 4곳 중에 있을 때 활성 (갯수만큼 count)
   if (nyeon > 0) {
     detected.push({
       key: "dohwa",

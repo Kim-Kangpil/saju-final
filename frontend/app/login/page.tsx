@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
 
@@ -12,7 +12,7 @@ const ERROR_MESSAGE: Record<string, string> = {
     access_denied: "카카오 로그인을 취소했습니다.",
 };
 
-export default function LoginPage() {
+function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [loginError, setLoginError] = useState<string | null>(null);
@@ -502,5 +502,19 @@ export default function LoginPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="min-h-screen bg-[#eef4ee] flex items-center justify-center" style={{ fontFamily: "'Gowun Dodum', sans-serif" }}>
+                    <p className="text-[#556b2f]">로딩 중...</p>
+                </main>
+            }
+        >
+            <LoginContent />
+        </Suspense>
     );
 }

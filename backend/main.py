@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 from typing import Optional
 from datetime import datetime
+import asyncio
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -86,6 +87,7 @@ def root():
             "saju_pillars": "/saju/pillars",
             "saju_interpret_gpt": "/saju/interpret-gpt",
             "saju_summary_gpt": "/saju/summary-gpt",
+            "saju_concern_analysis": "/saju/concern-analysis",
             "payment_confirm": "/payment/confirm",
             "payment_create": "/payment/create"
         }
@@ -150,6 +152,16 @@ class SummaryGPTRequest(BaseModel):
     """종합 요약 GPT 요청 (프론트에서 system + user 프롬프트 전달)"""
     system: str
     user: str
+
+
+class ConcernAnalysisRequest(BaseModel):
+    """고민 분석 요청 — 사주 기본 정보 + 고민 텍스트"""
+    day_stem: str = Field(description="일간 한자 1글자 (甲~癸)")
+    year_pillar: str = Field(description="년주 예: 庚辰")
+    month_pillar: str = Field(description="월주")
+    day_pillar: str = Field(description="일주")
+    hour_pillar: str = Field(description="시주")
+    concern: str = Field(max_length=200, description="고민 텍스트 (최대 200자)")
 
 
 class PaymentConfirmRequest(BaseModel):
@@ -678,6 +690,164 @@ async def summary_gpt(req: SummaryGPTRequest):
         import traceback
         traceback.print_exc()
         return {"summary": None, "error": str(e)}
+
+
+# ==================== 고민 분석 (GPT-4o) ====================
+
+_CONCERN_SYSTEM = """당신은 한국 전통 사주를 현대적으로 해석하는 상담 전문가입니다.
+사주 정보와 사용자의 고민을 바탕으로, 사주 용어(일간·십성·오행·충·형 등)를 쓰지 않고 일상 언어로만 답변하세요.
+답변은 반드시 아래 JSON 형식만 출력하세요. 다른 설명이나 마크다운 코드블록 없이 JSON만 출력합니다.
+
+{
+  "root_cause": "고민의 근본 원인 (사주 기반, 2~3문장)",
+  "reason_now": "지금 이 시기에 이 고민이 생긴 이유 (2~3문장)",
+  "directions": ["방향 제시 1", "방향 제시 2", "방향 제시 3"],
+  "resolution_hint": "이 고민이 풀리는 시기 힌트 (2~4문장)"
+}
+
+총 분량은 2500자 내외로 작성하세요. 희망적이고 구체적으로 작성하세요."""
+
+
+def _build_concern_user_prompt(req: "ConcernAnalysisRequest", analysis: dict) -> str:
+    """고민 분석용 user 프롬프트 조립"""
+    try:
+        pillars = {
+            "year": req.year_pillar,
+            "month": req.month_pillar,
+            "day": req.day_pillar,
+            "hour": req.hour_pillar,
+        }
+        summary = analysis.get("summary") or {}
+        element_counts = summary.get("element_count") or calculate_element_counts(pillars)
+        strength = summary.get("strength") if isinstance(summary.get("strength"), str) else ""
+        strength_score = summary.get("strength_score") if isinstance(summary.get("strength_score"), (int, float)) else 0
+        ten_gods = summary.get("ten_gods_count") or {}
+        patterns = analysis.get("patterns") or []
+        harmony = analysis.get("harmony_clash") or {}
+
+        ten_gods_str = "없음"
+        if ten_gods and isinstance(ten_gods, dict):
+            parts = [f"{k}{v}개" for k, v in ten_gods.items() if v and (isinstance(v, (int, float)) and v > 0)]
+            ten_gods_str = ", ".join(parts) if parts else "없음"
+        patterns_str = ", ".join(str(p) for p in patterns) if patterns else "없음"
+
+        return f"""## 사주 정보
+- 일간: {req.day_stem}
+- 사주: 년주 {req.year_pillar}, 월주 {req.month_pillar}, 일주 {req.day_pillar}, 시주 {req.hour_pillar}
+- 신강약: {strength} (점수: {strength_score})
+- 오행 분포: 목 {element_counts.get('wood', 0)}, 화 {element_counts.get('fire', 0)}, 토 {element_counts.get('earth', 0)}, 금 {element_counts.get('metal', 0)}, 수 {element_counts.get('water', 0)}
+- 십성 분포: {ten_gods_str}
+- 패턴/특징: {patterns_str}
+- 합충: {harmony}
+
+## 사용자 고민
+{req.concern}
+
+위 사주와 고민을 바탕으로 JSON 한 개만 출력하세요."""
+    except Exception as e:
+        print(f"⚠️ _build_concern_user_prompt 오류: {e}")
+        return f"## 사주: {req.year_pillar} {req.month_pillar} {req.day_pillar} {req.hour_pillar}, 일간 {req.day_stem}\n## 고민: {req.concern}\n\n위를 바탕으로 JSON 한 개만 출력하세요."
+
+
+def _parse_concern_json(raw: str) -> Optional[dict]:
+    """GPT 응답에서 JSON 추출 후 파싱"""
+    import re
+    import json
+    text = (raw or "").strip()
+    # ```json ... ``` 제거
+    m = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
+    if m:
+        text = m.group(1).strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+
+
+def _call_gpt_concern(system: str, user_prompt: str) -> str:
+    """동기 GPT 호출 — 이벤트 루프 블로킹 방지를 위해 스레드에서 실행됨"""
+    from openai import OpenAI
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError("OPENAI_API_KEY not configured")
+    concern_client = OpenAI(api_key=api_key, timeout=90.0)
+    resp = concern_client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_tokens=2000,
+        temperature=0.5,
+    )
+    return (resp.choices[0].message.content or "").strip()
+
+
+@app.post("/saju/concern-analysis")
+async def concern_analysis(req: ConcernAnalysisRequest):
+    """고민 분석: 사주 + 고민 텍스트 → GPT-4o로 4가지 포맷 결과 반환 (총 2500자 내외)"""
+    if not client:
+        raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
+
+    concern_text = (req.concern or "").strip()
+    if not concern_text:
+        raise HTTPException(status_code=400, detail="고민 텍스트를 입력해주세요.")
+
+    pillars = {
+        "year": req.year_pillar,
+        "month": req.month_pillar,
+        "day": req.day_pillar,
+        "hour": req.hour_pillar,
+    }
+
+    try:
+        from logic.saju_engine.core.analyzer import analyze_full_saju
+        analysis = analyze_full_saju(req.day_stem, pillars)
+    except Exception as e:
+        print(f"❌ concern-analysis analyze_full_saju 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"사주 분석 실패: {e!s}")
+
+    user_prompt = _build_concern_user_prompt(req, analysis)
+
+    try:
+        # 장시간 블로킹 방지: GPT 호출을 스레드 풀에서 실행
+        loop = asyncio.get_event_loop()
+        raw = await loop.run_in_executor(None, lambda: _call_gpt_concern(_CONCERN_SYSTEM, user_prompt))
+    except Exception as e:
+        print(f"❌ concern-analysis GPT 호출 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=502, detail=f"GPT 호출 실패: {e!s}")
+
+    parsed = _parse_concern_json(raw)
+    if not parsed:
+        return {
+            "success": False,
+            "error": "GPT 응답 파싱 실패",
+            "raw": raw[:500] if raw else "",
+        }
+
+    root_cause = parsed.get("root_cause") or ""
+    reason_now = parsed.get("reason_now") or ""
+    directions = parsed.get("directions")
+    if not isinstance(directions, list):
+        directions = [directions] if isinstance(directions, str) else []
+    directions = [str(d) for d in directions[:3]]
+    resolution_hint = parsed.get("resolution_hint") or ""
+
+    return {
+        "success": True,
+        "root_cause": root_cause,
+        "reason_now": reason_now,
+        "directions": directions,
+        "resolution_hint": resolution_hint,
+    }
 
 
 if __name__ == "__main__":

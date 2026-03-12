@@ -1409,10 +1409,18 @@ export default function Page() {
               user: userPrompt,
             }),
           })
-            .then((res) => res.json())
+            .then((res) => {
+              if (!res.ok) {
+                throw new Error(`summary-gpt ${res.status}`);
+              }
+              return res.json();
+            })
             .then((summaryJson) => {
               if (summaryJson?.summary) {
                 setSummaryGuide(summaryJson.summary);
+              } else if (summaryJson?.error) {
+                console.warn("종합 요약 API 응답:", summaryJson.error);
+                setSummaryGuide(null);
               }
             })
             .catch((e) => {

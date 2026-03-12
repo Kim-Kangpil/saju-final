@@ -76,7 +76,8 @@ def root():
             "openapi": "/openapi.json",
             "saju_full": "/saju/full",
             "saju_pillars": "/saju/pillars",
-            "saju_interpret_gpt": "/saju/interpret-gpt"
+            "saju_interpret_gpt": "/saju/interpret-gpt",
+            "saju_summary_gpt": "/saju/summary-gpt"
         }
     }
 
@@ -133,6 +134,12 @@ class GPTInterpretRequest(BaseModel):
     hour: Optional[int] = None
     minute: Optional[int] = None
     gender: Optional[str] = None
+
+
+class SummaryGPTRequest(BaseModel):
+    """종합 요약 GPT 요청 (프론트에서 system + user 프롬프트 전달)"""
+    system: str
+    user: str
 
 
 # ==================== 헬퍼 함수 ====================
@@ -567,6 +574,31 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
+
+
+@app.post("/saju/summary-gpt")
+async def summary_gpt(req: SummaryGPTRequest):
+    """종합 요약 및 인생 가이드용 GPT 호출 (system + user 프롬프트 → 5단 요약 텍스트)"""
+    try:
+        if not client:
+            print("⚠️ OPENAI_API_KEY 없음 — summary-gpt 스킵")
+            return {"summary": None, "error": "OPENAI_API_KEY not configured"}
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": req.system},
+                {"role": "user", "content": req.user},
+            ],
+            max_tokens=1500,
+            temperature=0.6,
+        )
+        content = (resp.choices[0].message.content or "").strip()
+        return {"summary": content}
+    except Exception as e:
+        print(f"❌ summary-gpt 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"summary": None, "error": str(e)}
 
 
 if __name__ == "__main__":

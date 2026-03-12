@@ -69,6 +69,7 @@ import { GongmangStructureMap } from "../../components/GongmangStructureMap";
 import { SpecialStarsMap } from "../../components/SpecialStarsMap";
 import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
+import { HamIcon } from "../../components/HamIcon";
 import { buildSummaryPromptData, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
 import BackgroundScene from "@/components/add/BackgroundScene";
@@ -2073,7 +2074,7 @@ export default function Page() {
                 }}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
-                <img src="/images/ham_icon.png" alt="햄스터" className="w-10 h-10 object-contain" />
+                <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
                 <span className="text-base font-bold text-[#556b2f]">한양사주</span>
               </button>
 
@@ -2404,8 +2405,7 @@ export default function Page() {
                             WebkitBackdropFilter: "blur(16px)"
                           }}
                         >
-                          <img
-                            src="/images/ham_icon.png"
+                          <HamIcon
                             alt="hamster"
                             className="w-20 h-20 mx-auto mb-4"
                           />

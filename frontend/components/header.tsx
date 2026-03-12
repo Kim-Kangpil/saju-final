@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { HamIcon } from '@/components/HamIcon';
 
 export default function Header() {
     const router = useRouter();
@@ -28,11 +29,7 @@ export default function Header() {
                     onClick={() => router.push('/home')}
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                 >
-                    <img
-                        src="/images/ham_icon.png"
-                        alt="햄스터"
-                        className="w-10 h-10 object-contain"
-                    />
+                    <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
                     <span className="text-base font-bold text-[#556b2f]">한양사주</span>
                 </button>
 

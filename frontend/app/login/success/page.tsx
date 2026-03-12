@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getSavedSajuList } from "@/lib/sajuStorage";
+import { HamIcon } from "@/components/HamIcon";
 
 export default function LoginSuccessPage() {
   const router = useRouter();
@@ -85,11 +86,7 @@ export default function LoginSuccessPage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img
-              src="/images/ham_icon.png"
-              alt=""
-              style={{ width: 28, height: 28, objectFit: "contain" }}
-            />
+            <HamIcon alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
             <span
               className="sans"
               style={{
@@ -162,8 +159,7 @@ export default function LoginSuccessPage() {
             </div>
 
             <div className="ham-float" style={{ width: 110, height: 110, margin: "0 auto 14px" }}>
-              <img
-                src="/images/ham_icon.png"
+              <HamIcon
                 alt="햄스터"
                 style={{
                   width: "100%",

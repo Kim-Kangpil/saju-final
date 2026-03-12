@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { HamIcon } from "@/components/HamIcon";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -101,11 +102,7 @@ export default function LoginPage() {
                     }}
                 >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <img
-                            src="/images/ham_icon.png"
-                            alt=""
-                            style={{ width: 28, height: 28, objectFit: "contain" }}
-                        />
+                        <HamIcon alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
                         <span
                             className="sans"
                             style={{

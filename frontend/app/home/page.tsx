@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { HamIcon } from "@/components/HamIcon";
 import { useState, useEffect, useRef, useMemo } from "react";
 import type { RefObject } from "react";
 
@@ -226,7 +227,7 @@ export default function LandingPage() {
                 {/* ── 헤더 ── */}
                 <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 24, paddingBottom: 16 }} className="fu0">
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <img src="/images/ham_icon.png" alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
+                        <HamIcon style={{ width: 28, height: 28, objectFit: "contain" }} alt="" />
                         <span className="sans" style={{ fontSize: 13, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>한양사주</span>
                     </div>
                     <button onClick={go} className="tap sans"
@@ -249,7 +250,7 @@ export default function LandingPage() {
                         </h1>
 
                         <div className="ham-float" style={{ margin: "10px auto 20px", width: 140, height: 140, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <img src="/images/ham_icon.png" alt="햄스터" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 6px 16px rgba(85,107,47,.25))" }} />
+                            <HamIcon priority alt="햄스터" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 6px 16px rgba(85,107,47,.25))" }} />
                         </div>
 
                         <p className="sans" style={{ fontSize: 14, fontWeight: 500, color: "#556b2f", opacity: .85, lineHeight: 1.7, marginBottom: 28 }}>

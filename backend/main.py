@@ -70,6 +70,11 @@ except Exception as e:
 
 # ==================== 루트 경로 추가 ====================
 
+@app.get("/ping")
+def ping():
+    """서버 응답 여부 확인용 — 의존성 없음"""
+    return "pong"
+
 
 @app.get("/")
 def root():
@@ -766,6 +771,26 @@ def _parse_concern_json(raw: str) -> Optional[dict]:
         return json.loads(raw)
     except json.JSONDecodeError:
         return None
+
+
+@app.post("/saju/concern-analysis-ping")
+async def concern_analysis_ping(req: ConcernAnalysisRequest):
+    """고민 분석 경로 테스트용 — GPT 호출 없이 사주 분석만 수행 후 즉시 응답"""
+    try:
+        pillars = {
+            "year": req.year_pillar,
+            "month": req.month_pillar,
+            "day": req.day_pillar,
+            "hour": req.hour_pillar,
+        }
+        from logic.saju_engine.core.analyzer import analyze_full_saju
+        analysis = analyze_full_saju(req.day_stem, pillars)
+        user_prompt = _build_concern_user_prompt(req, analysis)
+        return {"ok": True, "prompt_length": len(user_prompt), "strength": (analysis.get("summary") or {}).get("strength")}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def _call_gpt_concern(system: str, user_prompt: str) -> str:

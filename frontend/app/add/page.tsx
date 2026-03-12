@@ -2873,7 +2873,7 @@ export default function Page() {
                                         transition={{ duration: 0.18, ease: "easeOut" }}
                                         className="overflow-hidden"
                                       >
-                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0 max-h-[70vh] overflow-y-auto overscroll-contain pb-24 sm:pb-16">
+                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0">
                                           {cards.map((c) => (
                                             <div
                                               key={c.id}

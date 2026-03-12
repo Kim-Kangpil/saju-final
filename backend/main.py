@@ -59,6 +59,14 @@ DB = test.load_db(str(DB_PATH))
 if DB is None:
     raise RuntimeError(f"solar_terms_db.json 로드 실패: {DB_PATH}")
 
+# 결제 DB 초기화
+try:
+    from logic.payment_db import init_payments_db
+    init_payments_db()
+    print("✅ 결제 DB 초기화 완료")
+except Exception as e:
+    print(f"⚠️ 결제 DB 초기화: {e}")
+
 # ==================== 루트 경로 추가 ====================
 
 
@@ -77,7 +85,9 @@ def root():
             "saju_full": "/saju/full",
             "saju_pillars": "/saju/pillars",
             "saju_interpret_gpt": "/saju/interpret-gpt",
-            "saju_summary_gpt": "/saju/summary-gpt"
+            "saju_summary_gpt": "/saju/summary-gpt",
+            "payment_confirm": "/payment/confirm",
+            "payment_create": "/payment/create"
         }
     }
 
@@ -140,6 +150,18 @@ class SummaryGPTRequest(BaseModel):
     """종합 요약 GPT 요청 (프론트에서 system + user 프롬프트 전달)"""
     system: str
     user: str
+
+
+class PaymentConfirmRequest(BaseModel):
+    """결제 확인 요청 (포트원 결제 완료 후 프론트에서 전달)"""
+    user_id: str
+    payment_id: str
+    order_id: str
+
+
+class PaymentCreateRequest(BaseModel):
+    """결제 요청 생성 (주문 번호 발급)"""
+    user_id: Optional[str] = None
 
 
 # ==================== 헬퍼 함수 ====================
@@ -574,6 +596,63 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
+
+
+PAYMENT_PRODUCT = {"orderName": "고민분석", "amount": 3900}
+
+
+@app.post("/payment/create")
+async def payment_create(req: Optional[PaymentCreateRequest] = None):
+    """결제용 주문 번호 발급. 고민분석 3900원 고정."""
+    import uuid
+    order_id = f"order_{uuid.uuid4().hex[:16]}"
+    return {
+        "orderId": order_id,
+        "orderName": PAYMENT_PRODUCT["orderName"],
+        "amount": PAYMENT_PRODUCT["amount"],
+    }
+
+
+@app.post("/payment/confirm")
+async def payment_confirm(req: PaymentConfirmRequest):
+    """결제 완료 후 프론트에서 호출. PortOne 결제 검증 후 DB 저장."""
+    try:
+        payment_id = req.payment_id.strip()
+        order_id = req.order_id.strip()
+        user_id = req.user_id.strip()
+        if not payment_id or not order_id or not user_id:
+            raise HTTPException(status_code=400, detail="user_id, payment_id, order_id 필수")
+
+        # PortOne API로 결제 상태 검증 (선택: env 있으면 검증)
+        portone_secret = os.getenv("PORTONE_API_SECRET") or os.getenv("PORTONE_SECRET_KEY")
+        if portone_secret:
+            try:
+                import urllib.request
+                req_ = urllib.request.Request(
+                    f"https://api.portone.io/v2/payments/{payment_id}",
+                    headers={"Authorization": f"PortOne {portone_secret}"},
+                    method="GET",
+                )
+                with urllib.request.urlopen(req_, timeout=10) as res:
+                    data = __import__("json").loads(res.read().decode())
+                    if data.get("status") != "PAID" and data.get("status") != "paid":
+                        raise HTTPException(status_code=400, detail="결제 상태가 완료가 아닙니다.")
+            except HTTPException:
+                raise
+            except Exception as e:
+                print(f"⚠️ PortOne 결제 검증 실패: {e}")
+                raise HTTPException(status_code=502, detail="결제 검증 실패")
+
+        from logic.payment_db import save_payment
+        save_payment(user_id=user_id, payment_id=payment_id, order_id=order_id, status="paid")
+        return {"success": True, "order_id": order_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ payment/confirm 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/saju/summary-gpt")

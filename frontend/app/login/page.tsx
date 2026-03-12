@@ -1,11 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
+
+const ERROR_MESSAGE: Record<string, string> = {
+    kakao_not_configured: "카카오 로그인 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.",
+    missing_code: "카카오 인증 정보를 받지 못했습니다. 다시 시도해 주세요.",
+    bad_state: "보안 검증에 실패했습니다. 다시 시도해 주세요.",
+    no_access_token: "로그인 처리 중 오류가 났습니다. 다시 시도해 주세요.",
+    access_denied: "카카오 로그인을 취소했습니다.",
+};
 
 export default function LoginPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const [loginError, setLoginError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const error = searchParams.get("error");
+        if (error) {
+            setLoginError(ERROR_MESSAGE[error] || "로그인 중 오류가 발생했습니다.");
+        }
+    }, [searchParams]);
 
     const [formData, setFormData] = useState({
         email: "",
@@ -386,6 +403,21 @@ export default function LoginPage() {
                                 </span>
                                 <div style={{ height: 1, background: "#dce8dc", flex: 1 }} />
                             </div>
+
+                            {loginError && (
+                                <p
+                                    className="sans"
+                                    role="alert"
+                                    style={{
+                                        fontSize: 12,
+                                        color: "#c62828",
+                                        marginBottom: 12,
+                                        textAlign: "center",
+                                    }}
+                                >
+                                    {loginError}
+                                </p>
+                            )}
 
                             <button
                                 type="button"

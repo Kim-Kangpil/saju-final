@@ -12,18 +12,20 @@ load_dotenv(dotenv_path=env_path)
 
 router = APIRouter()
 
-# 🔥 os.environ[] → os.getenv()로 변경
-KAKAO_REST_KEY = os.getenv("KAKAO_REST_KEY", "")
-KAKAO_REDIRECT_URI = os.getenv(
-    "KAKAO_REDIRECT_URI", "http://localhost:3000/login/success")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://hsaju.com")
+# 카카오 로그인용 env (전부 있어야 정상 동작)
+KAKAO_REST_KEY = os.getenv("KAKAO_REST_KEY", "").strip()
+# Redirect URI = 카카오가 code를 보내줄 주소 → 반드시 백엔드 콜백 URL (예: https://xxx.onrender.com/auth/kakao/callback)
+KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI", "").strip()
+FRONTEND_URL = (os.getenv("FRONTEND_URL", "https://hsaju.com") or "https://hsaju.com").strip().rstrip("/")
 
-# 🔥 필수 값 검증
 if not KAKAO_REST_KEY:
-    raise ValueError("❌ KAKAO_REST_KEY가 .env 파일에 없습니다!")
-
-print(f"✅ KAKAO_REST_KEY 로드됨: {KAKAO_REST_KEY[:10]}...")
-print(f"✅ KAKAO_REDIRECT_URI: {KAKAO_REDIRECT_URI}")
+    print("⚠️ KAKAO_REST_KEY가 .env에 없습니다. 카카오 로그인은 비활성됩니다.")
+else:
+    print(f"✅ KAKAO_REST_KEY 로드됨: {KAKAO_REST_KEY[:10]}...")
+if not KAKAO_REDIRECT_URI:
+    print("⚠️ KAKAO_REDIRECT_URI가 .env에 없습니다. 카카오 개발자 콘솔에 등록한 백엔드 콜백 URL을 넣어주세요.")
+else:
+    print(f"✅ KAKAO_REDIRECT_URI: {KAKAO_REDIRECT_URI}")
 print(f"✅ FRONTEND_URL: {FRONTEND_URL}")
 
 
@@ -50,7 +52,11 @@ def kakao_me(access_token: str) -> dict:
 
 @router.get("/auth/kakao/login")
 def kakao_login():
-    # state는 보안용(대충 위조 방지)
+    if not KAKAO_REST_KEY or not KAKAO_REDIRECT_URI:
+        return RedirectResponse(
+            f"{FRONTEND_URL}/login?error=kakao_not_configured",
+            status_code=302,
+        )
     state = secrets.token_urlsafe(16)
     redirect_url = (
         "https://kauth.kakao.com/oauth/authorize"
@@ -59,13 +65,12 @@ def kakao_login():
         f"&response_type=code"
         f"&state={state}"
     )
-
     resp = RedirectResponse(redirect_url, status_code=302)
     resp.set_cookie(
         "kakao_oauth_state",
         state,
         httponly=True,
-        secure=True,
+        secure=(KAKAO_REDIRECT_URI.startswith("https://")),
         samesite="lax",
         max_age=300,
     )
@@ -74,6 +79,11 @@ def kakao_login():
 
 @router.get("/auth/kakao/callback")
 def kakao_callback(request: Request):
+    if not KAKAO_REST_KEY or not KAKAO_REDIRECT_URI:
+        return RedirectResponse(
+            f"{FRONTEND_URL}/login?error=kakao_not_configured",
+            status_code=302,
+        )
     code = request.query_params.get("code")
     state = request.query_params.get("state")
     error = request.query_params.get("error")
@@ -88,25 +98,32 @@ def kakao_callback(request: Request):
     if not saved_state or saved_state != state:
         return RedirectResponse(f"{FRONTEND_URL}/login?error=bad_state", status_code=302)
 
-    # 1) code -> access_token 교환
-    token = exchange_token(code)
+    try:
+        token = exchange_token(code)
+    except Exception as e:
+        print(f"⚠️ 카카오 토큰 교환 실패: {e}")
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
     access_token = token.get("access_token")
     if not access_token:
         return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
 
-    # 2) 카카오 사용자 정보 조회
-    me = kakao_me(access_token)
+    try:
+        me = kakao_me(access_token)
+    except Exception as e:
+        print(f"⚠️ 카카오 사용자 정보 조회 실패: {e}")
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
     kakao_id = me.get("id")
+    if not kakao_id:
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
 
-    # 3) 여기서 원래는 DB에 회원 저장/로그인 처리 해야 함
-    # 지금은 "로그인 됐다고 표시하는 쿠키"만 간단히 발급
+    # 3) 로그인 성공 → 프론트 로그인 성공 페이지로 리다이렉트 + 쿠키
     resp = RedirectResponse(f"{FRONTEND_URL}/login/success", status_code=302)
     resp.set_cookie(
         "hsaju_session",
         f"kakao:{kakao_id}",
         httponly=True,
         secure=True,
-        samesite="none",   # 프론트/백엔드 도메인 다르면 none이 편함(https 필수)
+        samesite="none",  # 프론트(hsaju.com) / 백엔드(onrender.com) 도메인 다르므로 none
         max_age=60 * 60 * 24 * 7,
     )
     return resp

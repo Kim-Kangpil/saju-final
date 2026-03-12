@@ -31,11 +31,11 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
 
   return (
     <div
-      className="w-full max-w-xs mx-auto rounded-2xl bg-gradient-to-b from-[#f2f7f2] to-[#e4ede4] border border-[#c2d4b8] p-3 shadow-md"
+      className="w-full"
       style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
     >
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-1 px-1">
         <span className="text-[10px] font-bold text-[#3a5a2a] tracking-wide">
           {bodyType} · {recoveryLabel(recovery)}
         </span>
@@ -43,7 +43,7 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
       </div>
 
       {/* 이모지 바디맵 */}
-      <div className="grid grid-cols-2 gap-2 mt-1">
+      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
         {bodyPoints.map((p) => {
           const col = colorByStatus(p.status);
           const isActive = activeId === p.id;
@@ -52,8 +52,10 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
               key={p.id}
               type="button"
               onClick={() => setActiveId(isActive ? null : p.id)}
-              className={`flex items-center gap-2 rounded-xl px-2 py-1.5 text-left border transition-colors ${
-                isActive ? "border-[#3a5a2a] bg-white/90" : "border-transparent bg-white/70"
+              className={`flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-left border transition-colors ${
+                isActive
+                  ? "border-[#3a5a2a] bg-white/95 shadow-sm"
+                  : "border-transparent bg-white/70"
               }`}
             >
               <div
@@ -111,7 +113,7 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
 
       {/* 선택된 포인트 상세 */}
       {active && (
-        <div className="mt-3 rounded-xl border border-[#b8ccb0] bg-white/90 px-3 py-2 shadow-sm">
+        <div className="mt-3 rounded-xl border border-[#b8ccb0] bg-white/95 px-3 py-2 shadow-sm">
           <div className="flex items-center justify-between mb-1">
             <div className="text-[11px] font-bold text-[#2f4a21]">
               {active.organ}{" "}

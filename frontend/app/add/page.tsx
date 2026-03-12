@@ -69,6 +69,7 @@ import { GongmangStructureMap } from "../../components/GongmangStructureMap";
 import { SpecialStarsMap } from "../../components/SpecialStarsMap";
 import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
+import { SummarySwipeCards } from "../../components/SummarySwipeCards";
 import { HamIcon } from "../../components/HamIcon";
 import { buildSummaryPromptData, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
@@ -3043,7 +3044,13 @@ export default function Page() {
                                                     />
                                                   )}
 
-                                                  {c.title === "일주 동물의 형상과 본성" ? (
+                                                  {c.id === "solution_summary" && (
+                                                    <div className="mx-1">
+                                                      <SummarySwipeCards text={c.content} />
+                                                    </div>
+                                                  )}
+
+                                                  {c.id === "solution_summary" ? null : c.title === "일주 동물의 형상과 본성" ? (
                                                     <div
                                                       className="text-[11px] leading-relaxed text-[#556b2f]"
                                                       dangerouslySetInnerHTML={{ __html: c.content }}

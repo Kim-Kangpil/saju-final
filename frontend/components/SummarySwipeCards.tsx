@@ -240,11 +240,11 @@ export function SummarySwipeCards({ text }: { text: string }) {
         border: "1px solid rgba(201, 162, 107, 0.28)",
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: 10 }}>
-        <div style={{ fontSize: 10, letterSpacing: 3, color: GOLD, fontWeight: 700, marginBottom: 4 }}>
+        <div style={{ textAlign: "center", marginBottom: 10 }}>
+        <div style={{ fontSize: 12, letterSpacing: 3, color: GOLD, fontWeight: 700, marginBottom: 4 }}>
           ✦ SAJU GUIDE ✦
         </div>
-        <div style={{ fontSize: 13, color: "#6b3fa0", fontWeight: 800, letterSpacing: 0.2 }}>
+        <div style={{ fontSize: 17, color: "#6b3fa0", fontWeight: 800, letterSpacing: 0.2 }}>
           종합 요약 카드
         </div>
       </div>
@@ -310,7 +310,7 @@ export function SummarySwipeCards({ text }: { text: string }) {
               border: `1px solid ${GOLD}55`,
               borderRadius: 999,
               padding: "4px 12px",
-              fontSize: 10,
+              fontSize: 11,
               color: GOLD,
               fontWeight: 800,
               letterSpacing: 1.6,
@@ -324,10 +324,10 @@ export function SummarySwipeCards({ text }: { text: string }) {
 
           <div
             style={{
-              fontSize: 18,
+              fontSize: 19,
               fontWeight: 900,
               color: "#4a2070",
-              lineHeight: 1.35,
+              lineHeight: 1.4,
               marginBottom: 12,
               whiteSpace: "pre-line",
               letterSpacing: -0.3,
@@ -344,7 +344,7 @@ export function SummarySwipeCards({ text }: { text: string }) {
             }}
           />
 
-          <div style={{ fontSize: 12, color: "#7a5090", lineHeight: 1.85, whiteSpace: "pre-line" }}>
+          <div style={{ fontSize: 15, color: "#7a5090", lineHeight: 1.8, whiteSpace: "pre-line" }}>
             {card.body || "—"}
           </div>
 

@@ -620,6 +620,19 @@ function buildBodyPointDesc(
   status: BodyPointStatus,
   reason: BodyReasonCode | "기타"
 ): string {
+  // 한글 조사 '은/는' 선택
+  function hasBatchim(ch: string): boolean {
+    const code = ch.charCodeAt(0);
+    if (code < 0xac00 || code > 0xd7a3) return false;
+    return (code - 0xac00) % 28 !== 0;
+  }
+  function josaEunNeun(word: string): string {
+    const w = word.trim();
+    if (!w.length) return "는";
+    const last = w[w.length - 1];
+    return hasBatchim(last) ? "은" : "는";
+  }
+
   const statusText: Record<BodyPointStatus, string> = {
     danger: "주의가 필요한 부위입니다.",
     caution: "꾸준한 관리가 도움이 되는 부위입니다.",
@@ -704,7 +717,7 @@ function buildBodyPointDesc(
     detail = "전체적인 기초 체력이 좋아 이 부위도 회복 속도가 빠른 편이라, 적당한 운동과 사용은 오히려 강점으로 작용합니다.";
   }
 
-  const base = `${organ}은(는) ${statusText[status]}`;
+  const base = `${organ}${josaEunNeun(organ)} ${statusText[status]}`;
   return detail ? `${base} ${detail}`.trim() : base;
 }
 

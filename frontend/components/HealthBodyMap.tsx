@@ -36,10 +36,10 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-1 px-1">
-        <span className="text-[10px] font-bold text-[#3a5a2a] tracking-wide">
+        <span className="text-[13px] font-bold text-[#3a5a2a] tracking-wide">
           {bodyType} · {recoveryLabel(recovery)}
         </span>
-        <span className="text-[9px] text-[#8a9a78]">색상 = 에너지 상태</span>
+        <span className="text-[11px] text-[#8a9a78]">색상 = 에너지 상태</span>
       </div>
 
       {/* 이모지 바디맵 */}
@@ -96,15 +96,15 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-1 mb-[2px]">
-                  <span className="text-[10px] font-bold text-[#2f4a21] truncate">{p.organ}</span>
+                  <span className="text-[14px] font-bold text-[#2f4a21] truncate">{p.organ}</span>
                   <span
-                    className={`text-[8px] px-1 py-[1px] rounded-full ${col.badge}`}
+                    className={`text-[10px] px-1 py-[1px] rounded-full ${col.badge}`}
                     style={{ color: col.text }}
                   >
                     {statusLabel(p.status)}
                   </span>
                 </div>
-                <p className="text-[8px] leading-snug text-[#5f6f54] line-clamp-2">{p.desc}</p>
+                <p className="text-[13px] leading-snug text-[#5f6f54] line-clamp-2">{p.desc}</p>
               </div>
             </button>
           );
@@ -115,13 +115,13 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
       {active && (
         <div className="mt-3 rounded-xl border border-[#b8ccb0] bg-white/95 px-3 py-2 shadow-sm">
           <div className="flex items-center justify-between mb-1">
-            <div className="text-[11px] font-bold text-[#2f4a21]">
+            <div className="text-[15px] font-bold text-[#2f4a21]">
               {active.organ}{" "}
-              <span className="text-[9px] text-[#7a8b6a]">({statusLabel(active.status)})</span>
+              <span className="text-[12px] text-[#7a8b6a]">({statusLabel(active.status)})</span>
             </div>
-            <span className="text-[9px] text-[#7a8b6a]">{active.reason}</span>
+            <span className="text-[12px] text-[#7a8b6a]">{active.reason}</span>
           </div>
-          <p className="text-[9px] leading-snug text-[#5f6f54]">{active.desc}</p>
+          <p className="text-[14px] leading-snug text-[#5f6f54]">{active.desc}</p>
         </div>
       )}
     </div>

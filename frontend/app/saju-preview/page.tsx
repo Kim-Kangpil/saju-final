@@ -32,6 +32,78 @@ function getDayPillarAnimalName(dayPillarKey: string): string {
   return m ? m[1].trim() : "";
 }
 
+type Element = "wood" | "fire" | "earth" | "metal" | "water";
+type Polarity = "yang" | "yin";
+
+function stemMeta(stem: string): { el: Element; pol: Polarity } | null {
+  const map: Record<string, { el: Element; pol: Polarity }> = {
+    甲: { el: "wood", pol: "yang" }, 乙: { el: "wood", pol: "yin" },
+    丙: { el: "fire", pol: "yang" }, 丁: { el: "fire", pol: "yin" },
+    戊: { el: "earth", pol: "yang" }, 己: { el: "earth", pol: "yin" },
+    庚: { el: "metal", pol: "yang" }, 辛: { el: "metal", pol: "yin" },
+    壬: { el: "water", pol: "yang" }, 癸: { el: "water", pol: "yin" },
+  };
+  return map[stem] ?? null;
+}
+
+function branchMainStem(branch: string): string | null {
+  const map: Record<string, string> = {
+    子: "癸", 丑: "己", 寅: "甲", 卯: "乙", 辰: "戊", 巳: "丙",
+    午: "丁", 未: "己", 申: "庚", 酉: "辛", 戌: "戊", 亥: "壬",
+  };
+  return map[branch] ?? null;
+}
+
+function produces(a: Element, b: Element): boolean {
+  const next: Record<Element, Element> = {
+    wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood",
+  };
+  return next[a] === b;
+}
+
+function controls(a: Element, b: Element): boolean {
+  const map: Record<Element, Element> = {
+    wood: "earth", fire: "metal", earth: "water", metal: "wood", water: "fire",
+  };
+  return map[a] === b;
+}
+
+function tenGod(dayStem: string, targetStem: string): string {
+  const dm = stemMeta(dayStem);
+  const tm = stemMeta(targetStem);
+  if (!dm || !tm) return "";
+  const samePol = dm.pol === tm.pol;
+  if (dm.el === tm.el) return samePol ? "비견" : "겁재";
+  if (produces(dm.el, tm.el)) return samePol ? "식신" : "상관";
+  if (produces(tm.el, dm.el)) return samePol ? "편인" : "정인";
+  if (controls(dm.el, tm.el)) return samePol ? "편재" : "정재";
+  if (controls(tm.el, dm.el)) return samePol ? "편관" : "정관";
+  return "";
+}
+
+function hanjaToElement(h: string): Element | "none" {
+  const wood = new Set(["甲", "乙", "寅", "卯"]);
+  const fire = new Set(["丙", "丁", "巳", "午"]);
+  const earth = new Set(["戊", "己", "辰", "戌", "丑", "未"]);
+  const metal = new Set(["庚", "辛", "申", "酉"]);
+  const water = new Set(["壬", "癸", "子", "亥"]);
+  if (wood.has(h)) return "wood";
+  if (fire.has(h)) return "fire";
+  if (earth.has(h)) return "earth";
+  if (metal.has(h)) return "metal";
+  if (water.has(h)) return "water";
+  return "none";
+}
+
+const ELEMENT_COLOR: Record<string, string> = {
+  wood: "#059669",
+  fire: "#e11d48",
+  earth: "#b45309",
+  metal: "#64748b",
+  water: "#2563eb",
+  none: "#1a2e0e",
+};
+
 interface SajuRow {
   id: number;
   name: string;
@@ -150,6 +222,8 @@ function SajuPreviewContent() {
   }, [pillars]);
 
   const cardStyle = {
+    position: "relative" as const,
+    zIndex: 10,
     background: "#fff",
     border: "1.5px solid #c8dac8",
     borderRadius: 14,
@@ -252,7 +326,7 @@ function SajuPreviewContent() {
         @media (max-width: 390px) { .wrap { padding: 0 16px 40px; } }
       `}</style>
 
-      <div className="wrap">
+      <div className="wrap" style={{ position: "relative", zIndex: 10 }}>
         <header
           className="sans"
           style={{
@@ -361,55 +435,81 @@ function SajuPreviewContent() {
           <div style={valueStyle}>{timeDisplay}</div>
         </section>
 
-        {/* 만세력 카드 */}
+        {/* 만세력 카드 (add 페이지와 동일한 시주·일주·월주·년주 + 십신·천간·지지 형식) */}
         {pillars && (
           <section style={cardStyle}>
             <div style={{ ...labelStyle, marginBottom: 10 }}>만세력</div>
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: 0,
-                borderTop: "2px solid #adc4af",
-                borderLeft: "2px solid #adc4af",
-                background: "#f8faf8",
-                borderRadius: 10,
+                border: "4px solid #adc4af",
+                borderRadius: 16,
+                background: "#fff",
                 overflow: "hidden",
               }}
             >
-              {pillarBlocks.map((p) => (
-                <div
-                  key={`h-${p.label}`}
-                  style={{
-                    padding: "8px 4px",
-                    background: "#c1d8c3",
-                    borderRight: "2px solid #adc4af",
-                    borderBottom: "2px solid #adc4af",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: "#2d4a1e",
-                    textAlign: "center",
-                  }}
-                >
-                  {p.label}
-                </div>
-              ))}
-              {pillarBlocks.map((p) => (
-                <div
-                  key={`v-${p.label}`}
-                  style={{
-                    padding: "10px 4px",
-                    textAlign: "center",
-                    borderRight: "2px solid #adc4af",
-                    borderBottom: "2px solid #adc4af",
-                    fontSize: 18,
-                    fontWeight: 700,
-                    color: "#1a2e0e",
-                  }}
-                >
-                  {p.value}
-                </div>
-              ))}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  borderBottom: "2px solid #adc4af",
+                  background: "rgba(193, 216, 195, 0.1)",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#556b2f",
+                  textAlign: "center",
+                  padding: "6px 4px",
+                }}
+              >
+                <span>시주</span>
+                <span>일주</span>
+                <span>월주</span>
+                <span>년주</span>
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gap: 0,
+                  textAlign: "center",
+                }}
+              >
+                {pillarBlocks.map((p, idx) => {
+                  const cheongan = p.value[0] ?? "";
+                  const jiji = p.value[1] ?? "";
+                  const dayStem = pillars.day_pillar[0] ?? "";
+                  const stemTenGod = tenGod(dayStem, cheongan);
+                  const branchMs = branchMainStem(jiji);
+                  const branchTenGod = branchMs ? tenGod(dayStem, branchMs) : "";
+                  const stemEl = hanjaToElement(cheongan);
+                  const branchEl = hanjaToElement(jiji);
+                  return (
+                    <div
+                      key={p.label}
+                      style={{
+                        padding: "10px 6px",
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: 4,
+                        ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
+                      }}
+                    >
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                        {stemTenGod}
+                      </div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
+                        {cheongan}
+                      </div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
+                        {jiji}
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                        {branchTenGod}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}

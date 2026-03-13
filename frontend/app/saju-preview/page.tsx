@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
@@ -42,7 +42,7 @@ interface SajuRow {
   gender: string;
 }
 
-export default function SajuPreviewPage() {
+function SajuPreviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("id");
@@ -488,5 +488,32 @@ export default function SajuPreviewPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function PreviewFallback() {
+  return (
+    <main
+      style={{
+        background: "#eef4ee",
+        minHeight: "100vh",
+        fontFamily: "'Gowun Dodum', sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+      }}
+    >
+      <p style={{ fontSize: 14, color: "#556b2f" }}>불러오는 중...</p>
+    </main>
+  );
+}
+
+export default function SajuPreviewPage() {
+  return (
+    <Suspense fallback={<PreviewFallback />}>
+      <SajuPreviewContent />
+    </Suspense>
   );
 }

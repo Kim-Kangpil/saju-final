@@ -2046,11 +2046,11 @@ export default function Page() {
       />
 
       <main
-        className="min-h-screen p-4 flex flex-col items-center justify-center relative bg-[#eef4ee]"
-        style={{ position: "relative", zIndex: 10 }}
+        className="min-h-screen flex flex-col items-center justify-center relative bg-[#eef4ee]"
+        style={{ position: "relative", zIndex: 10, padding: "16px 0" }}
       >
-        <div className="w-full max-w-[450px] mx-auto px-2 sm:px-0">
-          <div className="border-4 border-[#adc4af] rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white">
+        <div className="w-full">
+          <div className="overflow-hidden relative z-10 bg-white">
             {/* 배경 이미지 레이어 */}
             <div
               className="absolute left-0 right-0 bottom-0 top-[64px]"

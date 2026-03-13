@@ -5,6 +5,7 @@ import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import type { RefObject } from "react";
+import { getSavedSajuList } from "@/lib/sajuStorage";
 
 function useCounter(target: number) {  // ✅ 반환 타입 제거
     const [count, setCount] = useState(0);
@@ -573,7 +574,7 @@ export default function LandingPage() {
 
 
                         {/* 배우자 AI 미리보기 */}
-                        <div style={{ marginBottom: 20 }}>
+                <div style={{ marginBottom: 20 }}>
                             <div style={{ display: "inline-block", padding: "4px 10px", background: "#fef3c7", border: "1.5px solid #fbbf24", borderRadius: 99, marginBottom: 12 }}>
                                 <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#78350f", letterSpacing: "0.08em" }}>💍 사주 기반 배우자 분석</span>
                             </div>
@@ -618,7 +619,20 @@ export default function LandingPage() {
                             </p>
                         </div>
 
-                        <button onClick={go} className="tap sans"
+                        <button
+                            onClick={() => {
+                                if (!isLoggedIn) {
+                                    router.push("/start");
+                                } else {
+                                    const saved = getSavedSajuList();
+                                    if (!saved || saved.length === 0) {
+                                        router.push("/saju-add");
+                                    } else {
+                                        router.push("/saju-list");
+                                    }
+                                }
+                            }}
+                            className="tap sans"
                             style={{
                                 width: "100%", padding: "15px 0", borderRadius: 14,
                                 fontWeight: 700, fontSize: 14, color: "#1a2e0e",

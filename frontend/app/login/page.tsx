@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
+import { getSavedSajuList } from "@/lib/sajuStorage";
 
 const ERROR_MESSAGE: Record<string, string> = {
     kakao_not_configured: "카카오 로그인 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.",
@@ -46,7 +47,12 @@ function LoginContent() {
         localStorage.setItem("loginType", "email");
         localStorage.setItem("loginTime", new Date().toISOString());
 
-        router.push("/");
+        const savedSajuList = getSavedSajuList();
+        if (!savedSajuList || savedSajuList.length === 0) {
+            router.push("/saju-add");
+        } else {
+            router.push("/saju-list");
+        }
     };
 
     const handleKakaoLogin = () => {

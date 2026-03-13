@@ -13,16 +13,13 @@ export default function LoginSuccessPage() {
     localStorage.setItem("loginType", "kakao");
     localStorage.setItem("loginTime", new Date().toISOString());
 
-    const isFirstLogin = localStorage.getItem("isFirstLogin") !== "false";
     const savedSajuList = getSavedSajuList();
 
     const t = setTimeout(() => {
-      if (isFirstLogin || savedSajuList.length === 0) {
-        localStorage.setItem("isFirstLogin", "false");
-        localStorage.setItem("showWelcome", "true");
-        router.push("/add");
+      if (!savedSajuList || savedSajuList.length === 0) {
+        router.push("/saju-add");
       } else {
-        router.push("/mypage");
+        router.push("/saju-list");
       }
     }, 1200);
 

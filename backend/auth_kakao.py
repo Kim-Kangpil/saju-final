@@ -7,6 +7,8 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
+from logic.user_db import get_or_create_user
+
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
@@ -116,11 +118,29 @@ def kakao_callback(request: Request):
     if not kakao_id:
         return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
 
-    # 3) 로그인 성공 → 프론트 로그인 성공 페이지로 리다이렉트 + 쿠키
+    # 카카오 프로필에서 email, nickname 추출
+    kakao_account = me.get("kakao_account") or {}
+    profile = kakao_account.get("profile") or {}
+    email = (kakao_account.get("email") or "").strip() or None
+    nickname = (profile.get("nickname") or me.get("properties", {}).get("nickname") or "").strip() or None
+
+    # users 테이블에 없으면 INSERT, 있으면 last_login만 UPDATE 후 user_id 반환
+    try:
+        user_id = get_or_create_user(
+            provider="kakao",
+            provider_id=str(kakao_id),
+            email=email,
+            nickname=nickname,
+        )
+    except Exception as e:
+        print(f"⚠️ 유저 DB 저장 실패: {e}")
+        return RedirectResponse(f"{FRONTEND_URL}/login?error=db_error", status_code=302)
+
+    # 3) 로그인 성공 → 프론트 로그인 성공 페이지로 리다이렉트 + 쿠키 (DB user_id 저장)
     resp = RedirectResponse(f"{FRONTEND_URL}/login/success", status_code=302)
     resp.set_cookie(
         "hsaju_session",
-        f"kakao:{kakao_id}",
+        str(user_id),
         httponly=True,
         secure=True,
         samesite="none",  # 프론트(hsaju.com) / 백엔드(onrender.com) 도메인 다르므로 none

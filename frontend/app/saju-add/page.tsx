@@ -5,6 +5,9 @@ import { useState } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
 export default function SajuAddPage() {
   const router = useRouter();
 
@@ -49,7 +52,7 @@ export default function SajuAddPage() {
     return `${timeRaw.slice(0, 2)}:${timeRaw.slice(2)}`;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newErrors = {
       name: !name.trim(),
       birth: birthRaw.length !== 8,
@@ -75,20 +78,48 @@ export default function SajuAddPage() {
       return;
     }
 
-    const payload = {
-      name,
-      relation,
-      birthRaw,
-      birthDisplay: displayBirth(),
-      knowTime,
-      timeRaw,
-      timeDisplay: displayTime(),
-      calendarType,
-      gender,
-    };
-    // TODO: 나중에 백엔드 연동
-    console.log("NEW SAJU PAYLOAD", payload);
-    alert("입력값이 콘솔에 출력되었습니다. (추후 백엔드 연동 예정)");
+    const birthdate = `${birthRaw.slice(0, 4)}-${birthRaw.slice(
+      4,
+      6
+    )}-${birthRaw.slice(6, 8)}`;
+    const birth_time =
+      knowTime === "yes"
+        ? `${timeRaw.slice(0, 2)}:${timeRaw.slice(2, 4)}`
+        : null;
+    const calendar_type = calendarType === "solar" ? "양력" : "음력";
+    const genderText = gender === "male" ? "남자" : "여자";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/saju/save`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name,
+          relation,
+          birthdate,
+          birth_time,
+          calendar_type,
+          gender: genderText,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`save failed: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data?.success) {
+        router.push("/saju-list");
+      } else {
+        alert("저장에 실패했습니다");
+      }
+    } catch (e) {
+      console.error("SAJU SAVE ERROR", e);
+      alert("저장에 실패했습니다");
+    }
   };
 
   const goList = () => router.push("/saju-list");

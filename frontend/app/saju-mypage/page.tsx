@@ -24,6 +24,11 @@ export default function SajuMyPage() {
   };
 
   const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("loginType");
+      localStorage.removeItem("loginTime");
+    }
     alert("로그아웃 되었습니다.");
     router.push("/start");
   };

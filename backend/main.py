@@ -8,7 +8,7 @@ from auth_kakao import router as kakao_router
 import os
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from typing import Optional
 from datetime import datetime
 import asyncio
@@ -60,6 +60,12 @@ DB = test.load_db(str(DB_PATH))
 if DB is None:
     raise RuntimeError(f"solar_terms_db.json 로드 실패: {DB_PATH}")
 
+from logic.saju_db import (
+    init_saju_db,
+    get_saju_count_for_user,
+    save_saju_for_user,
+)
+
 # 결제 DB 초기화
 try:
     from logic.payment_db import init_payments_db
@@ -67,6 +73,21 @@ try:
     print("✅ 결제 DB 초기화 완료")
 except Exception as e:
     print(f"⚠️ 결제 DB 초기화: {e}")
+
+# 사용자 DB 초기화
+try:
+    from logic.user_db import init_user_db
+    init_user_db()
+    print("✅ 사용자 DB 초기화 완료")
+except Exception as e:
+    print(f"⚠️ 사용자 DB 초기화: {e}")
+
+# 사주 DB 초기화
+try:
+    init_saju_db()
+    print("✅ 사주 DB 초기화 완료")
+except Exception as e:
+    print(f"⚠️ 사주 DB 초기화: {e}")
 
 # ==================== 루트 경로 추가 ====================
 
@@ -97,6 +118,31 @@ def root():
             "payment_create": "/payment/create"
         }
     }
+
+
+@app.get("/api/saju/count")
+def get_saju_count(request: Request):
+    """
+    현재 계정의 저장된 사주 개수를 반환합니다.
+    hsaju_session 쿠키에 저장된 user_id를 기준으로 계산합니다.
+    """
+    raw_user_id = request.cookies.get("hsaju_session")
+    if not raw_user_id:
+        # 로그인하지 않은 경우 0개로 간주
+        return {"count": 0}
+
+    try:
+        user_id = int(raw_user_id)
+    except (TypeError, ValueError):
+        # 잘못된 쿠키 값도 0개로 처리
+        return {"count": 0}
+
+    try:
+        count = get_saju_count_for_user(user_id)
+        return {"count": count}
+    except Exception as e:
+        print(f"⚠️ /api/saju/count DB 조회 실패: {e}")
+        return {"count": 0}
 
 # ==================== 모델 정의 ====================
 
@@ -179,6 +225,16 @@ class PaymentConfirmRequest(BaseModel):
 class PaymentCreateRequest(BaseModel):
     """결제 요청 생성 (주문 번호 발급)"""
     user_id: Optional[str] = None
+
+
+class SajuSaveRequest(BaseModel):
+    """사주 저장용 요청 모델"""
+    name: str
+    relation: Optional[str] = None
+    birthdate: str  # YYYY-MM-DD
+    birth_time: Optional[str] = None  # HH:MM 또는 None
+    calendar_type: str  # 양력 / 음력
+    gender: str  # 남자 / 여자
 
 
 # ==================== 헬퍼 함수 ====================
@@ -670,6 +726,51 @@ async def payment_confirm(req: PaymentConfirmRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/saju/save")
+async def save_saju(request: Request, body: SajuSaveRequest):
+    """
+    현재 로그인한 사용자의 사주 한 건을 저장합니다.
+    hsaju_session 쿠키에 저장된 user_id를 사용합니다.
+    """
+    raw_user_id = request.cookies.get("hsaju_session")
+    if not raw_user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
+    try:
+        user_id = int(raw_user_id)
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="잘못된 세션 정보입니다.")
+
+    try:
+        name = body.name.strip()
+        relation = (body.relation or "").strip() or None
+        birthdate = body.birthdate.strip()
+        birth_time = body.birth_time.strip() if body.birth_time else None
+        calendar_type = body.calendar_type.strip()
+        gender = body.gender.strip()
+
+        if not name or not birthdate or not calendar_type or not gender:
+            raise HTTPException(status_code=400, detail="필수 값 누락")
+
+        save_saju_for_user(
+            user_id=user_id,
+            name=name,
+            relation=relation,
+            birthdate=birthdate,
+            birth_time=birth_time,
+            calendar_type=calendar_type,
+            gender=gender,
+        )
+        return {"success": True}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ /api/saju/save 오류: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="사주 저장 실패")
 
 
 @app.post("/saju/summary-gpt")

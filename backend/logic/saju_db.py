@@ -53,6 +53,32 @@ def get_saju_count_for_user(user_id: int) -> int:
         conn.close()
 
 
+def get_saju_by_id(saju_id: int, user_id: int) -> Optional[dict]:
+    """saju_id에 해당하는 사주 한 건 조회. user_id가 일치할 때만 반환."""
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at FROM saju WHERE id = ? AND user_id = ?",
+            (saju_id, user_id),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            "id": row[0],
+            "user_id": row[1],
+            "name": row[2],
+            "relation": row[3],
+            "birthdate": row[4],
+            "birth_time": row[5],
+            "calendar_type": row[6],
+            "gender": row[7],
+            "created_at": row[8],
+        }
+    finally:
+        conn.close()
+
+
 def save_saju_for_user(
     user_id: int,
     name: str,

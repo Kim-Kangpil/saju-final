@@ -26,6 +26,7 @@ export default function SajuAddPage() {
     gender: false,
     global: false,
   });
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const formatBirth = (value: string) => {
     const onlyNum = value.replace(/\D/g, "").slice(0, 8);
@@ -52,7 +53,21 @@ export default function SajuAddPage() {
     return `${timeRaw.slice(0, 2)}:${timeRaw.slice(2)}`;
   };
 
-  const handleSave = async () => {
+  const getPayload = () => {
+    const birthdate = `${birthRaw.slice(0, 4)}-${birthRaw.slice(
+      4,
+      6
+    )}-${birthRaw.slice(6, 8)}`;
+    const birth_time =
+      knowTime === "yes"
+        ? `${timeRaw.slice(0, 2)}:${timeRaw.slice(2, 4)}`
+        : null;
+    const calendar_type = calendarType === "solar" ? "양력" : "음력";
+    const genderText = gender === "male" ? "남자" : "여자";
+    return { name, relation, birthdate, birth_time, calendar_type, gender: genderText };
+  };
+
+  const handleSave = () => {
     const newErrors = {
       name: !name.trim(),
       birth: birthRaw.length !== 8,
@@ -77,18 +92,11 @@ export default function SajuAddPage() {
     if (hasError) {
       return;
     }
+    setShowConfirmModal(true);
+  };
 
-    const birthdate = `${birthRaw.slice(0, 4)}-${birthRaw.slice(
-      4,
-      6
-    )}-${birthRaw.slice(6, 8)}`;
-    const birth_time =
-      knowTime === "yes"
-        ? `${timeRaw.slice(0, 2)}:${timeRaw.slice(2, 4)}`
-        : null;
-    const calendar_type = calendarType === "solar" ? "양력" : "음력";
-    const genderText = gender === "male" ? "남자" : "여자";
-
+  const handleConfirmSave = async () => {
+    const { name: n, relation: r, birthdate, birth_time, calendar_type, gender: genderText } = getPayload();
     try {
       const res = await fetch(`${API_BASE}/api/saju/save`, {
         method: "POST",
@@ -97,21 +105,24 @@ export default function SajuAddPage() {
         },
         credentials: "include",
         body: JSON.stringify({
-          name,
-          relation,
+          name: n,
+          relation: r,
           birthdate,
           birth_time,
           calendar_type,
           gender: genderText,
         }),
       });
-
+      const body = await res.json().catch(() => ({}));
+      console.log("[api/saju/save] status:", res.status, "body:", body);
       if (!res.ok) {
         throw new Error(`save failed: ${res.status}`);
       }
-
-      const data = await res.json();
-      if (data?.success) {
+      if (body?.success && body?.saju_id != null) {
+        setShowConfirmModal(false);
+        router.push(`/saju-preview?id=${body.saju_id}`);
+      } else if (body?.success) {
+        setShowConfirmModal(false);
         router.push("/saju-list");
       } else {
         alert("저장에 실패했습니다");
@@ -123,6 +134,13 @@ export default function SajuAddPage() {
   };
 
   const goList = () => router.push("/saju-list");
+
+  const birthdateDisplay = `${birthRaw.slice(0, 4)}-${birthRaw.slice(4, 6)}-${birthRaw.slice(6, 8)}`;
+  const calendarLabel = calendarType === "solar" ? "양력" : "음력";
+  const timeDisplay = knowTime === "yes" && timeRaw.length === 4
+    ? `${timeRaw.slice(0, 2)}:${timeRaw.slice(2, 4)}`
+    : "모름";
+  const genderDisplay = gender === "male" ? "남자" : "여자";
 
   return (
     <main
@@ -680,6 +698,121 @@ export default function SajuAddPage() {
           </div>
         </section>
       </div>
+
+      {showConfirmModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-modal-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 100,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+            background: "rgba(0,0,0,0.5)",
+          }}
+          onClick={() => setShowConfirmModal(false)}
+        >
+          <div
+            className="sans"
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              padding: 24,
+              width: "100%",
+              maxWidth: 360,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              id="confirm-modal-title"
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: "#1a2e0e",
+                marginBottom: 16,
+              }}
+            >
+              입력 내용을 확인해주세요
+            </h2>
+            <dl
+              style={{
+                margin: 0,
+                fontSize: 14,
+                color: "#1a2e0e",
+                lineHeight: 1.7,
+              }}
+            >
+              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>이름</dt>
+                <dd style={{ margin: 0 }}>{name || "-"}</dd>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>나와의 관계</dt>
+                <dd style={{ margin: 0 }}>{relation || "-"}</dd>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>생년월일</dt>
+                <dd style={{ margin: 0 }}>{birthdateDisplay} ({calendarLabel})</dd>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>태어난 시간</dt>
+                <dd style={{ margin: 0 }}>{timeDisplay}</dd>
+              </div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>성별</dt>
+                <dd style={{ margin: 0 }}>{genderDisplay}</dd>
+              </div>
+            </dl>
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                marginTop: 20,
+              }}
+            >
+              <button
+                type="button"
+                className="tap sans"
+                onClick={() => setShowConfirmModal(false)}
+                style={{
+                  flex: 1,
+                  padding: "11px 14px",
+                  borderRadius: 14,
+                  border: "1.5px solid #adc4af",
+                  background: "#ffffff",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#1a2e0e",
+                }}
+              >
+                수정하기
+              </button>
+              <button
+                type="button"
+                className="tap sans"
+                onClick={handleConfirmSave}
+                style={{
+                  flex: 1,
+                  padding: "11px 14px",
+                  borderRadius: 14,
+                  border: "1.5px solid #adc4af",
+                  background: "#c1d8c3",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#1a2e0e",
+                }}
+              >
+                저장하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

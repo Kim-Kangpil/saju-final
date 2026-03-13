@@ -2,8 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getSavedSajuList } from "@/lib/sajuStorage";
 import { HamIcon } from "@/components/HamIcon";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 
 export default function LoginSuccessPage() {
   const router = useRouter();
@@ -13,17 +15,33 @@ export default function LoginSuccessPage() {
     localStorage.setItem("loginType", "kakao");
     localStorage.setItem("loginTime", new Date().toISOString());
 
-    const savedSajuList = getSavedSajuList();
+    let cancelled = false;
 
-    const t = setTimeout(() => {
-      if (!savedSajuList || savedSajuList.length === 0) {
+    const redirect = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/saju/count`, {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await res.json().catch(() => ({}));
+        const count = typeof data?.count === "number" ? data.count : 0;
+        if (cancelled) return;
+        if (count === 0) {
+          router.push("/saju-add");
+        } else {
+          router.push("/saju-list");
+        }
+      } catch {
+        if (cancelled) return;
         router.push("/saju-add");
-      } else {
-        router.push("/saju-list");
       }
-    }, 1200);
+    };
 
-    return () => clearTimeout(t);
+    const t = setTimeout(redirect, 1200);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
   }, [router]);
 
   return (

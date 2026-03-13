@@ -70,3 +70,38 @@ def get_or_create_user(
         return cur.fetchone()[0]
     finally:
         conn.close()
+
+
+def get_user_id_from_session(session_value: str) -> int | None:
+    """
+    hsaju_session 쿠키 값을 파싱해 user_id(DB id)를 반환합니다.
+    - 숫자만 있으면 해당 값을 user_id로 사용
+    - "kakao:123" 형태면 users 테이블에서 provider+provider_id로 조회 후 id 반환
+    """
+    if not session_value or not session_value.strip():
+        return None
+    s = session_value.strip()
+
+    # 숫자만 있으면 user_id로 사용 (auth_kakao에서 설정한 DB id)
+    try:
+        uid = int(s)
+        if uid > 0:
+            return uid
+    except (ValueError, TypeError):
+        pass
+
+    # "kakao:123" 형태
+    if s.startswith("kakao:"):
+        provider_id = s[6:].strip()
+        if provider_id:
+            conn = get_conn()
+            try:
+                cur = conn.execute(
+                    "SELECT id FROM users WHERE provider = 'kakao' AND provider_id = ?",
+                    (provider_id,),
+                )
+                row = cur.fetchone()
+                return int(row[0]) if row else None
+            finally:
+                conn.close()
+    return None

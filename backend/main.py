@@ -63,8 +63,10 @@ if DB is None:
 from logic.saju_db import (
     init_saju_db,
     get_saju_count_for_user,
+    get_saju_by_id,
     save_saju_for_user,
 )
+from logic.user_db import get_user_id_from_session
 
 # 결제 DB 초기화
 try:
@@ -124,19 +126,12 @@ def root():
 def get_saju_count(request: Request):
     """
     현재 계정의 저장된 사주 개수를 반환합니다.
-    hsaju_session 쿠키에 저장된 user_id를 기준으로 계산합니다.
+    hsaju_session 쿠키(숫자 user_id 또는 "kakao:provider_id" 형태)를 파싱해 조회합니다.
     """
-    raw_user_id = request.cookies.get("hsaju_session")
-    if not raw_user_id:
-        # 로그인하지 않은 경우 0개로 간주
+    raw = request.cookies.get("hsaju_session")
+    user_id = get_user_id_from_session(raw) if raw else None
+    if user_id is None:
         return {"count": 0}
-
-    try:
-        user_id = int(raw_user_id)
-    except (TypeError, ValueError):
-        # 잘못된 쿠키 값도 0개로 처리
-        return {"count": 0}
-
     try:
         count = get_saju_count_for_user(user_id)
         return {"count": count}
@@ -732,16 +727,12 @@ async def payment_confirm(req: PaymentConfirmRequest):
 async def save_saju(request: Request, body: SajuSaveRequest):
     """
     현재 로그인한 사용자의 사주 한 건을 저장합니다.
-    hsaju_session 쿠키에 저장된 user_id를 사용합니다.
+    hsaju_session 쿠키(숫자 user_id 또는 "kakao:provider_id" 형태)를 파싱해 사용합니다.
     """
-    raw_user_id = request.cookies.get("hsaju_session")
-    if not raw_user_id:
+    raw = request.cookies.get("hsaju_session")
+    user_id = get_user_id_from_session(raw) if raw else None
+    if user_id is None:
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
-
-    try:
-        user_id = int(raw_user_id)
-    except (TypeError, ValueError):
-        raise HTTPException(status_code=400, detail="잘못된 세션 정보입니다.")
 
     try:
         name = body.name.strip()
@@ -754,7 +745,7 @@ async def save_saju(request: Request, body: SajuSaveRequest):
         if not name or not birthdate or not calendar_type or not gender:
             raise HTTPException(status_code=400, detail="필수 값 누락")
 
-        save_saju_for_user(
+        saju_id = save_saju_for_user(
             user_id=user_id,
             name=name,
             relation=relation,
@@ -763,7 +754,7 @@ async def save_saju(request: Request, body: SajuSaveRequest):
             calendar_type=calendar_type,
             gender=gender,
         )
-        return {"success": True}
+        return {"success": True, "saju_id": saju_id}
     except HTTPException:
         raise
     except Exception as e:
@@ -771,6 +762,30 @@ async def save_saju(request: Request, body: SajuSaveRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail="사주 저장 실패")
+
+
+@app.get("/api/saju/{saju_id}")
+def get_saju(saju_id: int, request: Request):
+    """
+    저장된 사주 한 건 조회.
+    hsaju_session 쿠키의 user_id와 일치할 때만 반환합니다.
+    """
+    raw = request.cookies.get("hsaju_session")
+    user_id = get_user_id_from_session(raw) if raw else None
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    row = get_saju_by_id(saju_id, user_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="해당 사주를 찾을 수 없습니다.")
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "relation": row["relation"],
+        "birthdate": row["birthdate"],
+        "birth_time": row["birth_time"],
+        "calendar_type": row["calendar_type"],
+        "gender": row["gender"],
+    }
 
 
 @app.post("/saju/summary-gpt")

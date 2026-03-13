@@ -2076,7 +2076,7 @@ export default function Page() {
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
-                <span className="text-base font-bold text-[#556b2f]">한양사주</span>
+                <span className="text-[23px] font-bold text-[#556b2f] leading-none">한양사주</span>
               </button>
 
               <div className="flex items-center gap-2">
@@ -2849,7 +2849,7 @@ export default function Page() {
                                       isOpen ? "bg-[#eef4ee]" : "hover:bg-[#f0f5f1]"
                                     )}
                                   >
-                                    <p className="text-[10px] sm:text-[11px] font-bold text-[#556b2f] flex items-center gap-2">
+                                    <p className="text-[21px] font-bold text-[#556b2f] flex items-center gap-2">
                                       <span className="text-sm sm:text-base">{sec.icon}</span>
                                       <span>{sec.title}</span>
                                     </p>
@@ -2915,7 +2915,7 @@ export default function Page() {
 
                                               {c.kind === "preview" && (
                                                 <div className="relative">
-                                                  <div className="text-[11px] leading-relaxed text-[#556b2f] blur-[6px] select-none pointer-events-none line-clamp-6">
+                                                  <div className="text-[16px] leading-relaxed text-[#556b2f] blur-[6px] select-none pointer-events-none line-clamp-6">
                                                     {c.content.slice(0, 500)}...
                                                   </div>
 
@@ -2924,7 +2924,7 @@ export default function Page() {
                                                       <div className="flex justify-center">
                                                         <LockIcon />
                                                       </div>
-                                                      <p className="text-[10px] font-bold text-[#556b2f]">
+                                                      <p className="text-[11px] font-bold text-[#556b2f]">
                                                         🔓 로그인 후 확인하기
                                                       </p>
                                                       <p className="text-[8px] text-[#556b2f] opacity-70">
@@ -3052,12 +3052,12 @@ export default function Page() {
 
                                                   {c.id === "solution_summary" ? null : c.title === "일주 동물의 형상과 본성" ? (
                                                     <div
-                                                      className="text-[11px] leading-relaxed text-[#556b2f]"
+                                                      className="text-[16px] leading-relaxed text-[#556b2f]"
                                                       dangerouslySetInnerHTML={{ __html: c.content }}
                                                     />
                                                   ) : (
                                                     <div
-                                                      className="text-[11px] leading-relaxed text-[#556b2f]"
+                                                      className="text-[16px] leading-relaxed text-[#556b2f]"
                                                       dangerouslySetInnerHTML={{ __html: c.content.replace(/\n/g, '<br />') }}
                                                     />
                                                   )}

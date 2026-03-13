@@ -8,11 +8,7 @@ export default function SajuMyPage() {
   const router = useRouter();
 
   const handleChargeSeed = () => {
-    alert("씨앗 충전 기능은 준비 중입니다.");
-  };
-
-  const handleChargeSunflower = () => {
-    alert("해바라기 충전 기능은 준비 중입니다.");
+    router.push("/seed-charge");
   };
 
   const handleUsage = () => {
@@ -146,8 +142,10 @@ export default function SajuMyPage() {
               </span>
             </div>
 
-            {/* 해바라기 캐시 */}
-            <div
+            {/* 해바라기 멤버십 (클릭 시 멤버십 페이지) */}
+            <button
+              type="button"
+              onClick={() => router.push("/membership")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -156,19 +154,12 @@ export default function SajuMyPage() {
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.85)",
                 border: "1.5px solid #adc4af",
+                cursor: "pointer",
               }}
             >
               <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#345024",
-                }}
-              >
-                0
-              </span>
-            </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+            </button>
 
             {/* 햄버거 메뉴 아이콘 */}
             <button
@@ -315,13 +306,19 @@ export default function SajuMyPage() {
               </button>
             </div>
 
-            {/* 4. 나의 해바라기 카드 */}
-            <div
+            {/* 4. 해바라기 멤버십 카드 */}
+            <button
+              type="button"
+              onClick={() => router.push("/membership")}
+              className="tap"
               style={{
+                width: "100%",
                 background: "#ffffff",
                 borderRadius: 14,
                 border: "1.5px solid #c8dac8",
                 padding: 16,
+                textAlign: "left",
+                cursor: "pointer",
               }}
             >
               <div
@@ -332,38 +329,15 @@ export default function SajuMyPage() {
                   marginBottom: 8,
                 }}
               >
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
-                >
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                   <Icon icon="fluent-emoji-flat:sunflower" width={22} />
-                  <span
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: "#1a2e0e",
-                    }}
-                  >
-                    나의 해바라기
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e" }}>
+                    해바라기 멤버십
                   </span>
                 </div>
-                <span
-                  style={{
-                    fontSize: 14,
-                    fontWeight: 700,
-                    color: "#345024",
-                  }}
-                >
-                  0
-                </span>
               </div>
-              <button
-                type="button"
-                onClick={handleChargeSunflower}
-                className="tap sans"
+              <div
+                className="sans"
                 style={{
                   width: "100%",
                   padding: "9px 14px",
@@ -373,11 +347,12 @@ export default function SajuMyPage() {
                   fontSize: 14,
                   fontWeight: 700,
                   color: "#1a2e0e",
+                  textAlign: "center",
                 }}
               >
-                해바라기 충전하기
-              </button>
-            </div>
+                멤버십 알아보기
+              </div>
+            </button>
 
             {/* 5. 사용내역 버튼 */}
             <button

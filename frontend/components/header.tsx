@@ -39,14 +39,26 @@ export default function Header() {
         <div className="flex items-center gap-2">
           {isLoggedIn ? (
             <>
-              {/* 해바라기 씨앗 카운트 */}
-              <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af]">
-                <Icon icon="mdi:sunflower" width={18} />
+              {/* 씨앗 (클릭 시 충전 페이지) */}
+              <button
+                type="button"
+                onClick={() => router.push("/seed-charge")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
+              >
+                <Icon icon="mdi:seed-outline" width={18} />
                 <span className="text-xs font-semibold text-[#556b2f]">
                   {seedCount}
                 </span>
-              </div>
-              {/* 머티리얼 스타일 햄버거 버튼 */}
+              </button>
+              {/* 해바라기 멤버십 (숫자 없음, 클릭 시 멤버십 페이지) */}
+              <button
+                type="button"
+                onClick={() => router.push("/membership")}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
+              >
+                <Icon icon="fluent-emoji-flat:sunflower" width={18} />
+                <span className="text-xs font-semibold text-[#556b2f]">멤버십</span>
+              </button>
               <button
                 type="button"
                 className="p-3 rounded-lg hover:bg-[#adc4af] transition-colors"

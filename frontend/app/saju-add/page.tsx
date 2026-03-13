@@ -235,8 +235,10 @@ export default function SajuAddPage() {
               gap: 8,
             }}
           >
-            {/* 씨앗 캐시 */}
-            <div
+            {/* 씨앗 캐시 (클릭 시 충전 페이지) */}
+            <button
+              type="button"
+              onClick={() => router.push("/seed-charge")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -245,6 +247,7 @@ export default function SajuAddPage() {
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.85)",
                 border: "1.5px solid #adc4af",
+                cursor: "pointer",
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
@@ -257,10 +260,12 @@ export default function SajuAddPage() {
               >
                 0
               </span>
-            </div>
+            </button>
 
-            {/* 해바라기 캐시 */}
-            <div
+            {/* 해바라기 멤버십 (클릭 시 멤버십 페이지) */}
+            <button
+              type="button"
+              onClick={() => router.push("/membership")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -269,19 +274,12 @@ export default function SajuAddPage() {
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.85)",
                 border: "1.5px solid #adc4af",
+                cursor: "pointer",
               }}
             >
               <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#345024",
-                }}
-              >
-                0
-              </span>
-            </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+            </button>
 
             {/* 햄버거 메뉴 아이콘 */}
             <button

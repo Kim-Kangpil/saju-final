@@ -223,6 +223,7 @@ class PaymentConfirmRequest(BaseModel):
 class PaymentCreateRequest(BaseModel):
     """결제 요청 생성 (주문 번호 발급)"""
     user_id: Optional[str] = None
+    product_key: Optional[str] = None  # 없으면 고민분석, "seed_1"|"seed_5"|"seed_10" 이면 씨앗 상품
 
 
 class SajuSaveRequest(BaseModel):
@@ -671,16 +672,27 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
 
 PAYMENT_PRODUCT = {"orderName": "고민분석", "amount": 3900}
 
+SEED_PRODUCTS = {
+    "seed_1": {"orderName": "씨앗 1개", "amount": 770},
+    "seed_5": {"orderName": "씨앗 5개+보너스 1개", "amount": 3850},
+    "seed_10": {"orderName": "씨앗 10개+보너스 2개", "amount": 7700},
+}
+
 
 @app.post("/payment/create")
 async def payment_create(req: Optional[PaymentCreateRequest] = None):
-    """결제용 주문 번호 발급. 고민분석 3900원 고정."""
+    """결제용 주문 번호 발급. product_key 없으면 고민분석, seed_1/seed_5/seed_10 이면 씨앗 상품."""
     import uuid
     order_id = f"order_{uuid.uuid4().hex[:16]}"
+    product_key = req.product_key if req and req.product_key else None
+    if product_key and product_key in SEED_PRODUCTS:
+        product = SEED_PRODUCTS[product_key]
+    else:
+        product = PAYMENT_PRODUCT
     return {
         "orderId": order_id,
-        "orderName": PAYMENT_PRODUCT["orderName"],
-        "amount": PAYMENT_PRODUCT["amount"],
+        "orderName": product["orderName"],
+        "amount": product["amount"],
     }
 
 

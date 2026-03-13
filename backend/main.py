@@ -730,8 +730,11 @@ async def save_saju(request: Request, body: SajuSaveRequest):
     hsaju_session 쿠키(숫자 user_id 또는 "kakao:provider_id" 형태)를 파싱해 사용합니다.
     """
     raw = request.cookies.get("hsaju_session")
+    print(f"🧩 /api/saju/save hsaju_session(raw) = {raw!r}")
     user_id = get_user_id_from_session(raw) if raw else None
+    print(f"🧩 /api/saju/save parsed user_id = {user_id!r}")
     if user_id is None:
+        print("🧩 /api/saju/save: user_id 없음 → 401 반환")
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
 
     try:
@@ -745,6 +748,13 @@ async def save_saju(request: Request, body: SajuSaveRequest):
         if not name or not birthdate or not calendar_type or not gender:
             raise HTTPException(status_code=400, detail="필수 값 누락")
 
+        print(
+            f"🧩 /api/saju/save payload: "
+            f"user_id={user_id}, name={name!r}, relation={relation!r}, "
+            f"birthdate={birthdate!r}, birth_time={birth_time!r}, "
+            f"calendar_type={calendar_type!r}, gender={gender!r}"
+        )
+
         saju_id = save_saju_for_user(
             user_id=user_id,
             name=name,
@@ -754,6 +764,7 @@ async def save_saju(request: Request, body: SajuSaveRequest):
             calendar_type=calendar_type,
             gender=gender,
         )
+        print(f"✅ /api/saju/save INSERT 성공: saju_id={saju_id}")
         return {"success": True, "saju_id": saju_id}
     except HTTPException:
         raise

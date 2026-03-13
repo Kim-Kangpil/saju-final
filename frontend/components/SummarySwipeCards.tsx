@@ -176,7 +176,12 @@ function buildCardsFromText(raw: string): SummaryCard[] {
   return META.map((m, idx) => {
     const cleaned = stripLeadingHeading(orderedBodies[idx] || "");
     const { title, body } = firstLineAsTitle(cleaned, m.tag);
-    return { ...m, title, body: body.trim() };
+    // 본문 안에 남아 있는 번호 이모지(1️⃣~5️⃣, ①~⑤ 등)는 모두 제거
+    const bodyWithoutMarkers = body
+      .replace(/[1-5]️⃣/g, "")
+      .replace(/[①②③④⑤]/g, "")
+      .trim();
+    return { ...m, title, body: bodyWithoutMarkers };
   });
 }
 

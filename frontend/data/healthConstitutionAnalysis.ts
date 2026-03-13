@@ -622,24 +622,90 @@ function buildBodyPointDesc(
 ): string {
   const statusText: Record<BodyPointStatus, string> = {
     danger: "주의가 필요한 부위입니다.",
-    caution: "꾸준한 관리가 필요한 부위입니다.",
-    strength: "타고난 강점 부위입니다.",
+    caution: "꾸준한 관리가 도움이 되는 부위입니다.",
+    strength: "타고난 강점으로 쓸 수 있는 부위입니다.",
   };
 
   const elementKo = ELEMENT_KO[element];
 
-  const reasonText: Record<BodyReasonCode | "기타", string> = {
-    오행과다: `${elementKo} 기운이 과하게 몰려 과열·염증 경향이 있습니다.`,
-    오행부족: `${elementKo} 기운이 부족해 기능이 약해지기 쉬운 구조입니다.`,
-    월지체질: `태어난 계절 환경상 이 부위가 민감하게 반응하는 체질입니다.`,
-    충: `에너지 충돌 구조로 이 부위에 긴장이 반복되기 쉽습니다.`,
-    형: `비틀린 에너지 구조로 만성적인 기능 이상이 나타나기 쉽습니다.`,
-    인성강: `회복력과 면역력이 타고난 강점으로 작용합니다.`,
-    신강: `기초 체력이 좋고 회복이 빠른 구조입니다.`,
-    기타: "",
-  };
+  // 기관별 디테일한 설명
+  const isLung = organ.includes("폐") || organ.includes("호흡");
+  const isNose = organ.includes("코") || organ.includes("기관지");
+  const isHeart = organ.includes("심장");
+  const isBlood = organ.includes("혈관") || organ.includes("혈액");
+  const isLiver = organ.includes("간") || organ.includes("담");
+  const isStomach = organ.includes("위장") || organ.includes("비장") || organ.includes("췌장") || organ.includes("소장") || organ.includes("대장");
+  const isKidney = organ.includes("신장") || organ.includes("방광") || organ.includes("생식");
+  const isBrain = organ.includes("뇌") || organ.includes("신경");
+  const isSpine = organ.includes("척추") || organ.includes("뼈");
+  const isSkin = organ.includes("피부");
+  const isImmunity = organ.includes("면역") || organ.includes("회복력");
+  const isStamina = organ.includes("체력");
 
-  return `${organ}은(는) ${statusText[status]} ${reasonText[reason]}`.trim();
+  let detail = "";
+
+  if (reason === "오행과다") {
+    if (isLung || isNose) {
+      detail = "호흡기 쪽에 열·건조가 몰리기 쉬워서, 환절기나 미세먼지 많은 날에는 수분·습도 관리와 충분한 휴식을 챙겨 주면 좋습니다.";
+    } else if (isHeart || isBlood) {
+      detail = "기운이 위쪽으로 몰리면 두근거림·혈압·순환 쪽으로 부담이 생기기 쉬워, 과로·과음·과한 카페인을 줄여 주는 편이 좋습니다.";
+    } else if (isLiver) {
+      detail = "스트레스나 야근이 쌓이면 눈 피로·근육 뻐근함과 함께 이 부위에 긴장이 올라오기 쉬워, 수면 리듬과 휴식을 신경 써 주면 좋습니다.";
+    } else if (isStomach) {
+      detail = "소화가 잘 되는 대신, 과식·야식·자극적인 음식이 계속되면 속쓰림이나 더부룩함으로 신호를 보내기 쉬운 자리입니다.";
+    } else if (isKidney) {
+      detail = "수분 대사와 노폐물 배출을 많이 담당해서, 수면 부족·과음·카페인 과다에 특히 예민하게 반응할 수 있습니다.";
+    } else if (isBrain) {
+      detail = "생각과 긴장이 많이 몰려 머리쪽으로 열이 오르기 쉬워, 충분한 수면과 눈·머리를 쉬게 하는 시간이 중요합니다.";
+    } else if (isSpine) {
+      detail = "자세·체형과 연결되는 부위라, 오래 앉아 있거나 같은 자세를 유지하면 빠르게 피로가 쌓일 수 있습니다.";
+    } else if (isSkin) {
+      detail = "피부 쪽으로 자극이 몰리기 쉬워, 건조함·민감함·트러블로 신호를 보낼 수 있어 보습과 자극 관리가 중요합니다.";
+    } else if (isImmunity) {
+      detail = "기운이 강하게 도는 대신, 무리 후에 한 번에 피로가 오는 패턴으로 나타날 수 있어 휴식 타이밍을 의식적으로 잡아 주면 좋습니다.";
+    } else if (isStamina) {
+      detail = "평소엔 버티는 힘이 좋지만, 한 번 무너지면 크게 지치는 스타일이라 과로 직전까지 몰아붙이지 않는 것이 중요합니다.";
+    } else {
+      detail = `${elementKo} 기운이 몰려 있어 이 부위에 에너지가 강하게 흐르는 대신, 무리하면 과부하 신호가 나타나기 쉬운 자리입니다.`;
+    }
+  } else if (reason === "오행부족") {
+    if (isLung || isNose) {
+      detail = "호흡기 쪽 기운이 약해 감기·알레르기·숨찬 느낌으로 신호를 보낼 수 있어, 규칙적인 호흡 운동과 체온 관리가 도움이 됩니다.";
+    } else if (isHeart || isBlood) {
+      detail = "혈액순환·심장 쪽 기운이 약하면 쉽게 피곤하고 식은땀·어지러움 등으로 표현될 수 있어, 규칙적인 수면과 가벼운 운동이 좋습니다.";
+    } else if (isLiver) {
+      detail = "간 해독력·눈 피로 회복이 더디게 느껴질 수 있어, 과음·야식을 줄이고 눈을 쉬게 하는 습관이 중요합니다.";
+    } else if (isStomach) {
+      detail = "식욕과 소화력이 들쭉날쭉하기 쉬운 자리라, 폭식보다는 소량씩 규칙적으로 먹는 패턴이 잘 맞습니다.";
+    } else if (isKidney) {
+      detail = "몸의 수분·노폐물 조절이 약해지면 쉽게 붓거나 피곤함이 오래 가는 쪽이라, 수면·수분 섭취 패턴을 일정하게 두는 게 좋습니다.";
+    } else if (isBrain) {
+      detail = "집중력과 멘탈 에너지가 빨리 소모되는 타입이라, 정보·약속을 너무 많이 한 번에 떠안지 않는 것이 도움이 됩니다.";
+    } else if (isSpine) {
+      detail = "허리·목 등 근골격 쪽이 약하게 태어난 편이라, 무거운 것 들기·장시간 앉아 있기에는 체형 관리가 더 중요합니다.";
+    } else if (isSkin) {
+      detail = "피부 장벽이 약해 건조·예민함으로 신호를 보내기 쉬워, 기본 보습과 자극 최소화가 큰 도움이 됩니다.";
+    } else if (isImmunity) {
+      detail = "컨디션이 떨어지면 감기·피로 누적 등으로 바로 표시가 나기 쉬워, 충분한 휴식과 균형 잡힌 식사가 핵심 포인트입니다.";
+    } else if (isStamina) {
+      detail = "에너지 탱크 용량이 작게 태어난 편이라, 짧게 자주 쉬는 리듬이 잘 맞고 한 번에 오래 버티는 방식은 부담이 될 수 있습니다.";
+    } else {
+      detail = `${elementKo} 기운이 상대적으로 약해 이 부위는 무리하면 피로가 쉽게 쌓이는 자리입니다.`;
+    }
+  } else if (reason === "월지체질") {
+    detail = "태어난 계절과 기후에 따라 이 부위가 특히 날씨·환경 변화에 민감하게 반응하는 체질입니다.";
+  } else if (reason === "충") {
+    detail = "에너지가 강하게 부딪히는 구조라, 스트레스·환경 변화가 있을 때 이 부위에 긴장·통증·불편감으로 표시가 나기 쉽습니다.";
+  } else if (reason === "형") {
+    detail = "에너지가 비틀려 흐르는 구조라, 한 번 생긴 불편이 만성적으로 이어지지 않도록 초기에 관리해 주면 도움이 됩니다.";
+  } else if (reason === "인성강") {
+    detail = "학습·회복 에너지가 잘 받쳐주는 자리라, 무리가 와도 비교적 금방 회복하는 강점으로 쓸 수 있습니다.";
+  } else if (reason === "신강") {
+    detail = "전체적인 기초 체력이 좋아 이 부위도 회복 속도가 빠른 편이라, 적당한 운동과 사용은 오히려 강점으로 작용합니다.";
+  }
+
+  const base = `${organ}은(는) ${statusText[status]}`;
+  return detail ? `${base} ${detail}`.trim() : base;
 }
 
 // 월지별 바디맵 취약 부위

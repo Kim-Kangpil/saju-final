@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
+import { Icon } from "@iconify/react";
 import { useState, useEffect, useRef, useMemo } from "react";
 import type { RefObject } from "react";
 
@@ -82,7 +83,7 @@ function pick3(arr: string[]) {
 
 export default function LandingPage() {
     const router = useRouter();
-    const go = () => router.push("/add");
+    const go = () => router.push("/start");
 
     const [selectedMode, setSelectedMode] = useState<number | null>(null);
     const [showPreview, setShowPreview] = useState(false);
@@ -119,7 +120,14 @@ export default function LandingPage() {
     const baseCount = useRef(getTodayCount());
     const { count, counterRef } = useCounter(baseCount.current);
 
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
     useEffect(() => {
+        if (typeof window !== "undefined") {
+            const logged = localStorage.getItem("isLoggedIn") === "true";
+            setIsLoggedIn(logged);
+        }
+
         const timer = setTimeout(() => setShowPreview(true), 800);
 
         // 클라이언트에서만 랜덤 동물 생성
@@ -225,15 +233,117 @@ export default function LandingPage() {
             <div className="wrap">
 
                 {/* ── 헤더 ── */}
-                <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 24, paddingBottom: 16 }} className="fu0">
+                <header
+                    className="fu0"
+                    style={{
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 20,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "16px 20px",
+                        margin: "0 -20px 8px",
+                        background: "#c1d8c3",
+                        borderBottom: "3px solid #adc4af",
+                    }}
+                >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <HamIcon style={{ width: 28, height: 28, objectFit: "contain" }} alt="" />
                         <span className="sans" style={{ fontSize: 13, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>한양사주</span>
                     </div>
-                    <button onClick={go} className="tap sans"
-                        style={{ fontSize: 12, fontWeight: 700, color: "#556b2f", padding: "6px 16px", borderRadius: 99, border: "1.5px solid #adc4af", background: "transparent" }}>
-                        시작하기
-                    </button>
+                    {isLoggedIn ? (
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                            }}
+                        >
+                            {/* 씨앗 캐시 */}
+                            <div
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    padding: "6px 10px",
+                                    borderRadius: 999,
+                                    background: "rgba(255,255,255,0.85)",
+                                    border: "1.5px solid #adc4af",
+                                }}
+                            >
+                                <Icon icon="mdi:seed-outline" width={18} />
+                                <span
+                                    style={{
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        color: "#345024",
+                                    }}
+                                >
+                                    0
+                                </span>
+                            </div>
+
+                            {/* 해바라기 캐시 */}
+                            <div
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    padding: "6px 10px",
+                                    borderRadius: 999,
+                                    background: "rgba(255,255,255,0.85)",
+                                    border: "1.5px solid #adc4af",
+                                }}
+                            >
+                                <Icon icon="fluent-emoji-flat:sunflower" width={18} />
+                                <span
+                                    style={{
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        color: "#345024",
+                                    }}
+                                >
+                                    0
+                                </span>
+                            </div>
+
+                            {/* 햄버거 메뉴 아이콘 */}
+                            <button
+                                type="button"
+                                className="tap"
+                                aria-label="메뉴 열기"
+                                onClick={() => router.push("/saju-mypage")}
+                                style={{
+                                    padding: 8,
+                                    borderRadius: 10,
+                                    border: "none",
+                                    background: "transparent",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                }}
+                            >
+                                <Icon icon="mdi:menu" width={22} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={go}
+                            className="tap sans"
+                            style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                color: "#556b2f",
+                                padding: "6px 16px",
+                                borderRadius: 99,
+                                border: "1.5px solid #adc4af",
+                                background: "transparent",
+                            }}
+                        >
+                            시작하기
+                        </button>
+                    )}
                 </header>
 
                 {/* ── 1. 히어로: NEW GAME ── */}
@@ -256,17 +366,6 @@ export default function LandingPage() {
                         <p className="sans" style={{ fontSize: 14, fontWeight: 500, color: "#556b2f", opacity: .85, lineHeight: 1.7, marginBottom: 28 }}>
                             복잡한 사주를, 가볍게
                         </p>
-
-                        <button onClick={go} className="tap sans"
-                            style={{
-                                width: "100%", maxWidth: 320, padding: "16px 0", borderRadius: 14,
-                                fontWeight: 700, fontSize: 15, color: "#1a2e0e",
-                                background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
-                                border: "none",
-                                boxShadow: "0 4px 14px rgba(85,107,47,.25)",
-                            }}>
-                            ▶ 무료로 생성하기
-                        </button>
 
                         <div ref={counterRef} style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "rgba(85,107,47,.06)", borderRadius: 99, border: "1px solid rgba(85,107,47,.12)" }}>
                             <span style={{ fontSize: 10, color: "#22c55e", fontWeight: 700 }}>✔</span>

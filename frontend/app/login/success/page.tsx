@@ -154,6 +154,7 @@ export default function LoginSuccessPage() {
             style={{
               position: "absolute",
               inset: 0,
+              zIndex: 0,
               opacity: 0.03,
               backgroundImage: "radial-gradient(circle, #556b2f 1px, transparent 1px)",
               backgroundSize: "8px 8px",
@@ -161,7 +162,7 @@ export default function LoginSuccessPage() {
             }}
           />
 
-          <div style={{ position: "relative" }}>
+          <div style={{ position: "relative", zIndex: 1 }}>
             <div
               style={{
                 display: "inline-block",

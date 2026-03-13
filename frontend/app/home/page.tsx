@@ -349,9 +349,9 @@ export default function LandingPage() {
 
                 {/* ── 1. 히어로: NEW GAME ── */}
                 <div className="fu1" style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid #c8dac8", padding: "40px 28px 36px", marginBottom: 14, position: "relative", overflow: "hidden", textAlign: "center" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: .03, backgroundImage: "radial-gradient(circle, #556b2f 1px, transparent 1px)", backgroundSize: "8px 8px", pointerEvents: "none" }} />
+                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: .03, backgroundImage: "radial-gradient(circle, #556b2f 1px, transparent 1px)", backgroundSize: "8px 8px", pointerEvents: "none", zIndex: 0 }} />
 
-                    <div style={{ position: "relative" }}>
+                    <div style={{ position: "relative", zIndex: 1 }}>
                         <div style={{ display: "inline-block", padding: "5px 14px", background: "#e8f0e8", border: "1.5px solid #adc4af", borderRadius: 99, marginBottom: 20 }}>
                             <span className="sans" style={{ fontSize: 11, fontWeight: 700, color: "#556b2f", letterSpacing: "0.1em" }}>🟢 NEW GAME</span>
                         </div>

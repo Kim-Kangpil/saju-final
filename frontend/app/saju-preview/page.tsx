@@ -128,6 +128,18 @@ function SajuPreviewContent() {
     day_pillar: string;
     hour_pillar: string;
   } | null>(null);
+  const [jijanggan, setJijanggan] = useState<{
+    hour: Array<{ hanja: string; hangul: string; element: string }>;
+    day: Array<{ hanja: string; hangul: string; element: string }>;
+    month: Array<{ hanja: string; hangul: string; element: string }>;
+    year: Array<{ hanja: string; hangul: string; element: string }>;
+  } | null>(null);
+  const [twelveStates, setTwelveStates] = useState<{
+    hour: string;
+    day: string;
+    month: string;
+    year: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!sajuId) {
@@ -190,6 +202,8 @@ function SajuPreviewContent() {
           day_pillar: fullData.day_pillar,
           hour_pillar: fullData.hour_pillar,
         });
+        if (fullData.jijanggan) setJijanggan(fullData.jijanggan);
+        if (fullData.twelve_states) setTwelveStates(fullData.twelve_states);
       } catch {
         if (!cancelled) setError("불러오기 실패");
       } finally {
@@ -474,6 +488,7 @@ function SajuPreviewContent() {
                 }}
               >
                 {pillarBlocks.map((p, idx) => {
+                  const pillarKey = (["hour", "day", "month", "year"] as const)[idx];
                   const cheongan = p.value[0] ?? "";
                   const jiji = p.value[1] ?? "";
                   const dayStem = pillars.day_pillar[0] ?? "";
@@ -482,6 +497,8 @@ function SajuPreviewContent() {
                   const branchTenGod = branchMs ? tenGod(dayStem, branchMs) : "";
                   const stemEl = hanjaToElement(cheongan);
                   const branchEl = hanjaToElement(jiji);
+                  const jijangganList = jijanggan?.[pillarKey];
+                  const stateText = twelveStates?.[pillarKey];
                   return (
                     <div
                       key={p.label}
@@ -506,6 +523,27 @@ function SajuPreviewContent() {
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
                         {branchTenGod}
                       </div>
+                      {jijangganList && jijangganList.length > 0 && (
+                        <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", marginTop: 2 }}>
+                          {jijangganList.map((jj, jdx) => (
+                            <span
+                              key={jdx}
+                              style={{
+                                fontSize: 9,
+                                fontWeight: 700,
+                                color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e",
+                              }}
+                            >
+                              {jj.hanja}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {stateText && (
+                        <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
+                          {stateText}
+                        </div>
+                      )}
                     </div>
                   );
                 })}

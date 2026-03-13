@@ -51,7 +51,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-KPH5HZM3');`,
           }}
         />
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen relative" style={{ zIndex: 1 }}>
           <main className="flex-grow pb-0">
             {children}
           </main>

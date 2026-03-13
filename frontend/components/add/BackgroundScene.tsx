@@ -38,12 +38,14 @@ function rootStyle(url: string): React.CSSProperties {
 const overlayStyle: React.CSSProperties = {
     position: "absolute",
     inset: 0,
+    zIndex: 0,
     background: "rgba(0,0,0,0.25)",
 };
 
 const swayLayerStyle: React.CSSProperties = {
     position: "absolute",
     inset: -20,
+    zIndex: 0,
     background:
         "linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.00), rgba(255,255,255,0.06))",
     filter: "blur(8px)",
@@ -54,6 +56,7 @@ const swayLayerStyle: React.CSSProperties = {
 const particlesStyle: React.CSSProperties = {
     position: "absolute",
     inset: 0,
+    zIndex: 0,
     backgroundImage:
         "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.18) 0 1px, transparent 2px), radial-gradient(circle at 70% 60%, rgba(255,255,255,0.14) 0 1px, transparent 2px), radial-gradient(circle at 40% 80%, rgba(255,255,255,0.12) 0 1px, transparent 2px)",
     backgroundSize: "220px 220px",

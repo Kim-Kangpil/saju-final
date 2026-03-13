@@ -171,12 +171,13 @@ function LoginContent() {
                         overflow: "hidden",
                     }}
                 >
-                    {/* 은은한 패턴 */}
+                    {/* 은은한 패턴 (레이어 맨 뒤) */}
                     <div
                         aria-hidden
                         style={{
                             position: "absolute",
                             inset: 0,
+                            zIndex: 0,
                             opacity: 0.03,
                             backgroundImage:
                                 "radial-gradient(circle, rgba(85,107,47,.9) 1px, transparent 1px)",
@@ -184,19 +185,20 @@ function LoginContent() {
                             pointerEvents: "none",
                         }}
                     />
-                    {/* 상단 하이라이트 */}
+                    {/* 상단 하이라이트 (레이어 맨 뒤) */}
                     <div
                         aria-hidden
                         style={{
                             position: "absolute",
                             inset: 0,
+                            zIndex: 0,
                             background:
                                 "radial-gradient(240px 120px at 20% 0%, rgba(168,213,184,.28), transparent 60%)",
                             pointerEvents: "none",
                         }}
                     />
 
-                    <div style={{ position: "relative" }}>
+                    <div style={{ position: "relative", zIndex: 1 }}>
                         <div style={{ textAlign: "center", marginBottom: 16 }}>
                             <div
                                 style={{
@@ -384,12 +386,13 @@ function LoginContent() {
                                     style={{
                                         position: "absolute",
                                         inset: 0,
+                                        zIndex: 0,
                                         background:
                                             "radial-gradient(120px 40px at 20% 20%, rgba(255,255,255,.55), transparent 60%)",
                                         pointerEvents: "none",
                                     }}
                                 />
-                                <span style={{ position: "relative" }}>로그인</span>
+                                <span style={{ position: "relative", zIndex: 1 }}>로그인</span>
                             </button>
 
                             <div
@@ -454,6 +457,7 @@ function LoginContent() {
                                     style={{
                                         position: "absolute",
                                         inset: 0,
+                                        zIndex: 0,
                                         background:
                                             "radial-gradient(140px 44px at 22% 22%, rgba(255,255,255,.45), transparent 60%)",
                                         pointerEvents: "none",
@@ -464,7 +468,7 @@ function LoginContent() {
                                     height="20"
                                     viewBox="0 0 18 18"
                                     fill="none"
-                                    style={{ position: "relative" }}
+                                    style={{ position: "relative", zIndex: 1 }}
                                 >
                                     <path
                                         d="M9 0C4.03 0 0 3.34 0 7.47C0 10.07 1.57 12.35 4.03 13.69L3.12 17.25C3.06 17.47 3.29 17.64 3.48 17.52L7.66 14.97C8.1 15.02 8.55 15.05 9 15.05C13.97 15.05 18 11.71 18 7.58C18 3.45 13.97 0 9 0Z"

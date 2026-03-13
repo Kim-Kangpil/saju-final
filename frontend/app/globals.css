@@ -30,7 +30,7 @@ html, body {
   position: relative !important;
 }
 
-/* ✅ 도트 패턴 (더 진하게) */
+/* ✅ 도트 패턴 (알록달록한 동그라미) — 레이어 맨 뒤 */
 body::before {
   content: "" !important;
   position: fixed !important;
@@ -40,10 +40,8 @@ body::before {
     radial-gradient(circle, rgba(255, 182, 193, 0.3) 2px, transparent 2px) !important;
   background-size: 20px 20px, 35px 35px !important;
   background-position: 0 0, 10px 10px !important;
-  background-size: 20px 20px, 35px 35px !important;
-  background-position: 0 0, 10px 10px !important;
   pointer-events: none !important;
-  z-index: 0 !important;
+  z-index: -1 !important;
 }
 
 body::after {
@@ -56,7 +54,7 @@ body::after {
     radial-gradient(ellipse 220px 110px at 40% 70%, rgba(255, 255, 255, 0.5) 0%, transparent 50%),
     radial-gradient(ellipse 280px 140px at 70% 60%, rgba(255, 255, 255, 0.4) 0%, transparent 50%) !important;
   pointer-events: none !important;
-  z-index: 0 !important;
+  z-index: -1 !important;
   animation: cloudFloat 30s ease-in-out infinite !important;
 }
 

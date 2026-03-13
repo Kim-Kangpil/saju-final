@@ -115,9 +115,19 @@ export default function SajuAddPage() {
       });
       const body = await res.json().catch(() => ({}));
       console.log("[api/saju/save] status:", res.status, "body:", body);
-      if (!res.ok) {
-        throw new Error(`save failed: ${res.status}`);
+
+      if (res.status === 401) {
+        alert("로그인이 필요합니다. 카카오로 다시 로그인해 주세요.\n(개발용 로그인은 저장 기능을 지원하지 않습니다.)");
+        setShowConfirmModal(false);
+        router.push("/login");
+        return;
       }
+
+      if (!res.ok) {
+        alert("저장에 실패했습니다.");
+        return;
+      }
+
       if (body?.success && body?.saju_id != null) {
         setShowConfirmModal(false);
         router.push(`/saju-preview?id=${body.saju_id}`);

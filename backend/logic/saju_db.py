@@ -2,7 +2,7 @@
 import sqlite3
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 DB_DIR = Path(__file__).resolve().parent
 SAJU_DB = DB_DIR / "saju.db"
@@ -75,6 +75,36 @@ def get_saju_by_id(saju_id: int, user_id: int) -> Optional[dict]:
             "gender": row[7],
             "created_at": row[8],
         }
+    finally:
+        conn.close()
+
+
+def get_saju_list_for_user(user_id: int) -> List[dict]:
+    """해당 user_id의 사주 전체 목록 (최신 생성 순) 반환."""
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at "
+            "FROM saju WHERE user_id = ? ORDER BY created_at DESC",
+            (user_id,),
+        )
+        rows = cur.fetchall()
+        result: List[dict] = []
+        for row in rows:
+            result.append(
+                {
+                    "id": row[0],
+                    "user_id": row[1],
+                    "name": row[2],
+                    "relation": row[3],
+                    "birthdate": row[4],
+                    "birth_time": row[5],
+                    "calendar_type": row[6],
+                    "gender": row[7],
+                    "created_at": row[8],
+                }
+            )
+        return result
     finally:
         conn.close()
 

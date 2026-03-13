@@ -64,6 +64,7 @@ from logic.saju_db import (
     init_saju_db,
     get_saju_count_for_user,
     get_saju_by_id,
+    get_saju_list_for_user,
     save_saju_for_user,
 )
 from logic.user_db import get_user_id_from_session
@@ -721,6 +722,20 @@ async def payment_confirm(req: PaymentConfirmRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/saju/list")
+def get_saju_list(request: Request):
+    """
+    현재 로그인한 사용자의 사주 전체 목록을 반환합니다.
+    """
+    raw = request.cookies.get("hsaju_session")
+    user_id = get_user_id_from_session(raw) if raw else None
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    rows = get_saju_list_for_user(user_id)
+    # 그대로 리스트 반환 (FastAPI가 JSON 직렬화)
+    return rows
 
 
 @app.post("/api/saju/save")

@@ -1,11 +1,161 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
+import { dayPillarTexts } from "@/data/dayPillarAnimal";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
+type SajuRow = {
+  id: number;
+  name: string;
+  relation: string | null;
+  birthdate: string;
+  birth_time: string | null;
+  calendar_type: string;
+  gender: string;
+  created_at: string;
+};
+
+type SajuWithAnimal = SajuRow & {
+  dayPillarKey?: string;
+  animalName?: string;
+};
+
+const HANJA_TO_HANGUL: Record<string, string> = {
+  甲: "갑",
+  乙: "을",
+  丙: "병",
+  丁: "정",
+  戊: "무",
+  己: "기",
+  庚: "경",
+  辛: "신",
+  壬: "임",
+  癸: "계",
+  子: "자",
+  丑: "축",
+  寅: "인",
+  卯: "묘",
+  辰: "진",
+  巳: "사",
+  午: "오",
+  未: "미",
+  申: "신",
+  酉: "유",
+  戌: "술",
+  亥: "해",
+};
+
+function hanjaToHangul(h: string): string {
+  return HANJA_TO_HANGUL[h] ?? "";
+}
+
+function dayPillarToKey(dayPillar: string): string {
+  if (!dayPillar || dayPillar.length < 2) return "";
+  return hanjaToHangul(dayPillar[0]) + hanjaToHangul(dayPillar[1]);
+}
+
+function getDayPillarAnimalName(dayPillarKey: string): string {
+  const text = dayPillarTexts[dayPillarKey]?.empathy;
+  if (!text) return "";
+  const m = text.match(/일주 동물<\/strong>은 (.+?)입니다/);
+  return m ? m[1].trim() : "";
+}
 
 export default function SajuListPage() {
   const router = useRouter();
+  const [items, setItems] = useState<SajuWithAnimal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const res = await fetch(`${API_BASE}/api/saju/list`, {
+          credentials: "include",
+        });
+        const data = await res.json().catch(() => []);
+        if (!res.ok) {
+          if (!cancelled) {
+            setError("사주 목록을 불러오지 못했습니다.");
+            setLoading(false);
+          }
+          return;
+        }
+        if (cancelled) return;
+
+        const baseList: SajuWithAnimal[] = Array.isArray(data) ? data : [];
+        setItems(baseList);
+
+        const withAnimals = await Promise.all(
+          baseList.map(async (item) => {
+            try {
+              const [y, m, d] = (item.birthdate || "").split("-").map(Number);
+              if (!y || !m || !d) return item;
+
+              let hour = 12;
+              let minute = 0;
+              const timePart = (item.birth_time || "").trim();
+              if (timePart && /^\d{1,2}:\d{1,2}$/.test(timePart)) {
+                const [h, mi] = timePart.split(":").map(Number);
+                if (!Number.isNaN(h)) hour = h;
+                if (!Number.isNaN(mi)) minute = mi;
+              }
+
+              const calendar_type =
+                item.calendar_type === "음력" ? "lunar" : "solar";
+              const gender = item.gender === "남자" ? "M" : "F";
+
+              const fullRes = await fetch(`${API_BASE}/saju/full`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  calendar_type,
+                  year: y,
+                  month: m,
+                  day: d,
+                  hour,
+                  minute,
+                  gender,
+                }),
+              });
+              const full = await fullRes.json().catch(() => null);
+              if (!fullRes.ok || !full) return item;
+
+              const key = dayPillarToKey(full.day_pillar);
+              const animalName = key ? getDayPillarAnimalName(key) : "";
+              return { ...item, dayPillarKey: key, animalName };
+            } catch {
+              return item;
+            }
+          })
+        );
+
+        if (!cancelled) {
+          setItems(withAnimals);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("사주 목록을 불러오지 못했습니다.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main
@@ -207,7 +357,7 @@ export default function SajuListPage() {
             <span style={{ fontSize: 16 }}>➕</span>
           </button>
 
-          {/* 사주 카드 목록 (현재는 비어 있음) */}
+          {/* 사주 카드 목록 */}
           <div
             style={{
               display: "flex",
@@ -215,26 +365,149 @@ export default function SajuListPage() {
               gap: 10,
             }}
           >
-            <div
-              style={{
-                background: "#ffffff",
-                borderRadius: 14,
-                border: "1.5px solid #c8dac8",
-                padding: "12px 12px 14px",
-              }}
-            >
-              <p
+            {loading ? (
+              <div
                 style={{
-                  fontSize: 14,
-                  lineHeight: 1.7,
+                  padding: 14,
+                  textAlign: "center",
+                  fontSize: 13,
                   color: "#556b2f",
                 }}
               >
-                아직 저장된 사주가 없습니다.
-                <br />
-                새로 추가한 사주가 이 아래에 카드 형태로 순서대로 쌓일 예정입니다.
-              </p>
-            </div>
+                불러오는 중...
+              </div>
+            ) : error ? (
+              <div
+                style={{
+                  padding: 14,
+                  textAlign: "center",
+                  fontSize: 13,
+                  color: "#b91c1c",
+                }}
+              >
+                {error}
+              </div>
+            ) : items.length === 0 ? (
+              <div
+                style={{
+                  padding: 14,
+                  textAlign: "center",
+                  fontSize: 13,
+                  color: "#6b7280",
+                }}
+              >
+                아직 저장된 사주가 없습니다
+              </div>
+            ) : (
+              items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="tap sans"
+                  onClick={() => router.push(`/saju-preview?id=${item.id}`)}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    background: "#ffffff",
+                    border: "1.5px solid #c8dac8",
+                    borderRadius: 14,
+                    padding: 12,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                  }}
+                >
+                  {/* 왼쪽: 일주 동물 이미지 */}
+                  <div
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      background: "#f3f4f6",
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item.dayPillarKey ? (
+                      <img
+                        src={`/images/day_pillars/${item.dayPillarKey}.png`}
+                        alt={`${item.dayPillarKey} 일주 동물`}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color: "#9ca3af",
+                        }}
+                      >
+                        동물
+                      </span>
+                    )}
+                  </div>
+
+                  {/* 오른쪽: 텍스트 정보 */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#1a2e0e",
+                      }}
+                    >
+                      {item.name}
+                      {item.relation ? ` · ${item.relation}` : ""}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#4b5563",
+                      }}
+                    >
+                      {item.birthdate} ({item.calendar_type}) · {item.gender}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "#4b5563",
+                      }}
+                    >
+                      태어난 시각:{" "}
+                      {item.birth_time && item.birth_time.trim()
+                        ? item.birth_time
+                        : "시간 모름"}
+                    </div>
+                    {item.animalName && (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "#374151",
+                          marginTop: 2,
+                        }}
+                      >
+                        {item.animalName}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </section>
       </div>

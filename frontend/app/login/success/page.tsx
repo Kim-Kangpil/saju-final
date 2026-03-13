@@ -11,9 +11,13 @@ export default function LoginSuccessPage() {
   const router = useRouter();
 
   useEffect(() => {
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("loginType", "kakao");
-    localStorage.setItem("loginTime", new Date().toISOString());
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      const provider = url.searchParams.get("provider") || "kakao";
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("loginType", provider);
+      localStorage.setItem("loginTime", new Date().toISOString());
+    }
 
     let cancelled = false;
 

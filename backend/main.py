@@ -5,6 +5,7 @@ from logic import test
 from logic import lunar_converter
 from logic.jijanggan import calculate_jijanggan_for_pillars
 from auth_kakao import router as kakao_router
+from auth_google2 import router as google_router
 import os
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,6 +43,7 @@ else:
 # ==================== 4. FastAPI 앱 생성 ====================
 app = FastAPI(title="Saju API", version="0.1.0")
 app.include_router(kakao_router)
+app.include_router(google_router)
 
 # ... 나머지 코드 그대로 ...
 

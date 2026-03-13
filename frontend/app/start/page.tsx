@@ -7,14 +7,22 @@ import { Icon } from "@iconify/react";
 export default function StartPage() {
   const router = useRouter();
 
+  const backend =
+    process.env.NEXT_PUBLIC_BACKEND_URL ||
+    "https://saju-backend-eqd6.onrender.com";
+
   const goKakao = () => {
-    const backend =
-      process.env.NEXT_PUBLIC_BACKEND_URL ||
-      "https://saju-backend-eqd6.onrender.com";
     if (typeof window !== "undefined") {
       window.location.href = `${backend}/auth/kakao/login`;
     }
   };
+
+  const goGoogle = () => {
+    if (typeof window !== "undefined") {
+      window.location.href = `${backend}/auth/google/login`;
+    }
+  };
+
   const goEmail = () => router.push("/signup");
 
   const pending = () => {
@@ -154,7 +162,7 @@ export default function StartPage() {
             {/* Google */}
             <button
               type="button"
-              onClick={pending}
+              onClick={goGoogle}
               className="tap sans"
               style={{
                 width: "100%",

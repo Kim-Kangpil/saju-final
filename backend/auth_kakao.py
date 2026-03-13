@@ -137,7 +137,7 @@ def kakao_callback(request: Request):
         return RedirectResponse(f"{FRONTEND_URL}/login?error=db_error", status_code=302)
 
     # 3) 로그인 성공 → 프론트 로그인 성공 페이지로 리다이렉트 + 쿠키 (DB user_id 저장)
-    resp = RedirectResponse(f"{FRONTEND_URL}/login/success", status_code=302)
+    resp = RedirectResponse(f"{FRONTEND_URL}/login/success?provider=kakao", status_code=302)
     resp.set_cookie(
         "hsaju_session",
         str(user_id),

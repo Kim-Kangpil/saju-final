@@ -31,6 +31,12 @@ def init_user_db():
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_provider_provider_id ON users(provider, provider_id)"
         )
         conn.commit()
+        # 씨앗 잔액 컬럼 (기존 DB에 없으면 추가)
+        try:
+            conn.execute("ALTER TABLE users ADD COLUMN seed_balance INTEGER DEFAULT 0")
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass  # column already exists
     finally:
         conn.close()
 
@@ -125,5 +131,28 @@ def get_user_by_id(user_id: int) -> dict | None:
             "email": (row[1] or "").strip() or None,
             "nickname": (row[2] or "").strip() or None,
         }
+    finally:
+        conn.close()
+
+
+def get_seed_balance(user_id: int) -> int:
+    """user_id의 씨앗 잔액 반환. 컬럼 없으면 0."""
+    if not user_id:
+        return 0
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            "SELECT seed_balance FROM users WHERE id = ?",
+            (user_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return 0
+        try:
+            return int(row[0]) if row[0] is not None else 0
+        except (TypeError, ValueError):
+            return 0
+    except sqlite3.OperationalError:
+        return 0  # seed_balance column missing
     finally:
         conn.close()

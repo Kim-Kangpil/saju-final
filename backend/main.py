@@ -79,7 +79,7 @@ from logic.saju_db import (
     get_saju_list_for_user,
     save_saju_for_user,
 )
-from logic.user_db import get_user_id_from_session, get_user_by_id
+from logic.user_db import get_user_id_from_session, get_user_by_id, get_seed_balance
 
 # 결제 DB 초기화
 try:
@@ -186,6 +186,24 @@ def get_me(request: Request):
     except Exception as e:
         print(f"⚠️ /api/me 조회 실패: {e}")
         return {"ok": False, "provider": None, "email": None, "nickname": None}
+
+
+@app.get("/api/seeds")
+def get_seeds(request: Request):
+    """
+    현재 로그인한 사용자의 씨앗 잔액을 반환합니다.
+    hsaju_session 쿠키로 user_id를 확인한 뒤 users.seed_balance를 반환합니다.
+    """
+    raw = request.cookies.get("hsaju_session")
+    user_id = get_user_id_from_session(raw) if raw else None
+    if user_id is None:
+        return {"seeds": 0}
+    try:
+        seeds = get_seed_balance(user_id)
+        return {"seeds": seeds}
+    except Exception as e:
+        print(f"⚠️ /api/seeds 조회 실패: {e}")
+        return {"seeds": 0}
 
 
 class ContactRequest(BaseModel):

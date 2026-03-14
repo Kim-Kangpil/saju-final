@@ -157,8 +157,10 @@ export default function SajuMyPage({
               gap: 8,
             }}
           >
-            {/* 씨앗 캐시 */}
-            <div
+            {/* 씨앗 캐시 (클릭 시 씨앗 충전 페이지) */}
+            <button
+              type="button"
+              onClick={() => router.push("/seed-charge")}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -167,6 +169,7 @@ export default function SajuMyPage({
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.85)",
                 border: "1.5px solid #adc4af",
+                cursor: "pointer",
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
@@ -179,7 +182,7 @@ export default function SajuMyPage({
               >
                 0
               </span>
-            </div>
+            </button>
 
             {/* 해바라기 멤버십 (클릭 시 멤버십 페이지) */}
             <button

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
+import { use, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import PortOne from "@portone/browser-sdk/v2";
 import { HamIcon } from "@/components/HamIcon";
@@ -32,6 +32,21 @@ export default function SeedChargePage({
   const router = useRouter();
   const [paying, setPaying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [seedCount, setSeedCount] = useState<number>(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/seeds`, { credentials: "include" });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && typeof data?.seeds === "number") setSeedCount(data.seeds);
+      } catch {
+        if (!cancelled) setSeedCount(0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const requestPay = useCallback(
     async (productKey: string) => {
@@ -179,7 +194,7 @@ export default function SeedChargePage({
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>0</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>{seedCount}</span>
             </button>
             <button
               type="button"
@@ -236,11 +251,20 @@ export default function SeedChargePage({
               fontSize: 18,
               fontWeight: 700,
               color: "#1a2e0e",
-              marginBottom: 14,
+              marginBottom: 6,
             }}
           >
             씨앗 충전
           </h1>
+          <p
+            style={{
+              fontSize: 13,
+              color: "#556b2f",
+              marginBottom: 14,
+            }}
+          >
+            현재 보유 씨앗 <strong style={{ color: "#345024" }}>{seedCount}개</strong>
+          </p>
 
           {error && (
             <div

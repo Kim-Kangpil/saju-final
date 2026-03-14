@@ -212,34 +212,6 @@ export default function SajuListPage({
         @media (max-width: 390px) {
           .wrap { padding: 0 16px 40px; }
         }
-        .fab-add {
-          position: fixed;
-          bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-          right: max(20px, calc(50vw - 190px));
-          width: 56px;
-          height: 56px;
-          border-radius: 50%;
-          border: none;
-          background: linear-gradient(145deg, #a8c9ab 0%, #8fb892 50%, #7aa87d 100%);
-          color: #fff;
-          font-size: 28px;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          box-shadow: 0 4px 16px rgba(85, 107, 47, 0.35), 0 2px 6px rgba(0,0,0,0.12);
-          z-index: 50;
-          -webkit-tap-highlight-color: transparent;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          animation: fab-float 2.5s ease-in-out infinite;
-        }
-        .fab-add:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(85, 107, 47, 0.45); }
-        .fab-add:active { transform: scale(0.95); animation: none; }
-        @keyframes fab-float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
-        }
       `}</style>
 
       <div className="wrap">
@@ -561,16 +533,6 @@ export default function SajuListPage({
             )}
           </div>
         </section>
-
-        {/* 모바일 오른쪽 아래 플로팅 + 버튼 (추가하고 싶게) */}
-        <button
-          type="button"
-          className="fab-add tap"
-          aria-label="새 사주 추가"
-          onClick={() => router.push("/saju-add")}
-        >
-          ➕
-        </button>
       </div>
     </main>
   );

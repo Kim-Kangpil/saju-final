@@ -119,9 +119,11 @@ export default function BottomTabBar() {
             {icon === "analysis" ? (
               <AnalysisIcon color={iconColor} />
             ) : Icon ? (
-              <Icon size={22} strokeWidth={2} />
+              <span style={{ color: iconColor, display: "inline-flex" }}>
+                <Icon size={22} strokeWidth={2} />
+              </span>
             ) : null}
-            <span style={{ fontSize: 10, fontWeight: 500 }}>{label}</span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: iconColor }}>{label}</span>
           </Link>
         );
       })}

@@ -1,9 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
-export default function DevLoginPage() {
+export default function DevLoginPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
   const [ready, setReady] = useState(false);
 

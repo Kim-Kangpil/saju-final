@@ -1,8 +1,12 @@
 "use client";
 
+import { use } from "react";
 import { useRouter } from "next/navigation";
 
-export default function ResultPage() {
+export default function ResultPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
 
   return (

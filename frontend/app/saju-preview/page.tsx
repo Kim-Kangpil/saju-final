@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { use, useState, useEffect, useMemo, Suspense } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
@@ -654,7 +654,10 @@ function PreviewFallback() {
   );
 }
 
-export default function SajuPreviewPage() {
+export default function SajuPreviewPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   return (
     <Suspense fallback={<PreviewFallback />}>
       <SajuPreviewContent />

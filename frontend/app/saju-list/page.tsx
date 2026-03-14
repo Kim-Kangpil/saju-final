@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
@@ -66,7 +66,10 @@ function getDayPillarAnimalName(dayPillarKey: string): string {
   return m ? m[1].trim() : "";
 }
 
-export default function SajuListPage() {
+export default function SajuListPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
   const [items, setItems] = useState<SajuWithAnimal[]>([]);
   const [loading, setLoading] = useState(true);

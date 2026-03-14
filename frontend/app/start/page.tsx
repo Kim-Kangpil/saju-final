@@ -1,10 +1,14 @@
 "use client";
 
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 
-export default function StartPage() {
+export default function StartPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
 
   const backend =

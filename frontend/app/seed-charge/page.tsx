@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { use, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import PortOne from "@portone/browser-sdk/v2";
 import { HamIcon } from "@/components/HamIcon";
@@ -25,7 +25,10 @@ function getUserId(): string {
   return newId;
 }
 
-export default function SeedChargePage() {
+export default function SeedChargePage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
   const [paying, setPaying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

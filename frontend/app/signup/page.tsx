@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
 
-export default function Signup() {
+export default function Signup({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const [formData, setFormData] = useState({
     email: '',
     password: '',

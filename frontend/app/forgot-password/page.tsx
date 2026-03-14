@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { use, useState } from 'react';
 
-export default function ForgotPassword() {
-    const [email, setEmail] = useState('');
+export default function ForgotPassword({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
+  const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {

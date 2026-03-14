@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { use, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
 import { getSavedSajuList } from "@/lib/sajuStorage";
@@ -515,7 +515,10 @@ function LoginContent() {
     );
 }
 
-export default function LoginPage() {
+export default function LoginPage({
+    params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+    use(params ?? Promise.resolve({}));
     return (
         <Suspense
             fallback={

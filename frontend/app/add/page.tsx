@@ -2,7 +2,7 @@
 import { createPortal } from "react-dom";
 import "../../styles/add-login.css";
 import { saveSaju, getSavedSajuList } from '../../lib/sajuStorage';
-import { useState, useMemo, useEffect, useRef } from "react";
+import { use, useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
@@ -670,7 +670,10 @@ function classifyMegaByTitle(title: string): MegaKey | null {
 // 메인 컴포넌트
 // =====================================================
 
-export default function Page() {
+export default function Page({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // 🔥 새로 추가: 저장 관련 state

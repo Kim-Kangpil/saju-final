@@ -1,11 +1,50 @@
 "use client";
 
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 
-export default function SajuMyPage() {
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
+type UserInfo = {
+  provider: string | null;
+  email: string | null;
+  nickname: string | null;
+} | null;
+
+export default function SajuMyPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
+  const [userInfo, setUserInfo] = useState<UserInfo>(null);
+  const [userInfoLoading, setUserInfoLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/me`, { credentials: "include" });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        if (data?.ok) {
+          setUserInfo({
+            provider: data.provider ?? null,
+            email: data.email ?? null,
+            nickname: data.nickname ?? null,
+          });
+        } else {
+          setUserInfo(null);
+        }
+      } catch {
+        if (!cancelled) setUserInfo(null);
+      } finally {
+        if (!cancelled) setUserInfoLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleChargeSeed = () => {
     router.push("/seed-charge");
@@ -238,7 +277,23 @@ export default function SajuMyPage() {
                   lineHeight: 1.7,
                 }}
               >
-                카카오 로그인 | test@email.com
+                {userInfoLoading
+                  ? "로그인 정보를 불러오는 중..."
+                  : userInfo
+                    ? (() => {
+                        const providerLabel =
+                          userInfo.provider === "google"
+                            ? "구글 로그인"
+                            : userInfo.provider === "kakao"
+                              ? "카카오 로그인"
+                              : userInfo.provider
+                                ? `${userInfo.provider} 로그인`
+                                : "로그인";
+                        const account =
+                          userInfo.email || userInfo.nickname || "(연결된 계정 정보 없음)";
+                        return `${providerLabel} | ${account}`;
+                      })()
+                    : "로그인 정보를 불러올 수 없습니다."}
               </p>
             </div>
 

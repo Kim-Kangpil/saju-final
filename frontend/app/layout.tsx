@@ -16,11 +16,14 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params?: Promise<Record<string, string | string[]>>;
 }>) {
+  if (params) await params;
   return (
     <html lang="ko">
       <head>

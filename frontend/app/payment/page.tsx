@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { use, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import PortOne from "@portone/browser-sdk/v2";
 
@@ -20,7 +20,10 @@ function getUserId(): string {
   return newId;
 }
 
-export default function PaymentPage() {
+export default function PaymentPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
   const [orderId, setOrderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

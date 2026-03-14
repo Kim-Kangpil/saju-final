@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 
-export default function ContactPage() {
-    const [formData, setFormData] = useState({
+export default function ContactPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
+  const [formData, setFormData] = useState({
         name: "",
         email: "",
         subject: "",

@@ -1,8 +1,12 @@
 "use client";
 
+import { use } from "react";
 import Link from "next/link";
 
-export default function PrivacyPage() {
+export default function PrivacyPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-[450px]">

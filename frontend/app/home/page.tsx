@@ -1,10 +1,10 @@
 "use client";
 
+import { use, useState, useEffect, useRef, useMemo } from "react";
+import type { RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
-import { useState, useEffect, useRef, useMemo } from "react";
-import type { RefObject } from "react";
 import { getSavedSajuList } from "@/lib/sajuStorage";
 
 function useCounter(target: number) {  // ✅ 반환 타입 제거
@@ -82,8 +82,13 @@ function pick3(arr: string[]) {
 }
 // ✅ 여기 추가 끝
 
-export default function LandingPage() {
-    const router = useRouter();
+export default function LandingPage({
+  params,
+}: {
+  params?: Promise<Record<string, string | string[]>>;
+}) {
+  use(params ?? Promise.resolve({}));
+  const router = useRouter();
     const go = () => router.push("/start");
 
     const [selectedMode, setSelectedMode] = useState<number | null>(null);

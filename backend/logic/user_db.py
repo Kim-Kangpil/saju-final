@@ -105,3 +105,25 @@ def get_user_id_from_session(session_value: str) -> int | None:
             finally:
                 conn.close()
     return None
+
+
+def get_user_by_id(user_id: int) -> dict | None:
+    """user_id로 사용자 정보(provider, email, nickname) 반환."""
+    if not user_id:
+        return None
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            "SELECT provider, email, nickname FROM users WHERE id = ?",
+            (user_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            "provider": row[0] or "",
+            "email": (row[1] or "").strip() or None,
+            "nickname": (row[2] or "").strip() or None,
+        }
+    finally:
+        conn.close()

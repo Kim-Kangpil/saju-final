@@ -69,7 +69,7 @@ from logic.saju_db import (
     get_saju_list_for_user,
     save_saju_for_user,
 )
-from logic.user_db import get_user_id_from_session
+from logic.user_db import get_user_id_from_session, get_user_by_id
 
 # 결제 DB 초기화
 try:
@@ -141,6 +141,31 @@ def get_saju_count(request: Request):
     except Exception as e:
         print(f"⚠️ /api/saju/count DB 조회 실패: {e}")
         return {"count": 0}
+
+
+@app.get("/api/me")
+def get_me(request: Request):
+    """
+    현재 로그인한 사용자 정보(provider, email, nickname)를 반환합니다.
+    hsaju_session 쿠키로 user_id를 확인한 뒤 users 테이블에서 조회합니다.
+    """
+    raw = request.cookies.get("hsaju_session")
+    user_id = get_user_id_from_session(raw) if raw else None
+    if user_id is None:
+        return {"ok": False, "provider": None, "email": None, "nickname": None}
+    try:
+        user = get_user_by_id(user_id)
+        if not user:
+            return {"ok": False, "provider": None, "email": None, "nickname": None}
+        return {
+            "ok": True,
+            "provider": user.get("provider"),
+            "email": user.get("email"),
+            "nickname": user.get("nickname"),
+        }
+    except Exception as e:
+        print(f"⚠️ /api/me 조회 실패: {e}")
+        return {"ok": False, "provider": None, "email": None, "nickname": None}
 
 # ==================== 모델 정의 ====================
 

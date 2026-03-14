@@ -1,9 +1,14 @@
 "use client";
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { use, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-export default function RootPage() {
-    const router = useRouter();
+export default function RootPage({
+  params,
+}: {
+  params?: Promise<Record<string, string | string[]>>;
+}) {
+  use(params ?? Promise.resolve({}));
+  const router = useRouter();
 
     useEffect(() => {
         router.replace('/home');

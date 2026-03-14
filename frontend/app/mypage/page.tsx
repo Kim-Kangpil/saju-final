@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,7 +12,10 @@ import {
 import SajuCard from "@/components/SajuCard";
 import { HamIcon } from "@/components/HamIcon";
 
-export default function MyPage() {
+export default function MyPage({
+  params,
+}: { params?: Promise<Record<string, string | string[]>> } = {}) {
+  use(params ?? Promise.resolve({}));
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [sajuList, setSajuList] = useState<SavedSaju[]>([]);

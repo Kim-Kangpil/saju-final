@@ -2,7 +2,7 @@
 import { createPortal } from "react-dom";
 import "../../styles/add-login.css";
 import { saveSaju, getSavedSajuList } from '../../lib/sajuStorage';
-import { clearStoredToken } from '@/lib/auth';
+import { clearStoredToken, getAuthHeaders } from '@/lib/auth';
 import { use, useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import Script from "next/script";
@@ -687,6 +687,7 @@ export default function Page({
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // 🔥 새로 추가: 저장 관련 state
   const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [saveDialogInputFocused, setSaveDialogInputFocused] = useState(false);
   const [sajuName, setSajuName] = useState('');
   const [birthYmd, setBirthYmd] = useState("");
   const [birthHm, setBirthHm] = useState("");
@@ -700,6 +701,7 @@ export default function Page({
   const resultRef = useRef<HTMLDivElement>(null);
   const [previewCardIndex, setPreviewCardIndex] = useState(0);
   const previewCarouselRef = useRef<HTMLDivElement>(null);
+  const [seedCount, setSeedCount] = useState<number>(0);
 
   const [currentGreeting, setCurrentGreeting] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -762,6 +764,24 @@ export default function Page({
     const loggedIn = localStorage.getItem('isLoggedIn');
     setIsLoggedIn(loggedIn === 'true');
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/seeds`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && typeof data?.seeds === "number") setSeedCount(data.seeds);
+      } catch {
+        if (!cancelled) setSeedCount(0);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   // 🔥 새로 추가: 로그인 상태 실시간 반영
   useEffect(() => {
     const checkLoginStatus = () => {
@@ -2028,13 +2048,21 @@ export default function Page({
                 pointerEvents: "none",
               }}
             />
-            {/* 헤더: 다른 페이지와 동일 스타일, 결과 화면에서는 상단 고정(fixed)으로 항상 노출 */}
-            <div
-              className="h-[64px] bg-[#c1d8c3] px-4 py-3 flex justify-between items-center border-b-4 border-[#adc4af] z-[100] flex-shrink-0"
-              style={
-                result
+            {/* 헤더: saju-preview/seed-charge와 동일 구조, 인라인 스타일, 결과 시 fixed */}
+            <header
+              style={{
+                height: 64,
+                background: "#c1d8c3",
+                borderBottom: "3px solid #adc4af",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 20px",
+                flexShrink: 0,
+                zIndex: 100,
+                ...(result
                   ? {
-                      position: "fixed",
+                      position: "fixed" as const,
                       top: 0,
                       left: 0,
                       right: 0,
@@ -2042,68 +2070,129 @@ export default function Page({
                       maxWidth: 450,
                       borderRadius: 0,
                     }
-                  : { position: "relative" }
-              }
+                  : { position: "relative" as const }),
+              }}
             >
               <button
                 onClick={() => router.push("/home")}
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                  cursor: "pointer",
+                }}
               >
-                <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
-                <span className="text-lg font-bold text-[#556b2f]">한양사주</span>
+                <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="햄스터" />
+                <span style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
+                  한양사주
+                </span>
               </button>
-
-              <div className="flex items-center gap-2">
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {(result || isLoggedIn) ? (
                   <>
                     <button
                       type="button"
                       onClick={() => router.push("/seed-charge")}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "6px 10px",
+                        borderRadius: 999,
+                        background: "rgba(255,255,255,0.85)",
+                        border: "1.5px solid #adc4af",
+                        cursor: "pointer",
+                      }}
                     >
                       <Icon icon="mdi:seed-outline" width={18} />
-                      <span className="text-xs font-semibold text-[#556b2f]">0</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>{seedCount}</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => router.push("/membership")}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                        padding: "6px 10px",
+                        borderRadius: 999,
+                        background: "rgba(255,255,255,0.85)",
+                        border: "1.5px solid #adc4af",
+                        cursor: "pointer",
+                      }}
                     >
                       <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-                      <span className="text-xs font-semibold text-[#556b2f]">멤버십</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => router.push("/saju-mypage")}
-                      className="p-3 rounded-lg hover:bg-[#adc4af] transition-colors"
-                      aria-label="메뉴 열기"
+                      aria-label="메뉴"
+                      style={{
+                        padding: 8,
+                        borderRadius: 10,
+                        border: "none",
+                        background: "transparent",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
                     >
-                      <Icon icon="mdi:menu" width={24} style={{ marginLeft: 14 }} />
+                      <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
                     </button>
                   </>
                 ) : (
                   <>
                     <button
                       onClick={() => router.push("/login")}
-                      className="px-3 py-2 text-sm font-bold text-[#556b2f] bg-white/50 hover:bg-white rounded-lg transition-colors"
+                      style={{
+                        padding: "8px 12px",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#556b2f",
+                        background: "rgba(255,255,255,0.5)",
+                        border: "none",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                      }}
                     >
                       로그인
                     </button>
                     <button
                       onClick={() => router.push("/signup")}
-                      className="px-3 py-2 text-sm font-bold bg-[#556b2f] text-white rounded-lg hover:bg-[#6d8b3a] transition-colors"
+                      style={{
+                        padding: "8px 12px",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#fff",
+                        background: "#556b2f",
+                        border: "none",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                      }}
                     >
                       회원가입
                     </button>
                   </>
                 )}
               </div>
-            </div>
+            </header>
 
             {/* 결과 화면일 때 고정 헤더 높이만큼 여백 확보 */}
-            {result && <div className="h-[64px] flex-shrink-0" aria-hidden />}
-            {/* 메인 콘텐츠: 분석 결과만 여백 없음, 환영/로그인/입력창/캐릭터선택은 여백 유지 */}
-            <div className={cn("relative", result ? "p-0" : "p-5")}>
+            {result && <div style={{ height: 64, flexShrink: 0 }} aria-hidden />}
+            {/* 메인 콘텐츠: 분석 결과만 여백 없음 + 노란 배경 좌우 꽉 차게 */}
+            <div
+              style={
+                result
+                  ? { position: "relative" as const, padding: 0, background: "#fefce8", minHeight: "100%" }
+                  : undefined
+              }
+              className={result ? undefined : "relative p-5"}
+            >
               {!result && (
                 <div
                   className="absolute inset-0"
@@ -2122,10 +2211,12 @@ export default function Page({
                 />
               )}
               <div
-                className={cn(
-                  "relative z-10 rounded-2xl shadow-xl mx-auto",
-                  result ? "p-0 w-full" : "p-4 sm:p-6 max-w-[420px]"
-                )}
+                style={
+                  result
+                    ? { position: "relative" as const, zIndex: 10, padding: 0, width: "100%", maxWidth: "100%", borderRadius: 0, boxShadow: "none" }
+                    : undefined
+                }
+                className={result ? undefined : "relative z-10 rounded-2xl shadow-xl mx-auto p-4 sm:p-6 max-w-[420px]"}
               >
                 {err && !loading && !result && (
                   <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">
@@ -2243,26 +2334,54 @@ export default function Page({
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="text-center py-12 px-4"
+                        style={{ textAlign: "center", paddingTop: 60, paddingLeft: 16, paddingRight: 16 }}
                       >
-                        <p className="text-[#556b2f] font-bold text-lg mb-2">분석 결과가 없습니다</p>
-                        <p className="text-sm text-gray-600 mb-6">저장된 사주를 불러오거나 테스트로 결과를 확인해 보세요.</p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                          <button
-                            type="button"
-                            onClick={() => router.push("/saju-list")}
-                            className="px-5 py-2.5 rounded-xl font-bold text-[#556b2f] bg-[#eef4ee] border-2 border-[#adc4af] hover:bg-[#c1d8c3] transition-colors"
-                          >
-                            사주 목록
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => router.push("/home")}
-                            className="px-5 py-2.5 rounded-xl font-bold text-white bg-[#556b2f] hover:bg-[#6d8b3a] transition-colors"
-                          >
-                            홈으로
-                          </button>
-                        </div>
+                        <img
+                          src="/images/ham_soft.png"
+                          alt=""
+                          style={{ width: 80, height: "auto", marginBottom: 16, display: "block", marginLeft: "auto", marginRight: "auto" }}
+                        />
+                        <p style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e", marginBottom: 8 }}>
+                          사주 결과가 없어요
+                        </p>
+                        <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 24 }}>
+                          사주 목록에서 분석을 시작해보세요
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => router.push("/saju-list")}
+                          style={{
+                            width: "100%",
+                            padding: 13,
+                            borderRadius: 14,
+                            border: "none",
+                            background: "#6a994e",
+                            color: "#fff",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            marginBottom: 8,
+                            cursor: "pointer",
+                          }}
+                        >
+                          사주 목록으로
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => router.push("/home")}
+                          style={{
+                            width: "100%",
+                            padding: 11,
+                            borderRadius: 14,
+                            border: "1.5px solid #e0ece0",
+                            background: "#fff",
+                            color: "#6b7280",
+                            fontSize: 14,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          홈으로
+                        </button>
                       </motion.div>
                     ) : (
                       <motion.div
@@ -2516,10 +2635,8 @@ export default function Page({
                           </div>
                         </div>
 
-
-
-                        <div className="relative">
-                          <div className="space-y-3">
+                        <div style={{ position: "relative" }}>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                             {megaOrder.map((k) => {
                               const sec = MEGA_SECTIONS[k];
                               const isOpen = openMegaSet.has(k);
@@ -2528,32 +2645,41 @@ export default function Page({
                               return (
                                 <div
                                   key={k}
-                                  className={cn(
-                                    "border-4 rounded-2xl overflow-hidden shadow-none transition-colors mb-6",
-                                    isOpen
-                                      ? "border-[#7a9b7c] bg-[#f8faf8] shadow-[0_2px_8px_rgba(85,107,47,0.12)]"
-                                      : "border-[#adc4af] bg-white"
-                                  )}
+                                  style={{
+                                    border: isOpen ? "2px solid #6a994e" : "1.5px solid #e0ece0",
+                                    borderRadius: 14,
+                                    overflow: "hidden",
+                                    marginBottom: 24,
+                                    background: isOpen ? "#f8faf8" : "#fff",
+                                    transition: "border .2s, background .2s",
+                                  }}
                                 >
                                   <button
                                     type="button"
                                     onClick={() => toggleMega(k)}
-                                    className={cn(
-                                      "w-full min-h-[48px] sm:min-h-[52px] p-3 sm:p-4 flex items-center justify-between transition-colors touch-manipulation",
-                                      isOpen ? "bg-[#eef4ee]" : "hover:bg-[#f0f5f1]"
-                                    )}
+                                    style={{
+                                      width: "100%",
+                                      minHeight: 48,
+                                      padding: "12px 16px",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                      background: isOpen ? "#eef4ee" : "transparent",
+                                      border: "none",
+                                      cursor: "pointer",
+                                    }}
                                   >
-                                    <p className="text-[21px] font-bold text-[#556b2f] flex items-center gap-2">
-                                      <span className="text-sm sm:text-base">{sec.icon}</span>
+                                    <p style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
+                                      <span style={{ fontSize: 14 }}>{sec.icon}</span>
                                       <span>{sec.title}</span>
                                     </p>
                                     <motion.span
                                       animate={{ rotate: isOpen ? 180 : 0 }}
                                       transition={{ duration: 0.18 }}
-                                      className="shrink-0 w-6 h-6 flex items-center justify-center text-[#556b2f]"
+                                      style={{ flexShrink: 0, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", color: "#556b2f" }}
                                       aria-hidden
                                     >
-                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#556b2f]" aria-hidden>
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: "#556b2f" }} aria-hidden>
                                         <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                                       </svg>
                                     </motion.span>
@@ -2566,20 +2692,26 @@ export default function Page({
                                         animate={{ height: "auto", opacity: 1 }}
                                         exit={{ height: 0, opacity: 0 }}
                                         transition={{ duration: 0.18, ease: "easeOut" }}
-                                        className="overflow-hidden"
+                                        style={{ overflow: "hidden" }}
                                       >
-                                        <div className="p-0 border-t-2 border-[#adc4af] space-y-0">
+                                        <div style={{ padding: 0, borderTop: "1.5px solid #e0ece0" }}>
                                           {cards.map((c) => (
                                             <div
                                               key={c.id}
-                                              className={cn(
-                                                "p-4 relative",
-                                                c.kind === "ready"
-                                                  ? "bg-[#f8fafc] border-2 border-[#e2e8f0] rounded-xl mx-4 my-3"
-                                                  : c.kind === "preview"
-                                                    ? "bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-300 cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] rounded-xl mx-4 my-3"
-                                                    : "bg-yellow-50"
-                                              )}
+                                              style={{
+                                                padding: 16,
+                                                position: "relative",
+                                                border: "1.5px solid #e0ece0",
+                                                borderRadius: 14,
+                                                margin: "12px 0",
+                                                background:
+                                                  c.kind === "ready"
+                                                    ? "#f8fafc"
+                                                    : c.kind === "preview"
+                                                      ? "linear-gradient(to bottom right, #fefce8, #fff7ed)"
+                                                      : "#fff",
+                                                cursor: c.kind === "preview" ? "pointer" : undefined,
+                                              }}
                                               onClick={() => {
                                                 if (c.kind === "preview") return;
                                                 const loggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -2589,38 +2721,72 @@ export default function Page({
                                                 }
                                               }}
                                             >
-                                              <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-[18px]">{c.icon || "📌"}</span>
-                                                <div className="text-[18px] font-bold text-[#556b2f]">
+                                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                                <span style={{ fontSize: 16 }}>{c.icon || "📌"}</span>
+                                                <div style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", wordBreak: "keep-all" }}>
                                                   {c.title}
                                                 </div>
                                                 {c.kind === "ready" && (
-                                                  <span className="ml-auto text-[10px] font-bold text-slate-500">
+                                                  <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: "#64748b" }}>
                                                     준비중
                                                   </span>
                                                 )}
                                                 {c.kind === "preview" && (
-                                                  <div className="ml-auto">
+                                                  <div style={{ marginLeft: "auto" }}>
                                                     <LockIcon />
                                                   </div>
                                                 )}
                                               </div>
 
                                               {c.kind === "preview" && (
-                                                <div className="relative">
-                                                  <div className="text-[16px] leading-relaxed text-[#556b2f] blur-[6px] select-none pointer-events-none line-clamp-6">
+                                                <div style={{ position: "relative" }}>
+                                                  <div
+                                                    style={{
+                                                      fontSize: 14,
+                                                      lineHeight: 1.7,
+                                                      color: "#374151",
+                                                      wordBreak: "keep-all",
+                                                      filter: "blur(6px)",
+                                                      userSelect: "none",
+                                                      pointerEvents: "none",
+                                                      overflow: "hidden",
+                                                      display: "-webkit-box",
+                                                      WebkitLineClamp: 6,
+                                                      WebkitBoxOrient: "vertical",
+                                                    }}
+                                                  >
                                                     {c.content.slice(0, 500)}...
                                                   </div>
 
-                                                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-white/90 flex items-end justify-center pb-3">
-                                                    <div className="text-center space-y-1 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 border-2 border-yellow-400 shadow-lg">
-                                                      <div className="flex justify-center">
+                                                  <div
+                                                    style={{
+                                                      position: "absolute",
+                                                      inset: 0,
+                                                      background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.4), rgba(255,255,255,0.9))",
+                                                      display: "flex",
+                                                      alignItems: "flex-end",
+                                                      justifyContent: "center",
+                                                      paddingBottom: 12,
+                                                    }}
+                                                  >
+                                                    <div
+                                                      style={{
+                                                        textAlign: "center",
+                                                        background: "rgba(255,255,255,0.95)",
+                                                        backdropFilter: "blur(8px)",
+                                                        borderRadius: 12,
+                                                        padding: "12px 16px",
+                                                        border: "2px solid #facc15",
+                                                        boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                                                      }}
+                                                    >
+                                                      <div style={{ display: "flex", justifyContent: "center" }}>
                                                         <LockIcon />
                                                       </div>
-                                                      <p className="text-[11px] font-bold text-[#556b2f]">
+                                                      <p style={{ fontSize: 11, fontWeight: 700, color: "#556b2f", margin: "4px 0 0" }}>
                                                         🔓 로그인 후 확인하기
                                                       </p>
-                                                      <p className="text-[8px] text-[#556b2f] opacity-70">
+                                                      <p style={{ fontSize: 8, color: "#556b2f", opacity: 0.7, margin: "2px 0 0" }}>
                                                         카카오 로그인 후 이용 가능
                                                       </p>
                                                     </div>
@@ -2629,13 +2795,13 @@ export default function Page({
                                               )}
 
                                               {c.kind === "ready" && (
-                                                <div className="text-[11px] leading-relaxed text-slate-500">
+                                                <div style={{ fontSize: 11, lineHeight: 1.7, color: "#64748b", wordBreak: "keep-all" }}>
                                                   콘텐츠 곧 업데이트됩니다
                                                 </div>
                                               )}
 
                                               {c.kind === "content" && (
-                                                <div className="space-y-4">
+                                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                                                   {c.id === "identity_persona" && maskVsNatureLabels && (
                                                     <FaceSplitCard
                                                       socialLabel={maskVsNatureLabels.social}
@@ -2738,19 +2904,19 @@ export default function Page({
                                                   )}
 
                                                   {c.id === "solution_summary" && (
-                                                    <div className="mx-1">
+                                                    <div style={{ margin: "0 4px" }}>
                                                       <SummarySwipeCards text={c.content} />
                                                     </div>
                                                   )}
 
                                                   {c.id === "solution_summary" ? null : c.title === "일주 동물의 형상과 본성" ? (
                                                     <div
-                                                      className="text-[16px] leading-relaxed text-[#556b2f]"
+                                                      style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, wordBreak: "keep-all" }}
                                                       dangerouslySetInnerHTML={{ __html: c.content }}
                                                     />
                                                   ) : (
                                                     <div
-                                                      className="text-[16px] leading-relaxed text-[#556b2f]"
+                                                      style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, wordBreak: "keep-all" }}
                                                       dangerouslySetInnerHTML={{ __html: c.content.replace(/\n/g, '<br />') }}
                                                     />
                                                   )}
@@ -2768,25 +2934,56 @@ export default function Page({
                           </div>
                         </div>
                         {/* 🔥 저장 & 공유 버튼 추가 (다시 하기 버튼 바로 위) */}
-                        <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
                           <button
+                            type="button"
                             onClick={handleSaveSaju}
-                            className="py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors flex flex-col items-center justify-center gap-1"
+                            style={{
+                              padding: 12,
+                              background: "#6a994e",
+                              color: "#fff",
+                              borderRadius: 14,
+                              border: "none",
+                              fontWeight: 700,
+                              fontSize: 14,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 4,
+                              cursor: "pointer",
+                            }}
                           >
-                            <span className="text-xl">💾</span>
-                            <span className="text-sm">저장하기</span>
+                            <span style={{ fontSize: 20 }}>💾</span>
+                            <span>저장하기</span>
                           </button>
 
                           <button
+                            type="button"
                             onClick={handleShare}
-                            className="py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold rounded-xl hover:scale-105 transition-transform flex flex-col items-center justify-center gap-1"
+                            style={{
+                              padding: 12,
+                              background: "#fffde7",
+                              border: "1.5px solid #f0d060",
+                              color: "#1a2e0e",
+                              borderRadius: 14,
+                              fontWeight: 700,
+                              fontSize: 14,
+                              display: "flex",
+                              flexDirection: "column",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 4,
+                              cursor: "pointer",
+                            }}
                           >
-                            <span className="text-xl">🔗</span>
-                            <span className="text-sm">공유하기</span>
+                            <span style={{ fontSize: 20 }}>🔗</span>
+                            <span>공유하기</span>
                           </button>
                         </div>
-                        <div className="mt-4">
+                        <div style={{ marginTop: 16 }}>
                           <button
+                            type="button"
                             onClick={() => {
                               setResult(null);
                               setFortuneAnalysis(null);
@@ -2815,11 +3012,23 @@ export default function Page({
                               setErr("");
                               setShowHarmonyAfter(false);
                             }}
-
-
-                            className="w-full py-2 sm:py-3 border-2 border-[#ffb3b3] rounded-xl text-[10px] sm:text-[11px] font-bold text-[#ff4d4d] hover:bg-[#fff5f5] transition-colors flex items-center justify-center gap-1 sm:gap-2"
+                            style={{
+                              width: "100%",
+                              padding: "10px 12px",
+                              background: "#fff",
+                              border: "1.5px solid #fecaca",
+                              color: "#ef4444",
+                              borderRadius: 14,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              gap: 8,
+                              cursor: "pointer",
+                            }}
                           >
-                            <span className="text-xs sm:text-sm">🔄</span>
+                            <span style={{ fontSize: 14 }}>🔄</span>
                             <span>다시 하기</span>
                           </button>
                         </div>
@@ -2830,63 +3039,112 @@ export default function Page({
               </div>
             </div>
           </div>
-          {/* 🔥 저장 다이얼로그 추가 (</main> 직전) */}
+          {/* 🔥 저장 다이얼로그 — 인라인 스타일 통일 */}
           {showSaveDialog && (
             <div
-              className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,0.5)",
+                zIndex: 9999,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 20,
+              }}
               onClick={() => {
                 setShowSaveDialog(false);
-                setSajuName('');
+                setSajuName("");
               }}
             >
               <div
-                className="bg-white rounded-2xl p-6 max-w-sm w-full border-4 border-[#adc4af] shadow-2xl"
+                style={{
+                  background: "#fff",
+                  borderRadius: 18,
+                  padding: 24,
+                  maxWidth: 320,
+                  width: "100%",
+                  border: "1.5px solid #adc4af",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
+                  fontFamily: "'Gowun Dodum', sans-serif",
+                }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 className="text-xl font-bold text-[#556b2f] mb-2">💾 사주 저장하기</h3>
-
-                <p className="text-sm text-gray-600 mb-4">
-                  이 사주에 이름을 붙여주세요<br />
-                  <span className="text-xs text-gray-500">(예: 내 사주, 엄마 사주, 친구 사주)</span>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e", marginBottom: 8 }}>
+                  💾 사주 저장하기
+                </h3>
+                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, marginBottom: 16 }}>
+                  이 사주에 이름을 붙여주세요
+                  <br />
+                  <span style={{ fontSize: 12, color: "#9ca3af" }}>(예: 내 사주, 엄마 사주, 친구 사주)</span>
                 </p>
-
                 <input
                   type="text"
                   value={sajuName}
                   onChange={(e) => setSajuName(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') confirmSave();
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") confirmSave();
                   }}
+                  onFocus={() => setSaveDialogInputFocused(true)}
+                  onBlur={() => setSaveDialogInputFocused(false)}
                   placeholder="사주 이름 입력"
-                  className="w-full px-4 py-3 border-2 border-[#adc4af] rounded-xl mb-4 outline-none focus:border-[#556b2f] text-sm"
                   maxLength={20}
                   autoFocus
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: 12,
+                    border: `1.5px solid ${saveDialogInputFocused ? "#6a994e" : "#adc4af"}`,
+                    fontSize: 14,
+                    fontFamily: "'Gowun Dodum', sans-serif",
+                    outline: "none",
+                    marginBottom: 6,
+                  }}
                 />
-
-                <div className="text-xs text-gray-500 mb-4 text-right">
+                <div style={{ fontSize: 11, color: "#9ca3af", textAlign: "right", marginBottom: 14 }}>
                   {sajuName.length}/20
                 </div>
-
-                <div className="flex gap-2">
+                <div style={{ display: "flex", gap: 8 }}>
                   <button
+                    type="button"
                     onClick={() => {
                       setShowSaveDialog(false);
-                      setSajuName('');
+                      setSajuName("");
                     }}
-                    className="flex-1 py-3 border-2 border-gray-300 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                    style={{
+                      flex: 1,
+                      padding: 11,
+                      borderRadius: 12,
+                      border: "1.5px solid #e0ece0",
+                      background: "#f8faf8",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "#6b7280",
+                      cursor: "pointer",
+                    }}
                   >
                     취소
                   </button>
                   <button
+                    type="button"
                     onClick={confirmSave}
-                    className="flex-1 py-3 bg-[#556b2f] text-white font-bold rounded-xl hover:bg-[#6d8b3a] transition-colors"
+                    style={{
+                      flex: 1,
+                      padding: 11,
+                      borderRadius: 12,
+                      border: "none",
+                      background: "#6a994e",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: "#fff",
+                      cursor: "pointer",
+                    }}
                   >
                     저장
                   </button>
                 </div>
               </div>
             </div>
-
           )}
         </div>
       </main >

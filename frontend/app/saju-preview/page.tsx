@@ -658,6 +658,8 @@ function SajuPreviewContent() {
               {pillars ? (
                 <div
                   style={{
+                    width: "100%",
+                    alignSelf: "stretch",
                     border: "3px solid #adc4af",
                     borderRadius: 14,
                     background: "#fff",

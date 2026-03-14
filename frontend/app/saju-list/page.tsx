@@ -67,6 +67,26 @@ function getDayPillarAnimalName(dayPillarKey: string): string {
   return m ? m[1].trim() : "";
 }
 
+// 동물 이름 앞(하늘빛, 은빛 등)에 맞춘 색상
+const ANIMAL_COLOR_BY_PREFIX: Record<string, string> = {
+  하늘빛: "#5B9BD5",
+  은빛: "#9CA3AF",
+  초록빛: "#059669",
+  연두빛: "#84CC16",
+  주황빛: "#EA580C",
+  노랑빛: "#CA8A04",
+  연노랑빛: "#D4A853",
+  붉은빛: "#DC2626",
+  파랑빛: "#2563EB",
+};
+
+function getAnimalNameColor(animalName: string): string {
+  for (const prefix of Object.keys(ANIMAL_COLOR_BY_PREFIX)) {
+    if (animalName.startsWith(prefix)) return ANIMAL_COLOR_BY_PREFIX[prefix];
+  }
+  return "#374151";
+}
+
 export default function SajuListPage({
   params,
 }: { params?: Promise<Record<string, string | string[]>> } = {}) {
@@ -442,18 +462,18 @@ export default function SajuListPage({
                     background: "#ffffff",
                     border: "1.5px solid #c8dac8",
                     borderRadius: 14,
-                    padding: 12,
+                    padding: 14,
                     display: "flex",
                     alignItems: "center",
-                    gap: 10,
+                    gap: 12,
                   }}
                 >
                   {/* 왼쪽: 일주 동물 이미지 */}
                   <div
                     style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 12,
+                      width: 64,
+                      height: 64,
+                      borderRadius: 14,
                       overflow: "hidden",
                       background: "#f3f4f6",
                       flexShrink: 0,
@@ -528,7 +548,7 @@ export default function SajuListPage({
                       <div
                         style={{
                           fontSize: 12,
-                          color: "#374151",
+                          color: getAnimalNameColor(item.animalName),
                           marginTop: 2,
                         }}
                       >
@@ -549,7 +569,7 @@ export default function SajuListPage({
           aria-label="새 사주 추가"
           onClick={() => router.push("/saju-add")}
         >
-          +
+          ➕
         </button>
       </div>
     </main>

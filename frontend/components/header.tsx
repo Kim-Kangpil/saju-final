@@ -34,7 +34,7 @@ export default function Header() {
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
           <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
-          <span className="text-base font-bold text-[#556b2f]">한양사주</span>
+          <span className="text-lg font-bold text-[#556b2f]">한양사주</span>
         </button>
 
         {/* 오른쪽: 로그인/회원가입 또는 씨앗 & 햄버거 메뉴 */}
@@ -66,7 +66,7 @@ export default function Header() {
                 className="p-3 rounded-lg hover:bg-[#adc4af] transition-colors"
                 aria-label="메뉴 열기"
               >
-                <Icon icon="mdi:menu" width={24} />
+                <Icon icon="mdi:menu" width={24} style={{ marginLeft: 14 }} />
               </button>
             </>
           ) : (

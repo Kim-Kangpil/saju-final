@@ -125,11 +125,11 @@ function LoginContent() {
                     }}
                 >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <HamIcon alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
+                        <HamIcon alt="" style={{ width: 40, height: 40, objectFit: "contain" }} />
                         <span
                             className="sans"
                             style={{
-                                fontSize: 13,
+                                fontSize: 18,
                                 fontWeight: 700,
                                 color: "#2d4a1e",
                                 letterSpacing: "0.04em",

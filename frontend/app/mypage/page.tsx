@@ -87,7 +87,7 @@ export default function MyPage({
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
-              <span className="text-base font-bold text-[#556b2f]">
+              <span className="text-lg font-bold text-[#556b2f]">
                 한양사주
               </span>
             </button>

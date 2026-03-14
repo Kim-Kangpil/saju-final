@@ -476,8 +476,8 @@ function SajuPreviewContent() {
               cursor: "pointer",
             }}
           >
-            <HamIcon style={{ width: 28, height: 28, objectFit: "contain" }} alt="햄스터" />
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
+            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="햄스터" />
+            <span style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
               한양사주
             </span>
           </button>
@@ -531,7 +531,7 @@ function SajuPreviewContent() {
                 justifyContent: "center",
               }}
             >
-              <Icon icon="mdi:menu" width={22} />
+              <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
             </button>
           </div>
         </header>

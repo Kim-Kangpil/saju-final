@@ -292,8 +292,8 @@ export default function LandingPage({
                     }}
                 >
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <HamIcon style={{ width: 28, height: 28, objectFit: "contain" }} alt="" />
-                        <span className="sans" style={{ fontSize: 13, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>한양사주</span>
+                        <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="" />
+                        <span className="sans" style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>한양사주</span>
                     </div>
                     {isLoggedIn ? (
                         <div
@@ -365,7 +365,7 @@ export default function LandingPage({
                                     justifyContent: "center",
                                 }}
                             >
-                                <Icon icon="mdi:menu" width={22} />
+                                <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
                             </button>
                         </div>
                     ) : (

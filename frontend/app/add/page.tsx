@@ -2,6 +2,7 @@
 import { createPortal } from "react-dom";
 import "../../styles/add-login.css";
 import { saveSaju, getSavedSajuList } from '../../lib/sajuStorage';
+import { clearStoredToken } from '@/lib/auth';
 import { use, useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import Script from "next/script";
@@ -926,6 +927,7 @@ export default function Page({
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loginType');
+    clearStoredToken();
     setIsLoggedIn(false);
     alert('로그아웃되었습니다.');
   };

@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
+import { getAuthHeaders, clearStoredToken } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 
@@ -28,7 +29,7 @@ export default function SajuMyPage({
       try {
         const res = await fetch(`${API_BASE}/api/me`, {
           credentials: "include",
-          headers: { Accept: "application/json" },
+          headers: { Accept: "application/json", ...getAuthHeaders() },
         });
         const data = await res.json().catch(() => ({}));
         if (cancelled) return;
@@ -81,6 +82,7 @@ export default function SajuMyPage({
       localStorage.removeItem("isLoggedIn");
       localStorage.removeItem("loginType");
       localStorage.removeItem("loginTime");
+      clearStoredToken();
     }
     alert("로그아웃 되었습니다.");
     router.push("/start");

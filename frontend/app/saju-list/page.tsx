@@ -5,6 +5,7 @@ import { use, useEffect, useState } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
+import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -82,6 +83,7 @@ export default function SajuListPage({
       try {
         const res = await fetch(`${API_BASE}/api/saju/list`, {
           credentials: "include",
+          headers: getAuthHeaders(),
         });
         const data = await res.json().catch(() => []);
         if (!res.ok) {

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
+import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -105,6 +106,7 @@ export default function SajuAddPage({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...getAuthHeaders(),
         },
         credentials: "include",
         body: JSON.stringify({

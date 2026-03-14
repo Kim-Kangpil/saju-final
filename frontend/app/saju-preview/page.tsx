@@ -5,6 +5,7 @@ import { use, useState, useEffect, useMemo, useRef, useCallback, Suspense } from
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
+import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -154,6 +155,7 @@ function SajuPreviewContent() {
       try {
         const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, {
           credentials: "include",
+          headers: getAuthHeaders(),
         });
         if (!res.ok) {
           setError("사주를 불러올 수 없습니다.");

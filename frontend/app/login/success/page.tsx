@@ -3,6 +3,7 @@
 import { use, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { HamIcon } from "@/components/HamIcon";
+import { setStoredToken, getAuthHeaders } from "@/lib/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -20,6 +21,11 @@ export default function LoginSuccessPage({
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("loginType", provider);
       localStorage.setItem("loginTime", new Date().toISOString());
+      // 모바일용: URL fragment(#t=토큰)에 담긴 세션 토큰 저장
+      const hash = window.location.hash.slice(1);
+      const paramsHash = new URLSearchParams(hash);
+      const token = paramsHash.get("t");
+      if (token) setStoredToken(token);
     }
 
     let cancelled = false;
@@ -29,6 +35,7 @@ export default function LoginSuccessPage({
         const res = await fetch(`${API_BASE}/api/saju/count`, {
           method: "GET",
           credentials: "include",
+          headers: { Accept: "application/json", ...getAuthHeaders() },
         });
         const data = await res.json().catch(() => ({}));
         const count = typeof data?.count === "number" ? data.count : 0;

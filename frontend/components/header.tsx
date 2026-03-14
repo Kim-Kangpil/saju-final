@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { HamIcon } from "@/components/HamIcon";
+import { clearStoredToken } from "@/lib/auth";
 
 export default function Header() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("loginType");
+    clearStoredToken();
     setIsLoggedIn(false);
     alert("로그아웃되었습니다.");
     router.push("/home");

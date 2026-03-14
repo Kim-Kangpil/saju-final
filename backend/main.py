@@ -81,6 +81,20 @@ from logic.saju_db import (
     save_saju_for_user,
 )
 from logic.user_db import get_user_id_from_session, get_user_by_id, get_seed_balance
+from logic.session_token import verify_session_token
+
+
+def get_user_id_from_request(request: Request) -> Optional[int]:
+    """쿠키 또는 Authorization Bearer 토큰으로 user_id 반환. 모바일 크로스 도메인 시 토큰 사용."""
+    raw = request.cookies.get("hsaju_session")
+    user_id = get_user_id_from_session(raw) if raw else None
+    if user_id is not None:
+        return user_id
+    auth = request.headers.get("Authorization")
+    if auth and auth.startswith("Bearer "):
+        token = auth[7:].strip()
+        return verify_session_token(token)
+    return None
 
 # 결제 DB 초기화
 try:
@@ -150,10 +164,9 @@ def root():
 def get_saju_count(request: Request):
     """
     현재 계정의 저장된 사주 개수를 반환합니다.
-    hsaju_session 쿠키(숫자 user_id 또는 "kakao:provider_id" 형태)를 파싱해 조회합니다.
+    쿠키 또는 Authorization Bearer 토큰으로 user_id를 확인합니다.
     """
-    raw = request.cookies.get("hsaju_session")
-    user_id = get_user_id_from_session(raw) if raw else None
+    user_id = get_user_id_from_request(request)
     if user_id is None:
         return {"count": 0}
     try:
@@ -168,10 +181,9 @@ def get_saju_count(request: Request):
 def get_me(request: Request):
     """
     현재 로그인한 사용자 정보(provider, email, nickname)를 반환합니다.
-    hsaju_session 쿠키로 user_id를 확인한 뒤 users 테이블에서 조회합니다.
+    쿠키 또는 Authorization Bearer 토큰으로 user_id를 확인합니다.
     """
-    raw = request.cookies.get("hsaju_session")
-    user_id = get_user_id_from_session(raw) if raw else None
+    user_id = get_user_id_from_request(request)
     if user_id is None:
         return {"ok": False, "provider": None, "email": None, "nickname": None}
     try:
@@ -193,10 +205,9 @@ def get_me(request: Request):
 def get_seeds(request: Request):
     """
     현재 로그인한 사용자의 씨앗 잔액을 반환합니다.
-    hsaju_session 쿠키로 user_id를 확인한 뒤 users.seed_balance를 반환합니다.
+    쿠키 또는 Authorization Bearer 토큰으로 user_id를 확인합니다.
     """
-    raw = request.cookies.get("hsaju_session")
-    user_id = get_user_id_from_session(raw) if raw else None
+    user_id = get_user_id_from_request(request)
     if user_id is None:
         return {"seeds": 0}
     try:
@@ -835,10 +846,9 @@ async def payment_confirm(req: PaymentConfirmRequest):
 def get_saju_list(request: Request):
     """
     현재 로그인한 사용자의 사주 전체 목록을 반환합니다.
-    저장된 사주는 계정별로 유지되며, 로그인/재접속 시 초기화되지 않습니다.
+    쿠키 또는 Authorization Bearer 토큰으로 user_id를 확인합니다.
     """
-    raw = request.cookies.get("hsaju_session")
-    user_id = get_user_id_from_session(raw) if raw else None
+    user_id = get_user_id_from_request(request)
     if user_id is None:
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
     rows = get_saju_list_for_user(user_id)
@@ -852,10 +862,8 @@ async def save_saju(request: Request, body: SajuSaveRequest):
     현재 로그인한 사용자의 사주 한 건을 저장합니다.
     hsaju_session 쿠키(숫자 user_id 또는 "kakao:provider_id" 형태)를 파싱해 사용합니다.
     """
-    raw = request.cookies.get("hsaju_session")
-    print(f"🧩 /api/saju/save hsaju_session(raw) = {raw!r}")
-    user_id = get_user_id_from_session(raw) if raw else None
-    print(f"🧩 /api/saju/save parsed user_id = {user_id!r}")
+    user_id = get_user_id_from_request(request)
+    print(f"🧩 /api/saju/save user_id = {user_id!r}")
     if user_id is None:
         print("🧩 /api/saju/save: user_id 없음 → 401 반환")
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
@@ -902,10 +910,9 @@ async def save_saju(request: Request, body: SajuSaveRequest):
 def get_saju(saju_id: int, request: Request):
     """
     저장된 사주 한 건 조회.
-    hsaju_session 쿠키의 user_id와 일치할 때만 반환합니다.
+    쿠키 또는 Authorization Bearer 토큰으로 user_id를 확인합니다.
     """
-    raw = request.cookies.get("hsaju_session")
-    user_id = get_user_id_from_session(raw) if raw else None
+    user_id = get_user_id_from_request(request)
     if user_id is None:
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
     row = get_saju_by_id(saju_id, user_id)

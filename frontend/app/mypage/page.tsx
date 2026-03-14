@@ -9,6 +9,7 @@ import {
   SavedSaju,
   updateLastViewed,
 } from "@/lib/sajuStorage";
+import { clearStoredToken } from "@/lib/auth";
 import SajuCard from "@/components/SajuCard";
 import { HamIcon } from "@/components/HamIcon";
 
@@ -65,6 +66,7 @@ export default function MyPage({
   const handleLogout = () => {
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("loginType");
+    clearStoredToken();
     alert("로그아웃되었습니다.");
     router.push("/home");
   };

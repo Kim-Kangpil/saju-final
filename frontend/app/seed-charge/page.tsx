@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import PortOne from "@portone/browser-sdk/v2";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
+import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 const STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID || "";
@@ -38,7 +39,10 @@ export default function SeedChargePage({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/seeds`, { credentials: "include" });
+        const res = await fetch(`${API_BASE}/api/seeds`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        });
         const data = await res.json().catch(() => ({}));
         if (!cancelled && typeof data?.seeds === "number") setSeedCount(data.seeds);
       } catch {

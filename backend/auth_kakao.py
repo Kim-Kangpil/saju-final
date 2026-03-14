@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 from logic.user_db import get_or_create_user
+from logic.session_token import create_session_token
 
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(dotenv_path=env_path)
@@ -137,8 +138,10 @@ def kakao_callback(request: Request):
         print(f"⚠️ 유저 DB 저장 실패: {e}")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=db_error", status_code=302)
 
-    # 3) 로그인 성공 → 프론트 로그인 성공 페이지로 리다이렉트 + 쿠키 (DB user_id 저장)
-    resp = RedirectResponse(f"{FRONTEND_URL}/login/success?provider=kakao", status_code=302)
+    # 3) 로그인 성공 → 프론트로 리다이렉트 + 쿠키 + URL fragment에 토큰 (모바일 크로스 도메인 대응)
+    token = create_session_token(user_id)
+    redirect_url = f"{FRONTEND_URL}/login/success?provider=kakao#t={token}"
+    resp = RedirectResponse(redirect_url, status_code=302)
     resp.set_cookie(
         "hsaju_session",
         str(user_id),

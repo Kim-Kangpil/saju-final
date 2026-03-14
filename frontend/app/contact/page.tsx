@@ -189,7 +189,7 @@ export default function ContactPage({
                                 📧 직접 이메일 보내기
                             </h3>
                             <p className="text-xs text-[#556b2f] opacity-70 mb-1">
-                                이메일: <a href="mailto:kkp00922@gmail.com" className="underline">kkp00922@gmail.com</a>
+                                이메일: <a href="mailto:ksh00922@gmail.com" className="underline">ksh00922@gmail.com</a>
                             </p>
                             <p className="text-xs text-[#556b2f] opacity-70">
                                 평일 09:00 - 18:00 (주말 및 공휴일 제외)

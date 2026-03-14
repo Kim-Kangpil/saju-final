@@ -74,7 +74,7 @@ export default function PrivacyPage({
               <h2 className="text-lg font-bold mb-3">6. 개인정보 보호책임자</h2>
               <p className="text-sm leading-relaxed">
                 성명: 김강필<br />
-                이메일: kkp00922@gmail.com<br />
+                이메일: ksh00922@gmail.com<br />
                 소속: 한양사주
               </p>
             </section>

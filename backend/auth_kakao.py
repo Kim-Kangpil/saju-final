@@ -66,6 +66,7 @@ def kakao_login():
         f"&redirect_uri={KAKAO_REDIRECT_URI}"
         f"&response_type=code"
         f"&state={state}"
+        "&lang=ko"
     )
     resp = RedirectResponse(redirect_url, status_code=302)
     resp.set_cookie(

@@ -73,6 +73,7 @@ def google_login():
         f"&state={state}"
         f"&access_type=offline"
         f"&prompt=consent"
+        "&hl=ko"
     )
     resp = RedirectResponse(redirect_url, status_code=302)
     resp.set_cookie(

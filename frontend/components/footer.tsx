@@ -25,10 +25,10 @@ export default function Footer() {
                     <p className="leading-relaxed">
                         <span className="font-semibold">이메일:</span>{" "}
                         <a
-                            href="mailto:kkp00922@gmail.com"
+                            href="mailto:ksh00922@gmail.com"
                             className="text-blue-600 hover:text-blue-800 underline break-all"
                         >
-                            kkp00922@gmail.com
+                            ksh00922@gmail.com
                         </a>
                     </p>
                 </div>

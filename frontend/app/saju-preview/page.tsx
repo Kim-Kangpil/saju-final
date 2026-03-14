@@ -33,6 +33,26 @@ function getDayPillarAnimalName(dayPillarKey: string): string {
   return m ? m[1].trim() : "";
 }
 
+/** 동물 이름 앞 색상 접두사(하늘빛, 은빛 등)에 맞는 텍스트 색상 */
+const ANIMAL_COLOR_BY_PREFIX: Record<string, string> = {
+  하늘빛: "#5B9BD5",
+  은빛: "#9CA3AF",
+  초록빛: "#059669",
+  연두빛: "#84CC16",
+  주황빛: "#EA580C",
+  노랑빛: "#CA8A04",
+  연노랑빛: "#D4A853",
+  붉은빛: "#DC2626",
+  파랑빛: "#2563EB",
+};
+
+function getAnimalNameColor(animalName: string): string {
+  for (const prefix of Object.keys(ANIMAL_COLOR_BY_PREFIX)) {
+    if (animalName.startsWith(prefix)) return ANIMAL_COLOR_BY_PREFIX[prefix];
+  }
+  return "#1a2e0e";
+}
+
 type Element = "wood" | "fire" | "earth" | "metal" | "water";
 type Polarity = "yang" | "yin";
 
@@ -581,13 +601,19 @@ function SajuPreviewContent() {
                         }}
                       />
                       {dayPillarAnimalName && (
-                        <span style={{ fontSize: 20, fontWeight: 700, color: "#1a2e0e" }}>
+                        <span
+                          style={{
+                            fontSize: 20,
+                            fontWeight: 700,
+                            color: getAnimalNameColor(dayPillarAnimalName),
+                          }}
+                        >
                           {dayPillarAnimalName}
                         </span>
                       )}
-                      {pillars?.day_pillar && (
+                      {dayPillarKey && (
                         <span style={{ fontSize: 18, fontWeight: 600, color: "#556b2f" }}>
-                          {pillars.day_pillar}
+                          {dayPillarKey}일주
                         </span>
                       )}
                     </div>
@@ -632,7 +658,7 @@ function SajuPreviewContent() {
               {pillars ? (
                 <div
                   style={{
-                    border: "1px solid #e5e7eb",
+                    border: "3px solid #adc4af",
                     borderRadius: 14,
                     background: "#fff",
                     overflow: "hidden",
@@ -642,13 +668,13 @@ function SajuPreviewContent() {
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(4, 1fr)",
-                      borderBottom: "1px solid #e5e7eb",
-                      background: "rgba(229,231,235,0.3)",
-                      fontSize: 12,
+                      borderBottom: "2px solid #adc4af",
+                      background: "rgba(193, 216, 195, 0.15)",
+                      fontSize: 11,
                       fontWeight: 700,
-                      color: "#374151",
+                      color: "#556b2f",
                       textAlign: "center",
-                      padding: "8px 4px",
+                      padding: "6px 4px",
                     }}
                   >
                     {["시주", "일주", "월주", "년주"].map((label, i) => (
@@ -658,7 +684,7 @@ function SajuPreviewContent() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          ...(i < 3 ? { borderRight: "1px solid #e5e7eb" } : {}),
+                          ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
                         }}
                       >
                         {label}
@@ -689,25 +715,24 @@ function SajuPreviewContent() {
                         <div
                           key={p.label}
                           style={{
-                            padding: "12px 6px",
+                            padding: "10px 6px",
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
-                            gap: 6,
-                            borderRight: idx < pillarBlocks.length - 1 ? "1px solid #e5e7eb" : undefined,
-                            borderBottom: "1px solid #e5e7eb",
+                            gap: 4,
+                            ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
                           }}
                         >
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", opacity: 0.9 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
                             {stemTenGod}
                           </div>
-                          <div style={{ fontSize: 24, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
                             {cheongan}
                           </div>
-                          <div style={{ fontSize: 24, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
                             {jiji}
                           </div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", opacity: 0.9 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
                             {branchTenGod}
                           </div>
                           {jijangganList && jijangganList.length > 0 && (
@@ -716,7 +741,7 @@ function SajuPreviewContent() {
                                 <span
                                   key={jdx}
                                   style={{
-                                    fontSize: 10,
+                                    fontSize: 9,
                                     fontWeight: 700,
                                     color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e",
                                   }}
@@ -727,7 +752,7 @@ function SajuPreviewContent() {
                             </div>
                           )}
                           {stateText && (
-                            <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", opacity: 0.85, marginTop: 1 }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
                               {stateText}
                             </div>
                           )}

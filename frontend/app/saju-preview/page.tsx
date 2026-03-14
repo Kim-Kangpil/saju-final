@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { use, useState, useEffect, useMemo, Suspense } from "react";
+import { use, useState, useEffect, useMemo, useRef, useCallback, Suspense } from "react";
 import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
@@ -235,14 +235,33 @@ function SajuPreviewContent() {
     ];
   }, [pillars]);
 
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  const updateCarouselIndex = useCallback(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    const w = el.offsetWidth;
+    const idx = Math.round(el.scrollLeft / w);
+    setCarouselIndex(Math.min(2, Math.max(0, idx)));
+  }, []);
+
+  const goToSlide = useCallback((index: number) => {
+    const el = carouselRef.current;
+    if (!el) return;
+    el.scrollTo({ left: index * el.offsetWidth, behavior: "smooth" });
+    setCarouselIndex(index);
+  }, []);
+
   const cardStyle = {
     position: "relative" as const,
     zIndex: 10,
     background: "#fff",
-    border: "1.5px solid #c8dac8",
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
+    border: "4px solid #adc4af",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 0,
+    boxShadow: "0 2px 12px rgba(85,107,47,0.08)",
   };
 
   const labelStyle = {
@@ -338,6 +357,25 @@ function SajuPreviewContent() {
         .tap:active { transform: scale(.97); opacity: .9; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
         .wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 20px 40px; }
         @media (max-width: 390px) { .wrap { padding: 0 16px 40px; } }
+        .preview-carousel {
+          display: flex;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          scroll-behavior: smooth;
+          -webkit-overflow-scrolling: touch;
+          gap: 0;
+          margin: 0 -20px 16px;
+          padding: 0 20px 12px;
+        }
+        .preview-carousel::-webkit-scrollbar { height: 6px; }
+        .preview-carousel::-webkit-scrollbar-track { background: rgba(173,196,175,0.2); border-radius: 3px; }
+        .preview-carousel::-webkit-scrollbar-thumb { background: #adc4af; border-radius: 3px; }
+        .preview-card {
+          flex: 0 0 100%;
+          min-width: 100%;
+          scroll-snap-align: start;
+          scroll-snap-stop: always;
+        }
       `}</style>
 
       <div className="wrap" style={{ position: "relative", zIndex: 10 }}>
@@ -433,174 +471,236 @@ function SajuPreviewContent() {
             fontSize: 18,
             fontWeight: 700,
             color: "#1a2e0e",
-            marginBottom: 14,
+            marginBottom: 12,
           }}
         >
           내 사주 미리보기
         </h1>
+        <p className="sans" style={{ fontSize: 12, color: "#556b2f", marginBottom: 14 }}>
+          좌우로 스와이프하여 카드를 넘겨보세요
+        </p>
 
-        {/* 기본 정보 카드 */}
-        <section style={cardStyle}>
-          <div style={labelStyle}>이름</div>
-          <div style={valueStyle}>{saju.name}</div>
-          <div style={{ ...labelStyle, marginTop: 10 }}>나와의 관계</div>
-          <div style={valueStyle}>{saju.relation || "-"}</div>
-          <div style={{ ...labelStyle, marginTop: 10 }}>성별</div>
-          <div style={valueStyle}>{saju.gender}</div>
-          <div style={{ ...labelStyle, marginTop: 10 }}>생년월일</div>
-          <div style={valueStyle}>
-            {saju.birthdate} ({saju.calendar_type})
-          </div>
-          <div style={{ ...labelStyle, marginTop: 10 }}>태어난 시각</div>
-          <div style={valueStyle}>{timeDisplay}</div>
-        </section>
-
-        {/* 만세력 카드 (add 페이지와 동일한 시주·일주·월주·년주 + 십신·천간·지지 형식) */}
-        {pillars && (
-          <section style={cardStyle}>
-            <div style={{ ...labelStyle, marginBottom: 10 }}>만세력</div>
-            <div
-              style={{
-                border: "4px solid #adc4af",
-                borderRadius: 16,
-                background: "#fff",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  borderBottom: "2px solid #adc4af",
-                  background: "rgba(193, 216, 195, 0.1)",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: "#556b2f",
-                  textAlign: "center",
-                  padding: "6px 4px",
-                }}
-              >
-                {["시주", "일주", "월주", "년주"].map((label, i) => (
-                  <div
-                    key={label}
+        {/* 스와이프 가능한 카드 캐러셀: 1.일주동물 2.이름~시각 3.만세력 */}
+        <div
+          ref={carouselRef}
+          className="preview-carousel"
+          onScroll={updateCarouselIndex}
+          role="region"
+          aria-label="사주 미리보기 카드"
+        >
+          {/* 카드 1: 일주 동물 */}
+          <div className="preview-card" style={{ paddingLeft: 4, paddingRight: 4 }}>
+            <section style={cardStyle}>
+              <div style={{ ...labelStyle, marginBottom: 12, fontSize: 13, fontWeight: 700, color: "#556b2f" }}>
+                🐾 일주 동물
+              </div>
+              {dayPillarKey ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+                  <img
+                    src={`/images/day_pillars/${dayPillarKey}.png`}
+                    alt={`${dayPillarKey} 일주 동물`}
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
+                      width: "100%",
+                      maxWidth: 200,
+                      height: "auto",
+                      objectFit: "contain",
+                      borderRadius: 16,
+                    }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                  {dayPillarAnimalName && (
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e" }}>
+                      {dayPillarAnimalName}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <p style={{ fontSize: 14, color: "#6b7280" }}>일주 정보를 불러오는 중...</p>
+              )}
+            </section>
+          </div>
+
+          {/* 카드 2: 이름 ~ 시각 */}
+          <div className="preview-card" style={{ paddingLeft: 4, paddingRight: 4 }}>
+            <section style={cardStyle}>
+              <div style={{ ...labelStyle, marginBottom: 12, fontSize: 13, fontWeight: 700, color: "#556b2f" }}>
+                📋 기본 정보
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div>
+                  <div style={labelStyle}>이름</div>
+                  <div style={valueStyle}>{saju.name}</div>
+                </div>
+                <div>
+                  <div style={labelStyle}>나와의 관계</div>
+                  <div style={valueStyle}>{saju.relation || "-"}</div>
+                </div>
+                <div>
+                  <div style={labelStyle}>성별</div>
+                  <div style={valueStyle}>{saju.gender}</div>
+                </div>
+                <div>
+                  <div style={labelStyle}>생년월일</div>
+                  <div style={valueStyle}>
+                    {saju.birthdate} ({saju.calendar_type})
+                  </div>
+                </div>
+                <div>
+                  <div style={labelStyle}>태어난 시각</div>
+                  <div style={valueStyle}>{timeDisplay}</div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          {/* 카드 3: 만세력 */}
+          <div className="preview-card" style={{ paddingLeft: 4, paddingRight: 4 }}>
+            <section style={cardStyle}>
+              <div style={{ ...labelStyle, marginBottom: 12, fontSize: 13, fontWeight: 700, color: "#556b2f" }}>
+                📜 만세력
+              </div>
+              {pillars ? (
+                <div
+                  style={{
+                    border: "3px solid #adc4af",
+                    borderRadius: 14,
+                    background: "#fff",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(4, 1fr)",
+                      borderBottom: "2px solid #adc4af",
+                      background: "rgba(193, 216, 195, 0.15)",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#556b2f",
+                      textAlign: "center",
+                      padding: "6px 4px",
                     }}
                   >
-                    {label}
+                    {["시주", "일주", "월주", "년주"].map((label, i) => (
+                      <div
+                        key={label}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
+                        }}
+                      >
+                        {label}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
-                  gap: 0,
-                  textAlign: "center",
-                }}
-              >
-                {pillarBlocks.map((p, idx) => {
-                  const pillarKey = (["hour", "day", "month", "year"] as const)[idx];
-                  const cheongan = p.value[0] ?? "";
-                  const jiji = p.value[1] ?? "";
-                  const dayStem = pillars.day_pillar[0] ?? "";
-                  const stemTenGod = tenGod(dayStem, cheongan);
-                  const branchMs = branchMainStem(jiji);
-                  const branchTenGod = branchMs ? tenGod(dayStem, branchMs) : "";
-                  const stemEl = hanjaToElement(cheongan);
-                  const branchEl = hanjaToElement(jiji);
-                  const jijangganList = jijanggan?.[pillarKey];
-                  const stateText = twelveStates?.[pillarKey];
-                  return (
-                    <div
-                      key={p.label}
-                      style={{
-                        padding: "10px 6px",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 4,
-                        ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
-                      }}
-                    >
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
-                        {stemTenGod}
-                      </div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
-                        {cheongan}
-                      </div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
-                        {jiji}
-                      </div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
-                        {branchTenGod}
-                      </div>
-                      {jijangganList && jijangganList.length > 0 && (
-                        <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", marginTop: 2 }}>
-                          {jijangganList.map((jj, jdx) => (
-                            <span
-                              key={jdx}
-                              style={{
-                                fontSize: 9,
-                                fontWeight: 700,
-                                color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e",
-                              }}
-                            >
-                              {jj.hanja}
-                            </span>
-                          ))}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(4, 1fr)",
+                      gap: 0,
+                      textAlign: "center",
+                    }}
+                  >
+                    {pillarBlocks.map((p, idx) => {
+                      const pillarKey = (["hour", "day", "month", "year"] as const)[idx];
+                      const cheongan = p.value[0] ?? "";
+                      const jiji = p.value[1] ?? "";
+                      const dayStem = pillars.day_pillar[0] ?? "";
+                      const stemTenGod = tenGod(dayStem, cheongan);
+                      const branchMs = branchMainStem(jiji);
+                      const branchTenGod = branchMs ? tenGod(dayStem, branchMs) : "";
+                      const stemEl = hanjaToElement(cheongan);
+                      const branchEl = hanjaToElement(jiji);
+                      const jijangganList = jijanggan?.[pillarKey];
+                      const stateText = twelveStates?.[pillarKey];
+                      return (
+                        <div
+                          key={p.label}
+                          style={{
+                            padding: "10px 6px",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 4,
+                            ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
+                          }}
+                        >
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                            {stemTenGod}
+                          </div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
+                            {cheongan}
+                          </div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
+                            {jiji}
+                          </div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                            {branchTenGod}
+                          </div>
+                          {jijangganList && jijangganList.length > 0 && (
+                            <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", marginTop: 2 }}>
+                              {jijangganList.map((jj, jdx) => (
+                                <span
+                                  key={jdx}
+                                  style={{
+                                    fontSize: 9,
+                                    fontWeight: 700,
+                                    color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e",
+                                  }}
+                                >
+                                  {jj.hanja}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          {stateText && (
+                            <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
+                              {stateText}
+                            </div>
+                          )}
                         </div>
-                      )}
-                      {stateText && (
-                        <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
-                          {stateText}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* 일주 동물 카드 */}
-        {dayPillarKey && (
-          <section style={cardStyle}>
-            <div style={{ ...labelStyle, marginBottom: 10 }}>일주 동물</div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: 10,
-              }}
-            >
-              <img
-                src={`/images/day_pillars/${dayPillarKey}.png`}
-                alt={`${dayPillarKey} 일주 동물`}
-                style={{
-                  width: "100%",
-                  maxWidth: 200,
-                  height: "auto",
-                  objectFit: "contain",
-                  borderRadius: 12,
-                }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-              {dayPillarAnimalName && (
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e" }}>
-                  {dayPillarAnimalName}
-                </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <p style={{ fontSize: 14, color: "#6b7280" }}>만세력 정보를 불러오는 중...</p>
               )}
-            </div>
-          </section>
-        )}
+            </section>
+          </div>
+        </div>
+
+        {/* 카드 인디케이터 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          {[0, 1, 2].map((i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => goToSlide(i)}
+              aria-label={`${i + 1}번째 카드로 이동`}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                border: "none",
+                background: carouselIndex === i ? "#556b2f" : "rgba(173,196,175,0.5)",
+                cursor: "pointer",
+                transition: "background 0.2s ease",
+              }}
+            />
+          ))}
+        </div>
 
         {/* 하단 버튼 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>

@@ -94,9 +94,19 @@ export default function LandingPage({
     const [selectedMode, setSelectedMode] = useState<number | null>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [randomAnimals, setRandomAnimals] = useState<string[]>([]);
+    const [animalRound, setAnimalRound] = useState(0);
 
     // ✅ 추가
     const [modeSeed, setModeSeed] = useState(0);
+
+    const ALL_ANIMALS = useMemo(() => [
+        "갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유",
+        "갑술", "을해", "병자", "정축", "무인", "기묘", "경진", "신사", "임오", "계미",
+        "갑신", "을유", "병술", "정해", "무자", "기축", "경인", "신묘", "임진", "계사",
+        "갑오", "을미", "병신", "정유", "무술", "기해", "경자", "신축", "임인", "계묘",
+        "갑진", "을사", "병오", "정미", "무신", "기유", "경술", "신해", "임자", "계축",
+        "갑인", "을묘", "병진", "정사", "무오", "기미", "경신", "신유", "임술", "계해",
+    ], []);
 
     const modeName = selectedMode === null ? null : ["공감형", "분석형", "친구형"][selectedMode];
     const modeExamples = useMemo(() => {
@@ -136,8 +146,8 @@ export default function LandingPage({
 
         const timer = setTimeout(() => setShowPreview(true), 800);
 
-        // 클라이언트에서만 랜덤 동물 생성
-        const allAnimals = [
+        // 초기 랜덤 동물 6개
+        const all = [
             "갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유",
             "갑술", "을해", "병자", "정축", "무인", "기묘", "경진", "신사", "임오", "계미",
             "갑신", "을유", "병술", "정해", "무자", "기축", "경인", "신묘", "임진", "계사",
@@ -145,11 +155,21 @@ export default function LandingPage({
             "갑진", "을사", "병오", "정미", "무신", "기유", "경술", "신해", "임자", "계축",
             "갑인", "을묘", "병진", "정사", "무오", "기미", "경신", "신유", "임술", "계해",
         ];
-        const shuffled = [...allAnimals].sort(() => Math.random() - 0.5);
+        const shuffled = [...all].sort(() => Math.random() - 0.5);
         setRandomAnimals(shuffled.slice(0, 6));
 
         return () => clearTimeout(timer);
     }, []);
+
+    // 3초마다 일주 동물 랜덤 교체 (카드 뒤집기용 round 증가)
+    useEffect(() => {
+        const id = setInterval(() => {
+            const shuffled = [...ALL_ANIMALS].sort(() => Math.random() - 0.5);
+            setRandomAnimals(shuffled.slice(0, 6));
+            setAnimalRound((r) => r + 1);
+        }, 3000);
+        return () => clearInterval(id);
+    }, [ALL_ANIMALS]);
 
     return (
         <main style={{ background: "#eef4ee", minHeight: "100vh", fontFamily: "'Gowun Dodum', sans-serif", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -166,6 +186,13 @@ export default function LandingPage({
         @keyframes fadeInSlide {
           from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes cardFlipIn {
+          from { opacity: 0; transform: perspective(320px) rotateY(-88deg); }
+          to   { opacity: 1; transform: perspective(320px) rotateY(0); }
+        }
+        .animal-card-flip {
+          animation: cardFlipIn 0.5s ease-out both;
         }
         @keyframes float {
           0%, 100% { transform: translateY(0); }
@@ -390,11 +417,11 @@ export default function LandingPage({
                         60가지 중 단 하나.
                     </p>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "4px 0 12px", marginBottom: 16 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "4px 0 12px", marginBottom: 16, perspective: "400px" }}>
                         {randomAnimals.map((animal, i) => (
                             <div
-                                key={i}
-                                className="animal-card"
+                                key={`${animalRound}-${i}-${animal}`}
+                                className={`animal-card ${animalRound > 0 ? "animal-card-flip" : ""}`}
                                 style={{
                                     width: "100%",
                                     aspectRatio: "1 / 1",
@@ -402,8 +429,9 @@ export default function LandingPage({
                                     overflow: "hidden",
                                     border: "1.5px solid #e0e7e0",
                                     background: "#fafcfa",
-                                    animation: `fadeInSlide 0.5s ease-out both`,
-                                    animationDelay: `${300 + i * 120}ms`,
+                                    ...(animalRound === 0
+                                        ? { animation: "fadeInSlide 0.5s ease-out both", animationDelay: `${300 + i * 120}ms` }
+                                        : { animationDelay: `${i * 80}ms` }),
                                 }}
                             >
                                 <img

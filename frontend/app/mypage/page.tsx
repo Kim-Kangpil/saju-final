@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -16,7 +16,7 @@ import { Icon } from "@iconify/react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
-export default function MyPage({
+function MyPageContent({
   params,
 }: { params?: Promise<Record<string, string | string[]>> } = {}) {
   use(params ?? Promise.resolve({}));
@@ -487,5 +487,30 @@ export default function MyPage({
         </section>
       </div>
     </main>
+  );
+}
+
+export default function MyPage(
+  props: { params?: Promise<Record<string, string | string[]>> }
+) {
+  return (
+    <Suspense
+      fallback={
+        <main
+          style={{
+            background: "#eef4ee",
+            minHeight: "100vh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "'Gowun Dodum', sans-serif",
+          }}
+        >
+          <p style={{ fontSize: 14, color: "#556b2f" }}>불러오는 중...</p>
+        </main>
+      }
+    >
+      <MyPageContent {...props} />
+    </Suspense>
   );
 }

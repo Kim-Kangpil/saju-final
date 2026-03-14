@@ -788,13 +788,39 @@ export default function Page({
   }, [result]);
 
 
+  // 🔥 로컬 테스트용: ?test=1 이면 목업 분석 결과를 바로 표시 (백엔드 없이 확인용)
+  const MOCK_RESULT_FOR_TEST: SajuResult = useMemo(
+    () => ({
+      hour: { label: "시주", cheongan: { hanja: "庚", hangul: "경" }, jiji: { hanja: "午", hangul: "오" } },
+      day: { label: "일주", cheongan: { hanja: "甲", hangul: "갑" }, jiji: { hanja: "子", hangul: "자" } },
+      month: { label: "월주", cheongan: { hanja: "戊", hangul: "무" }, jiji: { hanja: "寅", hangul: "인" } },
+      year: { label: "년주", cheongan: { hanja: "庚", hangul: "경" }, jiji: { hanja: "午", hangul: "오" } },
+      twelve_states: { hour: "장생", day: "목욕", month: "병", year: "태" },
+      jijanggan: undefined,
+    }),
+    []
+  );
+
   // 🔥 새로 추가: 저장된 사주 불러오기
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const loadedId = params.get('loaded');
+    const loadedId = params.get("loaded");
+    const testMode = params.get("test") === "1";
+
+    if (testMode) {
+      setBirthYmd("19900101");
+      setBirthHm("1200");
+      setGender("M");
+      setCalendar("solar");
+      setTimeUnknown(false);
+      setResult(MOCK_RESULT_FOR_TEST);
+      window.history.replaceState({}, "", "/add");
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 300);
+      return;
+    }
 
     if (loadedId) {
-      const loadedSajuStr = sessionStorage.getItem('loadedSaju');
+      const loadedSajuStr = sessionStorage.getItem("loadedSaju");
       if (loadedSajuStr) {
         try {
           const loadedSaju = JSON.parse(loadedSajuStr);
@@ -806,18 +832,18 @@ export default function Page({
           setTimeUnknown(loadedSaju.timeUnknown);
           setResult(loadedSaju.result);
 
-          sessionStorage.removeItem('loadedSaju');
-          window.history.replaceState({}, '', '/');
+          sessionStorage.removeItem("loadedSaju");
+          window.history.replaceState({}, "", "/add");
 
           setTimeout(() => {
-            resultRef.current?.scrollIntoView({ behavior: 'smooth' });
+            resultRef.current?.scrollIntoView({ behavior: "smooth" });
           }, 500);
         } catch (e) {
-          console.error('사주 불러오기 실패:', e);
+          console.error("사주 불러오기 실패:", e);
         }
       }
     }
-  }, []);
+  }, [MOCK_RESULT_FOR_TEST]);
 
   // 🔥 새로 추가: 저장 함수들
   function handleSaveSaju() {

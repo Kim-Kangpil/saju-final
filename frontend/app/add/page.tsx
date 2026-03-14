@@ -688,6 +688,7 @@ export default function Page({
   // 🔥 새로 추가: 저장 관련 state
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveDialogInputFocused, setSaveDialogInputFocused] = useState(false);
+  const [savingToServer, setSavingToServer] = useState(false);
   const [sajuName, setSajuName] = useState('');
   const [birthYmd, setBirthYmd] = useState("");
   const [birthHm, setBirthHm] = useState("");
@@ -850,12 +851,20 @@ export default function Page({
           setTimeout(() => {
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
           }, 500);
+          return;
         } catch (e) {
           console.error("사주 불러오기 실패:", e);
+          router.replace("/saju-list");
+          return;
         }
       }
+      router.replace("/saju-list");
+      return;
     }
-  }, [MOCK_RESULT_FOR_TEST]);
+
+    // test/loaded 없으면 결과 없음 → 사주 목록으로 이동 (빈 결과 화면 거의 안 씀)
+    router.replace("/saju-list");
+  }, [MOCK_RESULT_FOR_TEST, router]);
 
   // 🔥 새로 추가: 저장 함수들
   function handleSaveSaju() {
@@ -878,7 +887,7 @@ export default function Page({
     setShowSaveDialog(true);
   }
 
-  function confirmSave() {
+  async function confirmSave() {
     if (!sajuName.trim()) {
       alert('사주 이름을 입력해주세요.');
       return;
@@ -886,26 +895,72 @@ export default function Page({
 
     if (!result) return;
 
-    const saveResult = saveSaju({
-      name: sajuName.trim(),
-      birthYmd,
-      birthHm: timeUnknown ? '1200' : birthHm,
-      gender,
-      calendar,
-      timeUnknown,
-      result,
-    });
+    setSavingToServer(true);
+    try {
+      // 1) 서버에 저장 (로그인 시 영구 보관 — 나중에 들어와도 사주 목록에 유지됨)
+      const birthdate = `${birthYmd.slice(0, 4)}-${birthYmd.slice(4, 6)}-${birthYmd.slice(6, 8)}`;
+      const birth_time = timeUnknown ? null : `${birthHm.slice(0, 2)}:${birthHm.slice(2, 4)}`;
+      const calendar_type = calendar === "solar" ? "양력" : "음력";
+      const genderText = gender === "M" ? "남자" : "여자";
 
-    if (saveResult.success) {
-      alert(`✅ ${saveResult.message}\n\n마이페이지에서 확인하세요!`);
-      setShowSaveDialog(false);
-      setSajuName('');
+      const res = await fetch(`${API_BASE}/api/saju/save`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        credentials: "include",
+        body: JSON.stringify({
+          name: sajuName.trim(),
+          relation: null,
+          birthdate,
+          birth_time,
+          calendar_type,
+          gender: genderText,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
 
-      if (confirm('마이페이지로 이동하시겠습니까?')) {
-        router.push('/mypage');
+      if (res.status === 401) {
+        alert("로그인이 필요합니다.");
+        router.push("/login");
+        return;
       }
-    } else {
-      alert(saveResult.message);
+
+      if (!res.ok || !data?.success) {
+        alert(data?.detail || "저장에 실패했습니다. 다시 시도해주세요.");
+        return;
+      }
+
+      // 2) 로컬에도 저장 (마이페이지 등에서 바로 반영)
+      const saveResult = saveSaju({
+        name: sajuName.trim(),
+        birthYmd,
+        birthHm: timeUnknown ? "1200" : birthHm,
+        gender,
+        calendar,
+        timeUnknown,
+        result,
+      });
+
+      if (saveResult.success) {
+        setShowSaveDialog(false);
+        setSajuName("");
+        alert(`✅ ${saveResult.message}\n\n사주 목록에서 확인하세요!`);
+        if (confirm("사주 목록으로 이동하시겠습니까?")) {
+          router.push("/saju-list");
+        }
+      } else {
+        // 서버 저장은 됐지만 로컬 저장 실패(예: 5개 초과) — 서버에는 있으므로 목록으로 유도
+        setShowSaveDialog(false);
+        setSajuName("");
+        alert("서버에 저장되었습니다. 사주 목록에서 확인하세요.");
+        if (confirm("사주 목록으로 이동하시겠습니까?")) {
+          router.push("/saju-list");
+        }
+      }
+    } catch (e) {
+      console.error("사주 저장 오류:", e);
+      alert("저장 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setSavingToServer(false);
     }
   }
 
@@ -2328,62 +2383,7 @@ export default function Page({
 
                 <div className="space-y-4">
                   <AnimatePresence mode="wait">
-                    {loading ? null : !result ? (
-                      <motion.div
-                        key="no-result"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        style={{ textAlign: "center", paddingTop: 60, paddingLeft: 16, paddingRight: 16 }}
-                      >
-                        <img
-                          src="/images/ham_soft.png"
-                          alt=""
-                          style={{ width: 80, height: "auto", marginBottom: 16, display: "block", marginLeft: "auto", marginRight: "auto" }}
-                        />
-                        <p style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e", marginBottom: 8 }}>
-                          사주 결과가 없어요
-                        </p>
-                        <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 24 }}>
-                          사주 목록에서 분석을 시작해보세요
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => router.push("/saju-list")}
-                          style={{
-                            width: "100%",
-                            padding: 13,
-                            borderRadius: 14,
-                            border: "none",
-                            background: "#6a994e",
-                            color: "#fff",
-                            fontSize: 14,
-                            fontWeight: 700,
-                            marginBottom: 8,
-                            cursor: "pointer",
-                          }}
-                        >
-                          사주 목록으로
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => router.push("/home")}
-                          style={{
-                            width: "100%",
-                            padding: 11,
-                            borderRadius: 14,
-                            border: "1.5px solid #e0ece0",
-                            background: "#fff",
-                            color: "#6b7280",
-                            fontSize: 14,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                          }}
-                        >
-                          홈으로
-                        </button>
-                      </motion.div>
-                    ) : (
+                    {loading ? null : !result ? null : (
                       <motion.div
                         ref={resultRef}
                         key="result"
@@ -3053,8 +3053,10 @@ export default function Page({
                 padding: 20,
               }}
               onClick={() => {
-                setShowSaveDialog(false);
-                setSajuName("");
+                if (!savingToServer) {
+                  setShowSaveDialog(false);
+                  setSajuName("");
+                }
               }}
             >
               <div
@@ -3127,20 +3129,21 @@ export default function Page({
                   </button>
                   <button
                     type="button"
-                    onClick={confirmSave}
+                    disabled={savingToServer}
+                    onClick={() => confirmSave()}
                     style={{
                       flex: 1,
                       padding: 11,
                       borderRadius: 12,
                       border: "none",
-                      background: "#6a994e",
+                      background: savingToServer ? "#9cbf9c" : "#6a994e",
                       fontSize: 14,
                       fontWeight: 700,
                       color: "#fff",
-                      cursor: "pointer",
+                      cursor: savingToServer ? "wait" : "pointer",
                     }}
                   >
-                    저장
+                    {savingToServer ? "저장 중…" : "저장"}
                   </button>
                 </div>
               </div>

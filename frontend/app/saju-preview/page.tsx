@@ -480,10 +480,19 @@ function SajuPreviewContent() {
                   padding: "6px 4px",
                 }}
               >
-                <span>시주</span>
-                <span>일주</span>
-                <span>월주</span>
-                <span>년주</span>
+                {["시주", "일주", "월주", "년주"].map((label, i) => (
+                  <div
+                    key={label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
+                    }}
+                  >
+                    {label}
+                  </div>
+                ))}
               </div>
               <div
                 style={{

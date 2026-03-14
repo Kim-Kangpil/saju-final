@@ -257,6 +257,8 @@ function SajuPreviewContent() {
 
   const CARD_BAR_COLORS = ["#a8d5b5", "#b5c8f0", "#f0d9a8"] as const;
 
+  const CARD_MIN_HEIGHT = 365;
+
   const getCardStyle = (barColor: string) => ({
     position: "relative" as const,
     zIndex: 10,
@@ -267,6 +269,9 @@ function SajuPreviewContent() {
     padding: 0,
     marginBottom: 0,
     overflow: "hidden" as const,
+    minHeight: CARD_MIN_HEIGHT,
+    display: "flex" as const,
+    flexDirection: "column" as const,
   });
 
   const cardBarStyle = (barColor: string) => ({
@@ -278,6 +283,15 @@ function SajuPreviewContent() {
 
   const cardBodyStyle = {
     padding: "28px 24px",
+    flex: 1,
+    display: "flex" as const,
+    flexDirection: "column" as const,
+  };
+
+  const cardBodyStyleCentered = {
+    ...cardBodyStyle,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
   };
 
   const labelStyle = {
@@ -610,11 +624,11 @@ function SajuPreviewContent() {
               </section>
             </div>
 
-            {/* 카드 3: 만세력 */}
+            {/* 카드 3: 만세력 (정중앙 배치) */}
             <div className="preview-card">
               <section style={getCardStyle(CARD_BAR_COLORS[2])}>
                 <div style={cardBarStyle(CARD_BAR_COLORS[2])} />
-                <div style={cardBodyStyle}>
+                <div style={cardBodyStyleCentered}>
               {pillars ? (
                 <div
                   style={{
@@ -760,12 +774,12 @@ function SajuPreviewContent() {
           ))}
         </div>
 
-        {/* 하단 버튼 */}
+        {/* 하단 버튼 (위치·색상 교환) */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
           <button
             type="button"
             className="tap sans"
-            onClick={() => router.push("/saju-list")}
+            onClick={() => alert("준비 중입니다.")}
             style={{
               width: "100%",
               padding: "11px 14px",
@@ -777,12 +791,12 @@ function SajuPreviewContent() {
               color: "#1a2e0e",
             }}
           >
-            내 사주 목록으로
+            사주 분석 시작하기
           </button>
           <button
             type="button"
             className="tap sans"
-            onClick={() => alert("준비 중입니다.")}
+            onClick={() => router.push("/saju-list")}
             style={{
               width: "100%",
               padding: "11px 14px",
@@ -794,7 +808,7 @@ function SajuPreviewContent() {
               color: "#1a2e0e",
             }}
           >
-            사주 분석 시작하기
+            내 사주 목록으로
           </button>
         </div>
       </div>

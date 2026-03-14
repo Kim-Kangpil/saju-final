@@ -255,26 +255,40 @@ function SajuPreviewContent() {
     setCarouselIndex(index);
   }, []);
 
-  const cardStyle = {
+  const CARD_BAR_COLORS = ["#a8d5b5", "#b5c8f0", "#f0d9a8"] as const;
+
+  const getCardStyle = (barColor: string) => ({
     position: "relative" as const,
     zIndex: 10,
-    background: "#fff",
-    border: "4px solid #adc4af",
-    borderRadius: 20,
-    padding: 20,
+    background: "#ffffff",
+    borderRadius: 24,
+    border: "none",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
+    padding: 0,
     marginBottom: 0,
-    boxShadow: "0 2px 12px rgba(85,107,47,0.08)",
+    overflow: "hidden" as const,
+  });
+
+  const cardBarStyle = (barColor: string) => ({
+    height: 8,
+    background: barColor,
+    width: "100%",
+    flexShrink: 0,
+  });
+
+  const cardBodyStyle = {
+    padding: "28px 24px",
   };
 
   const labelStyle = {
     fontSize: 12,
-    color: "#556b2f",
+    color: "#6b7280",
     marginBottom: 4,
   } as const;
 
   const valueStyle = {
     fontSize: 14,
-    fontWeight: 600,
+    fontWeight: 700,
     color: "#1a2e0e",
   } as const;
 
@@ -359,25 +373,46 @@ function SajuPreviewContent() {
         .tap:active { transform: scale(.97); opacity: .9; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
         .wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 20px 40px; }
         @media (max-width: 390px) { .wrap { padding: 0 16px 40px; } }
+        .preview-carousel-wrap { position: relative; margin-bottom: 16px; }
         .preview-carousel {
           display: flex;
           overflow-x: auto;
+          overflow-y: hidden;
           scroll-snap-type: x mandatory;
           scroll-behavior: smooth;
           -webkit-overflow-scrolling: touch;
           gap: 0;
-          margin: 0 -20px 16px;
-          padding: 0 20px 12px;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
         }
-        .preview-carousel::-webkit-scrollbar { height: 6px; }
-        .preview-carousel::-webkit-scrollbar-track { background: rgba(173,196,175,0.2); border-radius: 3px; }
-        .preview-carousel::-webkit-scrollbar-thumb { background: #adc4af; border-radius: 3px; }
+        .preview-carousel::-webkit-scrollbar { display: none; }
         .preview-card {
           flex: 0 0 100%;
           min-width: 100%;
           scroll-snap-align: start;
           scroll-snap-stop: always;
+          padding: 0 4px;
         }
+        .preview-arrow {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(255,255,255,0.9);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 20;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .preview-arrow:active { opacity: 0.85; }
+        .preview-arrow.left { left: 8px; }
+        .preview-arrow.right { right: 8px; }
       `}</style>
 
       <div className="wrap" style={{ position: "relative", zIndex: 10 }}>
@@ -479,94 +514,111 @@ function SajuPreviewContent() {
           내 사주 미리보기
         </h1>
         <p className="sans" style={{ fontSize: 12, color: "#556b2f", marginBottom: 14 }}>
-          좌우로 스와이프하여 카드를 넘겨보세요
+          좌우로 스와이프하거나 화살표로 카드를 넘겨보세요
         </p>
 
-        {/* 스와이프 가능한 카드 캐러셀: 1.일주동물 2.이름~시각 3.만세력 */}
-        <div
-          ref={carouselRef}
-          className="preview-carousel"
-          onScroll={updateCarouselIndex}
-          role="region"
-          aria-label="사주 미리보기 카드"
-        >
-          {/* 카드 1: 일주 동물 */}
-          <div className="preview-card" style={{ paddingLeft: 4, paddingRight: 4 }}>
-            <section style={cardStyle}>
-              <div style={{ ...labelStyle, marginBottom: 12, fontSize: 13, fontWeight: 700, color: "#556b2f" }}>
-                🐾 일주 동물
-              </div>
-              {dayPillarKey ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-                  <img
-                    src={`/images/day_pillars/${dayPillarKey}.png`}
-                    alt={`${dayPillarKey} 일주 동물`}
-                    style={{
-                      width: "100%",
-                      maxWidth: 200,
-                      height: "auto",
-                      objectFit: "contain",
-                      borderRadius: 16,
-                    }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
-                    }}
-                  />
-                  {dayPillarAnimalName && (
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e" }}>
-                      {dayPillarAnimalName}
-                    </span>
+        {/* 슬라이더: 한 번에 한 장, 화살표 + 스와이프 */}
+        <div className="preview-carousel-wrap">
+          {carouselIndex > 0 && (
+            <button
+              type="button"
+              className="preview-arrow left"
+              aria-label="이전 카드"
+              onClick={() => goToSlide(carouselIndex - 1)}
+            >
+              <Icon icon="mdi:chevron-left" width={24} style={{ color: "#1a2e0e" }} />
+            </button>
+          )}
+          {carouselIndex < 2 && (
+            <button
+              type="button"
+              className="preview-arrow right"
+              aria-label="다음 카드"
+              onClick={() => goToSlide(carouselIndex + 1)}
+            >
+              <Icon icon="mdi:chevron-right" width={24} style={{ color: "#1a2e0e" }} />
+            </button>
+          )}
+          <div
+            ref={carouselRef}
+            className="preview-carousel"
+            onScroll={updateCarouselIndex}
+            role="region"
+            aria-label="사주 미리보기 카드"
+          >
+            {/* 카드 1: 일주 동물 */}
+            <div className="preview-card">
+              <section style={getCardStyle(CARD_BAR_COLORS[0])}>
+                <div style={cardBarStyle(CARD_BAR_COLORS[0])} />
+                <div style={cardBodyStyle}>
+                  {dayPillarKey ? (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+                      <img
+                        src={`/images/day_pillars/${dayPillarKey}.png`}
+                        alt={`${dayPillarKey} 일주 동물`}
+                        style={{
+                          width: 220,
+                          height: 220,
+                          objectFit: "contain",
+                          borderRadius: 16,
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      {dayPillarAnimalName && (
+                        <span style={{ fontSize: 20, fontWeight: 700, color: "#1a2e0e" }}>
+                          {dayPillarAnimalName}
+                        </span>
+                      )}
+                      {pillars?.day_pillar && (
+                        <span style={{ fontSize: 18, fontWeight: 600, color: "#556b2f" }}>
+                          {pillars.day_pillar}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: 14, color: "#6b7280" }}>일주 정보를 불러오는 중...</p>
                   )}
                 </div>
-              ) : (
-                <p style={{ fontSize: 14, color: "#6b7280" }}>일주 정보를 불러오는 중...</p>
-              )}
-            </section>
-          </div>
+              </section>
+            </div>
 
-          {/* 카드 2: 이름 ~ 시각 */}
-          <div className="preview-card" style={{ paddingLeft: 4, paddingRight: 4 }}>
-            <section style={cardStyle}>
-              <div style={{ ...labelStyle, marginBottom: 12, fontSize: 13, fontWeight: 700, color: "#556b2f" }}>
-                📋 기본 정보
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div>
-                  <div style={labelStyle}>이름</div>
-                  <div style={valueStyle}>{saju.name}</div>
-                </div>
-                <div>
-                  <div style={labelStyle}>나와의 관계</div>
-                  <div style={valueStyle}>{saju.relation || "-"}</div>
-                </div>
-                <div>
-                  <div style={labelStyle}>성별</div>
-                  <div style={valueStyle}>{saju.gender}</div>
-                </div>
-                <div>
-                  <div style={labelStyle}>생년월일</div>
-                  <div style={valueStyle}>
-                    {saju.birthdate} ({saju.calendar_type})
+            {/* 카드 2: 기본 정보 */}
+            <div className="preview-card">
+              <section style={getCardStyle(CARD_BAR_COLORS[1])}>
+                <div style={cardBarStyle(CARD_BAR_COLORS[1])} />
+                <div style={cardBodyStyle}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                    {[
+                      { label: "이름", value: saju.name },
+                      { label: "나와의 관계", value: saju.relation || "-" },
+                      { label: "성별", value: saju.gender },
+                      { label: "생년월일 (양·음력)", value: `${saju.birthdate} (${saju.calendar_type})` },
+                      { label: "태어난 시각", value: timeDisplay },
+                    ].map((row, i) => (
+                      <div key={row.label}>
+                        {i > 0 && (
+                          <div style={{ height: 1, background: "#e5e7eb", margin: "12px 0" }} />
+                        )}
+                        <div style={labelStyle}>{row.label}</div>
+                        <div style={valueStyle}>{row.value}</div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div>
-                  <div style={labelStyle}>태어난 시각</div>
-                  <div style={valueStyle}>{timeDisplay}</div>
-                </div>
-              </div>
-            </section>
-          </div>
+              </section>
+            </div>
 
-          {/* 카드 3: 만세력 */}
-          <div className="preview-card" style={{ paddingLeft: 4, paddingRight: 4 }}>
-            <section style={cardStyle}>
-              <div style={{ ...labelStyle, marginBottom: 12, fontSize: 13, fontWeight: 700, color: "#556b2f" }}>
-                📜 만세력
-              </div>
+            {/* 카드 3: 만세력 */}
+            <div className="preview-card">
+              <section style={getCardStyle(CARD_BAR_COLORS[2])}>
+                <div style={cardBarStyle(CARD_BAR_COLORS[2])} />
+                <div style={cardBodyStyle}>
               {pillars ? (
                 <div
                   style={{
-                    border: "3px solid #adc4af",
+                    border: "1px solid #e5e7eb",
                     borderRadius: 14,
                     background: "#fff",
                     overflow: "hidden",
@@ -576,13 +628,13 @@ function SajuPreviewContent() {
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(4, 1fr)",
-                      borderBottom: "2px solid #adc4af",
-                      background: "rgba(193, 216, 195, 0.15)",
-                      fontSize: 11,
+                      borderBottom: "1px solid #e5e7eb",
+                      background: "rgba(229,231,235,0.3)",
+                      fontSize: 12,
                       fontWeight: 700,
-                      color: "#556b2f",
+                      color: "#374151",
                       textAlign: "center",
-                      padding: "6px 4px",
+                      padding: "8px 4px",
                     }}
                   >
                     {["시주", "일주", "월주", "년주"].map((label, i) => (
@@ -592,7 +644,7 @@ function SajuPreviewContent() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
+                          ...(i < 3 ? { borderRight: "1px solid #e5e7eb" } : {}),
                         }}
                       >
                         {label}
@@ -623,24 +675,25 @@ function SajuPreviewContent() {
                         <div
                           key={p.label}
                           style={{
-                            padding: "10px 6px",
+                            padding: "12px 6px",
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
-                            gap: 4,
-                            ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
+                            gap: 6,
+                            borderRight: idx < pillarBlocks.length - 1 ? "1px solid #e5e7eb" : undefined,
+                            borderBottom: "1px solid #e5e7eb",
                           }}
                         >
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", opacity: 0.9 }}>
                             {stemTenGod}
                           </div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
+                          <div style={{ fontSize: 24, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
                             {cheongan}
                           </div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
+                          <div style={{ fontSize: 24, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
                             {jiji}
                           </div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", opacity: 0.9 }}>
                             {branchTenGod}
                           </div>
                           {jijangganList && jijangganList.length > 0 && (
@@ -649,7 +702,7 @@ function SajuPreviewContent() {
                                 <span
                                   key={jdx}
                                   style={{
-                                    fontSize: 9,
+                                    fontSize: 10,
                                     fontWeight: 700,
                                     color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e",
                                   }}
@@ -660,7 +713,7 @@ function SajuPreviewContent() {
                             </div>
                           )}
                           {stateText && (
-                            <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", opacity: 0.85, marginTop: 1 }}>
                               {stateText}
                             </div>
                           )}
@@ -672,15 +725,18 @@ function SajuPreviewContent() {
               ) : (
                 <p style={{ fontSize: 14, color: "#6b7280" }}>만세력 정보를 불러오는 중...</p>
               )}
-            </section>
+                </div>
+              </section>
+            </div>
           </div>
         </div>
 
-        {/* 카드 인디케이터 */}
+        {/* 카드 인디케이터 (하단 점) */}
         <div
           style={{
             display: "flex",
             justifyContent: "center",
+            alignItems: "center",
             gap: 10,
             marginBottom: 16,
           }}
@@ -692,13 +748,13 @@ function SajuPreviewContent() {
               onClick={() => goToSlide(i)}
               aria-label={`${i + 1}번째 카드로 이동`}
               style={{
-                width: 10,
-                height: 10,
+                width: carouselIndex === i ? 10 : 8,
+                height: carouselIndex === i ? 10 : 8,
                 borderRadius: "50%",
                 border: "none",
-                background: carouselIndex === i ? "#556b2f" : "rgba(173,196,175,0.5)",
+                background: carouselIndex === i ? "#4a7c59" : "rgba(173,196,175,0.5)",
                 cursor: "pointer",
-                transition: "background 0.2s ease",
+                transition: "background 0.2s ease, width 0.2s ease, height 0.2s ease",
               }}
             />
           ))}

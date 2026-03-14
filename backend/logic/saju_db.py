@@ -1,4 +1,4 @@
-"""사주 저장용 SQLite."""
+"""사주 저장용 SQLite. 로그인한 user_id별로 저장되며, 로그인/재접속 시 초기화되지 않고 계속 유지됩니다."""
 import sqlite3
 from pathlib import Path
 from datetime import datetime

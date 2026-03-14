@@ -120,7 +120,11 @@ export default function SajuAddPage({
       console.log("[api/saju/save] status:", res.status, "body:", body);
 
       if (res.status === 401) {
-        alert("로그인이 필요합니다. 카카오로 다시 로그인해 주세요.\n(개발용 로그인은 저장 기능을 지원하지 않습니다.)");
+        alert(
+          "로그인 상태를 서버에서 확인하지 못했습니다.\n\n" +
+          "• 모바일: 브라우저에서 '쿠키 허용'을 켜고, 한 번 로그아웃 후 다시 로그인해 보세요.\n" +
+          "• 같은 Wi‑Fi/데이터에서 hsaju.com으로 접속한 뒤 저장을 다시 시도해 주세요."
+        );
         setShowConfirmModal(false);
         router.push("/login");
         return;

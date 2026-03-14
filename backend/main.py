@@ -834,6 +834,7 @@ async def payment_confirm(req: PaymentConfirmRequest):
 def get_saju_list(request: Request):
     """
     현재 로그인한 사용자의 사주 전체 목록을 반환합니다.
+    저장된 사주는 계정별로 유지되며, 로그인/재접속 시 초기화되지 않습니다.
     """
     raw = request.cookies.get("hsaju_session")
     user_id = get_user_id_from_session(raw) if raw else None

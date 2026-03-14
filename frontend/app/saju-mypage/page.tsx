@@ -23,9 +23,13 @@ export default function SajuMyPage({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const loadUserInfo = async (retryCount = 0): Promise<void> => {
+      const maxRetries = 2;
       try {
-        const res = await fetch(`${API_BASE}/api/me`, { credentials: "include" });
+        const res = await fetch(`${API_BASE}/api/me`, {
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        });
         const data = await res.json().catch(() => ({}));
         if (cancelled) return;
         if (data?.ok) {
@@ -34,15 +38,29 @@ export default function SajuMyPage({
             email: data.email ?? null,
             nickname: data.nickname ?? null,
           });
-        } else {
-          setUserInfo(null);
+          if (!cancelled) setUserInfoLoading(false);
+          return;
         }
-      } catch {
-        if (!cancelled) setUserInfo(null);
-      } finally {
+        if (retryCount < maxRetries) {
+          await new Promise((r) => setTimeout(r, 400));
+          if (!cancelled) loadUserInfo(retryCount + 1);
+          return;
+        }
+        setUserInfo(null);
         if (!cancelled) setUserInfoLoading(false);
+      } catch {
+        if (retryCount < maxRetries) {
+          await new Promise((r) => setTimeout(r, 400));
+          if (!cancelled) loadUserInfo(retryCount + 1);
+          return;
+        }
+        if (!cancelled) {
+          setUserInfo(null);
+          setUserInfoLoading(false);
+        }
       }
-    })();
+    };
+    loadUserInfo();
     return () => { cancelled = true; };
   }, []);
 
@@ -308,9 +326,9 @@ export default function SajuMyPage({
                                   ? `${loginType} 로그인`
                                   : null;
                           if (providerLabel)
-                            return `${providerLabel} | (이메일은 서버에서 불러오지 못했습니다)`;
+                            return `${providerLabel} | (이메일은 서버에서 불러오지 못했습니다. 모바일에서는 잠시 후 새로고침해 보세요.)`;
                         } catch (_) {}
-                        return "로그인 정보를 불러올 수 없습니다.";
+                        return "로그인 정보를 불러올 수 없습니다. 네트워크 확인 후 새로고침해 보세요.";
                       })()}
               </p>
             </div>

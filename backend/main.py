@@ -80,7 +80,7 @@ from logic.saju_db import (
     get_saju_list_for_user,
     save_saju_for_user,
 )
-from logic.user_db import get_user_id_from_session, get_user_by_id, get_seed_balance
+from logic.user_db import get_user_id_from_session, get_user_by_id, get_seed_balance, deduct_seed
 from logic.session_token import verify_session_token
 
 
@@ -216,6 +216,28 @@ def get_seeds(request: Request):
     except Exception as e:
         print(f"⚠️ /api/seeds 조회 실패: {e}")
         return {"seeds": 0}
+
+
+@app.post("/api/analysis/deduct")
+def deduct_analysis_seed(request: Request):
+    """
+    사주 분석 1회 차감. 씨앗 1개를 차감하고 성공 시 남은 잔액을 반환합니다.
+    """
+    user_id = get_user_id_from_request(request)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    try:
+        success, remaining = deduct_seed(user_id, 1)
+        if not success:
+            return {
+                "success": False,
+                "detail": "씨앗이 부족합니다.",
+                "remaining": remaining,
+            }
+        return {"success": True, "remaining": remaining}
+    except Exception as e:
+        print(f"⚠️ /api/analysis/deduct 실패: {e}")
+        raise HTTPException(status_code=500, detail="차감 처리 중 오류가 발생했습니다.")
 
 
 class ContactRequest(BaseModel):

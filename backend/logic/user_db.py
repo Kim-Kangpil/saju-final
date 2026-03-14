@@ -156,3 +156,27 @@ def get_seed_balance(user_id: int) -> int:
         return 0  # seed_balance column missing
     finally:
         conn.close()
+
+
+def deduct_seed(user_id: int, amount: int = 1) -> tuple[bool, int]:
+    """
+    user_id의 씨앗을 amount만큼 차감합니다.
+    Returns: (success, remaining_balance)
+    """
+    if not user_id or amount < 1:
+        return False, get_seed_balance(user_id or 0)
+    current = get_seed_balance(user_id)
+    if current < amount:
+        return False, current
+    conn = get_conn()
+    try:
+        conn.execute(
+            "UPDATE users SET seed_balance = seed_balance - ? WHERE id = ?",
+            (amount, user_id),
+        )
+        conn.commit()
+        return True, current - amount
+    except sqlite3.OperationalError:
+        return False, current
+    finally:
+        conn.close()

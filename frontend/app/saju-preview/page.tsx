@@ -161,6 +161,66 @@ function SajuPreviewContent() {
     month: string;
     year: string;
   } | null>(null);
+  const [deducting, setDeducting] = useState(false);
+  const [showSeedSheet, setShowSeedSheet] = useState(false);
+
+  function buildPillarBlock(label: string, pillarStr: string) {
+    if (!pillarStr || pillarStr.length < 2)
+      return { label, cheongan: { hanja: "", hangul: "" }, jiji: { hanja: "", hangul: "" } };
+    const [c, j] = [pillarStr[0], pillarStr[1]];
+    return {
+      label,
+      cheongan: { hanja: c, hangul: hanjaToHangul(c) },
+      jiji: { hanja: j, hangul: hanjaToHangul(j) },
+    };
+  }
+
+  async function handleStartAnalysis() {
+    if (!saju || !pillars) return;
+    setDeducting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/analysis/deduct`, {
+        method: "POST",
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      if (!data.success) {
+        setShowSeedSheet(true);
+        return;
+      }
+      const birthYmd = (saju.birthdate || "").replace(/-/g, "").slice(0, 8);
+      const birthHm = (saju.birth_time || "").replace(/\D/g, "").slice(0, 4) || "1200";
+      const gender = saju.gender === "남자" ? "M" : "F";
+      const calendar = saju.calendar_type === "음력" ? "lunar" : "solar";
+      const loadedSaju = {
+        birthYmd,
+        birthHm,
+        gender,
+        calendar,
+        timeUnknown: false,
+        result: {
+          hour: buildPillarBlock("시주", pillars.hour_pillar),
+          day: buildPillarBlock("일주", pillars.day_pillar),
+          month: buildPillarBlock("월주", pillars.month_pillar),
+          year: buildPillarBlock("년주", pillars.year_pillar),
+          twelve_states: twelveStates ?? undefined,
+          jijanggan: jijanggan ?? undefined,
+        },
+      };
+      sessionStorage.setItem("loadedSaju", JSON.stringify(loadedSaju));
+      router.push(`/add?loaded=${sajuId}`);
+    } catch {
+      alert("오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setDeducting(false);
+    }
+  }
 
   useEffect(() => {
     if (!sajuId) {
@@ -806,19 +866,22 @@ function SajuPreviewContent() {
           <button
             type="button"
             className="tap sans"
-            onClick={() => alert("준비 중입니다.")}
+            onClick={handleStartAnalysis}
+            disabled={deducting}
             style={{
               width: "100%",
               padding: "11px 14px",
               borderRadius: 14,
               border: "1.5px solid #adc4af",
-              background: "#c1d8c3",
+              background: deducting ? "#9cbf9c" : "#c1d8c3",
               fontSize: 14,
               fontWeight: 700,
               color: "#1a2e0e",
+              cursor: deducting ? "wait" : "pointer",
+              transition: "background .2s",
             }}
           >
-            사주 분석 시작하기
+            {deducting ? "확인 중..." : "사주 분석 시작하기 🌱 1개"}
           </button>
           <button
             type="button"
@@ -839,6 +902,89 @@ function SajuPreviewContent() {
           </button>
         </div>
       </div>
+
+      {/* 씨앗 부족 바텀시트 */}
+      {showSeedSheet && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 300,
+            background: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+          }}
+          onClick={() => setShowSeedSheet(false)}
+        >
+          <div
+            className="sans"
+            style={{
+              width: "100%",
+              maxWidth: 420,
+              background: "#fff",
+              borderRadius: "20px 20px 0 0",
+              padding: "28px 24px 40px",
+              fontFamily: "'Gowun Dodum', sans-serif",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <Icon
+                icon="mdi:seed-outline"
+                width={40}
+                style={{ color: "#6a994e", display: "block", margin: "0 auto 12px" }}
+              />
+              <div style={{ fontSize: 17, fontWeight: 700, color: "#1a2e0e", marginBottom: 6 }}>
+                씨앗이 부족해요
+              </div>
+              <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>
+                사주 분석 1회에 씨앗 1개가 필요해요.
+                <br />
+                씨앗을 충전하고 분석을 시작해보세요.
+              </div>
+            </div>
+            <button
+              type="button"
+              className="tap sans"
+              onClick={() => router.push("/seed-charge")}
+              style={{
+                width: "100%",
+                padding: 13,
+                borderRadius: 14,
+                border: "none",
+                background: "#6a994e",
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#fff",
+                cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(106,153,78,0.3)",
+                marginBottom: 10,
+              }}
+            >
+              씨앗 충전하러 가기
+            </button>
+            <button
+              type="button"
+              className="tap sans"
+              onClick={() => setShowSeedSheet(false)}
+              style={{
+                width: "100%",
+                padding: 11,
+                borderRadius: 14,
+                border: "1.5px solid #e0ece0",
+                background: "#fff",
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#6b7280",
+                cursor: "pointer",
+              }}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

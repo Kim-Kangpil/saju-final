@@ -108,6 +108,14 @@ export default function LandingPage({
         "갑인", "을묘", "병진", "정사", "무오", "기미", "경신", "신유", "임술", "계해",
     ], []);
 
+    // 일주 동물 이미지 미리 로드 (카드 전환 시 버벅임 방지)
+    useEffect(() => {
+        ALL_ANIMALS.forEach((animal) => {
+            const img = new Image();
+            img.src = `/images/day_pillars/${animal}.png`;
+        });
+    }, [ALL_ANIMALS]);
+
     const modeName = selectedMode === null ? null : ["공감형", "분석형", "친구형"][selectedMode];
     const modeExamples = useMemo(() => {
         if (!modeName) return [];
@@ -192,7 +200,9 @@ export default function LandingPage({
           to   { opacity: 1; transform: perspective(320px) rotateY(0); }
         }
         .animal-card-flip {
-          animation: cardFlipIn 0.5s ease-out both;
+          animation: cardFlipIn 0.35s ease-out both;
+          will-change: transform;
+          backface-visibility: hidden;
         }
         @keyframes float {
           0%, 100% { transform: translateY(0); }
@@ -417,7 +427,7 @@ export default function LandingPage({
                         60가지 중 단 하나.
                     </p>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "4px 0 12px", marginBottom: 16, perspective: "400px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "4px 0 12px", marginBottom: 16, perspective: "400px", contain: "layout paint" }}>
                         {randomAnimals.map((animal, i) => (
                             <div
                                 key={i}
@@ -438,13 +448,15 @@ export default function LandingPage({
                                         width: "100%",
                                         height: "100%",
                                         ...(animalRound === 0
-                                            ? { animation: "fadeInSlide 0.5s ease-out both", animationDelay: `${300 + i * 120}ms` }
-                                            : { animationDelay: `${i * 80}ms` }),
+                                            ? { animation: "fadeInSlide 0.4s ease-out both", animationDelay: `${300 + i * 80}ms` }
+                                            : { animationDelay: `${i * 50}ms` }),
                                     }}
                                 >
                                     <img
                                         src={`/images/day_pillars/${animal}.png`}
                                         alt={animal}
+                                        fetchPriority="low"
+                                        decoding="async"
                                         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                                         onError={(e) => { e.currentTarget.style.display = "none"; }}
                                     />

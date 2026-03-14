@@ -316,6 +316,7 @@ export default function SeedChargePage({
                               fontWeight: 800,
                             }}
                           >
+                            {" "}
                             {pkg.label.match(/보너스\s*\d+개/)?.[0] || ""}
                           </span>
                         </>

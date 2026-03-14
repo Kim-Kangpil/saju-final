@@ -189,3 +189,18 @@ export function buildSummaryPromptData(input: SummaryInput): SummaryPromptData {
   };
 }
 
+/** GPT API 없을 때 쓰는 로컬 종합 요약 (준비중 대신 표시) */
+export function getSummaryGuideFallback(input: SummaryInput): string {
+  const d = buildSummaryPromptData(input);
+  const lines: string[] = [];
+  if (d.dayStemDesc) lines.push(d.dayStemDesc);
+  if (d.strongDesc) lines.push(`당신의 사주에는 ${d.strongDesc}가 잘 드러나 있습니다.`);
+  if (d.talentDesc) lines.push(`재능과 적성 측면에서는 ${d.talentDesc}.`);
+  if (d.patternDesc) lines.push(`인생 패턴으로는 ${d.patternDesc}.`);
+  if (d.cautionDesc) lines.push(d.cautionDesc);
+  if (d.directionDesc) lines.push(`앞으로의 방향은 ${d.directionDesc}`);
+  if (d.shingang) lines.push(d.shingang);
+  if (d.keywords) lines.push(`핵심 키워드: ${d.keywords}.`);
+  return lines.filter(Boolean).join("\n\n");
+}
+

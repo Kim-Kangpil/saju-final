@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import Header from "../components/header";
 import Footer from "../components/footer";
+import BottomTabBar from "../components/BottomTabBar";
 
 export const metadata: Metadata = {
   title: "사주 프로젝트",
@@ -32,7 +33,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className="antialiased bg-gradient-to-b from-white via-[#fefae0] to-[#f8f4e6]">
+      <body className="antialiased bg-gradient-to-b from-white via-[#fefae0] to-[#f8f4e6]" style={{ paddingBottom: 64 }}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -59,8 +60,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             {children}
           </main>
 
-          {/* 푸터 중앙 정렬 래퍼 */}
-          <div style={{ width: "100%", background: "inherit" }}>
+          <BottomTabBar />
+
+          {/* 푸터 중앙 정렬 래퍼 — 하단 여백으로 스크롤 시 상호명·주소가 탭바에 가리지 않게 */}
+          <div style={{ width: "100%", background: "inherit", paddingBottom: 96 }}>
             <div style={{ maxWidth: 390, margin: "0 auto", padding: "0 20px" }}>
               <Footer />
             </div>

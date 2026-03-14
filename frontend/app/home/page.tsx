@@ -419,8 +419,8 @@ export default function LandingPage({
 
                 {/* ── 2. 일주 동물 갤러리 ── */}
                 <div className="fu2" style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid #c8dac8", padding: "28px 24px", marginBottom: 14, textAlign: "center" }}>
-                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#f3e8ff", border: "1.5px solid #c084fc", borderRadius: 99, marginBottom: 16 }}>
-                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#581c87", letterSpacing: "0.08em" }}>🐾 일주 동물</span>
+                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#e8f0e8", border: "1.5px solid #adc4af", borderRadius: 99, marginBottom: 16 }}>
+                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#556b2f", letterSpacing: "0.08em" }}>🐾 일주 동물</span>
                     </div>
 
                     <p className="serif" style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", lineHeight: 1.75, marginBottom: 18 }}>
@@ -474,8 +474,8 @@ export default function LandingPage({
 
                 {/* ── 4. 사주 기반 분석 ── */}
                 <div className="fu3" style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid #c8dac8", padding: "28px 24px", marginBottom: 14, textAlign: "center" }}>
-                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#e0f2fe", border: "1.5px solid #93c5fd", borderRadius: 99, marginBottom: 16 }}>
-                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#0c4a6e", letterSpacing: "0.08em" }}>🔵 사주 기반 분석</span>
+                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#e8f0e8", border: "1.5px solid #adc4af", borderRadius: 99, marginBottom: 16 }}>
+                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#556b2f", letterSpacing: "0.08em" }}>🔵 사주 기반 분석</span>
                     </div>
 
                     <p className="serif" style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", lineHeight: 1.75, marginBottom: 16 }}>
@@ -498,8 +498,8 @@ export default function LandingPage({
 
                 {/* ── 5. 해석 모드 선택 ── */}
                 <div className="fu4" style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid #c8dac8", padding: "28px 24px", marginBottom: 14, textAlign: "center" }}>
-                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#fef3c7", border: "1.5px solid #fbbf24", borderRadius: 99, marginBottom: 12 }}>
-                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#78350f", letterSpacing: "0.08em" }}>🐹 해석 모드</span>
+                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#e8f0e8", border: "1.5px solid #adc4af", borderRadius: 99, marginBottom: 12 }}>
+                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#556b2f", letterSpacing: "0.08em" }}>🐹 해석 모드</span>
                     </div>
 
                     <p className="serif" style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", lineHeight: 1.75, marginBottom: 20 }}>

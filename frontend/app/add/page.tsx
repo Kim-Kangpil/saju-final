@@ -73,7 +73,7 @@ import { HealthBodyMap } from "../../components/HealthBodyMap";
 import { SummarySwipeCards } from "../../components/SummarySwipeCards";
 import { Icon } from "@iconify/react";
 import { HamIcon } from "../../components/HamIcon";
-import { buildSummaryPromptData, type SummaryInput } from "../../data/summaryAnalysis";
+import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
 type Pillar = { hanja: string; hangul: string };
 type PillarBlock = { label: string; cheongan: Pillar; jiji: Pillar };
@@ -1487,14 +1487,14 @@ export default function Page({
             .then((summaryJson) => {
               if (summaryJson?.summary) {
                 setSummaryGuide(summaryJson.summary);
-              } else if (summaryJson?.error) {
-                console.warn("종합 요약 API 응답:", summaryJson.error);
-                setSummaryGuide(null);
+              } else {
+                if (summaryJson?.error) console.warn("종합 요약 API 응답:", summaryJson.error);
+                setSummaryGuide(getSummaryGuideFallback(summaryInput));
               }
             })
             .catch((e) => {
               console.error("종합 요약 생성 오류:", e);
-              setSummaryGuide(null);
+              setSummaryGuide(getSummaryGuideFallback(summaryInput));
             });
         } catch (e) {
           console.error("종합 요약 준비 오류:", e);

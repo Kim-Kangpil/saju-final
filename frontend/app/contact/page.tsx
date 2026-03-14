@@ -3,6 +3,8 @@
 import { use, useState } from "react";
 import Link from "next/link";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
 export default function ContactPage({
   params,
 }: { params?: Promise<Record<string, string | string[]>> } = {}) {
@@ -15,6 +17,7 @@ export default function ContactPage({
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -23,21 +26,43 @@ export default function ContactPage({
             ...formData,
             [e.target.name]: e.target.value,
         });
+        setSubmitError(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSubmitError(null);
         setIsSubmitting(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        try {
+            const res = await fetch(`${API_BASE}/api/contact`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: formData.name,
+                    email: formData.email,
+                    subject: formData.subject || "기타",
+                    message: formData.message,
+                }),
+            });
+            const data = await res.json().catch(() => ({}));
 
-        setSubmitSuccess(true);
-        setIsSubmitting(false);
-
-        setTimeout(() => {
-            setFormData({ name: "", email: "", subject: "", message: "" });
-            setSubmitSuccess(false);
-        }, 3000);
+            if (!res.ok) {
+                setSubmitError(data.detail || "문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+                return;
+            }
+            if (data?.ok) {
+                setSubmitSuccess(true);
+                setFormData({ name: "", email: "", subject: "", message: "" });
+                setTimeout(() => setSubmitSuccess(false), 4000);
+            } else {
+                setSubmitError("문의 전송에 실패했습니다.");
+            }
+        } catch {
+            setSubmitError("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -64,6 +89,12 @@ export default function ContactPage({
                             <p className="text-sm text-green-600 mt-1 text-center">
                                 빠른 시일 내에 답변 드리겠습니다.
                             </p>
+                        </div>
+                    )}
+
+                    {submitError && (
+                        <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+                            <p className="text-red-700 font-semibold text-center">{submitError}</p>
                         </div>
                     )}
 

@@ -312,6 +312,43 @@ export default function SajuMyPage({
               </p>
             </div>
 
+            {/* 내 사주 목록 카드 */}
+            <button
+              type="button"
+              onClick={() => router.push("/saju-list")}
+              className="tap"
+              style={{
+                width: "100%",
+                background: "#ffffff",
+                borderRadius: 14,
+                border: "1.5px solid #c8dac8",
+                padding: 16,
+                textAlign: "left",
+                cursor: "pointer",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <Icon icon="mdi:format-list-bulleted" width={22} style={{ color: "#345024" }} />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e" }}>
+                      내 사주 목록
+                    </div>
+                    <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                      저장한 사주 보기
+                    </div>
+                  </div>
+                </div>
+                <Icon icon="mdi:chevron-right" width={24} style={{ color: "#9ca3af" }} />
+              </div>
+            </button>
+
             {/* 3. 나의 씨앗 카드 */}
             <div
               style={{

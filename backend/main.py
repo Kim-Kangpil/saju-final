@@ -104,6 +104,16 @@ try:
 except Exception as e:
     print(f"⚠️ 사주 DB 초기화: {e}")
 
+# 문의 DB 초기화
+save_inquiry = None
+try:
+    from logic.contact_db import init_contact_db, save_inquiry
+    init_contact_db()
+    print("✅ 문의 DB 초기화 완료")
+except Exception as e:
+    print(f"⚠️ 문의 DB 초기화: {e}")
+    save_inquiry = None
+
 # ==================== 루트 경로 추가 ====================
 
 @app.get("/ping")
@@ -176,6 +186,35 @@ def get_me(request: Request):
     except Exception as e:
         print(f"⚠️ /api/me 조회 실패: {e}")
         return {"ok": False, "provider": None, "email": None, "nickname": None}
+
+
+class ContactRequest(BaseModel):
+    name: str
+    email: str
+    subject: str
+    message: str
+
+
+@app.post("/api/contact")
+def post_contact(req: ContactRequest):
+    """
+    문의하기 폼 전송. inquiries 테이블에 저장합니다.
+    """
+    if save_inquiry is None:
+        raise HTTPException(status_code=503, detail="문의 저장 기능을 사용할 수 없습니다.")
+    if not (req.name and req.name.strip() and req.email and req.email.strip() and req.message and req.message.strip()):
+        raise HTTPException(status_code=400, detail="이름, 이메일, 문의 내용은 필수입니다.")
+    try:
+        inquiry_id = save_inquiry(
+            name=req.name.strip(),
+            email=req.email.strip(),
+            subject=(req.subject or "").strip() or "기타",
+            message=req.message.strip(),
+        )
+        return {"ok": True, "id": inquiry_id}
+    except Exception as e:
+        print(f"⚠️ /api/contact 저장 실패: {e}")
+        raise HTTPException(status_code=500, detail="문의 저장에 실패했습니다.")
 
 # ==================== 모델 정의 ====================
 

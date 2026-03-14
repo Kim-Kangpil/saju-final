@@ -278,10 +278,26 @@ export default function SeedChargePage({
                     marginBottom: 8,
                   }}
                 >
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                     <Icon icon="mdi:seed-outline" width={22} />
                     <span style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e" }}>
-                      씨앗 {pkg.label}
+                      씨앗{" "}
+                      {pkg.label.includes("보너스") ? (
+                        <>
+                          {pkg.label.replace(/\s*보너스\s*\d+개\s*$/, "")}
+                          <span
+                            style={{
+                              color: "#c9a227",
+                              textShadow: "0 0 14px rgba(255,248,200,0.95), 0 0 6px rgba(255,250,205,0.8)",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {pkg.label.match(/보너스\s*\d+개/)?.[0] || ""}
+                          </span>
+                        </>
+                      ) : (
+                        pkg.label
+                      )}
                     </span>
                   </div>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "#345024" }}>
@@ -306,7 +322,7 @@ export default function SeedChargePage({
                     opacity: paying && paying !== pkg.key ? 0.6 : 1,
                   }}
                 >
-                  {paying === pkg.key ? "결제 진행 중..." : "결제하기"}
+                  {paying === pkg.key ? "이동 중..." : "사러가기"}
                 </button>
               </div>
             ))}

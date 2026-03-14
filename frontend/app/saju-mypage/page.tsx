@@ -326,9 +326,9 @@ export default function SajuMyPage({
                                   ? `${loginType} 로그인`
                                   : null;
                           if (providerLabel)
-                            return `${providerLabel} | (이메일은 서버에서 불러오지 못했습니다. 모바일에서는 잠시 후 새로고침해 보세요.)`;
+                            return `${providerLabel} | 로그인됨 (이 기기에서는 이메일이 표시되지 않을 수 있습니다. 저장·목록 기능은 정상 이용 가능합니다.)`;
                         } catch (_) {}
-                        return "로그인 정보를 불러올 수 없습니다. 네트워크 확인 후 새로고침해 보세요.";
+                        return "로그인 정보를 불러올 수 없습니다. 새로고침하거나 다시 로그인해 보세요.";
                       })()}
               </p>
             </div>

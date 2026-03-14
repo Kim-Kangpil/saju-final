@@ -65,6 +65,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+print(f"🌐 CORS 허용 origin: {_cors_origins}")
 
 # DB 로드
 DB_PATH = Path(__file__).resolve().parent / "logic" / "solar_terms_db.json"

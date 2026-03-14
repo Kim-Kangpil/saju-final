@@ -145,6 +145,6 @@ def kakao_callback(request: Request):
         httponly=True,
         secure=True,
         samesite="none",  # 프론트(hsaju.com) / 백엔드(onrender.com) 도메인 다르므로 none
-        max_age=60 * 60 * 24 * 7,
+        max_age=60 * 60 * 24 * 30,
     )
     return resp

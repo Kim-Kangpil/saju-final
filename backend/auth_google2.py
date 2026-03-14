@@ -151,7 +151,7 @@ def google_callback(request: Request):
         httponly=True,
         secure=True,
         samesite="none",
-        max_age=60 * 60 * 24 * 7,
+        max_age=60 * 60 * 24 * 30,
     )
     return resp
 

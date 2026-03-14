@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import "../../styles/add-login.css";
 import { saveSaju, getSavedSajuList } from '../../lib/sajuStorage';
 import { clearStoredToken } from '@/lib/auth';
-import { use, useState, useMemo, useEffect, useRef } from "react";
+import { use, useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useRouter } from 'next/navigation';
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
@@ -71,11 +71,10 @@ import { SpecialStarsMap } from "../../components/SpecialStarsMap";
 import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
 import { SummarySwipeCards } from "../../components/SummarySwipeCards";
+import { Icon } from "@iconify/react";
 import { HamIcon } from "../../components/HamIcon";
 import { buildSummaryPromptData, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
-import BackgroundScene from "@/components/add/BackgroundScene";
-import LoginCard from "@/components/add/LoginCard";
 type Pillar = { hanja: string; hangul: string };
 type PillarBlock = { label: string; cheongan: Pillar; jiji: Pillar };
 type SajuResult = {
@@ -191,6 +190,15 @@ function hanjaToElement(
   if (water.has(h)) return "water";
   return "none";
 }
+
+const ELEMENT_COLOR: Record<string, string> = {
+  wood: "#059669",
+  fire: "#e11d48",
+  earth: "#b45309",
+  metal: "#64748b",
+  water: "#2563eb",
+  none: "#1a2e0e",
+};
 
 function elementClass(el: string) {
   switch (el) {
@@ -690,6 +698,8 @@ export default function Page({
   const [err, setErr] = useState("");
   const [result, setResult] = useState<SajuResult | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const [previewCardIndex, setPreviewCardIndex] = useState(0);
+  const previewCarouselRef = useRef<HTMLDivElement>(null);
 
   const [currentGreeting, setCurrentGreeting] = useState("");
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -740,7 +750,6 @@ export default function Page({
   const [guiinAnalysis, setGuiinAnalysis] = useState<string | null>(null);
   const [healthAnalysis, setHealthAnalysis] = useState<string | null>(null);
   const [luckyItems, setLuckyItems] = useState<string | null>(null);
-  const [showCharacterSelect, setShowCharacterSelect] = useState(false);
   useEffect(() => {
     if (!loading) return;
     const prev = document.body.style.overflow;
@@ -749,11 +758,6 @@ export default function Page({
       document.body.style.overflow = prev;
     };
   }, [loading]);
-  useEffect(() => {
-    if (showCharacterSelect) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [showCharacterSelect]);
   useEffect(() => {
     const loggedIn = localStorage.getItem('isLoggedIn');
     setIsLoggedIn(loggedIn === 'true');
@@ -774,18 +778,6 @@ export default function Page({
       window.removeEventListener('focus', checkLoginStatus);
     };
   }, []);
-
-
-  // 🔥 새로 추가: 첫 방문 환영 메시지
-  useEffect(() => {
-    const showWelcome = localStorage.getItem('showWelcome') === 'true';
-    if (showWelcome && result) {
-      localStorage.removeItem('showWelcome');
-      setTimeout(() => {
-        alert('🎉 환영합니다!\n첫 사주 분석이 완료되었습니다.\n\n💡 "사주 저장하기"를 눌러서 나중에도 다시 볼 수 있습니다.');
-      }, 1000);
-    }
-  }, [result]);
 
 
   // 🔥 로컬 테스트용: ?test=1 이면 목업 분석 결과를 바로 표시 (백엔드 없이 확인용)
@@ -969,14 +961,6 @@ export default function Page({
       return next;
     });
   };
-  type GateStep = "idle" | "showSaju" | "needAuth" | "unlocked";
-  const [gateStep, setGateStep] = useState<GateStep>("idle");
-
-  useEffect(() => {
-    if (isLoggedIn && gateStep === "needAuth") {
-      setGateStep("showSaju");
-    }
-  }, [isLoggedIn, gateStep]);
   const [kakaoReady, setKakaoReady] = useState(false);
   const [isChannelAdded, setIsChannelAdded] = useState(false);
 
@@ -993,7 +977,7 @@ export default function Page({
     } catch {
       setKakaoTokenOk(false);
     }
-  }, [kakaoReady, gateStep]);
+  }, [kakaoReady]);
 
   function handleKakaoLogin() {
     const backend = process.env.NEXT_PUBLIC_BACKEND_URL || "https://saju-backend-eqd6.onrender.com";
@@ -1034,36 +1018,13 @@ export default function Page({
     }
   }, [result]);
 
-  useEffect(() => {
-    if (result || loading) return;
-
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    const updateGreeting = () => {
-      const hour = new Date().getHours();
-      let timeStr = "지금";
-
-      if (hour >= 0 && hour < 5) timeStr = "새벽";
-      else if (hour >= 5 && hour < 11) timeStr = "아침";
-      else if (hour >= 11 && hour < 17) timeStr = "오후";
-      else if (hour >= 17 && hour < 21) timeStr = "저녁";
-      else timeStr = "밤";
-
-      const nextGreeting = CHARACTERS[selectedChar].getGreeting(timeStr);
-      setCurrentGreeting(nextGreeting);
-
-      const typingDuration = nextGreeting.length * 50;
-      const waitTime = typingDuration + 300 + 3000;
-
-      timer = setTimeout(updateGreeting, waitTime);
-    };
-
-    updateGreeting();
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [selectedChar, result, loading]);
+  const goToPreviewCard = useCallback((index: number) => {
+    const el = previewCarouselRef.current;
+    if (!el) return;
+    const w = el.offsetWidth;
+    el.scrollTo({ left: index * w, behavior: "smooth" });
+    setPreviewCardIndex(index);
+  }, []);
 
   useEffect(() => {
     if (result && birthYmd) {
@@ -1509,10 +1470,12 @@ export default function Page({
       .replace(/&lt;strong&gt;/g, "<strong>")
       .replace(/&lt;\/strong&gt;/g, "</strong>");
     const restWithBr = restEscaped.replace(/\n/g, "<br />");
+    // 첫 문장(예: "당신의 일주 동물은 ~입니다.") 다음 무조건 줄바꿈
+    const brAfterFirst = "<br />";
     if (hex) {
-      return `<span style="color:${hex};font-weight:600">${escapedFirst}</span>${restWithBr}`;
+      return `<span style="color:${hex};font-weight:600">${escapedFirst}</span>${brAfterFirst}${restWithBr}`;
     }
-    return escapedFirst + restWithBr;
+    return escapedFirst + brAfterFirst + restWithBr;
   };
 
   const contentWithImage = useMemo(() => {
@@ -1596,15 +1559,6 @@ export default function Page({
     if (!result) return [];
     return [result.hour, result.day, result.month, result.year];
   }, [result]);
-
-  const formError = useMemo(() => {
-    const parsedYmd = parseYmd(birthYmd);
-    const parsedHm = timeUnknown ? { hour: 12, minute: 0 } : parseHm(birthHm);
-
-    if (!parsedYmd) return "생년월일은 8자리(YYYYMMDD)로 입력하세요";
-    if (!parsedHm) return "태어난 시간은 4자리(HHMM)로 입력하세요";
-    return null;
-  }, [birthYmd, birthHm, timeUnknown]);
 
   const megaCards = useMemo(() => {
     if (!result) return {
@@ -1795,7 +1749,6 @@ export default function Page({
     natureAnalysis,
     maskVsNatureAnalysis,  // 🔥 추가
     selectedChar,
-    gateStep,
     getDayPillarAnimalText,
     result,
     gender,
@@ -1856,7 +1809,6 @@ export default function Page({
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
     if (!loggedIn) {
-      setGateStep("needAuth");
       alert("카카오 로그인이 필요합니다.");
       return;
     }
@@ -1948,10 +1900,8 @@ export default function Page({
     }
   }
 
+  /** API로 사주 분석 요청 (다른 페이지/버튼에서 호출 가능) */
   async function run() {
-    setGateStep("idle");
-
-
     const parsedYmd = parseYmd(birthYmd);
     const parsedHm = timeUnknown ? { hour: 12, minute: 0 } : parseHm(birthHm);
     if (!parsedYmd || !parsedHm) return;
@@ -1959,7 +1909,6 @@ export default function Page({
     setErr("");
     setResult(null);
     setNewInterpretation(null);
-
     setShowFortune(false);
     setShowCharm(false);
     setShowTalent(false);
@@ -2012,28 +1961,9 @@ export default function Page({
         twelve_states: sajuJson.twelve_states,
         jijanggan: sajuJson.jijanggan,
       });
-
-      setShowCharacterSelect(true);
     } catch (e: any) {
       setErr(e?.message ?? "네트워크 오류");
     }
-  }
-
-  // 🔥 수정: 캐릭터 확정 시 바로 로딩 시작하고 해석 요청
-  function handleCharacterConfirm() {
-    console.log("🔥 캐릭터 확정 - selectedChar:", selectedChar);
-    setShowCharacterSelect(false);
-    setSelectedTone(selectedChar);
-    setGateStep("showSaju");
-
-    // 로그인만 체크
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
-    if (!loggedIn) {
-      setGateStep("needAuth");
-      return;
-    }
-
-    requestInterpretation();
   }
 
   return (
@@ -2077,10 +2007,10 @@ export default function Page({
       />
 
       <main
-        className="min-h-screen p-4 flex flex-col items-center justify-center relative bg-[#eef4ee]"
+        className="min-h-screen flex flex-col items-center justify-center relative bg-[#eef4ee]"
         style={{ position: "relative", zIndex: 10 }}
       >
-        <div className="w-full max-w-[450px] mx-auto px-2 sm:px-0">
+        <div className="w-full max-w-[450px] mx-auto">
           <div className="border-4 border-[#adc4af] rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white">
             {/* 배경 이미지 레이어 */}
             <div
@@ -2098,45 +2028,70 @@ export default function Page({
                 pointerEvents: "none",
               }}
             />
-            {/* 헤더는 그대로 */}
-            <div className="h-[64px] bg-[#c1d8c3] px-4 py-3 flex justify-between items-center border-b-4 border-[#adc4af] relative z-20">
+            {/* 헤더: 다른 페이지와 동일 스타일, 결과 화면에서는 상단 고정(fixed)으로 항상 노출 */}
+            <div
+              className="h-[64px] bg-[#c1d8c3] px-4 py-3 flex justify-between items-center border-b-4 border-[#adc4af] z-[100] flex-shrink-0"
+              style={
+                result
+                  ? {
+                      position: "fixed",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      margin: "0 auto",
+                      maxWidth: 450,
+                      borderRadius: 0,
+                    }
+                  : { position: "relative" }
+              }
+            >
               <button
-                onClick={() => {
-                  window.location.href = '/home';
-                }}
+                onClick={() => router.push("/home")}
                 className="flex items-center gap-2 hover:opacity-80 transition-opacity"
               >
                 <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
-                <span className="text-[23px] font-bold text-[#556b2f] leading-none">한양사주</span>
+                <span className="text-lg font-bold text-[#556b2f]">한양사주</span>
               </button>
 
               <div className="flex items-center gap-2">
-                {isLoggedIn ? (
+                {(result || isLoggedIn) ? (
                   <>
                     <button
-                      onClick={() => router.push('/mypage')}
-                      className="px-3 py-1.5 text-sm font-bold text-white bg-[#556b2f] hover:bg-[#6d8b3a] rounded-lg transition-colors shadow-sm"
+                      type="button"
+                      onClick={() => router.push("/seed-charge")}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
                     >
-                      마이페이지
+                      <Icon icon="mdi:seed-outline" width={18} />
+                      <span className="text-xs font-semibold text-[#556b2f]">0</span>
                     </button>
                     <button
-                      onClick={handleLogout}
-                      className="px-3 py-1.5 text-sm font-bold text-[#556b2f] bg-white hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      type="button"
+                      onClick={() => router.push("/membership")}
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
                     >
-                      로그아웃
+                      <Icon icon="fluent-emoji-flat:sunflower" width={18} />
+                      <span className="text-xs font-semibold text-[#556b2f]">멤버십</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/saju-mypage")}
+                      className="p-3 rounded-lg hover:bg-[#adc4af] transition-colors"
+                      aria-label="메뉴 열기"
+                    >
+                      <Icon icon="mdi:menu" width={24} style={{ marginLeft: 14 }} />
                     </button>
                   </>
                 ) : (
                   <>
                     <button
-                      onClick={() => router.push('/login')}
-                      className="px-3 py-1.5 text-sm font-bold text-[#556b2f] bg-white hover:bg-white/80 rounded-lg transition-colors shadow-sm"
+                      onClick={() => router.push("/login")}
+                      className="px-3 py-2 text-sm font-bold text-[#556b2f] bg-white/50 hover:bg-white rounded-lg transition-colors"
                     >
                       로그인
                     </button>
                     <button
-                      onClick={() => router.push('/signup')}
-                      className="px-3 py-1.5 text-sm font-bold bg-[#556b2f] text-white rounded-lg hover:bg-[#6d8b3a] transition-colors shadow-sm"
+                      onClick={() => router.push("/signup")}
+                      className="px-3 py-2 text-sm font-bold bg-[#556b2f] text-white rounded-lg hover:bg-[#6d8b3a] transition-colors"
                     >
                       회원가입
                     </button>
@@ -2145,8 +2100,10 @@ export default function Page({
               </div>
             </div>
 
+            {/* 결과 화면일 때 고정 헤더 높이만큼 여백 확보 */}
+            {result && <div className="h-[64px] flex-shrink-0" aria-hidden />}
             {/* 메인 콘텐츠: 분석 결과만 여백 없음, 환영/로그인/입력창/캐릭터선택은 여백 유지 */}
-            <div className={cn("relative", result && gateStep !== "needAuth" && !showCharacterSelect ? "p-0" : "p-5")}>
+            <div className={cn("relative", result ? "p-0" : "p-5")}>
               {!result && (
                 <div
                   className="absolute inset-0"
@@ -2167,7 +2124,7 @@ export default function Page({
               <div
                 className={cn(
                   "relative z-10 rounded-2xl shadow-xl mx-auto",
-                  result && gateStep !== "needAuth" && !showCharacterSelect ? "p-0 w-full" : "p-4 sm:p-6 max-w-[420px]"
+                  result ? "p-0 w-full" : "p-4 sm:p-6 max-w-[420px]"
                 )}
               >
                 {err && !loading && !result && (
@@ -2278,366 +2235,35 @@ export default function Page({
                   )
                   : null}
 
-                {/* 🔥 캐릭터 선택 화면 (사주 명식 포함) */}
-                {showCharacterSelect && !loading && result && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="space-y-4"
-                  >
-                    {/* 🔥 사주 명식 먼저 표시 */}
-                    <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
-                      <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[11px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
-                        <span>시주</span>
-                        <span>일주</span>
-                        <span>월주</span>
-                        <span>년주</span>
-                      </div>
-
-                      <div className="grid grid-cols-4 gap-0 text-center divide-x-2 divide-[#adc4af] overflow-x-auto">
-                        {pillars.map((p, i) => (
-                          <div
-                            key={i}
-                            className="py-2 sm:py-3 flex flex-col items-center gap-0.5 sm:gap-1"
-                          >
-                            <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                              {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
-                            </div>
-
-                            <div
-                              className={cn(
-                                "text-xl sm:text-2xl font-bold",
-                                elementClass(hanjaToElement(p.cheongan.hanja))
-                              )}
-                            >
-                              {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
-                            </div>
-
-                            <div
-                              className={cn(
-                                "text-xl sm:text-2xl font-bold",
-                                elementClass(hanjaToElement(p.jiji.hanja))
-                              )}
-                            >
-                              {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
-                            </div>
-
-                            <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                              {(() => {
-                                const ms = branchMainStem(p.jiji.hanja);
-                                return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
-                              })()}
-                            </div>
-
-                            {result.jijanggan && (
-                              <div className="flex gap-0.5 text-[8px] sm:text-[9px] font-medium mt-0.5">
-                                {(() => {
-                                  const jijangganList =
-                                    i === 0
-                                      ? result.jijanggan.hour
-                                      : i === 1
-                                        ? result.jijanggan.day
-                                        : i === 2
-                                          ? result.jijanggan.month
-                                          : result.jijanggan.year;
-
-                                  return jijangganList?.map((jj: any, idx: number) => (
-                                    <span
-                                      key={idx}
-                                      className={cn("font-bold", elementClass(jj.element))}
-                                    >
-                                      {scriptMode === "hanja" ? jj.hanja : jj.hangul}
-                                    </span>
-                                  ));
-                                })()}
-                              </div>
-                            )}
-
-                            {result.twelve_states && (
-                              <div className="text-[10px] sm:text-[11px] text-[#556b2f] opacity-70 font-medium mt-0.5">
-                                {i === 0 && result.twelve_states.hour}
-                                {i === 1 && result.twelve_states.day}
-                                {i === 2 && result.twelve_states.month}
-                                {i === 3 && result.twelve_states.year}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* 캐릭터 선택 */}
-                    <div className="text-center space-y-1">
-                      <h2 className="text-lg sm:text-xl font-bold text-[#556b2f]">
-                        어떤 햄스터가 해석해드릴까요?
-                      </h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      {(Object.keys(CHARACTERS) as CharKey[]).map((id) => (
-                        <motion.button
-                          key={id}
-                          onClick={() => setSelectedChar(id)}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className={cn(
-                            "p-3 rounded-xl border-2 transition-all",
-                            selectedChar === id
-                              ? "border-[#556b2f] bg-yellow-50 shadow-md"
-                              : "border-[#e9edc9] bg-white hover:border-[#c1d8c3]"
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-white border-2 border-[#adc4af] flex-shrink-0">
-                              <img
-                                src={CHARACTERS[id].img}
-                                alt={CHARACTERS[id].name}
-                                className="w-full h-full object-contain"
-                              />
-                            </div>
-                            <div className="flex-1 text-left min-w-0">
-                              <div className="flex items-center gap-1.5 mb-0.5">
-                                <h3 className="text-base font-bold text-[#556b2f]">
-                                  {CHARACTERS[id].name}
-                                </h3>
-                                {selectedChar === id && (
-                                  <span className="text-sm">✅</span>
-                                )}
-                              </div>
-                              <p className="text-[11px] text-gray-600 mb-0.5 leading-snug">
-                                {CHARACTERS[id].oneLine}
-                              </p>
-                              <p className="text-[11px] text-[#556b2f] opacity-70 leading-snug">
-                                {CHARACTERS[id].desc}
-                              </p>
-                            </div>
-                          </div>
-                        </motion.button>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={handleCharacterConfirm}
-                      className="w-full py-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold text-base rounded-lg shadow-md hover:scale-105 active:scale-95 transition-transform"
-                    >
-                      이 햄스터로 결정! 🎯
-                    </button>
-                  </motion.div>
-                )}
-
-                {!loading && !result && !showCharacterSelect && (
-                  <div className="text-center mb-6">
-                    {!isLoggedIn && (
-                      <div className="flex justify-center">
-                        <div
-                          className="space-y-4 py-6 px-6 rounded-2xl max-w-[320px]"
-                          style={{
-                            background: "rgba(255,255,255,0.7)",
-                            backdropFilter: "blur(16px)",
-                            WebkitBackdropFilter: "blur(16px)"
-                          }}
-                        >
-                          <HamIcon
-                            alt="hamster"
-                            className="w-20 h-20 mx-auto mb-4"
-                          />
-                          <p className="text-xl font-bold text-[#556b2f]">
-                            한양사주에 오신 걸 <br />환영합니다!
-                          </p>
-                          <p className="text-sm text-gray-600 px-4">
-                            사주 분석을 이용하시려면<br />로그인해주세요.
-                          </p>
-
-                          <div className="flex flex-col gap-3 max-w-xs mx-auto pt-4">
-                            <button
-                              type="button"
-                              className="tap sans"
-                              onClick={handleKakaoLogin}
-                              style={{
-                                width: "100%",
-                                maxWidth: 280,
-                                margin: "0 auto",
-                                padding: "14px 0",
-                                borderRadius: 16,
-                                fontWeight: 900,
-                                fontSize: 15,
-                                color: "#1a2e0e",
-                                background:
-                                  "linear-gradient(135deg, #FFF3A6 0%, #FEE500 60%, #F5D700 100%)",
-                                border: "none",
-                                boxShadow:
-                                  "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                gap: 10,
-                                position: "relative",
-                                overflow: "hidden",
-                                cursor: "pointer",
-                                transition: "all .15s ease"
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.transform = "scale(1.03)";
-                                e.currentTarget.style.boxShadow =
-                                  "0 4px 0 rgba(0,0,0,.06), 0 14px 28px rgba(16,24,40,.18)";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.transform = "scale(1)";
-                                e.currentTarget.style.boxShadow =
-                                  "0 2px 0 rgba(0,0,0,.06), 0 10px 22px rgba(16,24,40,.12)";
-                              }}
-                            >
-                              <span
-                                aria-hidden
-                                style={{
-                                  position: "absolute",
-                                  inset: 0,
-                                  background:
-                                    "radial-gradient(140px 44px at 22% 22%, rgba(255,255,255,.45), transparent 60%)",
-                                  pointerEvents: "none",
-                                }}
-                              />
-                              <svg
-                                width="20"
-                                height="20"
-                                viewBox="0 0 18 18"
-                                fill="none"
-                                style={{ position: "relative" }}
-                              >
-                                <path
-                                  d="M9 0C4.03 0 0 3.34 0 7.47C0 10.07 1.57 12.35 4.03 13.69L3.12 17.25C3.06 17.47 3.29 17.64 3.48 17.52L7.66 14.97C8.1 15.02 8.55 15.05 9 15.05C13.97 15.05 18 11.71 18 7.58C18 3.45 13.97 0 9 0Z"
-                                  fill="#3C1E1E"
-                                />
-                              </svg>
-                              <span style={{ position: "relative" }}>카카오로 시작하기</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
                 <div className="space-y-4">
                   <AnimatePresence mode="wait">
-                    {loading ? null : showCharacterSelect ? null : !result ? (
-                      isLoggedIn ? (
-                        <motion.div
-                          key="input-form"
-                          initial={{ opacity: 1 }}
-                          exit={{ opacity: 0, scale: 0.95 }}
-                          transition={{ duration: 0.3 }}
-                          className="space-y-6"
-                        >
-                          <div className="space-y-3 pt-4">
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                              <div className="flex bg-yellow-50 p-1 rounded-xl border-3 border-[#adc4af]">
-                                <button
-                                  onClick={() => setCalendar("solar")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "solar" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
-                                    }`}
-                                >
-                                  양력
-                                </button>
-                                <button
-                                  onClick={() => setCalendar("lunar")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${calendar === "lunar" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
-                                    }`}
-                                >
-                                  음력
-                                </button>
-                              </div>
-
-                              <div className="flex bg-yellow-50 p-1 rounded-xl border-3 border-[#adc4af]">
-                                <button
-                                  onClick={() => setGender("M")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "M" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
-                                    }`}
-                                >
-                                  남
-                                </button>
-                                <button
-                                  onClick={() => setGender("F")}
-                                  className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${gender === "F" ? "bg-black text-white shadow-sm" : "bg-yellow-50 text-[#374151]"
-                                    }`}
-                                >
-                                  여
-                                </button>
-                              </div>
-                            </div>
-
-                            <input
-                              className="w-full rounded-xl border-3 border-[#adc4af] bg-yellow-50 px-3 sm:px-4 py-2 sm:py-3 font-mono text-base text-[#1f2937] placeholder:text-gray-500 outline-none transition-all focus:border-[#556b2f]"
-                              placeholder="생년월일 8자리"
-                              value={birthYmd}
-                              onChange={(e) => setBirthYmd(onlyDigits(e.target.value).slice(0, 8))}
-                              inputMode="numeric"
-                            />
-
-                            <div className="flex gap-2">
-                              <input
-                                className="flex-1 rounded-xl border-3 border-[#adc4af] bg-yellow-50 px-3 sm:px-4 py-2 sm:py-3 font-mono text-[16px] sm:text-sm text-[#1f2937] placeholder:text-gray-500 outline-none transition-all focus:border-[#556b2f] disabled:opacity-30"
-                                placeholder="시간 4자리 (HHMM)"
-                                value={birthHm}
-                                disabled={timeUnknown}
-                                onChange={(e) => setBirthHm(onlyDigits(e.target.value).slice(0, 4))}
-                              />
-                              <label className="flex items-center gap-1 sm:gap-2 border-3 border-[#adc4af] rounded-xl px-2 sm:px-3 py-2 sm:py-3 bg-yellow-50 cursor-pointer hover:bg-white transition-colors flex-shrink-0">
-                                <input
-                                  type="checkbox"
-                                  checked={timeUnknown}
-                                  onChange={(e) => setTimeUnknown(e.target.checked)}
-                                  className="w-4 h-4 accent-[#556b2f]"
-                                />
-                                <span className="text-[10px] font-bold text-[#556b2f] whitespace-nowrap">모름</span>
-                              </label>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                // 🔥 로그인 체크 먼저
-                                if (!isLoggedIn) {
-                                  if (confirm('사주 분석은 로그인 후 이용 가능합니다.\n로그인 하시겠습니까?')) {
-                                    router.push('/login');
-                                  }
-                                  return;
-                                }
-
-                                console.log("🔥 버튼 클릭!", { formError, birthYmd, birthHm });
-                                if (!formError) {
-                                  console.log("🔥 run() 실행!");
-                                  run();
-                                } else {
-                                  console.log("❌ formError:", formError);
-                                }
-                              }}
-                              onTouchStart={(e) => {
-                                e.stopPropagation();
-                              }}
-                              disabled={loading || !!formError}
-                              className={`
-    w-full px-6 py-4
-    bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600
-    text-gray-900 font-bold text-lg
-    rounded-lg
-    transform transition-all duration-200
-    shadow-lg
-    ${loading || !!formError
-                                  ? "cursor-not-allowed"
-                                  : "hover:scale-105 active:scale-95 hover:shadow-xl"
-                                }
-    disabled:transform-none
-  `}
-                            >
-                              {loading ? "분석 중.." : "사주 확인하기"}
-                            </button>
-                          </div>
-                        </motion.div>
-                      ) : null
+                    {loading ? null : !result ? (
+                      <motion.div
+                        key="no-result"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-center py-12 px-4"
+                      >
+                        <p className="text-[#556b2f] font-bold text-lg mb-2">분석 결과가 없습니다</p>
+                        <p className="text-sm text-gray-600 mb-6">저장된 사주를 불러오거나 테스트로 결과를 확인해 보세요.</p>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                          <button
+                            type="button"
+                            onClick={() => router.push("/saju-list")}
+                            className="px-5 py-2.5 rounded-xl font-bold text-[#556b2f] bg-[#eef4ee] border-2 border-[#adc4af] hover:bg-[#c1d8c3] transition-colors"
+                          >
+                            사주 목록
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => router.push("/home")}
+                            className="px-5 py-2.5 rounded-xl font-bold text-white bg-[#556b2f] hover:bg-[#6d8b3a] transition-colors"
+                          >
+                            홈으로
+                          </button>
+                        </div>
+                      </motion.div>
                     ) : (
                       <motion.div
                         ref={resultRef}
@@ -2647,215 +2273,252 @@ export default function Page({
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.5 }}
                         className="space-y-4"
+                        style={{ paddingTop: 72 }}
                       >
-                        <motion.div
-                          key={`result-${selectedChar}`}
-                          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                          animate={{ opacity: 1, scale: 1, y: 0 }}
-                          transition={{ duration: 0.5, ease: "easeOut" }}
-                          className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-2xl p-4 sm:p-6 shadow-lg border-4 border-[#adc4af] mb-6"
-                        >
-                          <div className="flex flex-col items-center gap-3 sm:gap-4">
-                            <h3 className="text-lg sm:text-2xl font-bold text-[#556b2f] text-center">
-                              ✨ 사주 분석 완료!
-                            </h3>
-
-                            <motion.div
-                              animate={{
-                                y: [0, -8, 0],
-                                rotate: [0, 2, -2, 0],
-                              }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                              }}
-                              className="relative"
-                            >
-                              <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-white shadow-xl flex items-center justify-center border-4 border-yellow-300">
-                                <img
-                                  src={CHARACTERS[selectedChar].img}
-                                  alt={CHARACTERS[selectedChar].name}
-                                  className="w-24 h-24 sm:w-32 sm:h-32 object-contain pixel-art"
-                                />
-                              </div>
-                              <div className="absolute -top-2 -right-2 text-2xl sm:text-3xl animate-bounce">
-                                ✨
-                              </div>
-                            </motion.div>
-
-                            <div className="text-center space-y-2 max-w-xs sm:max-w-sm px-2">
-                              <p className="text-base sm:text-xl font-bold text-[#556b2f]">
-                                {CHARACTERS[selectedChar].name}
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-600 bg-white px-3 py-2 rounded-full shadow-sm border-2 border-[#adc4af]">
-                                {CHARACTERS[selectedChar].desc}
-                              </p>
-                              <p className="text-[10px] sm:text-xs text-[#556b2f] opacity-70">
-                                {CHARACTERS[selectedChar].oneLine}
-                              </p>
-                            </div>
-
-                            <div className="flex gap-2 text-xl sm:text-2xl">
-                              <motion.span
-                                animate={{ scale: [1, 1.3, 1] }}
-                                transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
-                              >
-                                💚
-                              </motion.span>
-                              <motion.span
-                                animate={{ scale: [1, 1.3, 1] }}
-                                transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
-                              >
-                                💚
-                              </motion.span>
-                              <motion.span
-                                animate={{ scale: [1, 1.3, 1] }}
-                                transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-                              >
-                                💚
-                              </motion.span>
-                            </div>
-                          </div>
-                        </motion.div>
-
-                        {/* 사주 명식은 결과 화면에도 계속 표시 */}
-                        <div className="relative pt-1 pb-2 space-y-1.5">
-                          <div className="flex justify-end">
-                            <div className="flex bg-yellow-50 p-0.5 rounded-md border border-[#adc4af]">
-                              <button
-                                type="button"
-                                onClick={() => setScriptMode("hanja")}
-                                className={`min-w-[36px] px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${scriptMode === "hanja" ? "bg-[#556b2f] text-white" : "bg-transparent text-[#374151] hover:bg-white/70"}`}
-                              >
-                                한자
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setScriptMode("hangul")}
-                                className={`min-w-[36px] px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${scriptMode === "hangul" ? "bg-[#556b2f] text-white" : "bg-transparent text-[#374151] hover:bg-white/70"}`}
-                              >
-                                한글
-                              </button>
-                            </div>
-                          </div>
-                          <div className="border-4 border-[#adc4af] rounded-2xl bg-white overflow-hidden shadow-none">
-                            <div className="grid grid-cols-4 border-b-2 border-[#adc4af] bg-[#c1d8c3]/10 text-[9px] sm:text-[10px] text-[#556b2f] font-bold text-center py-1">
-                              <span>시주</span>
-                              <span>일주</span>
-                              <span>월주</span>
-                              <span>년주</span>
-                            </div>
-
-                            <div className="grid grid-cols-4 gap-0 text-center divide-x-2 divide-[#adc4af] overflow-x-auto">
-                              {pillars.map((p, i) => (
-                                <div
-                                  key={i}
-                                  className="py-2 sm:py-3 flex flex-col items-center gap-0.5 sm:gap-1"
-                                >
-                                  <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                                    {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
-                                  </div>
-
-                                  <div
-                                    className={cn(
-                                      "text-xl sm:text-2xl font-bold",
-                                      elementClass(hanjaToElement(p.cheongan.hanja))
-                                    )}
-                                  >
-                                    {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
-                                  </div>
-
-                                  <div
-                                    className={cn(
-                                      "text-xl sm:text-2xl font-bold",
-                                      elementClass(hanjaToElement(p.jiji.hanja))
-                                    )}
-                                  >
-                                    {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
-                                  </div>
-
-                                  <div className="text-[11px] sm:text-[12px] text-[#556b2f] opacity-70 font-semibold">
-                                    {(() => {
-                                      const ms = branchMainStem(p.jiji.hanja);
-                                      return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
-                                    })()}
-                                  </div>
-
-                                  {result.jijanggan && (
-                                    <div className="flex gap-0.5 text-[8px] sm:text-[9px] font-medium mt-0.5">
-                                      {(() => {
-                                        const jijangganList =
-                                          i === 0
-                                            ? result.jijanggan.hour
-                                            : i === 1
-                                              ? result.jijanggan.day
-                                              : i === 2
-                                                ? result.jijanggan.month
-                                                : result.jijanggan.year;
-
-                                        return jijangganList?.map((jj: any, idx: number) => (
-                                          <span
-                                            key={idx}
-                                            className={cn("font-bold", elementClass(jj.element))}
-                                          >
-                                            {scriptMode === "hanja" ? jj.hanja : jj.hangul}
-                                          </span>
-                                        ));
-                                      })()}
-                                    </div>
-                                  )}
-
-                                  {result.twelve_states && (
-                                    <div className="text-[10px] sm:text-[11px] text-[#556b2f] opacity-70 font-medium mt-0.5">
-                                      {i === 0 && result.twelve_states.hour}
-                                      {i === 1 && result.twelve_states.day}
-                                      {i === 2 && result.twelve_states.month}
-                                      {i === 3 && result.twelve_states.year}
-                                    </div>
-                                  )}
+                        <style>{`
+                          .add-preview-carousel { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
+                          .add-preview-carousel::-webkit-scrollbar { display: none; }
+                          .add-preview-card { flex: 0 0 100%; min-width: 100%; scroll-snap-align: start; scroll-snap-stop: always; padding: 0 4px; box-sizing: border-box; }
+                        `}</style>
+                        {/* 스와이프 카드: 일주 동물 · 기본 정보 · 만세력 (테스트용 형태만) */}
+                        <div style={{ position: "relative", zIndex: 10, marginBottom: 16 }}>
+                          <div
+                            ref={previewCarouselRef}
+                            className="add-preview-carousel"
+                            onScroll={() => {
+                              const el = previewCarouselRef.current;
+                              if (!el) return;
+                              const w = el.offsetWidth;
+                              const idx = Math.round(el.scrollLeft / w);
+                              setPreviewCardIndex(Math.min(2, Math.max(0, idx)));
+                            }}
+                          >
+                            {/* 카드 1: 일주 동물 (임시 형태) */}
+                            <div className="add-preview-card">
+                              <div style={{ background: "#ffffff", borderRadius: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.10)", overflow: "hidden" }}>
+                                <div style={{ height: 8, background: "#a8d5b5", width: "100%" }} />
+                                <div style={{ padding: "28px 24px", textAlign: "center", minHeight: 140 }}>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: "#556b2f", marginBottom: 12 }}>일주 동물</div>
+                                  <div style={{ width: 80, height: 80, margin: "0 auto 8px", borderRadius: 12, background: "rgba(173,196,175,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#556b2f" }}>이미지</div>
+                                  <div style={{ fontSize: 13, color: "#556b2f", opacity: 0.9 }}>테스트용 · 스와이프로 다음 카드로</div>
                                 </div>
-                              ))}
+                              </div>
                             </div>
+                            {/* 카드 2: 기본 정보 (임시 형태) */}
+                            <div className="add-preview-card">
+                              <div style={{ background: "#ffffff", borderRadius: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.10)", overflow: "hidden" }}>
+                                <div style={{ height: 8, background: "#b5c8f0", width: "100%" }} />
+                                <div style={{ padding: "28px 24px", minHeight: 140 }}>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: "#556b2f", marginBottom: 14 }}>기본 정보</div>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#374151" }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>생년월일</span><span>YYYY-MM-DD</span></div>
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>성별</span><span>—</span></div>
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>달력</span><span>—</span></div>
+                                  </div>
+                                  <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 12 }}>테스트용 · 형태만 표시</div>
+                                </div>
+                              </div>
+                            </div>
+                            {/* 카드 3: 만세력 */}
+                            <div className="add-preview-card">
+                              <div
+                                style={{
+                                  position: "relative",
+                                  zIndex: 10,
+                                  background: "#ffffff",
+                                  borderRadius: 24,
+                                  boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
+                                  overflow: "hidden",
+                                }}
+                              >
+                                <div style={{ height: 8, background: "#f0d9a8", width: "100%", flexShrink: 0 }} />
+                                <div
+                                  style={{
+                                    padding: "28px 24px",
+                                    flex: 1,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      width: "100%",
+                                      alignSelf: "stretch",
+                                      border: "3px solid #adc4af",
+                                      borderRadius: 14,
+                                      background: "#fff",
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(4, 1fr)",
+                                        borderBottom: "2px solid #adc4af",
+                                        background: "rgba(193, 216, 195, 0.15)",
+                                        fontSize: 11,
+                                        fontWeight: 700,
+                                        color: "#556b2f",
+                                        textAlign: "center",
+                                        padding: "6px 4px",
+                                      }}
+                                    >
+                                      {["시주", "일주", "월주", "년주"].map((label, i) => (
+                                        <div
+                                          key={label}
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
+                                          }}
+                                        >
+                                          {label}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <div
+                                      style={{
+                                        display: "grid",
+                                        gridTemplateColumns: "repeat(4, 1fr)",
+                                        gap: 0,
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {pillars.map((p, i) => (
+                                        <div
+                                          key={i}
+                                          style={{
+                                            padding: "10px 6px",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            gap: 4,
+                                            ...(i < pillars.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
+                                          }}
+                                        >
+                                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                                            {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
+                                          </div>
+                                          <div
+                                            style={{
+                                              fontSize: 20,
+                                              fontWeight: 700,
+                                              color: ELEMENT_COLOR[hanjaToElement(p.cheongan.hanja)] ?? "#1a2e0e",
+                                            }}
+                                          >
+                                            {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
+                                          </div>
+                                          <div
+                                            style={{
+                                              fontSize: 20,
+                                              fontWeight: 700,
+                                              color: ELEMENT_COLOR[hanjaToElement(p.jiji.hanja)] ?? "#1a2e0e",
+                                            }}
+                                          >
+                                            {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
+                                          </div>
+                                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                                            {(() => {
+                                              const ms = branchMainStem(p.jiji.hanja);
+                                              return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
+                                            })()}
+                                          </div>
+                                          {result.jijanggan && (() => {
+                                            const jijangganList =
+                                              i === 0 ? result.jijanggan!.hour : i === 1 ? result.jijanggan!.day : i === 2 ? result.jijanggan!.month : result.jijanggan!.year;
+                                            return jijangganList && jijangganList.length > 0 ? (
+                                              <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", marginTop: 2 }}>
+                                                {jijangganList.map((jj: any, idx: number) => (
+                                                  <span key={idx} style={{ fontSize: 9, fontWeight: 700, color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e" }}>
+                                                    {scriptMode === "hanja" ? jj.hanja : jj.hangul}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            ) : null;
+                                          })()}
+                                          {result.twelve_states && (
+                                            <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
+                                              {i === 0 && result.twelve_states.hour}
+                                              {i === 1 && result.twelve_states.day}
+                                              {i === 2 && result.twelve_states.month}
+                                              {i === 3 && result.twelve_states.year}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
+                                    <div style={{ display: "flex", background: "#fffde7", padding: 2, borderRadius: 6, border: "1px solid #adc4af" }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => setScriptMode("hanja")}
+                                        style={{
+                                          minWidth: 36,
+                                          padding: "4px 8px",
+                                          borderRadius: 4,
+                                          fontSize: 10,
+                                          fontWeight: 700,
+                                          border: "none",
+                                          cursor: "pointer",
+                                          background: scriptMode === "hanja" ? "#556b2f" : "transparent",
+                                          color: scriptMode === "hanja" ? "#fff" : "#374151",
+                                        }}
+                                      >
+                                        한자
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setScriptMode("hangul")}
+                                        style={{
+                                          minWidth: 36,
+                                          padding: "4px 8px",
+                                          borderRadius: 4,
+                                          fontSize: 10,
+                                          fontWeight: 700,
+                                          border: "none",
+                                          cursor: "pointer",
+                                          background: scriptMode === "hangul" ? "#556b2f" : "transparent",
+                                          color: scriptMode === "hangul" ? "#fff" : "#374151",
+                                        }}
+                                      >
+                                        한글
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          {/* 인디케이터 점 */}
+                          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 12 }}>
+                            {[0, 1, 2].map((i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                aria-label={`카드 ${i + 1}`}
+                                onClick={() => goToPreviewCard(i)}
+                                style={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: "50%",
+                                  border: "none",
+                                  padding: 0,
+                                  cursor: "pointer",
+                                  background: previewCardIndex === i ? "#556b2f" : "rgba(85,107,47,0.3)",
+                                  transition: "background 0.2s",
+                                }}
+                              />
+                            ))}
                           </div>
                         </div>
 
 
 
-
                         <div className="relative">
-                          {gateStep === "needAuth" && (
-                            <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/85 backdrop-blur-sm rounded-2xl border-4 border-[#adc4af]">
-                              <div className="w-[92%] max-w-[360px] bg-white rounded-2xl border-4 border-[#adc4af] shadow-xl p-6 text-center">
-
-                                <div className="text-sm font-bold text-[#556b2f] mb-2">
-                                  해석을 보려면 로그인이 필요해요
-                                </div>
-
-                                <div className="text-[11px] text-[#556b2f] opacity-80 mb-4">
-                                  로그인 후 전체 해석이 바로 열립니다
-                                </div>
-
-                                <button
-                                  type="button"
-                                  onClick={handleKakaoLogin}
-                                  className="w-full py-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-gray-900 font-bold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-transform"
-                                >
-                                  카카오로 로그인하기
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() => setGateStep("showSaju")}
-                                  className="w-full mt-3 py-2 border-2 border-[#adc4af] rounded-xl text-[11px] font-bold text-[#556b2f] hover:bg-[#f0f5f1] transition-colors"
-                                >
-                                  닫기
-                                </button>
-
-                              </div>
-                            </div>
-                          )}
-
                           <div className="space-y-3">
                             {megaOrder.map((k) => {
                               const sec = MEGA_SECTIONS[k];
@@ -2921,10 +2584,9 @@ export default function Page({
                                                 if (c.kind === "preview") return;
                                                 const loggedIn = localStorage.getItem("isLoggedIn") === "true";
                                                 if (!loggedIn) {
-                                                  setGateStep("needAuth");
+                                                  router.push("/login");
                                                   return;
                                                 }
-                                                // 로그인 돼 있으면 오버레이 안 띄움 (필요하면 여기서 requestInterpretation() 호출 가능)
                                               }}
                                             >
                                               <div className="flex items-center gap-2 mb-2">
@@ -3152,7 +2814,6 @@ export default function Page({
                               setLoading(false);
                               setErr("");
                               setShowHarmonyAfter(false);
-                              setShowCharacterSelect(false);
                             }}
 
 

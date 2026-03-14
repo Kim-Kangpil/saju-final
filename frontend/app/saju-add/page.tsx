@@ -33,9 +33,26 @@ export default function SajuAddPage({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const formatBirth = (value: string) => {
-    const onlyNum = value.replace(/\D/g, "").slice(0, 8);
-    setBirthRaw(onlyNum);
-    return onlyNum;
+    let raw = value.replace(/\D/g, "").slice(0, 8);
+
+    // YYYY: 1800 ~ 2100
+    if (raw.length >= 4) {
+      const year = parseInt(raw.slice(0, 4), 10);
+      if (year < 1800 || year > 2100) raw = raw.slice(0, 3);
+    }
+    // MM: 01 ~ 12
+    if (raw.length >= 6) {
+      const month = parseInt(raw.slice(4, 6), 10);
+      if (month < 1 || month > 12) raw = raw.slice(0, 5);
+    }
+    // DD: 01 ~ 31
+    if (raw.length >= 8) {
+      const day = parseInt(raw.slice(6, 8), 10);
+      if (day < 1 || day > 31) raw = raw.slice(0, 7);
+    }
+
+    setBirthRaw(raw);
+    return raw;
   };
 
   const displayBirth = () => {

@@ -293,7 +293,22 @@ export default function SajuMyPage({
                           userInfo.email || userInfo.nickname || "(연결된 계정 정보 없음)";
                         return `${providerLabel} | ${account}`;
                       })()
-                    : "로그인 정보를 불러올 수 없습니다."}
+                    : (() => {
+                        try {
+                          const loginType = typeof window !== "undefined" ? localStorage.getItem("loginType") : null;
+                          const providerLabel =
+                            loginType === "google"
+                              ? "구글 로그인"
+                              : loginType === "kakao"
+                                ? "카카오 로그인"
+                                : loginType
+                                  ? `${loginType} 로그인`
+                                  : null;
+                          if (providerLabel)
+                            return `${providerLabel} | (이메일은 서버에서 불러오지 못했습니다)`;
+                        } catch (_) {}
+                        return "로그인 정보를 불러올 수 없습니다.";
+                      })()}
               </p>
             </div>
 

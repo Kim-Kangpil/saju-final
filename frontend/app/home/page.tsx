@@ -420,8 +420,8 @@ export default function LandingPage({
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "4px 0 12px", marginBottom: 16, perspective: "400px" }}>
                         {randomAnimals.map((animal, i) => (
                             <div
-                                key={`${animalRound}-${i}-${animal}`}
-                                className={`animal-card ${animalRound > 0 ? "animal-card-flip" : ""}`}
+                                key={i}
+                                className="animal-card"
                                 style={{
                                     width: "100%",
                                     aspectRatio: "1 / 1",
@@ -429,17 +429,26 @@ export default function LandingPage({
                                     overflow: "hidden",
                                     border: "1.5px solid #e0e7e0",
                                     background: "#fafcfa",
-                                    ...(animalRound === 0
-                                        ? { animation: "fadeInSlide 0.5s ease-out both", animationDelay: `${300 + i * 120}ms` }
-                                        : { animationDelay: `${i * 80}ms` }),
                                 }}
                             >
-                                <img
-                                    src={`/images/day_pillars/${animal}.png`}
-                                    alt={animal}
-                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                    onError={(e) => { e.currentTarget.style.display = "none"; }}
-                                />
+                                <div
+                                    key={`${animalRound}-${animal}`}
+                                    className={animalRound > 0 ? "animal-card-flip" : ""}
+                                    style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        ...(animalRound === 0
+                                            ? { animation: "fadeInSlide 0.5s ease-out both", animationDelay: `${300 + i * 120}ms` }
+                                            : { animationDelay: `${i * 80}ms` }),
+                                    }}
+                                >
+                                    <img
+                                        src={`/images/day_pillars/${animal}.png`}
+                                        alt={animal}
+                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                        onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                    />
+                                </div>
                             </div>
                         ))}
                     </div>

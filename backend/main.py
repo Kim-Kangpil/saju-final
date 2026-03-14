@@ -47,10 +47,20 @@ app.include_router(google_router)
 
 # ... 나머지 코드 그대로 ...
 
-# CORS 설정
+# CORS: credentials(쿠키) 사용 시 allow_origins에 "*" 불가 → 명시적 origin 필요
+_cors_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+_frontend_url = (os.getenv("FRONTEND_URL") or "").strip().rstrip("/")
+if _frontend_url and _frontend_url not in _cors_origins:
+    _cors_origins.append(_frontend_url)
+_cors_origins_str = os.getenv("CORS_ORIGINS", "").strip()
+if _cors_origins_str:
+    for o in _cors_origins_str.split(","):
+        o = o.strip().rstrip("/")
+        if o and o not in _cors_origins:
+            _cors_origins.append(o)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -46,6 +46,25 @@ export default function SajuAddPage({
     return birthRaw;
   };
 
+  /** 백스페이스 시: 하이픈(-)과 그 뒤 마지막 숫자를 한 번에 제거 (예: 2000-09-12 → 2000-09) */
+  const handleBirthKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== "Backspace" || birthRaw.length === 0) return;
+    const len = birthRaw.length;
+    if (len > 6) {
+      // 일(日) 구간: 7~8자 → 한 번에 6자로 (예: 2000-09-1 또는 2000-09-12 → 2000-09)
+      e.preventDefault();
+      setBirthRaw(birthRaw.slice(0, 6));
+    } else if (len > 4) {
+      // 월(月) 구간: 5~6자 → 한 번에 4자로 (예: 2000-09 → 2000)
+      e.preventDefault();
+      setBirthRaw(birthRaw.slice(0, 4));
+    } else if (len >= 1) {
+      // 년(年) 구간: 한 자씩 제거
+      e.preventDefault();
+      setBirthRaw(birthRaw.slice(0, -1));
+    }
+  };
+
   const formatTime = (value: string) => {
     const onlyNum = value.replace(/\D/g, "").slice(0, 4);
     setTimeRaw(onlyNum);
@@ -421,6 +440,7 @@ export default function SajuAddPage({
                 inputMode="numeric"
                 value={displayBirth()}
                 onChange={(e) => formatBirth(e.target.value)}
+                onKeyDown={handleBirthKeyDown}
                 placeholder="예: 19981231"
                 style={{
                   width: "100%",

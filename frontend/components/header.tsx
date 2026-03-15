@@ -37,29 +37,29 @@ export default function Header() {
           <span className="text-lg font-bold text-[var(--text-primary)]">한양사주</span>
         </button>
 
-        {/* 오른쪽: 로그인/회원가입 또는 씨앗 & 햄버거 메뉴 */}
+        {/* 오른쪽: 로그인/회원가입 또는 분석권 & 햄버거 메뉴 */}
         <div className="flex items-center gap-2">
           {isLoggedIn ? (
             <>
-              {/* 씨앗 (클릭 시 충전 페이지) */}
+              {/* 분석권 (클릭 시 충전 페이지) */}
               <button
                 type="button"
                 onClick={() => router.push("/seed-charge")}
                 className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[var(--border-default)] hover:bg-white transition-colors"
               >
-                <Icon icon="mdi:seed-outline" width={18} />
+                <Icon icon="mdi:ticket-confirmation-outline" width={18} />
                 <span className="text-xs font-semibold text-[var(--text-primary)]">
                   {seedCount}
                 </span>
               </button>
-              {/* 해바라기 멤버십 (숫자 없음, 클릭 시 멤버십 페이지) */}
+              {/* 한양사주 Pro (클릭 시 Pro 페이지) */}
               <button
                 type="button"
                 onClick={() => router.push("/membership")}
                 className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[var(--border-default)] hover:bg-white transition-colors"
               >
-                <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-                <span className="text-xs font-semibold text-[var(--text-primary)]">멤버십</span>
+                <Icon icon="mdi:crown" width={18} />
+                <span className="text-xs font-semibold text-[var(--text-primary)]">한양사주 Pro</span>
               </button>
               <button
                 type="button"

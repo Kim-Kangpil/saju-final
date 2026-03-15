@@ -564,7 +564,7 @@ function SajuPreviewContent() {
                 cursor: "pointer",
               }}
             >
-              <Icon icon="mdi:seed-outline" width={18} />
+              <Icon icon="mdi:ticket-confirmation-outline" width={18} />
               <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>0</span>
             </button>
             <button
@@ -581,8 +581,8 @@ function SajuPreviewContent() {
                 cursor: "pointer",
               }}
             >
-              <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
+              <Icon icon="mdi:crown" width={18} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>한양사주 Pro</span>
             </button>
             <button
               type="button"
@@ -889,7 +889,7 @@ function SajuPreviewContent() {
               transition: "background .2s",
             }}
           >
-            {deducting ? "확인 중..." : "사주 분석 시작하기 🌱 1개"}
+            {deducting ? "확인 중..." : "사주 분석 시작하기 (분석권 1개)"}
           </button>
           <button
             type="button"
@@ -911,7 +911,7 @@ function SajuPreviewContent() {
         </div>
       </div>
 
-      {/* 씨앗 부족 바텀시트 */}
+      {/* 분석권 부족 바텀시트 */}
       {showSeedSheet && (
         <div
           style={{
@@ -939,17 +939,17 @@ function SajuPreviewContent() {
           >
             <div style={{ textAlign: "center", marginBottom: 20 }}>
               <Icon
-                icon="mdi:seed-outline"
+                icon="mdi:ticket-confirmation-outline"
                 width={40}
                 style={{ color: "#6a994e", display: "block", margin: "0 auto 12px" }}
               />
               <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
-                씨앗이 부족해요
+                분석권이 부족해요
               </div>
               <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>
-                사주 분석 1회에 씨앗 1개가 필요해요.
+                사주 분석 1회에 분석권 1개가 필요해요.
                 <br />
-                씨앗을 충전하고 분석을 시작해보세요.
+                분석권을 충전하고 분석을 시작해보세요.
               </div>
             </div>
             <button
@@ -970,7 +970,7 @@ function SajuPreviewContent() {
                 marginBottom: 10,
               }}
             >
-              씨앗 충전하러 가기
+              분석권 충전하러 가기
             </button>
             <button
               type="button"

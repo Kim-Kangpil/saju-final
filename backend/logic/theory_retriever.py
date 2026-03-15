@@ -157,6 +157,86 @@ class TheoryRetriever:
 
         return combined
 
+    def get_theories_by_query(self, query: str, max_chars: int = 12000) -> str:
+        """
+        질문 키워드 기반으로 관련 이론 txt 검색 (채팅 RAG용).
+
+        Args:
+            query: 사용자 질문 텍스트
+            max_chars: 반환 문자열 최대 길이
+
+        Returns:
+            str: 질문과 관련된 이론들을 조합한 텍스트
+        """
+        if not self.theories or all(not v for v in self.theories.values()):
+            return ""
+
+        query_lower = (query or "").strip().lower()
+        # 키워드 → 이론 키 매핑 (질문에 포함되면 해당 이론 포함)
+        keyword_to_keys = {
+            "신강": ["신강약"],
+            "신약": ["신강약"],
+            "강약": ["신강약"],
+            "오행": ["오행십신"],
+            "십신": ["오행십신"],
+            "십성": ["오행십신"],
+            "육친": ["오행십신"],
+            "천간": ["천간", "천간합", "천간충"],
+            "지지": ["지지", "지지합", "지지충"],
+            "천간합": ["천간합"],
+            "천간충": ["천간충"],
+            "지지합": ["지지합"],
+            "육합": ["지지합"],
+            "삼합": ["지지합"],
+            "방합": ["지지합"],
+            "지지충": ["지지충"],
+            "충": ["천간충", "지지충"],
+            "귀인": ["귀인신살"],
+            "신살": ["귀인신살"],
+            "도화": ["귀인신살"],
+            "역마": ["귀인신살"],
+            "십이운성": ["십이운성"],
+            "장생": ["십이운성"],
+            "목욕": ["십이운성"],
+            "통근": ["통근투출"],
+            "투출": ["통근투출"],
+            "사주": ["기본구성"],
+            "팔자": ["기본구성"],
+            "년주": ["기본구성"],
+            "월주": ["기본구성"],
+            "일주": ["기본구성"],
+            "시주": ["기본구성"],
+        }
+        # 한글 키워드도 검사 (query는 이미 전달됨)
+        included_keys = set()
+        for kw, keys in keyword_to_keys.items():
+            if kw in query or kw in query_lower:
+                included_keys.update(keys)
+        # 기본으로 기본구성 + 오행십신 + 신강약 포함 (기본 상식)
+        included_keys.add("기본구성")
+        included_keys.add("오행십신")
+        included_keys.add("신강약")
+
+        relevant = []
+        for key in ["기본구성", "신강약", "오행십신", "천간", "지지", "천간합", "천간충", "지지합", "지지충", "귀인신살", "십이운성", "통근투출"]:
+            if key not in included_keys or not self.theories.get(key):
+                continue
+            content = (self.theories[key] or "").strip()
+            if not content:
+                continue
+            cap = 4000 if key in ("오행십신", "신강약") else 2500
+            relevant.append(f"## {key}\n\n{content[:cap]}")
+            if len("\n\n---\n\n".join(relevant)) >= max_chars:
+                break
+
+        if not relevant:
+            return ""
+
+        combined = "\n\n---\n\n".join(relevant)
+        if len(combined) > max_chars:
+            combined = combined[:max_chars] + "\n\n... (이하 생략)"
+        return combined
+
 
 def test_retriever():
     """테스트"""

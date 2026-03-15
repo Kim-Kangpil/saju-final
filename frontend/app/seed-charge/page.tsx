@@ -16,7 +16,7 @@ const PACKAGES = [
     key: "seed_1",
     seeds: 1,
     bonus: 0,
-    label: "씨앗 1개",
+    label: "분석권 1개",
     price: 770,
     desc: "가볍게 한 번 써보고 싶을 때",
     badge: null,
@@ -25,7 +25,7 @@ const PACKAGES = [
     key: "seed_5",
     seeds: 5,
     bonus: 1,
-    label: "씨앗 5개",
+    label: "분석권 5개",
     price: 3850,
     desc: "고민분석 1회 + 여유 있게",
     badge: "인기",
@@ -34,7 +34,7 @@ const PACKAGES = [
     key: "seed_10",
     seeds: 10,
     bonus: 2,
-    label: "씨앗 10개",
+    label: "분석권 10개",
     price: 7700,
     desc: "다양한 분석을 한 번에",
     badge: "최대 혜택",
@@ -232,7 +232,7 @@ export default function SeedChargePage({
                 background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
-              <Icon icon="mdi:seed-outline" width={18} />
+              <Icon icon="mdi:ticket-confirmation-outline" width={18} />
               <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{seedCount}</span>
             </button>
             <button
@@ -244,8 +244,8 @@ export default function SeedChargePage({
                 background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
-              <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
+              <Icon icon="mdi:crown" width={18} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>한양사주 Pro</span>
             </button>
             <button
               type="button"
@@ -262,7 +262,7 @@ export default function SeedChargePage({
           </div>
         </header>
 
-        {/* ── 씨앗 안내 배너 ── */}
+        {/* ── 분석권 안내 배너 ── */}
         <section
           className="sans"
           style={{
@@ -273,16 +273,16 @@ export default function SeedChargePage({
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <Icon icon="mdi:seed-outline" width={28} style={{ color: "var(--text-primary)" }} />
+            <Icon icon="mdi:ticket-confirmation-outline" width={28} style={{ color: "var(--text-primary)" }} />
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>씨앗 충전</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>분석권 충전</div>
               <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
                 현재 보유 <strong style={{ color: "var(--text-primary)" }}>{seedCount}개</strong>
               </div>
             </div>
           </div>
 
-          {/* 씨앗 사용처 안내 */}
+          {/* 분석권 사용처 안내 */}
           <div style={{ display: "flex", gap: 8 }}>
             {USE_CASES.map((u) => (
               <div
@@ -298,7 +298,7 @@ export default function SeedChargePage({
               >
                 <Icon icon={u.icon} width={18} style={{ color: "var(--text-primary)", display: "block", margin: "0 auto 4px" }} />
                 <div style={{ fontSize: 11, color: "var(--text-primary)", fontWeight: 700 }}>{u.label}</div>
-                <div style={{ fontSize: 11, color: "#9ca3af" }}>씨앗 {u.cost}개</div>
+                <div style={{ fontSize: 11, color: "#9ca3af" }}>분석권 {u.cost}개</div>
               </div>
             ))}
           </div>
@@ -366,9 +366,9 @@ export default function SeedChargePage({
                   )}
 
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    {/* 왼쪽: 씨앗 수 + 설명 */}
+                    {/* 왼쪽: 분석권 수 + 설명 */}
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      {/* 씨앗 아이콘 뱃지 */}
+                      {/* 분석권 아이콘 뱃지 */}
                       <div
                         style={{
                           width: 44,
@@ -382,14 +382,14 @@ export default function SeedChargePage({
                           flexShrink: 0,
                         }}
                       >
-                        <Icon icon="mdi:seed-outline" width={18} style={{ color: "var(--text-primary)" }} />
+                        <Icon icon="mdi:ticket-confirmation-outline" width={18} style={{ color: "var(--text-primary)" }} />
                         <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.2 }}>
                           {totalSeeds}
                         </span>
                       </div>
                       <div>
                         <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
-                          씨앗 {pkg.seeds}개
+                          분석권 {pkg.seeds}개
                           {pkg.bonus > 0 && (
                             <span
                               style={{
@@ -437,7 +437,7 @@ export default function SeedChargePage({
           </div>
         </section>
 
-        {/* ── 씨앗 vs 맴버십 업셀 ── */}
+        {/* ── 분석권 vs 한양사주 Pro 업셀 ── */}
         <section className="sans" style={{ padding: "24px 0 0" }}>
           <div
             style={{
@@ -450,13 +450,13 @@ export default function SeedChargePage({
               gap: 12,
             }}
           >
-            <Icon icon="fluent-emoji-flat:sunflower" width={32} style={{ flexShrink: 0 }} />
+            <Icon icon="mdi:crown" width={32} style={{ flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>
-                자주 쓴다면 맴버십이 더 이득이에요
+                자주 쓴다면 한양사주 Pro가 더 이득이에요
               </div>
               <div style={{ fontSize: 12, color: "#7a6020", lineHeight: 1.5 }}>
-                매달 씨앗 10개 자동 지급 · 월 3,900원
+                매달 분석권 10개 자동 지급 · 월 3,900원
               </div>
             </div>
             <button
@@ -480,7 +480,7 @@ export default function SeedChargePage({
           </div>
         </section>
 
-        {/* ── 씨앗 안내 ── */}
+        {/* ── 분석권 안내 ── */}
         <section className="sans" style={{ padding: "20px 0 0" }}>
           <div
             style={{
@@ -491,9 +491,9 @@ export default function SeedChargePage({
             }}
           >
             {[
-              "씨앗은 결제 즉시 지급됩니다.",
-              "씨앗은 유효기간 없이 누적 사용 가능해요.",
-              "환불은 미사용 씨앗에 한해 고객센터로 문의해주세요.",
+              "분석권은 결제 즉시 지급됩니다.",
+              "분석권은 유효기간 없이 누적 사용 가능해요.",
+              "환불은 미사용 분석권에 한해 고객센터로 문의해주세요.",
             ].map((txt) => (
               <div
                 key={txt}
@@ -545,8 +545,8 @@ export default function SeedChargePage({
               "이동 중..."
             ) : (
               <>
-                <Icon icon="mdi:seed-outline" width={18} />
-                씨앗 {(selectedPkg.seeds + selectedPkg.bonus)}개 충전하기 · {selectedPkg.price.toLocaleString()}원
+                <Icon icon="mdi:ticket-confirmation-outline" width={18} />
+                분석권 {(selectedPkg.seeds + selectedPkg.bonus)}개 충전하기 · {selectedPkg.price.toLocaleString()}원
               </>
             )}
           </button>

@@ -42,7 +42,7 @@ function MyPageContent({
     setSajuList(list);
     setIsLoading(false);
 
-    // 씨앗 충전 완료 토스트
+    // 분석권 충전 완료 토스트
     if (searchParams?.get("seed_charged") === "1") {
       setSeedCharged(true);
       setTimeout(() => setSeedCharged(false), 3000);
@@ -123,7 +123,7 @@ function MyPageContent({
         .wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 20px 48px; }
         @media (max-width: 390px) { .wrap { padding: 0 16px 48px; } }
 
-        /* 씨앗 충전 완료 토스트 */
+        /* 분석권 충전 완료 토스트 */
         .toast {
           position: fixed;
           top: 72px;
@@ -155,8 +155,8 @@ function MyPageContent({
       {/* 토스트 */}
       {seedCharged && (
         <div className="toast sans">
-          <Icon icon="mdi:seed-outline" width={16} />
-          씨앗 충전 완료!
+          <Icon icon="mdi:ticket-confirmation-outline" width={16} />
+          분석권 충전 완료!
         </div>
       )}
 
@@ -199,7 +199,7 @@ function MyPageContent({
                 background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
-              <Icon icon="mdi:seed-outline" width={18} />
+              <Icon icon="mdi:ticket-confirmation-outline" width={18} />
               <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{seedCount}</span>
             </button>
             <button
@@ -211,8 +211,8 @@ function MyPageContent({
                 background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
-              <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
+              <Icon icon="mdi:crown" width={18} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>한양사주 Pro</span>
             </button>
             <button
               type="button"
@@ -247,7 +247,7 @@ function MyPageContent({
               마이페이지
             </div>
             <div style={{ fontSize: 12, color: "var(--text-primary)" }}>
-              씨앗 <strong style={{ color: "var(--text-primary)" }}>{seedCount}개</strong> 보유 중
+              분석권 <strong style={{ color: "var(--text-primary)" }}>{seedCount}개</strong> 보유 중
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -262,7 +262,7 @@ function MyPageContent({
                 fontSize: 12, fontWeight: 700, color: "var(--text-primary)", cursor: "pointer",
               }}
             >
-              <Icon icon="mdi:seed-outline" width={14} />
+              <Icon icon="mdi:ticket-confirmation-outline" width={14} />
               충전
             </button>
             <button
@@ -459,8 +459,8 @@ function MyPageContent({
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
-              { icon: "mdi:seed-outline", label: "씨앗 충전", path: "/seed-charge", color: "#6a994e" },
-              { icon: "fluent-emoji-flat:sunflower", label: "해바라기 멤버십", path: "/membership", color: "#c9a227" },
+              { icon: "mdi:ticket-confirmation-outline", label: "분석권 충전", path: "/seed-charge", color: "#6a994e" },
+              { icon: "mdi:crown", label: "한양사주 Pro", path: "/membership", color: "#c9a227" },
               { icon: "mdi:history", label: "분석 내역", path: "/history", color: "#6b7280" },
               { icon: "mdi:home-outline", label: "홈으로", path: "/home", color: "var(--text-primary)" },
             ].map((item) => (

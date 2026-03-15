@@ -4,13 +4,16 @@ from logic.twelve_states import calculate_twelve_states, get_twelve_state
 from logic import test
 from logic import lunar_converter
 from logic.jijanggan import calculate_jijanggan_for_pillars
+from logic.theory_retriever import TheoryRetriever
 from auth_kakao import router as kakao_router
 from auth_google2 import router as google_router
 import os
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Request
-from typing import Optional
+from fastapi.responses import StreamingResponse
+from typing import Optional, Any
+import json
 from datetime import datetime
 import asyncio
 from dotenv import load_dotenv
@@ -245,6 +248,126 @@ class ContactRequest(BaseModel):
     email: str
     subject: str
     message: str
+
+
+class ChatMessage(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    saju: Optional[dict[str, Any]] = None  # 저장된 사주 컨텍스트 (천간지지, 십성 등)
+
+
+# TheoryRetriever 싱글톤 (이론 txt 한 번만 로드)
+_theory_retriever: Optional[TheoryRetriever] = None
+
+
+def get_theory_retriever() -> TheoryRetriever:
+    global _theory_retriever
+    if _theory_retriever is None:
+        _theory_retriever = TheoryRetriever()
+    return _theory_retriever
+
+
+def _build_saju_context(saju: Optional[dict]) -> str:
+    """사주 데이터를 GPT 컨텍스트 문자열로 변환"""
+    if not saju or not isinstance(saju, dict):
+        return ""
+    parts = []
+    result = saju.get("result") if isinstance(saju.get("result"), dict) else {}
+    if result:
+        hour = result.get("hour") or {}
+        day = result.get("day") or {}
+        month = result.get("month") or {}
+        year = result.get("year") or {}
+        if any([hour, day, month, year]):
+            parts.append(
+                f"사주팔자: 년주 {year.get('cheongan', {}).get('hanja', '')}{year.get('jiji', {}).get('hanja', '')} "
+                f"월주 {month.get('cheongan', {}).get('hanja', '')}{month.get('jiji', {}).get('hanja', '')} "
+                f"일주 {day.get('cheongan', {}).get('hanja', '')}{day.get('jiji', {}).get('hanja', '')} "
+                f"시주 {hour.get('cheongan', {}).get('hanja', '')}{hour.get('jiji', {}).get('hanja', '')}"
+            )
+        summary = result.get("summary") if isinstance(result.get("summary"), dict) else {}
+        if summary:
+            strength = summary.get("strength") or summary.get("strength_text")
+            if strength:
+                parts.append(f"신강약: {strength}")
+            ten_gods = summary.get("ten_gods_count") or summary.get("ten_gods")
+            if ten_gods and isinstance(ten_gods, dict):
+                parts.append("십성: " + ", ".join(f"{k}{v}" for k, v in ten_gods.items() if v))
+        patterns = result.get("patterns") or []
+        if patterns:
+            parts.append("패턴/특징: " + ", ".join(str(p) for p in patterns[:15]))
+    if not parts:
+        return ""
+    return "\n".join(["[사주 컨텍스트]", *parts])
+
+
+@app.post("/api/chat")
+async def api_chat(req: ChatRequest, request: Request):
+    """
+    사주 AI 채팅. TheoryRetriever로 질문 관련 이론 검색, 사주 context 포함, GPT-4o 스트리밍 응답.
+    """
+    if not client:
+        raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
+    if not req.messages or not any(m.role == "user" and (m.content or "").strip() for m in req.messages):
+        raise HTTPException(status_code=400, detail="사용자 메시지가 필요합니다.")
+
+    last_user_message = ""
+    for m in reversed(req.messages):
+        if m.role == "user" and (m.content or "").strip():
+            last_user_message = (m.content or "").strip()
+            break
+
+    theory_text = ""
+    try:
+        retriever = get_theory_retriever()
+        theory_text = retriever.get_theories_by_query(last_user_message) or ""
+    except Exception as e:
+        print(f"⚠️ TheoryRetriever 오류: {e}")
+
+    saju_context = _build_saju_context(req.saju)
+    system_parts = [
+        "당신은 한양사주의 AI 상담사입니다. 사주, 운세, 고민 상담 등에 대해 친절하고 쉽게 답변합니다.",
+        "전문 용어(일간, 십성, 오행 등)는 가능한 한 쓰지 않고, 일상적인 말로 풀어서 설명해 주세요.",
+    ]
+    if theory_text:
+        system_parts.append("\n\n[참고 이론]\n" + theory_text[:10000])
+    if saju_context:
+        system_parts.append("\n\n" + saju_context)
+    system_content = "\n".join(system_parts)
+
+    openai_messages = [{"role": "system", "content": system_content}]
+    for m in req.messages:
+        role = "user" if m.role == "user" else "assistant"
+        if (m.content or "").strip():
+            openai_messages.append({"role": role, "content": (m.content or "").strip()})
+
+    async def stream_generator():
+        try:
+            stream = client.chat.completions.create(
+                model="gpt-4o",
+                messages=openai_messages,
+                max_tokens=2000,
+                temperature=0.6,
+                stream=True,
+            )
+            for chunk in stream:
+                delta = chunk.choices[0].delta if chunk.choices else None
+                if delta and getattr(delta, "content", None):
+                    yield f"data: {json.dumps({'content': delta.content}, ensure_ascii=False)}\n\n"
+            yield "data: [DONE]\n\n"
+        except Exception as e:
+            print(f"❌ /api/chat 스트리밍 오류: {e}")
+            yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(
+        stream_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/api/contact")

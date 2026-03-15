@@ -21,9 +21,9 @@ type MenuItem =
 
 const MENU_ITEMS: MenuItem[] = [
   { key: "saju-list", icon: "mdi:format-list-bulleted", label: "내 사주 목록", desc: "저장한 사주 보기", color: "var(--text-secondary)", path: "/saju-list" },
-  { key: "seed-charge", icon: "mdi:seed-outline", label: "씨앗 충전", desc: "분석에 사용하는 씨앗", color: "var(--text-secondary)", path: "/seed-charge" },
-  { key: "membership", icon: "fluent-emoji-flat:sunflower", label: "해바라기 멤버십", desc: "매달 씨앗 + 전용 혜택", color: "#c9a227", path: "/membership" },
-  { key: "usage", icon: "mdi:receipt-text-outline", label: "사용 내역", desc: "씨앗 사용 기록", color: "var(--text-secondary)", action: "usage" },
+  { key: "seed-charge", icon: "mdi:ticket-confirmation-outline", label: "분석권 충전", desc: "분석에 사용하는 분석권", color: "var(--text-secondary)", path: "/seed-charge" },
+  { key: "membership", icon: "mdi:crown", label: "한양사주 Pro", desc: "매달 분석권 + 전용 혜택", color: "#c9a227", path: "/membership" },
+  { key: "usage", icon: "mdi:receipt-text-outline", label: "사용 내역", desc: "분석권 사용 기록", color: "var(--text-secondary)", action: "usage" },
   { key: "contact", icon: "mdi:message-outline", label: "문의하기", desc: "궁금한 점이 있으신가요?", color: "var(--text-secondary)", path: "/contact" },
 ];
 
@@ -157,7 +157,7 @@ export default function SajuMyPage({
         <div className="modal-overlay" onClick={() => setShowWithdrawConfirm(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <div style={{ fontSize: 15, fontWeight: 700, color: textDark, marginBottom: 8 }}>정말 탈퇴하시겠어요?</div>
-            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 20 }}>탈퇴 시 모든 사주 데이터와 씨앗이 삭제되며 복구가 어렵습니다.</div>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 20 }}>탈퇴 시 모든 사주 데이터와 분석권이 삭제되며 복구가 어렵습니다.</div>
             <div style={{ display: "flex", gap: 8 }}>
               <button type="button" className="tap" onClick={() => setShowWithdrawConfirm(false)} style={{ flex: 1, padding: "10px", borderRadius: 12, border: `1.5px solid ${borderField}`, background: "var(--bg-input)", fontSize: 14, fontWeight: 700, color: textDark, cursor: "pointer" }}>취소</button>
               <button type="button" className="tap" onClick={handleWithdraw} style={{ flex: 1, padding: "10px", borderRadius: 12, border: "none", background: "#ef4444", fontSize: 14, fontWeight: 700, color: "#fff", cursor: "pointer" }}>탈퇴하기</button>
@@ -191,7 +191,7 @@ export default function SajuMyPage({
               )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 5, background: "var(--bg-surface)", border: `1.5px solid ${borderField}`, borderRadius: 99, padding: "5px 10px", flexShrink: 0 }}>
-              <Icon icon="mdi:seed-outline" width={15} style={{ color: "var(--text-secondary)" }} />
+              <Icon icon="mdi:ticket-confirmation-outline" width={15} style={{ color: "var(--text-secondary)" }} />
               <span style={{ fontSize: 13, fontWeight: 700, color: textDark }}>{seedCount}개</span>
             </div>
           </div>

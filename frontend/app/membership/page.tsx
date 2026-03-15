@@ -14,8 +14,8 @@ export default function MembershipPage({
 
   const benefits = [
     {
-      icon: "mdi:seed-outline",
-      title: "매달 씨앗 10개 지급",
+      icon: "mdi:ticket-confirmation-outline",
+      title: "매달 분석권 10개 지급",
       desc: "고민분석, 궁합분석에 바로 사용 가능",
     },
     {
@@ -49,15 +49,15 @@ export default function MembershipPage({
     {
       emoji: "📅",
       title: "내 운의 흐름을 꾸준히 보고 싶을 때",
-      desc: "매달 씨앗으로 필요한 분석을 선택 가능",
+      desc: "매달 분석권으로 필요한 분석을 선택 가능",
     },
   ];
 
   const faqs = [
     { q: "언제든 해지 가능한가요?", a: "네, 언제든지 해지할 수 있어요. 다음 결제 전까지는 혜택이 유지됩니다." },
-    { q: "씨앗은 매달 언제 지급되나요?", a: "결제일 기준으로 매달 동일한 날짜에 자동 지급됩니다." },
-    { q: "사용하지 않은 씨앗은 이월되나요?", a: "현재는 이월되지 않으며, 매달 초기화 후 새로 지급됩니다." },
-    { q: "일반 사용자와 차이가 뭔가요?", a: "씨앗 제공 외에도 맴버 전용 해석 리포트와 신기능 우선 체험 혜택이 있어요." },
+    { q: "분석권은 매달 언제 지급되나요?", a: "결제일 기준으로 매달 동일한 날짜에 자동 지급됩니다." },
+    { q: "사용하지 않은 분석권은 이월되나요?", a: "현재는 이월되지 않으며, 매달 초기화 후 새로 지급됩니다." },
+    { q: "일반 사용자와 차이가 뭔가요?", a: "분석권 제공 외에도 맴버 전용 해석 리포트와 신기능 우선 체험 혜택이 있어요." },
     { q: "앞으로 어떤 기능이 추가되나요?", a: "대운 흐름 분석, 맴버 전용 월간 리포트, 인간관계 지도 등이 순차 오픈 예정입니다." },
   ];
 
@@ -160,7 +160,7 @@ export default function MembershipPage({
                 background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
-              <Icon icon="mdi:seed-outline" width={18} />
+              <Icon icon="mdi:ticket-confirmation-outline" width={18} />
               <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>0</span>
             </button>
             <button
@@ -172,8 +172,8 @@ export default function MembershipPage({
                 background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
-              <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
+              <Icon icon="mdi:crown" width={18} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>한양사주 Pro</span>
             </button>
             <button
               type="button"
@@ -201,7 +201,7 @@ export default function MembershipPage({
             borderBottom: "1.5px solid var(--border-default)",
           }}
         >
-          <Icon icon="fluent-emoji-flat:sunflower" width={80} style={{ display: "block", margin: "0 auto 16px" }} />
+          <Icon icon="mdi:crown" width={80} style={{ display: "block", margin: "0 auto 16px" }} />
           <div
             style={{
               display: "inline-block",
@@ -215,18 +215,18 @@ export default function MembershipPage({
               marginBottom: 12,
             }}
           >
-            해바라기 맴버십
+            한양사주 Pro
           </div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.45, marginBottom: 10 }}>
             더 깊은 사주 해석을,<br />더 가볍게 누리는 방법
           </h1>
           <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 20 }}>
-            매달 씨앗 혜택 + 맴버 전용 기능
+            매달 분석권 혜택 + 맴버 전용 기능
           </p>
 
           {/* 핵심 혜택 요약 줄 */}
           <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
-            {["씨앗 10개/월", "전용 리포트", "신기능 우선"].map((t) => (
+            {["분석권 10개/월", "전용 리포트", "신기능 우선"].map((t) => (
               <span
                 key={t}
                 style={{
@@ -250,7 +250,7 @@ export default function MembershipPage({
           <button
             type="button"
             className="tap sans"
-            onClick={() => alert("맴버십 가입은 준비 중입니다.")}
+            onClick={() => alert("한양사주 Pro 가입은 준비 중입니다.")}
             style={{
               width: "100%",
               padding: "13px 14px",
@@ -271,7 +271,7 @@ export default function MembershipPage({
 
         {/* ── 2. 혜택 카드 4개 ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>맴버십 혜택</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>한양사주 Pro 혜택</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {benefits.map((b) => (
               <div
@@ -293,14 +293,14 @@ export default function MembershipPage({
 
         {/* ── 3. 비교표 ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>씨앗 단건 vs 맴버십</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>분석권 단건 vs 한양사주 Pro</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {/* 단건 */}
             <div
               className="compare-col-plain"
               style={{ borderRadius: 14, padding: "16px 14px 18px" }}
             >
-              <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 700, marginBottom: 10 }}>씨앗 단건 구매</div>
+              <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 700, marginBottom: 10 }}>분석권 단건 구매</div>
               {[
                 ["매달 혜택", "없음"],
                 ["가격 효율", "횟수↑ = 비용↑"],
@@ -317,7 +317,7 @@ export default function MembershipPage({
               </div>
             </div>
 
-            {/* 맴버십 */}
+            {/* 한양사주 Pro */}
             <div
               className="compare-col-highlight"
               style={{ borderRadius: 14, padding: "16px 14px 18px", position: "relative" }}
@@ -338,9 +338,9 @@ export default function MembershipPage({
               >
                 추천
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-primary)", fontWeight: 700, marginBottom: 10 }}>해바라기 맴버십</div>
+              <div style={{ fontSize: 12, color: "var(--text-primary)", fontWeight: 700, marginBottom: 10 }}>한양사주 Pro</div>
               {[
-                ["매달 혜택", "씨앗 10개"],
+                ["매달 혜택", "분석권 10개"],
                 ["가격 효율", "고정 비용"],
                 ["전용 콘텐츠", "✅"],
                 ["신기능 체험", "✅"],
@@ -369,8 +369,8 @@ export default function MembershipPage({
             }}
           >
             {[
-              { label: "고민분석 1회", cost: "씨앗 5개" },
-              { label: "궁합분석 1회", cost: "씨앗 7개" },
+              { label: "고민분석 1회", cost: "분석권 5개" },
+              { label: "궁합분석 1회", cost: "분석권 7개" },
             ].map((item, i) => (
               <div
                 key={item.label}
@@ -396,12 +396,12 @@ export default function MembershipPage({
                 alignItems: "center",
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>맴버십 가입 시</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#3a6b2a" }}>매달 씨앗 10개 자동 지급 🌱</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>한양사주 Pro 가입 시</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#3a6b2a" }}>매달 분석권 10개 자동 지급 ✨</span>
             </div>
           </div>
           <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 8, textAlign: "center" }}>
-            고민분석 2번 = 씨앗 10개 → 맴버십이면 기본 제공으로 해결
+            고민분석 2번 = 분석권 10개 → 한양사주 Pro이면 기본 제공으로 해결
           </p>
         </section>
 
@@ -452,7 +452,7 @@ export default function MembershipPage({
             >
               <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>
                 <Icon icon="mdi:lock-outline" width={16} />
-                맴버십 가입 후 전체 열람 가능
+                한양사주 Pro 가입 후 전체 열람 가능
               </div>
             </div>
           </div>
@@ -537,7 +537,7 @@ export default function MembershipPage({
             borderTop: "1.5px solid var(--border-default)",
           }}
         >
-          <Icon icon="fluent-emoji-flat:sunflower" width={48} style={{ display: "block", margin: "0 auto 12px" }} />
+          <Icon icon="mdi:crown" width={48} style={{ display: "block", margin: "0 auto 12px" }} />
           <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.55, marginBottom: 6 }}>
             내 흐름을 더 자주,<br />더 깊게 확인하고 싶다면
           </p>
@@ -545,7 +545,7 @@ export default function MembershipPage({
           <button
             type="button"
             className="tap sans"
-            onClick={() => alert("맴버십 가입은 준비 중입니다.")}
+            onClick={() => alert("한양사주 Pro 가입은 준비 중입니다.")}
             style={{
               width: "100%",
               padding: "13px 14px",
@@ -559,7 +559,7 @@ export default function MembershipPage({
               boxShadow: "0 4px 14px rgba(106,153,78,0.3)",
             }}
           >
-            해바라기 맴버십 시작하기
+            한양사주 Pro 시작하기
           </button>
           <p style={{ fontSize: 11, color: "#7a9a6a", marginTop: 8 }}>언제든 해지 가능해요</p>
         </section>
@@ -571,7 +571,7 @@ export default function MembershipPage({
           <button
             type="button"
             className="tap sans"
-            onClick={() => alert("맴버십 가입은 준비 중입니다.")}
+            onClick={() => alert("한양사주 Pro 가입은 준비 중입니다.")}
             style={{
               width: "100%",
               padding: "13px 14px",
@@ -589,7 +589,7 @@ export default function MembershipPage({
               gap: 6,
             }}
           >
-            <Icon icon="fluent-emoji-flat:sunflower" width={18} />
+            <Icon icon="mdi:crown" width={18} />
             월 3,900원으로 시작하기
           </button>
         </div>

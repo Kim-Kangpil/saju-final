@@ -378,7 +378,7 @@ const CHARACTERS = {
       const greetings = [
         "당신의 밤하늘엔\n어떤 별이 가장 밝게 빛날까요?",
         "잊고 있던 당신의 예쁜 이름,\n사주에 적힌 대로 불러줄게요.",
-        "해바라기씨 한 알처럼\n작은 행복이 당신을 기다려요.",
+        "한양사주 한 번에\n작은 행복이 당신을 기다려요.",
         "당신이라는 꽃이 피어날\n가장 완벽한 계절을 찾았어요.",
         "오늘 하루도 고생 많았어요.\n이제 당신만의 이야기를 들려드릴게요.",
         "당신이 걸어온 길이\n결코 헛되지 않았다는 걸 알게 될 거예요.",
@@ -540,7 +540,7 @@ const MEGA_SECTIONS: Record<
     icon: "🎭",
     items: [
       { key: "animal", title: "일주 동물의 형상과 본성", icon: "🦁" },
-      { key: "nature", title: "타고난 기질과 기운", icon: "🌱" },
+      { key: "nature", title: "타고난 기질과 기운", icon: "✨" },
       { key: "persona", title: "사회적 가면과 실제 기질의 차이", icon: "🎪" },
       { key: "values", title: "삶의 핵심적인 가치관과 지향점", icon: "🧭" },
     ],
@@ -1755,7 +1755,7 @@ export default function Page({
 
     if (natureAnalysis) {
       base.identity.unshift(
-        asContent("nature_text", "타고난 기질과 기운", natureAnalysis, "🌱", "local")
+        asContent("nature_text", "타고난 기질과 기운", natureAnalysis, "✨", "local")
       );
     }
 
@@ -2085,7 +2085,7 @@ export default function Page({
         style={{ position: "relative", zIndex: 10, backgroundColor: "var(--bg-base)", backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto" }}
       >
         <div className="w-full max-w-[450px] mx-auto">
-          <div className="rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white border-2 border-[var(--border-default)]"
+          <div className="rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white border-2 border-[var(--border-default)]">
             {/* 배경 이미지 레이어 */}
             <div
               className="absolute left-0 right-0 bottom-0 top-[64px]"
@@ -2095,7 +2095,7 @@ export default function Page({
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
-                opacity: 0.,
+                opacity: 0.03,
                 filter: "saturate(1.1) contrast(1.08)",
                 transform: "scale(1.03)",
                 zIndex: 0,
@@ -2163,7 +2163,7 @@ export default function Page({
                         color: "var(--text-primary)",
                       }}
                     >
-                      <Icon icon="mdi:seed-outline" width={18} />
+                      <Icon icon="mdi:ticket-confirmation-outline" width={18} />
                       <span style={{ fontSize: 12, fontWeight: 700 }}>{seedCount}</span>
                     </button>
                     <button
@@ -2181,8 +2181,8 @@ export default function Page({
                         color: "var(--text-primary)",
                       }}
                     >
-                      <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-                      <span style={{ fontSize: 12, fontWeight: 700 }}>멤버십</span>
+                      <Icon icon="mdi:crown" width={18} />
+                      <span style={{ fontSize: 12, fontWeight: 700 }}>한양사주 Pro</span>
                     </button>
                     <button
                       type="button"
@@ -3152,7 +3152,7 @@ export default function Page({
             </div>
           )}
         </div>
-      </main >
+      </main>
     </>
   );
 }

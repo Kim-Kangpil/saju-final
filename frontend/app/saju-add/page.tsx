@@ -293,7 +293,7 @@ export default function SajuAddPage({
               gap: 8,
             }}
           >
-            {/* 씨앗 캐시 (클릭 시 충전 페이지) */}
+            {/* 분석권 (클릭 시 충전 페이지) */}
             <button
               type="button"
               onClick={() => router.push("/seed-charge")}
@@ -311,7 +311,7 @@ export default function SajuAddPage({
                 fontWeight: 700,
               }}
             >
-              <Icon icon="mdi:seed-outline" width={18} />
+              <Icon icon="mdi:ticket-confirmation-outline" width={18} />
               <span>0</span>
             </button>
 
@@ -332,8 +332,8 @@ export default function SajuAddPage({
                 fontWeight: 700,
               }}
             >
-              <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span>멤버십</span>
+              <Icon icon="mdi:crown" width={18} />
+              <span>한양사주 Pro</span>
             </button>
 
             <button

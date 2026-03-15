@@ -31,7 +31,7 @@ const ILGAN_ICONS: Record<string, { emoji: string; color: string; label: string 
   "丙": { emoji: "🔥", color: "#f97316", label: "병화" },
   "丁": { emoji: "🕯️", color: "#fb923c", label: "정화" },
   "戊": { emoji: "⛰️", color: "#a8a29e", label: "무토" },
-  "己": { emoji: "🌱", color: "#d4a373", label: "기토" },
+  "己": { emoji: "🌿", color: "#d4a373", label: "기토" },
   "庚": { emoji: "⚔️", color: "#94a3b8", label: "경금" },
   "辛": { emoji: "💍", color: "#cbd5e1", label: "신금" },
   "壬": { emoji: "🌊", color: "#60a5fa", label: "임수" },

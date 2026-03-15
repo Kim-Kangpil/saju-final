@@ -1,546 +1,653 @@
 "use client";
 
-import { use, useState, useEffect, useRef, useMemo } from "react";
-import type { RefObject } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { HamIcon } from "@/components/HamIcon";
-import { Icon } from "@iconify/react";
 import { getSavedSajuList } from "@/lib/sajuStorage";
+import { Icon } from "@iconify/react";
 
-function useCounter(target: number) {  // ✅ 반환 타입 제거
-    const [count, setCount] = useState(0);
-    const counterRef = useRef<HTMLDivElement>(null);
-    const animated = useRef(false);
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting && !animated.current) {
-                    animated.current = true;
-                    const duration = 1200;
-                    const start = performance.now();
-
-                    const animate = (now: number) => {
-                        const elapsed = now - start;
-                        const progress = Math.min(elapsed / duration, 1);
-                        const eased = 1 - Math.pow(1 - progress, 3); // easeOut
-                        setCount(Math.floor(eased * target));
-
-                        if (progress < 1) {
-                            requestAnimationFrame(animate);
-                        }
-                    };
-
-                    requestAnimationFrame(animate);
-                }
-            },
-            { threshold: 0.5 }
-        );
-
-        if (counterRef.current) observer.observe(counterRef.current);
-        return () => observer.disconnect();
-    }, [target]);
-
-    return { count, counterRef };
+function useCounter(target: number) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const animated = useRef(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !animated.current) {
+        animated.current = true;
+        const duration = 1200;
+        const start = performance.now();
+        const animate = (now: number) => {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.floor(eased * target));
+          if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+      }
+    }, { threshold: 0.5 });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [target]);
+  return { count, ref };
 }
 
+const ALL_ANIMALS = [
+  "갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유",
+  "갑술", "을해", "병자", "정축", "무인", "기묘", "경진", "신사", "임오", "계미",
+  "갑신", "을유", "병술", "정해", "무자", "기축", "경인", "신묘", "임진", "계사",
+  "갑오", "을미", "병신", "정유", "무술", "기해", "경자", "신축", "임인", "계묘",
+  "갑진", "을사", "병오", "정미", "무신", "기유", "경술", "신해", "임자", "계축",
+  "갑인", "을묘", "병진", "정사", "무오", "기미", "경신", "신유", "임술", "계해",
+];
 
-export default function LandingPage({
+const FEATURES = [
+  { icon: "🌱", label: "타고난 기질" },
+  { icon: "🎭", label: "사회적 가면" },
+  { icon: "⚖️", label: "강점과 약점" },
+  { icon: "🤝", label: "나의 인간관계" },
+  { icon: "🌟", label: "각종 귀인" },
+  { icon: "✨", label: "매력 코드" },
+];
+
+export default function HomePage({
   params,
 }: {
   params?: Promise<Record<string, string | string[]>>;
 }) {
   use(params ?? Promise.resolve({}));
   const router = useRouter();
-    const go = () => router.push("/start");
 
-    const [showPreview, setShowPreview] = useState(false);
-    const [randomAnimals, setRandomAnimals] = useState<string[]>([]);
-    const [animalRound, setAnimalRound] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [seedCount, setSeedCount] = useState(0);
+  const [animals, setAnimals] = useState<string[]>([]);
+  const [animalRound, setAnimalRound] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
 
-    const ALL_ANIMALS = useMemo(() => [
-        "갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유",
-        "갑술", "을해", "병자", "정축", "무인", "기묘", "경진", "신사", "임오", "계미",
-        "갑신", "을유", "병술", "정해", "무자", "기축", "경인", "신묘", "임진", "계사",
-        "갑오", "을미", "병신", "정유", "무술", "기해", "경자", "신축", "임인", "계묘",
-        "갑진", "을사", "병오", "정미", "무신", "기유", "경술", "신해", "임자", "계축",
-        "갑인", "을묘", "병진", "정사", "무오", "기미", "경신", "신유", "임술", "계해",
-    ], []);
+  const getTodayCount = () => {
+    if (typeof window === "undefined") return 100;
+    const today = new Date().toISOString().split("T")[0];
+    const stored = localStorage.getItem("saju_daily_count");
+    if (stored) {
+      try {
+        const { date, base } = JSON.parse(stored);
+        if (date === today) return base;
+      } catch {}
+    }
+    const newBase = Math.floor(Math.random() * 71) + 80;
+    localStorage.setItem("saju_daily_count", JSON.stringify({ date: today, base: newBase }));
+    return newBase;
+  };
 
-    // 일주 동물 이미지 미리 로드 (카드 전환 시 버벅임 방지)
-    useEffect(() => {
-        ALL_ANIMALS.forEach((animal) => {
-            const img = new Image();
-            img.src = `/images/day_pillars/${animal}.png`;
-        });
-    }, [ALL_ANIMALS]);
+  const baseCount = useRef(getTodayCount());
+  const { count, ref: counterRef } = useCounter(baseCount.current);
 
-    // 오늘 날짜 기준 고정 카운트 (localStorage 활용)
-    const getTodayCount = () => {
-        if (typeof window === "undefined") return 100; // SSR 방어
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+    }
+    const shuffled = [...ALL_ANIMALS].sort(() => Math.random() - 0.5);
+    setAnimals(shuffled.slice(0, 6));
+    const t = setTimeout(() => setShowPreview(true), 600);
+    return () => clearTimeout(t);
+  }, []);
 
-        const today = new Date().toISOString().split("T")[0];
-        const stored = localStorage.getItem("saju_daily_count");
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/seeds`, { credentials: "include" });
+        const data = await res.json();
+        if (!cancelled && typeof data?.seeds === "number") setSeedCount(data.seeds);
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [isLoggedIn]);
 
-        if (stored) {
-            try {
-                const { date, base } = JSON.parse(stored);
-                if (date === today) return base;
-            } catch { }
+  useEffect(() => {
+    const id = setInterval(() => {
+      setAnimals([...ALL_ANIMALS].sort(() => Math.random() - 0.5).slice(0, 6));
+      setAnimalRound((r) => r + 1);
+    }, 3000);
+    return () => clearInterval(id);
+  }, []);
+
+  function handleStart() {
+    if (!isLoggedIn) {
+      router.push("/start");
+      return;
+    }
+    const saved = getSavedSajuList();
+    router.push(saved?.length > 0 ? "/saju-mypage" : "/saju-add");
+  }
+
+  return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Pretendard:wght@300;400;500;600;700&display=swap');
+
+        :root {
+          --bg:        #F2EDE4;
+          --surface:   #FFFCF7;
+          --surface2:  #EDE8DF;
+          --border:    #D8D2C8;
+          --border2:   #C8C2B6;
+          --text:      #2C2A26;
+          --sub:       #7A776F;
+          --muted:     #B0ACA4;
+          --accent:    #4A6741;
+          --accent-bg: #EBF0E8;
+          --gold:      #8B6914;
+          --gold-bg:   #FBF5E6;
+          --serif:     'Noto Serif KR', serif;
+          --sans:      'Pretendard', -apple-system, sans-serif;
         }
 
-        const newBase = Math.floor(Math.random() * 71) + 80;
-        localStorage.setItem("saju_daily_count", JSON.stringify({ date: today, base: newBase }));
-        return newBase;
-    };
-
-    const baseCount = useRef(getTodayCount());
-    const { count, counterRef } = useCounter(baseCount.current);
-
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            const logged = localStorage.getItem("isLoggedIn") === "true";
-            setIsLoggedIn(logged);
-        }
-
-        const timer = setTimeout(() => setShowPreview(true), 800);
-
-        // 초기 랜덤 동물 6개
-        const all = [
-            "갑자", "을축", "병인", "정묘", "무진", "기사", "경오", "신미", "임신", "계유",
-            "갑술", "을해", "병자", "정축", "무인", "기묘", "경진", "신사", "임오", "계미",
-            "갑신", "을유", "병술", "정해", "무자", "기축", "경인", "신묘", "임진", "계사",
-            "갑오", "을미", "병신", "정유", "무술", "기해", "경자", "신축", "임인", "계묘",
-            "갑진", "을사", "병오", "정미", "무신", "기유", "경술", "신해", "임자", "계축",
-            "갑인", "을묘", "병진", "정사", "무오", "기미", "경신", "신유", "임술", "계해",
-        ];
-        const shuffled = [...all].sort(() => Math.random() - 0.5);
-        setRandomAnimals(shuffled.slice(0, 6));
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    // 3초마다 일주 동물 랜덤 교체 (카드 뒤집기용 round 증가)
-    useEffect(() => {
-        const id = setInterval(() => {
-            const shuffled = [...ALL_ANIMALS].sort(() => Math.random() - 0.5);
-            setRandomAnimals(shuffled.slice(0, 6));
-            setAnimalRound((r) => r + 1);
-        }, 3000);
-        return () => clearInterval(id);
-    }, [ALL_ANIMALS]);
-
-    return (
-        <main style={{ background: "var(--bg-base)", backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto", minHeight: "100vh", fontFamily: "var(--font-sans)", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .serif { font-family: var(--font-sans); }
-        .sans  { font-family: var(--font-sans); }
 
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInSlide {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes cardFlipIn {
-          from { opacity: 0; transform: perspective(320px) rotateY(-88deg); }
-          to   { opacity: 1; transform: perspective(320px) rotateY(0); }
-        }
-        .animal-card-flip {
-          animation: cardFlipIn 0.35s ease-out both;
-          will-change: transform;
-          backface-visibility: hidden;
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-8px); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: .7; transform: scale(1); }
-          50%      { opacity: 1;  transform: scale(1.05); }
+        body {
+          background: var(--bg);
+          color: var(--text);
+          font-family: var(--sans);
         }
 
-        .fu0 { animation: fadeUp .6s ease both; }
-        .fu1 { animation: fadeUp .6s .15s ease both; }
-        .fu2 { animation: fadeUp .6s .3s ease both; }
-        .fu3 { animation: fadeUp .6s .45s ease both; }
-
-        .ham-float { animation: float 3s ease-in-out infinite; }
-        .pulse-text { animation: pulse 2.5s ease-in-out infinite; }
-
-        .tap {
-          transition: transform .15s ease, opacity .15s ease;
-          -webkit-tap-highlight-color: transparent;
-          cursor: pointer;
-        }
-        .tap:active { transform: scale(.97); opacity: .9; }
-
-        .mode-card {
-          transition: all .2s ease;
-          cursor: pointer;
-        }
-        .mode-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 6px 20px rgba(58,58,58,.1);
-        }
-        .mode-card.selected {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 8px 24px rgba(58,58,58,.12);
-        }
-        
-        .animal-card {
-          transition: transform .2s ease;
-        }
-        .animal-card:hover {
-          transform: translateY(-2px) scale(1.03);
-        }
-
-        .blur-cover {
-          filter: blur(6px);
-          user-select: none;
-          pointer-events: none;
-        }
-
-        .wrap {
-          width: 100%;
-          max-width: 420px;
+        .landing-wrap {
+          max-width: 480px;
           margin: 0 auto;
           padding: 0 20px 80px;
+          min-height: 100dvh;
         }
-        
-        /* 모바일 터치 스크롤 최적화 */
-        .scroll-container {
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior-x: contain;
+
+        .l-header {
+          position: sticky;
+          top: 0;
+          z-index: 20;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 0;
+          background: var(--bg);
+          border-bottom: 1px solid var(--border);
+          margin: 0 -20px;
+          padding-left: 20px;
+          padding-right: 20px;
         }
-        
-        @media (max-width: 390px) {
-          .wrap { padding: 0 16px 80px; }
+
+        .l-logo {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .l-logo-img {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: 1px solid var(--border);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          background: var(--surface);
+        }
+
+        .l-logo-text {
+          font-family: var(--serif);
+          font-size: 17px;
+          font-weight: 700;
+          color: var(--text);
+          letter-spacing: 0.02em;
+        }
+
+        .l-header-btn {
+          padding: 7px 16px;
+          border-radius: 999px;
+          border: 1px solid var(--border2);
+          background: transparent;
+          font-family: var(--sans);
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text);
+          cursor: pointer;
+          transition: background .15s;
+        }
+        .l-header-btn:hover { background: var(--surface2); }
+
+        .l-header-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .l-header-icon-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 10px;
+          border-radius: 999px;
+          border: 1px solid var(--border2);
+          background: var(--surface);
+          font-family: var(--sans);
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text);
+          cursor: pointer;
+          transition: background .15s;
+        }
+        .l-header-icon-btn:hover { background: var(--surface2); }
+
+        .l-section {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 18px;
+          padding: 32px 24px;
+          margin-top: 14px;
+          text-align: center;
+          opacity: 0;
+          transform: translateY(10px);
+          animation: fadeUp .5s ease forwards;
+        }
+        .l-section:nth-child(2) { animation-delay: .05s; }
+        .l-section:nth-child(3) { animation-delay: .1s; }
+        .l-section:nth-child(4) { animation-delay: .15s; }
+        .l-section:nth-child(5) { animation-delay: .2s; }
+
+        @keyframes fadeUp {
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .l-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 12px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--surface2);
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--sub);
+          letter-spacing: 0.06em;
+          margin-bottom: 16px;
+        }
+
+        .l-title {
+          font-family: var(--serif);
+          font-size: clamp(1.6rem, 5vw, 1.9rem);
+          font-weight: 900;
+          color: var(--text);
+          line-height: 1.3;
+          letter-spacing: -0.02em;
+          margin-bottom: 12px;
+        }
+
+        .l-sub {
+          font-size: 13px;
+          color: var(--sub);
+          line-height: 1.7;
+          margin-bottom: 24px;
+        }
+
+        .l-hero-logo {
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          border: 1.5px solid var(--border);
+          background: var(--surface2);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 48px;
+          margin: 0 auto 24px;
+          animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50%       { transform: translateY(-8px); }
+        }
+
+        .l-cta {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .l-btn-primary {
+          width: 100%;
+          padding: 15px;
+          border-radius: 12px;
+          border: none;
+          background: #2C2A26;
+          color: #F2EDE4;
+          font-family: var(--serif);
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          letter-spacing: 0.02em;
+          transition: opacity .15s, transform .1s;
+        }
+        .l-btn-primary:active { transform: scale(.98); opacity: .9; }
+
+        .l-btn-secondary {
+          width: 100%;
+          padding: 13px;
+          border-radius: 12px;
+          border: 1px solid var(--border2);
+          background: transparent;
+          color: var(--sub);
+          font-family: var(--sans);
+          font-size: 13px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background .15s;
+        }
+        .l-btn-secondary:hover { background: var(--surface2); }
+
+        .l-counter {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 14px;
+          border-radius: 999px;
+          border: 1px solid var(--border);
+          background: var(--surface2);
+          margin-top: 18px;
+        }
+
+        .l-counter-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #4CAF50;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: .6; transform: scale(1); }
+          50%       { opacity: 1; transform: scale(1.3); }
+        }
+
+        .l-counter-text {
+          font-size: 12px;
+          color: var(--sub);
+          font-weight: 500;
+        }
+
+        .animal-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin: 16px 0;
+        }
+
+        .animal-cell {
+          aspect-ratio: 1;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          background: var(--surface2);
+        }
+
+        .animal-cell img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        @keyframes cardFlip {
+          from { opacity: 0; transform: perspective(300px) rotateY(-80deg); }
+          to   { opacity: 1; transform: perspective(300px) rotateY(0); }
+        }
+
+        .animal-flip {
+          animation: cardFlip .3s ease-out both;
+        }
+
+        .feature-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin: 16px 0;
+          text-align: left;
+        }
+
+        .feature-item {
+          padding: 12px 14px;
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .feature-icon { font-size: 15px; flex-shrink: 0; }
+        .feature-label { font-size: 12px; font-weight: 600; color: var(--text); }
+
+        .spouse-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin: 14px 0;
+          position: relative;
+        }
+
+        .spouse-card {
+          aspect-ratio: 3/4;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+          background: var(--gold-bg);
+          position: relative;
+        }
+
+        .spouse-card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          filter: blur(8px);
+          transform: scale(1.08);
+        }
+
+        .spouse-lock {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+
+        .lock-badge {
+          padding: 4px 10px;
+          border-radius: 999px;
+          background: rgba(255,255,255,.92);
+          border: 1px solid #e6c96a;
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--gold);
+        }
+
+        .l-footer {
+          text-align: center;
+          padding: 24px 0 0;
+          font-size: 10px;
+          color: var(--muted);
         }
       `}</style>
 
-            <div className="wrap">
+      <div className="landing-wrap">
 
-                {/* ── 헤더 ── */}
-                <header
-                    className="fu0"
-                    style={{
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 20,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        padding: "16px 20px",
-                        margin: "0 -20px 8px",
-                        background: "var(--bg-base)",
-                        borderBottom: "1px solid var(--border-default)",
-                    }}
-                >
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="" />
-                        <span className="sans" style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.04em" }}>한양사주</span>
-                    </div>
-                    {isLoggedIn ? (
-                        <div
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                            }}
-                        >
-                            {/* 씨앗 캐시 (클릭 시 충전 페이지) */}
-                            <button
-                                type="button"
-                                onClick={() => router.push("/seed-charge")}
-                                style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 4,
-                                    padding: "6px 10px",
-                                    borderRadius: 999,
-                                    background: "rgba(255,255,255,0.85)",
-                                    border: "1.5px solid var(--border-default)",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <Icon icon="mdi:seed-outline" width={18} />
-                                <span
-                                    style={{
-                                        fontSize: 12,
-                                        fontWeight: 700,
-                                        color: "var(--text-primary)",
-                                    }}
-                                >
-                                    0
-                                </span>
-                            </button>
-
-                            {/* 해바라기 멤버십 (클릭 시 멤버십 페이지) */}
-                            <button
-                                type="button"
-                                onClick={() => router.push("/membership")}
-                                style={{
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: 4,
-                                    padding: "6px 10px",
-                                    borderRadius: 999,
-                                    background: "rgba(255,255,255,0.85)",
-                                    border: "1.5px solid var(--border-default)",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-                                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
-                            </button>
-
-                            {/* 햄버거 메뉴 아이콘 */}
-                            <button
-                                type="button"
-                                className="tap"
-                                aria-label="메뉴 열기"
-                                onClick={() => router.push("/saju-mypage")}
-                                style={{
-                                    padding: 8,
-                                    borderRadius: 10,
-                                    border: "none",
-                                    background: "transparent",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={go}
-                            className="tap sans"
-                            style={{
-                                fontSize: 12,
-                                fontWeight: 700,
-                                color: "var(--text-primary)",
-                                padding: "6px 16px",
-                                borderRadius: 99,
-                                border: "1.5px solid var(--border-default)",
-                                background: "transparent",
-                            }}
-                        >
-                            시작하기
-                        </button>
-                    )}
-                </header>
-
-                {/* ── 1. 히어로: NEW GAME ── */}
-                <div className="fu1" style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid var(--border-default)", padding: "40px 28px 36px", marginBottom: 14, position: "relative", overflow: "hidden", textAlign: "center" }}>
-                    <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, opacity: .03, backgroundImage: "radial-gradient(circle, var(--text-primary) 1px, transparent 1px)", backgroundSize: "8px 8px", pointerEvents: "none", zIndex: 0 }} />
-
-                    <div style={{ position: "relative", zIndex: 1 }}>
-                        <div style={{ display: "inline-block", padding: "5px 14px", background: "#e8f0e8", border: "1.5px solid var(--border-default)", borderRadius: 99, marginBottom: 20 }}>
-                            <span className="sans" style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.1em" }}>🟢 NEW GAME</span>
-                        </div>
-
-                        <h1 className="serif" style={{ fontSize: "clamp(1.75rem, 5vw, 2rem)", fontWeight: 900, color: "var(--text-primary)", lineHeight: 1.23, marginBottom: 14, letterSpacing: "-0.02em" }}>
-                            당신의 사주 캐릭터를<br />생성하시겠습니까?
-                        </h1>
-
-                        <div className="ham-float" style={{ margin: "10px auto 20px", width: 140, height: 140, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <HamIcon priority alt="로고" style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 6px 16px rgba(85,107,47,.25))" }} />
-                        </div>
-
-                        <p className="sans" style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)", opacity: .85, lineHeight: 1.7, marginBottom: 28 }}>
-                            복잡한 사주를, 가볍게
-                        </p>
-
-                        <div ref={counterRef} style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "rgba(85,107,47,.06)", borderRadius: 99, border: "1px solid rgba(85,107,47,.12)" }}>
-                            <span style={{ fontSize: 10, color: "#22c55e", fontWeight: 700 }}>✔</span>
-                            <p className="sans" style={{ fontSize: 11, color: "var(--text-primary)", fontWeight: 600, margin: 0 }}>
-                                오늘 이미 <span style={{ fontWeight: 800, color: "var(--text-primary)" }}>{count}</span>명이 생성했습니다
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* ── 2. 일주 동물 갤러리 ── */}
-                <div className="fu2" style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid var(--border-default)", padding: "28px 24px", marginBottom: 14, textAlign: "center" }}>
-                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#e8f0e8", border: "1.5px solid var(--border-default)", borderRadius: 99, marginBottom: 16 }}>
-                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.08em" }}>🐾 일주 동물</span>
-                    </div>
-
-                    <p className="serif" style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.75, marginBottom: 18 }}>
-                        60가지 중 단 하나.
-                    </p>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, padding: "4px 0 12px", marginBottom: 16, perspective: "400px", contain: "layout paint" }}>
-                        {randomAnimals.map((animal, i) => (
-                            <div
-                                key={i}
-                                className="animal-card"
-                                style={{
-                                    width: "100%",
-                                    aspectRatio: "1 / 1",
-                                    borderRadius: 12,
-                                    overflow: "hidden",
-                                    border: "1.5px solid #e0e7e0",
-                                    background: "#fafcfa",
-                                }}
-                            >
-                                <div
-                                    key={`${animalRound}-${animal}`}
-                                    className={animalRound > 0 ? "animal-card-flip" : ""}
-                                    style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        ...(animalRound === 0
-                                            ? { animation: "fadeInSlide 0.4s ease-out both", animationDelay: `${300 + i * 80}ms` }
-                                            : { animationDelay: `${i * 50}ms` }),
-                                    }}
-                                >
-                                    <img
-                                        src={`/images/day_pillars/${animal}.png`}
-                                        alt={animal}
-                                        fetchPriority="low"
-                                        decoding="async"
-                                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                                        onError={(e) => { e.currentTarget.style.display = "none"; }}
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <p className="sans" style={{ fontSize: 12, color: "var(--text-primary)", opacity: .7 }}>
-                        이 중 하나가 당신의 일주 동물입니다.
-                    </p>
-                </div>
-
-
-
-                {/* ── 4. 사주 기반 분석 ── */}
-                <div className="fu3" style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid var(--border-default)", padding: "28px 24px", marginBottom: 14, textAlign: "center" }}>
-                    <div style={{ display: "inline-block", padding: "4px 10px", background: "#e8f0e8", border: "1.5px solid var(--border-default)", borderRadius: 99, marginBottom: 16 }}>
-                        <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.08em" }}>🔵 사주 기반 분석</span>
-                    </div>
-
-                    <p className="serif" style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.75, marginBottom: 16 }}>
-                        전통 사주 이론을 기반으로<br />
-                        사주 8글자를 해석합니다.
-                    </p>
-
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-                        {["🌱 타고난 기질", "🎭 사회적 가면", "⚖️ 강점과 약점", "🤝 나의 인간관계", "🌟 각종귀인", "✨ 매력코드"].map((item, i) => (
-                            <div key={i} style={{ padding: "10px 12px", background: "#f7faf7", border: "1.5px solid #dce8dc", borderRadius: 10 }}>
-                                <p className="sans" style={{ fontSize: 11, color: "var(--text-primary)", fontWeight: 700 }}>{item}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <p className="sans" style={{ fontSize: 12, color: "var(--text-primary)", opacity: .7 }}>
-                        ✔ 그 외 대운 등 사주 전반에 걸친 통합 분석
-                    </p>
-                </div>
-
-                {/* ── 6. 1차 결과 미리보기 ── */}
-                {showPreview && (
-                    <div style={{ background: "#ffffff", borderRadius: 20, border: "1.5px solid var(--border-default)", padding: "28px 24px", marginBottom: 14, animation: "fadeUp .6s ease both", textAlign: "center" }}>
-
-
-
-
-
-                        {/* 배우자 AI 미리보기 */}
-                <div style={{ marginBottom: 20 }}>
-                            <div style={{ display: "inline-block", padding: "4px 10px", background: "#fef3c7", border: "1.5px solid #fbbf24", borderRadius: 99, marginBottom: 12 }}>
-                                <span className="sans" style={{ fontSize: 10, fontWeight: 700, color: "#78350f", letterSpacing: "0.08em" }}>💍 사주 기반 배우자 분석</span>
-                            </div>
-
-                            <p className="serif" style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.75, marginBottom: 16 }}>
-                                당신의 사주팔자와 궁합이 맞는<br />
-                                배우자의 이미지를 AI가 생성했습니다.
-                            </p>
-
-                            {/* 블러 처리된 배우자 이미지 */}
-                            <div style={{ position: "relative", marginBottom: 14 }}>
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                                    {[1, 2].map((_, i) => (
-                                        <div key={i} style={{ position: "relative", width: "100%", aspectRatio: "3/4", borderRadius: 12, overflow: "hidden", border: "1.5px solid #f0d060", background: "#fafcfa" }}>
-                                            <img
-                                                src={`/images/spouse_preview_${i + 1}.png`}
-                                                alt="배우자 미리보기"
-                                                style={{ width: "100%", height: "100%", objectFit: "cover", filter: "blur(8px)", transform: "scale(1.1)" }}
-                                                onError={(e) => { e.currentTarget.style.display = "none"; }}
-                                            />
-                                            <div style={{ position: "absolute", inset: 0, background: "rgba(254,243,199,.3)" }} />
-                                        </div>
-                                    ))}
-                                </div>
-                                <div style={{ position: "absolute", inset: 0, borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                                    <span style={{ fontSize: 24, marginBottom: 6 }}>🔒</span>
-                                    <p className="sans" style={{ fontSize: 11, color: "#78350f", fontWeight: 700, background: "rgba(255,255,255,.95)", padding: "4px 10px", borderRadius: 99, border: "1.5px solid #fbbf24" }}>
-                                        잠금 해제 시 확인 가능
-                                    </p>
-                                </div>
-                            </div>
-
-                            <p className="sans" style={{ fontSize: 11, color: "#92400e", opacity: .75, lineHeight: 1.7, marginBottom: 8 }}>
-                                전통 사주명리 이론과 AI 이미지 생성 기술을 결합하여<br />
-                                당신과 궁합이 맞는 배우자의 외형적 특징을 예측합니다.
-                            </p>
-                        </div>
-
-                        <div style={{ marginBottom: 20 }}>
-                            <p className="serif pulse-text" style={{ fontSize: 16, fontWeight: 900, color: "var(--text-primary)", marginBottom: 8 }}>
-                                당신의 일주 동물,<br />지금 확인하시겠습니까?
-                            </p>
-                        </div>
-
-                        <button
-                            onClick={() => {
-                                if (!isLoggedIn) {
-                                    router.push("/start");
-                                } else {
-                                    const saved = getSavedSajuList();
-                                    if (!saved || saved.length === 0) {
-                                        router.push("/saju-add");
-                                    } else {
-                                        router.push("/saju-list");
-                                    }
-                                }
-                            }}
-                            className="tap sans"
-                            style={{
-                                width: "100%", padding: "15px 0", borderRadius: 14,
-                                fontWeight: 700, fontSize: 14, color: "var(--text-primary)",
-                                background: "linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)",
-                                border: "none",
-                                boxShadow: "0 3px 14px rgba(85,107,47,.35)",
-                            }}>
-                            ▶ 내 사주 확인하기
-                        </button>
-
-                        <div style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "rgba(85,107,47,.06)", borderRadius: 99, border: "1px solid rgba(85,107,47,.12)" }}>
-                            <p className="sans" style={{ fontSize: 11, color: "var(--text-primary)", fontWeight: 600, margin: 0 }}>
-                                오늘 이미 <span style={{ fontWeight: 800, color: "var(--text-primary)" }}>{count}</span>명이 생성했습니다
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* ── 7. 푸터 ── */}
-                <div style={{ padding: "20px 0", textAlign: "center" }}>
-                    <p className="sans" style={{ fontSize: 10, color: "var(--text-primary)", opacity: .3 }}>
-                        © 2026 한양사주 · AI 사주명리 분석 서비스
-                    </p>
-                </div>
-
+        <header className="l-header">
+          <div className="l-logo">
+            <div className="l-logo-img">
+              <img
+                src="/images/yin-yang-logo.png"
+                alt="한양사주"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={(e) => { e.currentTarget.style.display = "none"; (e.currentTarget.parentElement as HTMLElement).textContent = "☯"; }}
+              />
             </div>
-        </main>
-    );
+            <span className="l-logo-text">한양사주</span>
+          </div>
+          {isLoggedIn ? (
+            <div className="l-header-right">
+              <button type="button" className="l-header-icon-btn" onClick={() => router.push("/seed-charge")}>
+                <Icon icon="mdi:ticket-confirmation-outline" width={18} />
+                <span>{seedCount}</span>
+              </button>
+              <button type="button" className="l-header-icon-btn" onClick={() => router.push("/membership")}>
+                <Icon icon="mdi:crown" width={18} />
+                <span>Pro</span>
+              </button>
+              <button type="button" className="l-header-icon-btn" onClick={() => router.push("/saju-mypage")} aria-label="메뉴">
+                <Icon icon="mdi:menu" width={22} />
+              </button>
+            </div>
+          ) : (
+            <button className="l-header-btn" onClick={() => router.push("/start")}>
+              시작하기
+            </button>
+          )}
+        </header>
+
+        <section className="l-section" style={{ paddingTop: 40, paddingBottom: 40 }}>
+          <div className="l-hero-logo">
+            <img
+              src="/images/yin-yang-logo.png"
+              alt="태극"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              onError={(e) => { e.currentTarget.style.display = "none"; (e.currentTarget.parentElement as HTMLElement).textContent = "☯"; }}
+            />
+          </div>
+
+          <h1 className="l-title">
+            당신의 사주를<br />AI가 해석합니다
+          </h1>
+          <p className="l-sub">
+            전통 사주명리학과 AI를 결합한<br />
+            한양사주만의 정밀 분석
+          </p>
+
+          <div className="l-cta">
+            <button className="l-btn-primary" onClick={handleStart}>
+              내 사주 확인하기
+            </button>
+            <button className="l-btn-secondary" onClick={() => router.push("/chat")}>
+              AI에게 먼저 물어보기
+            </button>
+          </div>
+
+          <div ref={counterRef} className="l-counter">
+            <div className="l-counter-dot" />
+            <span className="l-counter-text">
+              오늘 이미 <strong style={{ color: "var(--text)" }}>{count}</strong>명이 분석했습니다
+            </span>
+          </div>
+        </section>
+
+        <section className="l-section">
+          <div className="l-badge">🐾 일주 동물</div>
+          <p className="l-title" style={{ fontSize: "1.2rem" }}>
+            60가지 중 단 하나,<br />나만의 일주 동물
+          </p>
+
+          <div className="animal-grid">
+            {animals.map((animal, i) => (
+              <div key={i} className="animal-cell">
+                <div
+                  key={`${animalRound}-${i}`}
+                  className={animalRound > 0 ? "animal-flip" : ""}
+                  style={{
+                    width: "100%", height: "100%",
+                    animationDelay: animalRound > 0 ? `${i * 40}ms` : undefined,
+                  }}
+                >
+                  <img
+                    src={`/images/day_pillars/${animal}.png`}
+                    alt={animal}
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ fontSize: 12, color: "var(--sub)" }}>
+            이 중 하나가 당신의 일주 동물입니다.
+          </p>
+        </section>
+
+        <section className="l-section">
+          <div className="l-badge">🔵 사주 기반 분석</div>
+          <p className="l-title" style={{ fontSize: "1.2rem" }}>
+            전통 사주 이론으로<br />8글자를 해석합니다
+          </p>
+
+          <div className="feature-grid">
+            {FEATURES.map((f) => (
+              <div key={f.label} className="feature-item">
+                <span className="feature-icon">{f.icon}</span>
+                <span className="feature-label">{f.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ fontSize: 12, color: "var(--sub)", marginTop: 8 }}>
+            + 대운 · 세운 등 사주 전반에 걸친 통합 분석
+          </p>
+        </section>
+
+        {showPreview && (
+          <section className="l-section">
+            <div className="l-badge" style={{ background: "#FBF5E6", borderColor: "#E6C96A", color: "var(--gold)" }}>
+              💍 사주 기반 배우자 분석
+            </div>
+            <p className="l-title" style={{ fontSize: "1.2rem" }}>
+              당신과 궁합이 맞는<br />배우자의 이미지
+            </p>
+
+            <div className="spouse-grid">
+              {[1, 2].map((_, i) => (
+                <div key={i} className="spouse-card">
+                  <img
+                    src={`/images/spouse_preview_${i + 1}.png`}
+                    alt="배우자 미리보기"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                  />
+                  <div className="spouse-lock">
+                    <span style={{ fontSize: 22 }}>🔒</span>
+                    <span className="lock-badge">잠금 해제 시 확인</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p style={{ fontSize: 11, color: "var(--sub)", lineHeight: 1.7, marginBottom: 20 }}>
+              전통 사주명리 이론과 AI 이미지 생성 기술을 결합하여<br />
+              당신과 궁합이 맞는 배우자의 특징을 예측합니다.
+            </p>
+
+            <button className="l-btn-primary" onClick={handleStart}>
+              내 사주 확인하기
+            </button>
+          </section>
+        )}
+
+        <footer className="l-footer">
+          © 2026 한양사주 · AI 사주명리 분석 서비스
+        </footer>
+
+      </div>
+    </>
+  );
 }

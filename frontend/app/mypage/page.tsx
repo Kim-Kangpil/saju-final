@@ -234,9 +234,9 @@ function MyPageContent({
           className="sans"
           style={{
             margin: "0 -20px",
-            background: "linear-gradient(160deg, #fffde7 0%, #e8f5e9 100%)",
+            background: "linear-gradient(160deg, var(--bg-base) 0%, var(--bg-input) 100%)",
             padding: "20px 24px 18px",
-            borderBottom: "1.5px solid #c8dac8",
+            borderBottom: "1.5px solid var(--border-default)",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -292,7 +292,7 @@ function MyPageContent({
               padding: "14px",
               borderRadius: 14,
               border: "none",
-              background: "linear-gradient(135deg, #6a994e, #4a7c3f)",
+              background: "var(--text-primary)",
               fontSize: 15,
               fontWeight: 700,
               color: "#fff",
@@ -387,7 +387,7 @@ function MyPageContent({
                   padding: "11px 24px",
                   borderRadius: 12,
                   border: "none",
-                  background: "linear-gradient(135deg, #6a994e, #4a7c3f)",
+                  background: "var(--text-primary)",
                   fontSize: 14,
                   fontWeight: 700,
                   color: "#fff",
@@ -459,7 +459,7 @@ function MyPageContent({
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {[
-              { icon: "mdi:ticket-confirmation-outline", label: "분석권 충전", path: "/seed-charge", color: "#6a994e" },
+              { icon: "mdi:ticket-confirmation-outline", label: "분석권 충전", path: "/seed-charge", color: "var(--text-primary)" },
               { icon: "mdi:crown", label: "한양사주 Pro", path: "/membership", color: "#c9a227" },
               { icon: "mdi:history", label: "분석 내역", path: "/history", color: "#6b7280" },
               { icon: "mdi:home-outline", label: "홈으로", path: "/home", color: "var(--text-primary)" },
@@ -500,7 +500,7 @@ export default function MyPage(
       fallback={
         <main
           style={{
-            background: "#eef4ee",
+            background: "var(--bg-base)",
             minHeight: "100vh",
             display: "flex",
             alignItems: "center",

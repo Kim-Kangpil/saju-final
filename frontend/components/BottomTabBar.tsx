@@ -25,7 +25,7 @@ const TABS = [
 ] as const;
 
 const INACTIVE_COLOR = "#9ca3af";
-const ACTIVE_COLOR = "#6a994e";
+const ACTIVE_COLOR = "var(--text-primary)";
 
 export default function BottomTabBar() {
   const pathname = usePathname();

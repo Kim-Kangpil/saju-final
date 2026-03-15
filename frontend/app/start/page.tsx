@@ -135,26 +135,7 @@ export default function StartPage({
           >
             한양사주
           </h1>
-          <button
-            type="button"
-            className="tap"
-            aria-label="메뉴"
-            onClick={() => router.push("/home")}
-            style={{
-              width: 40,
-              height: 40,
-              background: "transparent",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-              color: textDark,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon icon="mdi:menu" width={24} />
-          </button>
+          <div style={{ width: 40, flexShrink: 0 }} aria-hidden />
         </header>
 
         {/* 시작하기 섹션 – 로그인 시안과 동일 */}
@@ -248,10 +229,10 @@ export default function StartPage({
               onClick={() => router.push("/login")}
               style={{
                 width: "100%",
-                padding: "14px 16px",
+                padding: "10px 16px",
                 borderRadius: radius,
-                border: "1.5px solid #D4C4B0",
-                background: "#E8DFD4",
+                border: "1.5px solid #E8E4DF",
+                background: "#F5F2EE",
                 fontSize: 15,
                 fontWeight: 500,
                 color: textDark,

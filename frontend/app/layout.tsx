@@ -60,7 +60,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             {children}
           </main>
 
-          <BottomTabBar />
+          {/* BottomTabBar — 나중에 사용할 수 있음 */}
+          {/* <BottomTabBar /> */}
 
           {/* 푸터 중앙 정렬 래퍼 — 하단 여백으로 스크롤 시 상호명·주소가 탭바에 가리지 않게 */}
           <div style={{ width: "100%", background: "inherit", paddingBottom: 96 }}>

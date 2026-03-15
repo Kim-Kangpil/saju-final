@@ -126,8 +126,6 @@ export default function HomePage({
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Pretendard:wght@300;400;500;600;700&display=swap');
-
         :root {
           --bg:        #F2EDE4;
           --surface:   #FFFCF7;
@@ -141,23 +139,48 @@ export default function HomePage({
           --accent-bg: #EBF0E8;
           --gold:      #8B6914;
           --gold-bg:   #FBF5E6;
-          --serif:     'Noto Serif KR', serif;
-          --sans:      'Pretendard', -apple-system, sans-serif;
+          --serif:     'Gmarket Sans', -apple-system, sans-serif;
+          --sans:      'Gmarket Sans', -apple-system, sans-serif;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { -webkit-text-size-adjust: 100%; }
 
         body {
           background: var(--bg);
           color: var(--text);
           font-family: var(--sans);
+          min-width: 320px;
         }
 
         .landing-wrap {
+          width: 100%;
           max-width: 480px;
           margin: 0 auto;
-          padding: 0 20px 80px;
+          padding: 0 16px 80px;
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+          padding-bottom: max(80px, env(safe-area-inset-bottom));
           min-height: 100dvh;
+          min-height: 100vh;
+        }
+
+        @media (min-width: 640px) {
+          .landing-wrap { padding-left: 24px; padding-right: 24px; padding-bottom: 96px; }
+        }
+
+        @media (min-width: 768px) {
+          .landing-wrap {
+            max-width: 560px;
+            padding: 0 32px 100px;
+            border-radius: 0;
+            box-shadow: 0 0 0 1px var(--border);
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .landing-wrap { max-width: 600px; padding-left: 40px; padding-right: 40px; }
         }
 
         .l-header {
@@ -167,12 +190,16 @@ export default function HomePage({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 14px 0;
+          padding: 14px 16px;
+          margin: 0 -16px 0;
           background: var(--bg);
           border-bottom: 1px solid var(--border);
-          margin: 0 -20px;
-          padding-left: 20px;
-          padding-right: 20px;
+        }
+        @media (min-width: 640px) {
+          .l-header { margin: 0 -24px 0; padding-left: 24px; padding-right: 24px; }
+        }
+        @media (min-width: 768px) {
+          .l-header { margin: 0 -32px 0; padding-left: 32px; padding-right: 32px; }
         }
 
         .l-logo {
@@ -242,13 +269,19 @@ export default function HomePage({
         .l-section {
           background: var(--surface);
           border: 1px solid var(--border);
-          border-radius: 18px;
-          padding: 32px 24px;
-          margin-top: 14px;
+          border-radius: 16px;
+          padding: 24px 20px;
+          margin-top: 12px;
           text-align: center;
           opacity: 0;
           transform: translateY(10px);
           animation: fadeUp .5s ease forwards;
+        }
+        @media (min-width: 640px) {
+          .l-section { padding: 28px 24px; margin-top: 14px; border-radius: 18px; }
+        }
+        @media (min-width: 768px) {
+          .l-section { padding: 32px 28px; margin-top: 16px; }
         }
         .l-section:nth-child(2) { animation-delay: .05s; }
         .l-section:nth-child(3) { animation-delay: .1s; }
@@ -276,12 +309,15 @@ export default function HomePage({
 
         .l-title {
           font-family: var(--serif);
-          font-size: clamp(1.6rem, 5vw, 1.9rem);
+          font-size: clamp(1.35rem, 4.5vw, 1.9rem);
           font-weight: 900;
           color: var(--text);
-          line-height: 1.3;
+          line-height: 1.35;
           letter-spacing: -0.02em;
           margin-bottom: 12px;
+        }
+        @media (min-width: 768px) {
+          .l-title { font-size: clamp(1.6rem, 2vw, 1.95rem); }
         }
 
         .l-sub {
@@ -319,7 +355,8 @@ export default function HomePage({
 
         .l-btn-primary {
           width: 100%;
-          padding: 15px;
+          min-height: 48px;
+          padding: 14px 20px;
           border-radius: 12px;
           border: none;
           background: #2C2A26;
@@ -332,6 +369,9 @@ export default function HomePage({
           transition: opacity .15s, transform .1s;
         }
         .l-btn-primary:active { transform: scale(.98); opacity: .9; }
+        @media (min-width: 768px) {
+          .l-btn-primary { padding: 16px 24px; min-height: 52px; font-size: 16px; }
+        }
 
         .l-btn-secondary {
           width: 100%;
@@ -381,8 +421,14 @@ export default function HomePage({
         .animal-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
-          gap: 8px;
-          margin: 16px 0;
+          gap: 6px;
+          margin: 14px 0;
+        }
+        @media (min-width: 640px) {
+          .animal-grid { gap: 10px; margin: 16px 0; }
+        }
+        @media (min-width: 768px) {
+          .animal-grid { gap: 12px; margin: 18px 0; }
         }
 
         .animal-cell {

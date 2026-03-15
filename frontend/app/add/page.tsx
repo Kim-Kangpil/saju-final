@@ -74,6 +74,44 @@ import { SummarySwipeCards } from "../../components/SummarySwipeCards";
 import { Icon } from "@iconify/react";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
+
+// =====================================================
+// 정통 한양사주 디자인 토큰
+// =====================================================
+const S = {
+  cream: "#F5F1EA",
+  cream2: "#EDE7DB",
+  cream3: "#E3D9CB",
+  beige: "#D4C9B8",
+  beige2: "#C4B8A4",
+  ink: "#2C2417",
+  ink2: "#4A3F30",
+  ink3: "#6B5F4E",
+  gold: "#8B7355",
+  goldLight: "#A8946A",
+  red: "#8B2020",
+  wood: "#2D6A4F",
+  fire: "#8B2020",
+  earth: "#7A5C2E",
+  metal: "#5A6475",
+  water: "#1B3A5C",
+  // gmarketsans를 메인으로 사용
+  fontDisplay: "'GmarketSans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  fontBody: "'GmarketSans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+} as const;
+
+const ELEMENT_COLOR: Record<string, string> = {
+  wood: S.wood,
+  fire: S.fire,
+  earth: S.earth,
+  metal: S.metal,
+  water: S.water,
+  none: S.ink,
+};
+
+// =====================================================
+// 타입
+// =====================================================
 type Pillar = { hanja: string; hangul: string };
 type PillarBlock = { label: string; cheongan: Pillar; jiji: Pillar };
 type SajuResult = {
@@ -81,12 +119,7 @@ type SajuResult = {
   day: PillarBlock;
   month: PillarBlock;
   year: PillarBlock;
-  twelve_states?: {
-    hour?: string;
-    day?: string;
-    month?: string;
-    year?: string;
-  };
+  twelve_states?: { hour?: string; day?: string; month?: string; year?: string };
   jijanggan?: {
     hour?: Array<{ hanja: string; hangul: string; element: string }>;
     day?: Array<{ hanja: string; hangul: string; element: string }>;
@@ -190,14 +223,6 @@ function hanjaToElement(
   return "none";
 }
 
-const ELEMENT_COLOR: Record<string, string> = {
-  wood: "#059669",
-  fire: "#e11d48",
-  earth: "#b45309",
-  metal: "#64748b",
-  water: "#2563eb",
-  none: "var(--text-primary)",
-};
 
 function elementClass(el: string) {
   switch (el) {
@@ -310,10 +335,11 @@ function generatePreviewText(title: string): string {
 function LockIcon() {
   return (
     <svg
-      className="w-6 h-6 text-yellow-600"
+      className="w-5 h-5"
       fill="none"
       stroke="currentColor"
       viewBox="0 0 24 24"
+      style={{ color: S.gold }}
     >
       <path
         strokeLinecap="round"
@@ -2044,6 +2070,8 @@ export default function Page({
     <>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+        {/* gmarketsans 웹폰트 로드 */}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css" />
       </Head>
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.0/kakao.min.js"
@@ -2080,174 +2108,73 @@ export default function Page({
         }}
       />
 
-      <main
-        className="min-h-screen flex flex-col items-center justify-center relative"
-        style={{ position: "relative", zIndex: 10, backgroundColor: "var(--bg-base)", backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto" }}
-      >
-        <div className="w-full max-w-[450px] mx-auto">
-          <div className="rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white border-2 border-[var(--border-default)]">
-            {/* 배경 이미지 레이어 */}
-            <div
-              className="absolute left-0 right-0 bottom-0 top-[64px]"
-              style={{
-                backgroundImage:
-                  "image-set(url('/images/hamster-forest.webp') type('image/webp') 1x, url('/images/hamster-forest.png') type('image/png') 1x)",
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-                opacity: 0.03,
-                filter: "saturate(1.1) contrast(1.08)",
-                transform: "scale(1.03)",
-                zIndex: 0,
-                pointerEvents: "none",
-              }}
-            />
-            {/* 헤더: saju-preview/seed-charge와 동일 구조, 인라인 스타일, 결과 시 fixed */}
-            <header
-              style={{
-                height: 64,
-                background: "var(--bg-base)",
-                borderBottom: "1px solid var(--border-default)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "16px 20px",
-                flexShrink: 0,
-                zIndex: 100,
-                ...(result
-                  ? {
-                      position: "fixed" as const,
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      margin: "0 auto",
-                      maxWidth: 450,
-                      borderRadius: 0,
-                    }
-                  : { position: "relative" as const }),
-              }}
-            >
-              <button
-                onClick={() => router.push("/home")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 40,
-                  height: 40,
-                  background: "transparent",
-                  border: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                  color: "var(--text-primary)",
-                }}
-              >
-                <Icon icon="mdi:chevron-left" width={28} />
+      <style>{`
+        :root {
+          --bg-base: ${S.cream};
+          --bg-surface: ${S.cream2};
+          --bg-input: ${S.cream3};
+          --text-primary: ${S.ink};
+          --text-secondary: ${S.ink3};
+          --text-placeholder: ${S.beige2};
+          --border-default: ${S.beige};
+          --border-focus: ${S.gold};
+          --brand-primary: ${S.gold};
+        }
+        * { font-family: ${S.fontBody}; }
+        .saju-serif { font-family: ${S.fontDisplay}; }
+        ::-webkit-scrollbar { width: 3px; height: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${S.beige}; border-radius: 99px; }
+        .add-preview-carousel { display:flex; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; scrollbar-width:none; -ms-overflow-style:none; }
+        .add-preview-carousel::-webkit-scrollbar { display:none; }
+        .add-preview-card { flex:0 0 100%; min-width:100%; scroll-snap-align:start; scroll-snap-stop:always; padding:0 2px; box-sizing:border-box; }
+        .pillar-cell { transition: background 0.15s; }
+      `}</style>
+
+      <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: S.cream, backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto", position: "relative", zIndex: 10 }}>
+        <div style={{ width: "100%", maxWidth: 450, margin: "0 auto" }}>
+          <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 24px rgba(44,36,23,0.10)", background: "#fff", border: `1px solid ${S.beige}`, position: "relative" }}>
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto", opacity: 0.04, pointerEvents: "none", zIndex: 0 }} />
+            <header style={{
+              height: 56,
+              background: S.cream,
+              borderBottom: `1px solid ${S.beige}`,
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "0 16px",
+              flexShrink: 0, zIndex: 100,
+              ...(result ? { position: "fixed" as const, top: 0, left: 0, right: 0, margin: "0 auto", maxWidth: 450, borderRadius: 0 } : { position: "relative" as const }),
+            }}>
+              <button onClick={() => router.push("/home")} style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "none", cursor: "pointer", color: S.ink }}>
+                <Icon icon="mdi:chevron-left" width={24} />
               </button>
-              <h1 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", flex: 1, textAlign: "center" }}>한양사주 AI</h1>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <h1 className="saju-serif" style={{ fontSize: 17, fontWeight: 600, color: S.ink, letterSpacing: "0.04em" }}>한양사주 AI</h1>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 {(result || isLoggedIn) ? (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => router.push("/seed-charge")}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "6px 10px",
-                        borderRadius: 999,
-                        background: "var(--bg-surface)",
-                        border: "1.5px solid var(--border-default)",
-                        cursor: "pointer",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      <Icon icon="mdi:ticket-confirmation-outline" width={18} />
-                      <span style={{ fontSize: 12, fontWeight: 700 }}>{seedCount}</span>
+                    <button onClick={() => router.push("/seed-charge")} style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "5px 9px", borderRadius: 6, background: S.cream2, border: `1px solid ${S.beige}`, cursor: "pointer", color: S.ink }}>
+                      <Icon icon="mdi:ticket-confirmation-outline" width={15} />
+                      <span style={{ fontSize: 12, fontWeight: 600 }}>{seedCount}</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => router.push("/membership")}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "6px 10px",
-                        borderRadius: 999,
-                        background: "var(--bg-surface)",
-                        border: "1.5px solid var(--border-default)",
-                        cursor: "pointer",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      <Icon icon="mdi:crown" width={18} />
-                      <span style={{ fontSize: 12, fontWeight: 700 }}>한양사주 Pro</span>
+                    <button onClick={() => router.push("/membership")} style={{ display: "inline-flex", alignItems: "center", gap: 3, padding: "5px 9px", borderRadius: 6, background: S.cream2, border: `1px solid ${S.beige}`, cursor: "pointer", color: S.gold }}>
+                      <Icon icon="mdi:crown-outline" width={15} />
+                      <span style={{ fontSize: 11, fontWeight: 700 }}>Pro</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => router.push("/saju-mypage")}
-                      aria-label="메뉴"
-                      style={{
-                        padding: 8,
-                        borderRadius: 10,
-                        border: "none",
-                        background: "transparent",
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
+                    <button onClick={() => router.push("/saju-mypage")} style={{ padding: 6, background: "transparent", border: "none", cursor: "pointer", color: S.ink, display: "flex", alignItems: "center" }}>
+                      <Icon icon="mdi:menu" width={20} />
                     </button>
                   </>
                 ) : (
                   <>
-                    <button
-                      onClick={() => router.push("/login")}
-                      style={{
-                        padding: "8px 12px",
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: "var(--text-primary)",
-                        background: "rgba(255,255,255,0.5)",
-                        border: "none",
-                        borderRadius: 8,
-                        cursor: "pointer",
-                      }}
-                    >
-                      로그인
-                    </button>
-                    <button
-                      onClick={() => router.push("/signup")}
-                      style={{
-                        padding: "8px 12px",
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: "#fff",
-                        background: "var(--text-primary)",
-                        border: "none",
-                        borderRadius: 8,
-                        cursor: "pointer",
-                      }}
-                    >
-                      회원가입
-                    </button>
+                    <button onClick={() => router.push("/login")} style={{ padding: "6px 11px", fontSize: 13, fontWeight: 600, color: S.ink, background: "transparent", border: `1px solid ${S.beige}`, borderRadius: 6, cursor: "pointer" }}>로그인</button>
+                    <button onClick={() => router.push("/signup")} style={{ padding: "6px 11px", fontSize: 13, fontWeight: 700, color: "#fff", background: S.gold, border: "none", borderRadius: 6, cursor: "pointer" }}>회원가입</button>
                   </>
                 )}
               </div>
             </header>
 
-            {/* 결과 화면일 때 고정 헤더 높이만큼 여백 확보 */}
-            {result && <div style={{ height: 64, flexShrink: 0 }} aria-hidden />}
-            {/* 메인 콘텐츠: 분석 결과만 여백 없음 + 노란 배경 좌우 꽉 차게 */}
+            {result && <div style={{ height: 56 }} aria-hidden />}
             <div
-              style={
-                result
-                  ? { position: "relative" as const, padding: 0, background: "#fefce8", minHeight: "100%" }
-                  : undefined
-              }
+              style={result ? { position: "relative" as const, padding: 0, background: S.cream, minHeight: "100%" } : undefined}
               className={result ? undefined : "relative p-5"}
             >
               {!result && (
@@ -2276,112 +2203,33 @@ export default function Page({
                 className={result ? undefined : "relative z-10 rounded-2xl shadow-xl mx-auto p-4 sm:p-6 max-w-[420px]"}
               >
                 {err && !loading && !result && (
-                  <div className="mb-4 p-3 rounded-xl border-2 border-red-200 bg-red-50 text-[11px] text-red-700 whitespace-pre-wrap">
+                  <div style={{ marginBottom: 12, padding: "10px 14px", borderRadius: 8, border: `1px solid #e5c0c0`, background: "#fdf4f4", fontSize: 12, color: S.red, whiteSpace: "pre-wrap" }}>
                     {err}
                   </div>
-
                 )}
 
-                {typeof window !== "undefined" && loading
-                  ? createPortal(
-                    <div
-                      className="fixed left-0 top-0 w-screen"
-                      style={{
-                        height: "100dvh",
-                        background:
-                          "radial-gradient(1200px 700px at 50% 35%, rgba(255,255,255,0.85) 0%, rgba(238,244,238,0.95) 55%, rgba(221,232,221,0.98) 100%)",
-                        backdropFilter: "blur(6px)",
-                        WebkitBackdropFilter: "blur(6px)",
-                        zIndex: 2147483647,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "16px",
-                        touchAction: "none",
-                        WebkitTouchCallout: "none",
-                        WebkitUserSelect: "none",
-                        userSelect: "none",
-                      }}
-                    >
-                      <div
-                        className="rounded-2xl p-6 sm:p-8 w-[92vw] max-w-[450px] text-center shadow-2xl"
-                        style={{ background: "white", maxHeight: "90dvh", overflowY: "auto" }}
-                      >
-                        <div className="mb-4 sm:mb-6">
-                          <motion.div
-                            initial={{ scale: 0.5, y: 50, opacity: 0 }}
-                            animate={{ scale: [0.5, 1.3, 1], y: [50, -20, 0], opacity: 1 }}
-                            transition={{ duration: 0.8, times: [0, 0.6, 1], ease: "easeOut" }}
-                            className="relative mb-4 sm:mb-6"
-                          >
-                            <img
-                              src={CHARACTERS[selectedChar].img}
-                              alt={CHARACTERS[selectedChar].name}
-                              className="w-32 h-32 sm:w-40 sm:h-40 object-contain pixel-art drop-shadow-2xl mx-auto"
-                            />
-                          </motion.div>
-
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.6 }}
-                            className="text-center px-4 sm:px-6"
-                          >
-                            <p className="text-[var(--text-primary)] font-bold text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-korean">
-                              {loadingMessage}
-                            </p>
-                          </motion.div>
-
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.8 }}
-                            className="w-full px-4 sm:px-8 space-y-2 sm:space-y-3 mt-4 sm:mt-6"
-                          >
-                            <div className="flex justify-between items-center px-1 sm:px-2">
-                              <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">
-                                분석 진행중
-                              </span>
-                              <span
-                                className="text-xl sm:text-2xl font-black text-[var(--text-primary)]"
-                                style={{ fontFamily: "var(--font-sans)" }}
-                              >
-                                {loadingProgress}% <span className="pixel-heart">💚</span>
-                              </span>
-                            </div>
-
-                            <div className="relative h-8 sm:h-10 bg-[#e9ecef] border-2 sm:border-4 border-[var(--text-primary)] overflow-hidden shadow-[2px_2px_0px_0px_rgba(58,58,58,0.15)]">
-                              <motion.div
-                                className="h-full bg-gradient-to-r from-[#fef08a] via-[#fde047] to-[#facc15]"
-                                style={{ width: `${loadingProgress}%`, imageRendering: "pixelated" }}
-                                animate={{ width: `${loadingProgress}%` }}
-                                transition={{ duration: 0.3, ease: "linear" }}
-                              >
-                                <div className="absolute top-0 left-0 w-full h-[30%] bg-white/30" />
-                              </motion.div>
-
-                              {[...Array(99)].map((_, i) => (
-                                <div
-                                  key={i}
-                                  className="absolute top-0 bottom-0 w-[1px] bg-[var(--text-primary)]"
-                                  style={{ left: `${(i + 1) * 1}%`, opacity: 0.15 }}
-                                />
-                              ))}
-                              {[...Array(9)].map((_, i) => (
-                                <div
-                                  key={`thick-${i}`}
-                                  className="absolute top-0 bottom-0 w-[2px] bg-[var(--text-primary)]"
-                                  style={{ left: `${(i + 1) * 10}%`, opacity: 0.4 }}
-                                />
-                              ))}
-                            </div>
-                          </motion.div>
+                {typeof window !== "undefined" && loading ? createPortal(
+                  <div style={{ position: "fixed", left: 0, top: 0, width: "100vw", height: "100dvh", background: "rgba(245,241,234,0.96)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", zIndex: 2147483647, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, touchAction: "none" }}>
+                    <div style={{ background: "#fff", border: `1px solid ${S.beige}`, borderRadius: 16, padding: "36px 28px", width: "88vw", maxWidth: 400, textAlign: "center", boxShadow: "0 8px 40px rgba(44,36,23,0.10)" }}>
+                      <motion.div initial={{ scale: 0.6, y: 30, opacity: 0 }} animate={{ scale: [0.6, 1.15, 1], y: [30, -10, 0], opacity: 1 }} transition={{ duration: 0.7, times: [0, 0.6, 1], ease: "easeOut" }} style={{ marginBottom: 20 }}>
+                        <img src={CHARACTERS[selectedChar].img} alt="" style={{ width: 100, height: 100, objectFit: "contain", margin: "0 auto", display: "block" }} />
+                      </motion.div>
+                      <motion.p key={loadingMessage} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="saju-serif" style={{ color: S.ink, fontSize: 14, fontWeight: 500, lineHeight: 1.8, whiteSpace: "pre-wrap", marginBottom: 24, minHeight: 48 }}>
+                        {loadingMessage}
+                      </motion.p>
+                      <div style={{ marginBottom: 8 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                          <span style={{ fontSize: 11, color: S.ink3 }}>분석 중</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: S.gold }}>{loadingProgress}%</span>
+                        </div>
+                        <div style={{ height: 4, background: S.cream3, borderRadius: 99, overflow: "hidden" }}>
+                          <motion.div style={{ height: "100%", background: `linear-gradient(90deg, ${S.gold}, ${S.goldLight})`, borderRadius: 99 }} animate={{ width: `${loadingProgress}%` }} transition={{ duration: 0.3, ease: "linear" }} />
                         </div>
                       </div>
-                    </div>,
-                    document.body
-                  )
-                  : null}
+                    </div>
+                  </div>,
+                  document.body
+                ) : null}
 
                 <div className="space-y-4">
                   <AnimatePresence mode="wait">
@@ -2389,347 +2237,193 @@ export default function Page({
                       <motion.div
                         ref={resultRef}
                         key="result"
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 16 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5 }}
-                        className="space-y-4"
-                        style={{ paddingTop: 72 }}
+                        exit={{ opacity: 0, y: -16 }}
+                        transition={{ duration: 0.45 }}
+                        style={{ paddingTop: 20, paddingLeft: 16, paddingRight: 16, paddingBottom: 32, maxWidth: 520, margin: "0 auto", width: "100%", boxSizing: "border-box" }}
                       >
-                        <style>{`
-                          .add-preview-carousel { display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none; }
-                          .add-preview-carousel::-webkit-scrollbar { display: none; }
-                          .add-preview-card { flex: 0 0 100%; min-width: 100%; scroll-snap-align: start; scroll-snap-stop: always; padding: 0 4px; box-sizing: border-box; }
-                        `}</style>
-                        {/* 스와이프 카드: 일주 동물 · 기본 정보 · 만세력 (테스트용 형태만) */}
-                        <div style={{ position: "relative", zIndex: 10, marginBottom: 16 }}>
-                          <div
-                            ref={previewCarouselRef}
-                            className="add-preview-carousel"
+                        <div style={{ marginBottom: 20 }}>
+                          <div ref={previewCarouselRef} className="add-preview-carousel"
                             onScroll={() => {
                               const el = previewCarouselRef.current;
                               if (!el) return;
-                              const w = el.offsetWidth;
-                              const idx = Math.round(el.scrollLeft / w);
-                              setPreviewCardIndex(Math.min(2, Math.max(0, idx)));
+                              setPreviewCardIndex(Math.min(2, Math.max(0, Math.round(el.scrollLeft / el.offsetWidth))));
                             }}
                           >
-                            {/* 카드 1: 일주 동물 (임시 형태) */}
                             <div className="add-preview-card">
-                              <div style={{ background: "#ffffff", borderRadius: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.10)", overflow: "hidden" }}>
-                                <div style={{ height: 8, background: "#a8d5b5", width: "100%" }} />
-                                <div style={{ padding: "28px 24px", textAlign: "center", minHeight: 140 }}>
-                                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>일주 동물</div>
-                                  <div style={{ width: 80, height: 80, margin: "0 auto 8px", borderRadius: 12, background: "rgba(173,196,175,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--text-primary)" }}>이미지</div>
-                                  <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.9 }}>테스트용 · 스와이프로 다음 카드로</div>
+                              <div style={{ background: "#fff", borderRadius: 14, border: `1px solid ${S.beige}`, overflow: "hidden", boxShadow: "0 2px 12px rgba(44,36,23,0.06)" }}>
+                                <div style={{ height: 3, background: S.gold, width: "100%" }} />
+                                <div style={{ padding: "22px 20px", textAlign: "center", minHeight: 120 }}>
+                                  <p className="saju-serif" style={{ fontSize: 11, fontWeight: 600, color: S.ink3, letterSpacing: "0.1em", marginBottom: 12, textTransform: "uppercase" }}>일주 동물</p>
+                                  {result && (() => {
+                                    const key = result.day.cheongan.hangul + result.day.jiji.hangul;
+                                    return (
+                                      <img src={`/images/day_pillars/${key}.png`} alt={key} style={{ width: 80, height: 80, objectFit: "contain", margin: "0 auto 10px", display: "block" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                    );
+                                  })()}
+                                  <p className="saju-serif" style={{ fontSize: 15, fontWeight: 600, color: S.ink, letterSpacing: "0.06em" }}>
+                                    {result.day.cheongan.hangul}{result.day.jiji.hangul}일주
+                                  </p>
                                 </div>
                               </div>
                             </div>
-                            {/* 카드 2: 기본 정보 (임시 형태) */}
                             <div className="add-preview-card">
-                              <div style={{ background: "#ffffff", borderRadius: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.10)", overflow: "hidden" }}>
-                                <div style={{ height: 8, background: "#b5c8f0", width: "100%" }} />
-                                <div style={{ padding: "28px 24px", minHeight: 140 }}>
-                                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>기본 정보</div>
-                                  <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#374151" }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>생년월일</span><span>YYYY-MM-DD</span></div>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>성별</span><span>—</span></div>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>달력</span><span>—</span></div>
+                              <div style={{ background: "#fff", borderRadius: 14, border: `1px solid ${S.beige}`, overflow: "hidden", boxShadow: "0 2px 12px rgba(44,36,23,0.06)" }}>
+                                <div style={{ height: 3, background: S.gold, width: "100%" }} />
+                                <div style={{ padding: "22px 20px", minHeight: 120 }}>
+                                  <p className="saju-serif" style={{ fontSize: 11, fontWeight: 600, color: S.ink3, letterSpacing: "0.1em", marginBottom: 16 }}>기본 정보</p>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    {[
+                                      { label: "생년월일", value: birthYmd ? `${birthYmd.slice(0,4)}.${birthYmd.slice(4,6)}.${birthYmd.slice(6,8)}` : "—" },
+                                      { label: "시각", value: timeUnknown ? "미상" : birthHm ? `${birthHm.slice(0,2)}:${birthHm.slice(2,4)}` : "—" },
+                                      { label: "성별", value: gender === "M" ? "남자" : "여자" },
+                                      { label: "달력", value: calendar === "solar" ? "양력" : "음력" },
+                                    ].map(row => (
+                                      <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 8, borderBottom: `1px solid ${S.cream3}` }}>
+                                        <span style={{ fontSize: 12, color: S.ink3 }}>{row.label}</span>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{row.value}</span>
+                                      </div>
+                                    ))}
                                   </div>
-                                  <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 12 }}>테스트용 · 형태만 표시</div>
                                 </div>
                               </div>
                             </div>
-                            {/* 카드 3: 만세력 */}
                             <div className="add-preview-card">
-                              <div
-                                style={{
-                                  position: "relative",
-                                  zIndex: 10,
-                                  background: "#ffffff",
-                                  borderRadius: 24,
-                                  boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
-                                  overflow: "hidden",
-                                }}
-                              >
-                                <div style={{ height: 8, background: "#f0d9a8", width: "100%", flexShrink: 0 }} />
-                                <div
-                                  style={{
-                                    padding: "28px 24px",
-                                    flex: 1,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <div
-                                    style={{
-                                      width: "100%",
-                                      alignSelf: "stretch",
-                                      border: "3px solid var(--border-default)",
-                                      borderRadius: 14,
-                                      background: "#fff",
-                                      overflow: "hidden",
-                                    }}
-                                  >
-                                    <div
-                                      style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "repeat(4, 1fr)",
-                                        borderBottom: "2px solid var(--border-default)",
-                                        background: "rgba(193, 216, 195, 0.15)",
-                                        fontSize: 11,
-                                        fontWeight: 700,
-                                        color: "var(--text-primary)",
-                                        textAlign: "center",
-                                        padding: "6px 4px",
-                                      }}
-                                    >
-                                      {["시주", "일주", "월주", "년주"].map((label, i) => (
-                                        <div
-                                          key={label}
-                                          style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            ...(i < 3 ? { borderRight: "2px solid var(--border-default)" } : {}),
-                                          }}
-                                        >
+                              <div style={{ background: "#fff", borderRadius: 14, border: `1px solid ${S.beige}`, overflow: "hidden", boxShadow: "0 2px 12px rgba(44,36,23,0.06)" }}>
+                                <div style={{ height: 3, background: S.gold, width: "100%" }} />
+                                <div style={{ padding: "20px 16px" }}>
+                                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                                    <p className="saju-serif" style={{ fontSize: 11, fontWeight: 600, color: S.ink3, letterSpacing: "0.1em" }}>내 사주팔자</p>
+                                    <div style={{ display: "flex", background: S.cream2, borderRadius: 6, padding: 2, border: `1px solid ${S.beige}` }}>
+                                      {(["hanja", "hangul"] as const).map(mode => (
+                                        <button key={mode} type="button" onClick={() => setScriptMode(mode)} style={{ padding: "3px 9px", borderRadius: 4, fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", background: scriptMode === mode ? S.gold : "transparent", color: scriptMode === mode ? "#fff" : S.ink3 }}>{mode === "hanja" ? "한자" : "한글"}</button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div style={{ border: `1.5px solid ${S.beige}`, borderRadius: 10, overflow: "hidden" }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream2, borderBottom: `1.5px solid ${S.beige}` }}>
+                                      {["시주","일주","월주","년주"].map((label, i) => (
+                                        <div key={label} style={{ padding: "7px 4px", textAlign: "center", fontSize: 10, fontWeight: 700, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.beige}` : "none" }}>
                                           {label}
                                         </div>
                                       ))}
                                     </div>
-                                    <div
-                                      style={{
-                                        display: "grid",
-                                        gridTemplateColumns: "repeat(4, 1fr)",
-                                        gap: 0,
-                                        textAlign: "center",
-                                      }}
-                                    >
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream, borderBottom: `1px solid ${S.cream3}` }}>
                                       {pillars.map((p, i) => (
-                                        <div
-                                          key={i}
-                                          style={{
-                                            padding: "10px 6px",
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            alignItems: "center",
-                                            gap: 4,
-                                            ...(i < pillars.length - 1 ? { borderRight: "2px solid var(--border-default)" } : {}),
-                                          }}
-                                        >
-                                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
-                                            {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
-                                          </div>
-                                          <div
-                                            style={{
-                                              fontSize: 20,
-                                              fontWeight: 700,
-                                              color: ELEMENT_COLOR[hanjaToElement(p.cheongan.hanja)] ?? "var(--text-primary)",
-                                            }}
-                                          >
-                                            {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
-                                          </div>
-                                          <div
-                                            style={{
-                                              fontSize: 20,
-                                              fontWeight: 700,
-                                              color: ELEMENT_COLOR[hanjaToElement(p.jiji.hanja)] ?? "var(--text-primary)",
-                                            }}
-                                          >
-                                            {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
-                                          </div>
-                                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
-                                            {(() => {
-                                              const ms = branchMainStem(p.jiji.hanja);
-                                              return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
-                                            })()}
-                                          </div>
-                                          {result.jijanggan && (() => {
-                                            const jijangganList =
-                                              i === 0 ? result.jijanggan!.hour : i === 1 ? result.jijanggan!.day : i === 2 ? result.jijanggan!.month : result.jijanggan!.year;
-                                            return jijangganList && jijangganList.length > 0 ? (
-                                              <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", marginTop: 2 }}>
-                                                {jijangganList.map((jj: any, idx: number) => (
-                                                  <span key={idx} style={{ fontSize: 9, fontWeight: 700, color: ELEMENT_COLOR[jj.element] ?? "var(--text-primary)" }}>
-                                                    {scriptMode === "hanja" ? jj.hanja : jj.hangul}
-                                                  </span>
-                                                ))}
-                                              </div>
-                                            ) : null;
-                                          })()}
-                                          {result.twelve_states && (
-                                            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-primary)", opacity: 0.85, marginTop: 1 }}>
-                                              {i === 0 && result.twelve_states.hour}
-                                              {i === 1 && result.twelve_states.day}
-                                              {i === 2 && result.twelve_states.month}
-                                              {i === 3 && result.twelve_states.year}
-                                            </div>
-                                          )}
+                                        <div key={i} style={{ padding: "5px 4px", textAlign: "center", fontSize: 10, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
+                                          {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
                                         </div>
                                       ))}
                                     </div>
-                                  </div>
-                                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-                                    <div style={{ display: "flex", background: "#fffde7", padding: 2, borderRadius: 6, border: "1px solid var(--border-default)" }}>
-                                      <button
-                                        type="button"
-                                        onClick={() => setScriptMode("hanja")}
-                                        style={{
-                                          minWidth: 36,
-                                          padding: "4px 8px",
-                                          borderRadius: 4,
-                                          fontSize: 10,
-                                          fontWeight: 700,
-                                          border: "none",
-                                          cursor: "pointer",
-                                          background: scriptMode === "hanja" ? "var(--text-primary)" : "transparent",
-                                          color: scriptMode === "hanja" ? "#fff" : "#374151",
-                                        }}
-                                      >
-                                        한자
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => setScriptMode("hangul")}
-                                        style={{
-                                          minWidth: 36,
-                                          padding: "4px 8px",
-                                          borderRadius: 4,
-                                          fontSize: 10,
-                                          fontWeight: 700,
-                                          border: "none",
-                                          cursor: "pointer",
-                                          background: scriptMode === "hangul" ? "var(--text-primary)" : "transparent",
-                                          color: scriptMode === "hangul" ? "#fff" : "#374151",
-                                        }}
-                                      >
-                                        한글
-                                      </button>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", borderBottom: `1.5px solid ${S.beige}` }}>
+                                      {pillars.map((p, i) => {
+                                        const el = hanjaToElement(p.cheongan.hanja);
+                                        const bgMap: Record<string, string> = { wood: "#e8f5ee", fire: "#fdecea", earth: "#fdf5e8", metal: "#eef0f4", water: "#e8eef8", none: "#f9f9f9" };
+                                        return (
+                                          <div key={i} className="pillar-cell" style={{ padding: "10px 4px", textAlign: "center", background: bgMap[el] ?? "#fff", borderRight: i < 3 ? `1.5px solid ${S.beige}` : "none" }}>
+                                            <span className="saju-serif" style={{ fontSize: 22, fontWeight: 700, color: ELEMENT_COLOR[el] ?? S.ink }}>
+                                              {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", borderBottom: `1px solid ${S.cream3}` }}>
+                                      {pillars.map((p, i) => {
+                                        const el = hanjaToElement(p.jiji.hanja);
+                                        const bgMap: Record<string, string> = { wood: "#f0faf4", fire: "#fff5f4", earth: "#fffbf0", metal: "#f4f5f7", water: "#f0f4fc", none: "#fafafa" };
+                                        return (
+                                          <div key={i} className="pillar-cell" style={{ padding: "10px 4px", textAlign: "center", background: bgMap[el] ?? "#fff", borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
+                                            <span className="saju-serif" style={{ fontSize: 22, fontWeight: 700, color: ELEMENT_COLOR[el] ?? S.ink }}>
+                                              {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream, borderBottom: `1px solid ${S.cream3}` }}>
+                                      {pillars.map((p, i) => {
+                                        const ms = branchMainStem(p.jiji.hanja);
+                                        return (
+                                          <div key={i} style={{ padding: "5px 4px", textAlign: "center", fontSize: 10, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
+                                            {ms ? tenGod(result.day.cheongan.hanja, ms) : ""}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                    {result.jijanggan && (
+                                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream2, borderBottom: `1px solid ${S.cream3}` }}>
+                                        {pillars.map((p, i) => {
+                                          const list = i === 0 ? result.jijanggan!.hour : i === 1 ? result.jijanggan!.day : i === 2 ? result.jijanggan!.month : result.jijanggan!.year;
+                                          return (
+                                            <div key={i} style={{ padding: "6px 4px", textAlign: "center", borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
+                                              {list?.map((jj: any, idx: number) => (
+                                                <span key={idx} style={{ fontSize: 9, fontWeight: 700, color: ELEMENT_COLOR[jj.element] ?? S.ink, display: "block", lineHeight: 1.6 }}>
+                                                  {scriptMode === "hanja" ? jj.hanja : jj.hangul}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+                                    {result.twelve_states && (
+                                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream }}>
+                                        {pillars.map((p, i) => (
+                                          <div key={i} style={{ padding: "5px 4px", textAlign: "center", fontSize: 9, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
+                                            {i === 0 && result.twelve_states!.hour}{i === 1 && result.twelve_states!.day}{i === 2 && result.twelve_states!.month}{i === 3 && result.twelve_states!.year}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               </div>
                             </div>
                           </div>
-                          {/* 인디케이터 점 */}
-                          <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 12 }}>
-                            {[0, 1, 2].map((i) => (
-                              <button
-                                key={i}
-                                type="button"
-                                aria-label={`카드 ${i + 1}`}
-                                onClick={() => goToPreviewCard(i)}
-                                style={{
-                                  width: 8,
-                                  height: 8,
-                                  borderRadius: "50%",
-                                  border: "none",
-                                  padding: 0,
-                                  cursor: "pointer",
-                                  background: previewCardIndex === i ? "var(--text-primary)" : "var(--bg-input)",
-                                  transition: "background 0.2s",
-                                }}
-                              />
+                          <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 10 }}>
+                            {[0, 1, 2].map(i => (
+                              <button key={i} type="button" onClick={() => goToPreviewCard(i)} style={{ width: previewCardIndex === i ? 18 : 6, height: 6, borderRadius: 99, border: "none", padding: 0, cursor: "pointer", background: previewCardIndex === i ? S.gold : S.beige, transition: "all 0.2s" }} />
                             ))}
                           </div>
                         </div>
 
-                        <div style={{ position: "relative" }}>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                            {megaOrder.map((k) => {
-                              const sec = MEGA_SECTIONS[k];
-                              const isOpen = openMegaSet.has(k);
-                              const cards = megaCards[k] || [];
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                          <div style={{ flex: 1, height: 1, background: S.beige }} />
+                          <span className="saju-serif" style={{ fontSize: 11, color: S.ink3, letterSpacing: "0.12em" }}>사주 분석</span>
+                          <div style={{ flex: 1, height: 1, background: S.beige }} />
+                        </div>
 
-                              return (
-                                <div
-                                  key={k}
-                                  style={{
-                                    border: isOpen ? "2px solid #6a994e" : "1.5px solid #e0ece0",
-                                    borderRadius: 14,
-                                    overflow: "hidden",
-                                    marginBottom: 24,
-                                    background: isOpen ? "#f8faf8" : "#fff",
-                                    transition: "border .2s, background .2s",
-                                  }}
-                                >
-                                  <button
-                                    type="button"
-                                    onClick={() => toggleMega(k)}
-                                    style={{
-                                      width: "100%",
-                                      minHeight: 48,
-                                      padding: "12px 16px",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "space-between",
-                                      background: isOpen ? "var(--bg-base)" : "transparent",
-                                      border: "none",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
-                                      <span style={{ fontSize: 14 }}>{sec.icon}</span>
-                                      <span>{sec.title}</span>
-                                    </p>
-                                    <motion.span
-                                      animate={{ rotate: isOpen ? 180 : 0 }}
-                                      transition={{ duration: 0.18 }}
-                                      style={{ flexShrink: 0, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-primary)" }}
-                                      aria-hidden
-                                    >
-                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: "var(--text-primary)" }} aria-hidden>
-                                        <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </motion.span>
-                                  </button>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          {megaOrder.map(k => {
+                            const sec = MEGA_SECTIONS[k];
+                            const isOpen = openMegaSet.has(k);
+                            const cards = megaCards[k] || [];
+                            return (
+                              <div key={k} style={{ border: `1px solid ${isOpen ? S.beige2 : S.beige}`, borderRadius: 12, overflow: "visible", background: isOpen ? "#fff" : S.cream, transition: "border 0.15s, background 0.15s" }}>
+                                <button type="button" onClick={() => toggleMega(k)} style={{ width: "100%", minHeight: 46, padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    <span style={{ fontSize: 13 }}>{sec.icon}</span>
+                                    <span className="saju-serif" style={{ fontSize: 14, fontWeight: 600, color: S.ink, letterSpacing: "0.02em" }}>{sec.title}</span>
+                                  </div>
+                                  <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.15 }} style={{ color: S.ink3 }} aria-hidden>
+                                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                                  </motion.span>
+                                </button>
 
                                   <AnimatePresence initial={false}>
                                     {isOpen && (
-                                      <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.18, ease: "easeOut" }}
-                                        style={{ overflow: "hidden" }}
-                                      >
-                                        <div style={{ padding: 0, borderTop: "1.5px solid #e0ece0" }}>
+                                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.16, ease: "easeOut" }} style={{ overflow: "visible" }}>
+                                        <div style={{ padding: "0 12px 12px", borderTop: `1px solid ${S.cream3}`, overflow: "visible" }}>
                                           {cards.map((c) => (
-                                            <div
-                                              key={c.id}
-                                              style={{
-                                                padding: 16,
-                                                position: "relative",
-                                                border: "1.5px solid #e0ece0",
-                                                borderRadius: 14,
-                                                margin: "12px 0",
-                                                background:
-                                                  c.kind === "ready"
-                                                    ? "#f8fafc"
-                                                    : c.kind === "preview"
-                                                      ? "linear-gradient(to bottom right, #fefce8, #fff7ed)"
-                                                      : "#fff",
-                                              }}
-                                            >
-                                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                                <span style={{ fontSize: 16 }}>{c.icon || "📌"}</span>
-                                                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", wordBreak: "keep-all" }}>
-                                                  {c.title}
-                                                </div>
-                                                {c.kind === "ready" && (
-                                                  <span style={{ marginLeft: "auto", fontSize: 10, fontWeight: 700, color: "#64748b" }}>
-                                                    준비중
-                                                  </span>
-                                                )}
-                                                {c.kind === "preview" && (
-                                                  <div style={{ marginLeft: "auto" }}>
-                                                    <LockIcon />
-                                                  </div>
-                                                )}
-                                              </div>
+                                            <div key={c.id} style={{ padding: 14, position: "relative", border: `1px solid ${S.cream3}`, borderRadius: 10, margin: "10px 0", background: c.kind === "ready" ? S.cream : c.kind === "preview" ? S.cream2 : "#fff" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: c.kind === "content" ? 10 : 6 }}>
+                                              <span style={{ fontSize: 14 }}>{c.icon || "·"}</span>
+                                              <span className="saju-serif" style={{ fontSize: 13, fontWeight: 600, color: S.ink, flex: 1, wordBreak: "keep-all" }}>{c.title}</span>
+                                              {c.kind === "ready" && <span style={{ fontSize: 10, color: S.ink3, background: S.cream3, padding: "2px 7px", borderRadius: 99 }}>준비중</span>}
+                                              {c.kind === "preview" && <LockIcon />}
+                                            </div>
 
                                               {c.kind === "preview" && (
                                                 <div style={{ position: "relative" }}>
@@ -2763,47 +2457,20 @@ export default function Page({
                                                       pointerEvents: "none",
                                                     }}
                                                   >
-                                                    <button
-                                                      type="button"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        router.push("/login");
-                                                      }}
-                                                      style={{
-                                                        pointerEvents: "auto",
-                                                        textAlign: "center",
-                                                        background: "rgba(255,255,255,0.95)",
-                                                        backdropFilter: "blur(8px)",
-                                                        borderRadius: 12,
-                                                        padding: "12px 16px",
-                                                        border: "2px solid #facc15",
-                                                        boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
-                                                        cursor: "pointer",
-                                                        font: "inherit",
-                                                      }}
-                                                    >
-                                                      <div style={{ display: "flex", justifyContent: "center" }}>
+                                                    <button type="button" onClick={e => { e.stopPropagation(); router.push("/login"); }} style={{ pointerEvents: "auto", background: "#fff", border: `1px solid ${S.beige}`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", boxShadow: "0 2px 12px rgba(44,36,23,0.08)" }}>
+                                                      <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
                                                         <LockIcon />
+                                                        <span className="saju-serif" style={{ fontSize: 12, fontWeight: 600, color: S.ink }}>로그인 후 확인하기</span>
                                                       </div>
-                                                      <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", margin: "4px 0 0" }}>
-                                                        🔓 로그인 후 확인하기
-                                                      </p>
-                                                      <p style={{ fontSize: 8, color: "var(--text-primary)", opacity: 0.7, margin: "2px 0 0" }}>
-                                                        카카오 로그인 후 이용 가능
-                                                      </p>
                                                     </button>
                                                   </div>
                                                 </div>
                                               )}
 
-                                              {c.kind === "ready" && (
-                                                <div style={{ fontSize: 11, lineHeight: 1.7, color: "#64748b", wordBreak: "keep-all" }}>
-                                                  콘텐츠 곧 업데이트됩니다
-                                                </div>
-                                              )}
+                                              {c.kind === "ready" && <p style={{ fontSize: 12, color: S.ink3, lineHeight: 1.7 }}>곧 업데이트 예정입니다.</p>}
 
                                               {c.kind === "content" && (
-                                                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "100%", overflow: "visible" }}>
                                                   {c.id === "identity_persona" && maskVsNatureLabels && (
                                                     <FaceSplitCard
                                                       socialLabel={maskVsNatureLabels.social}
@@ -2824,7 +2491,7 @@ export default function Page({
                                                       dayStem={result.day.cheongan.hanja}
                                                       yangCount={natureYangCount}
                                                       yinCount={natureYinCount}
-                                                      size={220}
+                                                      size={200}
                                                     />
                                                   )}
                                                   {c.id === "talent_strengthWeak" && strengthWeakVisualData && (
@@ -2905,22 +2572,10 @@ export default function Page({
                                                     />
                                                   )}
 
-                                                  {c.id === "solution_summary" && (
-                                                    <div style={{ margin: "0 4px" }}>
-                                                      <SummarySwipeCards text={c.content} />
-                                                    </div>
-                                                  )}
+                                                  {c.id === "solution_summary" && <div style={{ margin: "0 2px", width: "100%" }}><SummarySwipeCards text={c.content} /></div>}
 
-                                                  {c.id === "solution_summary" ? null : c.title === "일주 동물의 형상과 본성" ? (
-                                                    <div
-                                                      style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, wordBreak: "keep-all" }}
-                                                      dangerouslySetInnerHTML={{ __html: c.content }}
-                                                    />
-                                                  ) : (
-                                                    <div
-                                                      style={{ fontSize: 14, color: "#374151", lineHeight: 1.7, wordBreak: "keep-all" }}
-                                                      dangerouslySetInnerHTML={{ __html: c.content.replace(/\n/g, '<br />') }}
-                                                    />
+                                                  {c.id === "solution_summary" ? null : (
+                                                    <div style={{ fontSize: 13, color: S.ink2, lineHeight: 1.9, wordBreak: "keep-all", width: "100%" }} dangerouslySetInnerHTML={{ __html: c.title === "일주 동물의 형상과 본성" ? c.content : c.content.replace(/\n/g, "<br />") }} />
                                                   )}
                                                 </div>
                                               )}
@@ -2934,106 +2589,33 @@ export default function Page({
                               );
                             })}
                           </div>
-                        </div>
-                        {/* 🔥 저장 & 공유 버튼 추가 (다시 하기 버튼 바로 위) */}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-                          <button
-                            type="button"
-                            onClick={handleSaveSaju}
-                            style={{
-                              padding: 12,
-                              background: "#6a994e",
-                              color: "#fff",
-                              borderRadius: 14,
-                              border: "none",
-                              fontWeight: 700,
-                              fontSize: 14,
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            <span style={{ fontSize: 20 }}>💾</span>
-                            <span>저장하기</span>
-                          </button>
 
-                          <button
-                            type="button"
-                            onClick={handleShare}
-                            style={{
-                              padding: 12,
-                              background: "#fffde7",
-                              border: "1.5px solid #f0d060",
-                              color: "var(--text-primary)",
-                              borderRadius: 14,
-                              fontWeight: 700,
-                              fontSize: 14,
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 4,
-                              cursor: "pointer",
-                            }}
-                          >
-                            <span style={{ fontSize: 20 }}>🔗</span>
-                            <span>공유하기</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0 16px" }}>
+                          <div style={{ flex: 1, height: 1, background: S.beige }} />
+                          <div style={{ width: 4, height: 4, borderRadius: "50%", background: S.beige2 }} />
+                          <div style={{ flex: 1, height: 1, background: S.beige }} />
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                          <button type="button" onClick={handleSaveSaju} style={{ padding: "12px 8px", background: S.gold, color: "#fff", borderRadius: 10, border: "none", fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", fontFamily: S.fontBody }}>
+                            <Icon icon="mdi:bookmark-outline" width={16} />
+                            저장하기
+                          </button>
+                          <button type="button" onClick={handleShare} style={{ padding: "12px 8px", background: "#fff", border: `1px solid ${S.beige}`, color: S.ink, borderRadius: 10, fontWeight: 700, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, cursor: "pointer", fontFamily: S.fontBody }}>
+                            <Icon icon="mdi:share-variant-outline" width={16} />
+                            공유하기
                           </button>
                         </div>
-                        <div style={{ marginTop: 16 }}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setResult(null);
-                              setFortuneAnalysis(null);
-                              setCharmAnalysis(null);
-                              setTalentAnalysis(null);
-                              setStrengthAnalysis(null);
-                              setRelationsAnalysis(null);
-                              setSpecialStarsAnalysis(null);
-                              setTodayFortune(null);
-                              setNewInterpretation(null);
-                              setMaskVsNatureAnalysis(null);
-                              setMaskVsNatureLabels(null);
-                              setSummaryGuide(null);
-                              setExpandedSection(null);
-                              setShowFortune(false);
-                              setShowCharm(false);
-                              setShowTalent(false);
-                              setShowStrength(false);
-                              setShowRelations(false);
-                              setShowSpecialStars(false);
-                              setShowToday(false);
-                              setBirthYmd("");
-                              setBirthHm("");
-                              setTimeUnknown(false);
-                              setLoading(false);
-                              setErr("");
-                              setShowHarmonyAfter(false);
-                            }}
-                            style={{
-                              width: "100%",
-                              padding: "10px 12px",
-                              background: "#fff",
-                              border: "1.5px solid #fecaca",
-                              color: "#ef4444",
-                              borderRadius: 14,
-                              fontSize: 12,
-                              fontWeight: 700,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: 8,
-                              cursor: "pointer",
-                            }}
-                          >
-                            <span style={{ fontSize: 14 }}>🔄</span>
-                            <span>다시 하기</span>
-                          </button>
-                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setResult(null); setFortuneAnalysis(null); setCharmAnalysis(null); setTalentAnalysis(null); setStrengthAnalysis(null); setRelationsAnalysis(null); setSpecialStarsAnalysis(null); setTodayFortune(null); setNewInterpretation(null); setMaskVsNatureAnalysis(null); setMaskVsNatureLabels(null); setSummaryGuide(null); setExpandedSection(null); setShowFortune(false); setShowCharm(false); setShowTalent(false); setShowStrength(false); setShowRelations(false); setShowSpecialStars(false); setShowToday(false); setBirthYmd(""); setBirthHm(""); setTimeUnknown(false); setLoading(false); setErr(""); setShowHarmonyAfter(false);
+                          }}
+                          style={{ width: "100%", padding: "10px 12px", background: "transparent", border: `1px solid ${S.beige}`, color: S.ink3, borderRadius: 10, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, cursor: "pointer", fontFamily: S.fontBody }}
+                        >
+                          <Icon icon="mdi:refresh" width={14} />
+                          다시 입력하기
+                        </button>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -3041,112 +2623,30 @@ export default function Page({
               </div>
             </div>
           </div>
-          {/* 🔥 저장 다이얼로그 — 인라인 스타일 통일 */}
           {showSaveDialog && (
-            <div
-              style={{
-                position: "fixed",
-                inset: 0,
-                background: "rgba(0,0,0,0.5)",
-                zIndex: 9999,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 20,
-              }}
-              onClick={() => {
-                if (!savingToServer) {
-                  setShowSaveDialog(false);
-                  setSajuName("");
-                }
-              }}
-            >
-              <div
-                style={{
-                  background: "#fff",
-                  borderRadius: 18,
-                  padding: 24,
-                  maxWidth: 320,
-                  width: "100%",
-                  border: "1.5px solid var(--border-default)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                  fontFamily: "var(--font-sans)",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
-                  💾 사주 저장하기
-                </h3>
-                <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, marginBottom: 16 }}>
-                  이 사주에 이름을 붙여주세요
-                  <br />
-                  <span style={{ fontSize: 12, color: "#9ca3af" }}>(예: 내 사주, 엄마 사주, 친구 사주)</span>
+            <div style={{ position: "fixed", inset: 0, background: "rgba(44,36,23,0.45)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => { if (!savingToServer) { setShowSaveDialog(false); setSajuName(""); } }}>
+              <div style={{ background: "#fff", borderRadius: 16, padding: "28px 22px", maxWidth: 320, width: "100%", border: `1px solid ${S.beige}`, boxShadow: "0 8px 40px rgba(44,36,23,0.14)" }} onClick={e => e.stopPropagation()}>
+                <h3 className="saju-serif" style={{ fontSize: 16, fontWeight: 600, color: S.ink, marginBottom: 6 }}>사주 저장</h3>
+                <p style={{ fontSize: 12, color: S.ink3, lineHeight: 1.7, marginBottom: 18 }}>
+                  이 사주에 이름을 붙여주세요.<br />
+                  <span style={{ color: S.beige2 }}>예: 내 사주, 엄마 사주, 친구 사주</span>
                 </p>
                 <input
                   type="text"
                   value={sajuName}
-                  onChange={(e) => setSajuName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") confirmSave();
-                  }}
+                  onChange={e => setSajuName(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") confirmSave(); }}
                   onFocus={() => setSaveDialogInputFocused(true)}
                   onBlur={() => setSaveDialogInputFocused(false)}
-                  placeholder="사주 이름 입력"
+                  placeholder="이름 입력"
                   maxLength={20}
                   autoFocus
-                  style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: `1.5px solid ${saveDialogInputFocused ? "#6a994e" : "var(--border-default)"}`,
-                    fontSize: 14,
-                    fontFamily: "var(--font-sans)",
-                    outline: "none",
-                    marginBottom: 6,
-                  }}
+                  style={{ width: "100%", padding: "11px 13px", borderRadius: 8, border: `1.5px solid ${saveDialogInputFocused ? S.gold : S.beige}`, fontSize: 14, outline: "none", marginBottom: 4, boxSizing: "border-box", fontFamily: S.fontBody, background: S.cream, color: S.ink }}
                 />
-                <div style={{ fontSize: 11, color: "#9ca3af", textAlign: "right", marginBottom: 14 }}>
-                  {sajuName.length}/20
-                </div>
+                <div style={{ fontSize: 10, color: S.beige2, textAlign: "right", marginBottom: 16 }}>{sajuName.length}/20</div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowSaveDialog(false);
-                      setSajuName("");
-                    }}
-                    style={{
-                      flex: 1,
-                      padding: 11,
-                      borderRadius: 12,
-                      border: "1.5px solid #e0ece0",
-                      background: "#f8faf8",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: "#6b7280",
-                      cursor: "pointer",
-                    }}
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="button"
-                    disabled={savingToServer}
-                    onClick={() => confirmSave()}
-                    style={{
-                      flex: 1,
-                      padding: 11,
-                      borderRadius: 12,
-                      border: "none",
-                      background: savingToServer ? "#9cbf9c" : "#6a994e",
-                      fontSize: 14,
-                      fontWeight: 700,
-                      color: "#fff",
-                      cursor: savingToServer ? "wait" : "pointer",
-                    }}
-                  >
-                    {savingToServer ? "저장 중…" : "저장"}
-                  </button>
+                  <button type="button" onClick={() => { setShowSaveDialog(false); setSajuName(""); }} style={{ flex: 1, padding: 11, borderRadius: 8, border: `1px solid ${S.beige}`, background: S.cream, fontSize: 13, fontWeight: 600, color: S.ink3, cursor: "pointer", fontFamily: S.fontBody }}>취소</button>
+                  <button type="button" disabled={savingToServer} onClick={confirmSave} style={{ flex: 1, padding: 11, borderRadius: 8, border: "none", background: savingToServer ? S.beige : S.gold, fontSize: 13, fontWeight: 700, color: "#fff", cursor: savingToServer ? "wait" : "pointer", fontFamily: S.fontBody }}>{savingToServer ? "저장 중…" : "저장"}</button>
                 </div>
               </div>
             </div>

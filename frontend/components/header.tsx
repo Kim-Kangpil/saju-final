@@ -79,7 +79,7 @@ export default function Header() {
               </button>
               <button
                 onClick={() => router.push("/signup")}
-                className="px-3 py-2 text-sm font-bold bg-[var(--text-primary)] text-white rounded-lg hover:bg-[#6d8b3a] transition-colors"
+                className="px-3 py-2 text-sm font-bold bg-[var(--text-primary)] text-white rounded-lg hover:opacity-90 transition-opacity"
               >
                 회원가입
               </button>

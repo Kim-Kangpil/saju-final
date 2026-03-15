@@ -21,7 +21,7 @@ export default function TermsPage({
                 </div>
 
                 {/* 본문 카드 */}
-                <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-[#c1d8c3]">
+                <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-[var(--border-default)]">
                     <div className="space-y-6 text-[var(--text-primary)]">
                         {/* 제1조 */}
                         <section>
@@ -101,7 +101,7 @@ export default function TermsPage({
                     </div>
 
                     {/* 하단 버튼 */}
-                    <div className="mt-8 pt-6 border-t-2 border-[#c1d8c3] flex justify-center">
+                    <div className="mt-8 pt-6 border-t-2 border-[var(--border-default)] flex justify-center">
                         <Link
                             href="/home"
                             className="px-6 py-3 bg-[#f4e5a1] text-[var(--text-primary)] rounded-xl font-bold hover:bg-[#f0d97f] transition-colors shadow-lg"

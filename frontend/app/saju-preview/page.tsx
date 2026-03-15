@@ -861,7 +861,7 @@ function SajuPreviewContent() {
                 height: carouselIndex === i ? 10 : 8,
                 borderRadius: "50%",
                 border: "none",
-                background: carouselIndex === i ? "#4a7c59" : "rgba(173,196,175,0.5)",
+                background: carouselIndex === i ? "var(--text-primary)" : "var(--border-default)",
                 cursor: "pointer",
                 transition: "background 0.2s ease, width 0.2s ease, height 0.2s ease",
               }}
@@ -941,7 +941,7 @@ function SajuPreviewContent() {
               <Icon
                 icon="mdi:ticket-confirmation-outline"
                 width={40}
-                style={{ color: "#6a994e", display: "block", margin: "0 auto 12px" }}
+                style={{ color: "var(--text-primary)", display: "block", margin: "0 auto 12px" }}
               />
               <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
                 분석권이 부족해요
@@ -961,7 +961,7 @@ function SajuPreviewContent() {
                 padding: 13,
                 borderRadius: 14,
                 border: "none",
-                background: "#6a994e",
+                background: "var(--text-primary)",
                 fontSize: 15,
                 fontWeight: 700,
                 color: "#fff",

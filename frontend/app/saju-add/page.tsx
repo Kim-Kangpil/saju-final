@@ -386,7 +386,7 @@ export default function SajuAddPage({
                     flex: 1,
                     padding: "12px 16px",
                     borderRadius: radius,
-                    border: gender === "female" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    border: gender === "female" ? `3px solid ${borderSelected}` : `1.5px solid ${borderField}`,
                     background: inputBg,
                     fontSize: 14,
                     fontWeight: 600,
@@ -403,7 +403,7 @@ export default function SajuAddPage({
                     flex: 1,
                     padding: "12px 16px",
                     borderRadius: radius,
-                    border: gender === "male" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    border: gender === "male" ? `3px solid ${borderSelected}` : `1.5px solid ${borderField}`,
                     background: inputBg,
                     fontSize: 14,
                     fontWeight: 600,
@@ -430,7 +430,7 @@ export default function SajuAddPage({
                     flex: 1,
                     padding: "12px 16px",
                     borderRadius: radius,
-                    border: calendarType === "solar" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    border: calendarType === "solar" ? `3px solid ${borderSelected}` : `1.5px solid ${borderField}`,
                     background: inputBg,
                     fontSize: 14,
                     fontWeight: 600,
@@ -447,7 +447,7 @@ export default function SajuAddPage({
                     flex: 1,
                     padding: "12px 16px",
                     borderRadius: radius,
-                    border: calendarType === "lunar" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    border: calendarType === "lunar" ? `3px solid ${borderSelected}` : `1.5px solid ${borderField}`,
                     background: inputBg,
                     fontSize: 14,
                     fontWeight: 600,
@@ -460,10 +460,50 @@ export default function SajuAddPage({
               {errors.calendar && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>양력/음력을 선택해주세요.</p>}
             </div>
 
-            {/* 3. 생년월일시 */}
+            {/* 3. 출생 시간 여부 → 생년월일(8자리) → (시간 알면) 4자리 입력 */}
             <div>
               <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
-                생년월일시 <span style={{ color: "#e11d48" }}>*</span>
+                출생 시간을 아시나요? <span style={{ color: "#e11d48" }}>*</span>
+              </label>
+              <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+                <button
+                  type="button"
+                  className="tap sans"
+                  onClick={() => setKnowTime("yes")}
+                  style={{
+                    flex: 1,
+                    padding: "12px 16px",
+                    borderRadius: radius,
+                    border: knowTime === "yes" ? `3px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    background: inputBg,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: textDark,
+                  }}
+                >
+                  알아요
+                </button>
+                <button
+                  type="button"
+                  className="tap sans"
+                  onClick={() => { setKnowTime("no"); setTimeRaw(""); }}
+                  style={{
+                    flex: 1,
+                    padding: "12px 16px",
+                    borderRadius: radius,
+                    border: knowTime === "no" ? `3px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    background: inputBg,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: textDark,
+                  }}
+                >
+                  모르겠어요
+                </button>
+              </div>
+
+              <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
+                생년월일 <span style={{ color: "#e11d48" }}>*</span>
               </label>
               <input
                 type="text"
@@ -471,7 +511,7 @@ export default function SajuAddPage({
                 value={displayBirth()}
                 onChange={(e) => formatBirth(e.target.value)}
                 onKeyDown={handleBirthKeyDown}
-                placeholder="생년월일시 (예: 2025 0818 0500)"
+                placeholder="예: 19900101 (8자리)"
                 className="saju-add-input"
                 style={{
                   width: "100%",
@@ -484,58 +524,34 @@ export default function SajuAddPage({
                   color: textDark,
                 }}
               />
-              <p style={{ marginTop: 8, fontSize: 13, color: textDark }}>
-                <button
-                  type="button"
-                  className="tap"
-                  onClick={() => setKnowTime(knowTime === "no" ? "yes" : "no")}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    background: "none",
-                    border: "none",
-                    padding: 0,
-                    cursor: "pointer",
-                    color: textDark,
-                    fontSize: 13,
-                  }}
-                >
-                  <span
+              {errors.birth && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>생년월일 8자리를 입력해주세요.</p>}
+
+              {knowTime === "yes" && (
+                <>
+                  <label style={{ fontSize: 14, color: textDark, marginTop: 16, marginBottom: 8, display: "block", fontWeight: 600 }}>
+                    출생 시간 <span style={{ color: "#e11d48" }}>*</span>
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={displayTime()}
+                    onChange={(e) => formatTime(e.target.value)}
+                    placeholder="예: 1430 → 14시 30분"
+                    className="saju-add-input"
                     style={{
-                      width: 18,
-                      height: 18,
-                      borderRadius: "50%",
-                      border: `1.5px solid ${knowTime === "no" ? borderSelected : "var(--border-default)"}`,
-                      background: knowTime === "no" ? borderSelected : "transparent",
+                      width: "100%",
+                      padding: "14px 16px",
+                      borderRadius: radius,
+                      border: errors.time ? "1.5px solid #e11d48" : `1.5px solid ${borderField}`,
+                      fontSize: 14,
+                      outline: "none",
+                      background: inputBg,
+                      color: textDark,
                     }}
                   />
-                  시간 모름
-                </button>
-              </p>
-              {knowTime === "yes" && (
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={displayTime()}
-                  onChange={(e) => formatTime(e.target.value)}
-                  placeholder="예: 1430 → 14:30"
-                  className="saju-add-input"
-                  style={{
-                    width: "100%",
-                    marginTop: 8,
-                    padding: "14px 16px",
-                    borderRadius: radius,
-                    border: errors.time ? "1.5px solid #e11d48" : `1.5px solid ${borderField}`,
-                    fontSize: 14,
-                    outline: "none",
-                    background: inputBg,
-                    color: textDark,
-                  }}
-                />
+                  {errors.time && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>시간 4자리를 입력해주세요.</p>}
+                </>
               )}
-              {errors.birth && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>생년월일 8자리를 입력해주세요.</p>}
-              {errors.time && knowTime === "yes" && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>시간 4자리를 입력해주세요.</p>}
             </div>
 
             {/* 4. 이름 (기능 유지) */}

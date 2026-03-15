@@ -90,9 +90,10 @@ export function SajuEnergyWheel({ dayStem, yangCount, yinCount, size = 220 }: Sa
   const yinLabelAngle = yinCount > 0 ? yangEndAngle + (360 - yangEndAngle) / 2 : -999;
   const labelDistance = outerR + 20;
 
+  const svgSize = size + 40;
   return (
-    <div className="flex flex-col items-center gap-3 my-4">
-      <svg width={size + 40} height={size + 40} viewBox={`0 0 ${size + 40} ${size + 40}`}>
+    <div className="flex flex-col items-center gap-3 my-4 w-full" style={{ maxWidth: "100%" }}>
+      <svg width={svgSize} height={svgSize} viewBox={`0 0 ${svgSize} ${svgSize}`} style={{ maxWidth: "100%", height: "auto" }} preserveAspectRatio="xMidYMid meet">
         <defs>
           <radialGradient id={`coreGrad_${dayStem}`} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="white" stopOpacity={1} />

@@ -79,7 +79,7 @@ export default function ContactPage({
                 </div>
 
                 {/* 문의 폼 카드 */}
-                <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-[#c1d8c3]">
+                <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-[var(--border-default)]">
                     {/* 성공 메시지 */}
                     {submitSuccess && (
                         <div className="mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-xl">
@@ -111,7 +111,7 @@ export default function ContactPage({
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 text-base border-2 border-[#c1d8c3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] touch-manipulation"
+                                className="w-full px-4 py-3 text-base border-2 border-[var(--border-default)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] touch-manipulation"
                                 placeholder="홍길동"
                             />
                         </div>
@@ -127,7 +127,7 @@ export default function ContactPage({
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 text-base border-2 border-[#c1d8c3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] touch-manipulation"
+                                className="w-full px-4 py-3 text-base border-2 border-[var(--border-default)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] touch-manipulation"
                                 placeholder="example@email.com"
                             />
                         </div>
@@ -142,7 +142,7 @@ export default function ContactPage({
                                 value={formData.subject}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 text-base border-2 border-[#c1d8c3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] touch-manipulation"
+                                className="w-full px-4 py-3 text-base border-2 border-[var(--border-default)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] touch-manipulation"
                             >
                                 <option value="">선택하세요</option>
                                 <option value="service">서비스 이용 문의</option>
@@ -164,7 +164,7 @@ export default function ContactPage({
                                 onChange={handleChange}
                                 required
                                 rows={6}
-                                className="w-full px-4 py-3 text-base border-2 border-[#c1d8c3] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] resize-none touch-manipulation"
+                                className="w-full px-4 py-3 text-base border-2 border-[var(--border-default)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--text-primary)] text-[var(--text-primary)] resize-none touch-manipulation"
                                 placeholder="자세한 문의 내용을 입력해주세요"
                             />
                         </div>
@@ -183,7 +183,7 @@ export default function ContactPage({
                     </form>
 
                     {/* 하단 안내 */}
-                    <div className="mt-6 pt-6 border-t-2 border-[#c1d8c3]">
+                    <div className="mt-6 pt-6 border-t-2 border-[var(--border-default)]">
                         <div className="bg-[#f5f5dc] rounded-xl p-4">
                             <h3 className="text-sm font-bold text-[var(--text-primary)] mb-2">
                                 📧 직접 이메일 보내기

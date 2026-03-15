@@ -103,7 +103,7 @@ export default function PaymentPage({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#eef4ee] flex items-center justify-center p-4">
+      <main className="min-h-screen bg-[var(--bg-base)] flex items-center justify-center p-4">
         <p className="text-[var(--text-primary)] font-medium">결제 준비 중...</p>
       </main>
     );
@@ -111,7 +111,7 @@ export default function PaymentPage({
 
   if (error && !orderId) {
     return (
-      <main className="min-h-screen bg-[#eef4ee] flex flex-col items-center justify-center p-4 gap-4">
+      <main className="min-h-screen bg-[var(--bg-base)] flex flex-col items-center justify-center p-4 gap-4">
         <p className="text-red-600">{error}</p>
         <button
           type="button"
@@ -125,9 +125,9 @@ export default function PaymentPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#eef4ee] flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white border-2 border-[#adc4af] shadow-lg p-6">
-        <h1 className="text-lg font-bold text-[#2d4a1e] mb-1">{ORDER_NAME}</h1>
+    <main className="min-h-screen bg-[var(--bg-base)] flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white border-2 border-[var(--border-default)] shadow-lg p-6">
+        <h1 className="text-lg font-bold text-[var(--text-primary)] mb-1">{ORDER_NAME}</h1>
         <p className="text-2xl font-bold text-[var(--text-primary)] mb-6">
           {AMOUNT.toLocaleString()}원
         </p>
@@ -143,7 +143,7 @@ export default function PaymentPage({
             type="button"
             disabled={!!paying}
             onClick={() => requestPay("CARD")}
-            className="w-full py-3 rounded-xl font-bold text-white bg-[#1a2e0e] hover:bg-[#2d4a1e] disabled:opacity-50 transition-colors"
+            className="w-full py-3 rounded-xl font-bold text-white bg-[var(--text-primary)] hover:opacity-90 disabled:opacity-50 transition-colors"
           >
             {paying === "card" ? "결제 진행 중..." : "카드로 결제"}
           </button>

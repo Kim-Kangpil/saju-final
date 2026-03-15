@@ -14,7 +14,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from typing import Optional, Any
 import json
-from datetime import datetime
+from datetime import datetime, date, timezone, timedelta
 import asyncio
 from dotenv import load_dotenv
 from pathlib import Path
@@ -271,23 +271,58 @@ def get_theory_retriever() -> TheoryRetriever:
     return _theory_retriever
 
 
+def _safe_hanja(obj: Any, prefix: str) -> str:
+    """result 내 hour/day/month/year 객체에서 한자 문자열 추출 (천간+지지)"""
+    if not obj or not isinstance(obj, dict):
+        return ""
+    cheongan = obj.get("cheongan") if isinstance(obj.get("cheongan"), dict) else {}
+    jiji = obj.get("jiji") if isinstance(obj.get("jiji"), dict) else {}
+    c = (cheongan.get("hanja") or "").strip()
+    j = (jiji.get("hanja") or "").strip()
+    return (c + j) if (c or j) else ""
+
+
 def _build_saju_context(saju: Optional[dict]) -> str:
-    """사주 데이터를 GPT 컨텍스트 문자열로 변환"""
+    """사주(만세력) 데이터를 GPT 컨텍스트 문자열로 변환. AI가 이 데이터만 사용해 답하도록 명시."""
     if not saju or not isinstance(saju, dict):
         return ""
-    parts = []
+    parts = ["[이 사용자의 만세력 / 사주 컨텍스트] (만세력·사주 관련 질문에는 반드시 아래 데이터만 사용할 것)"]
+
+    name = (saju.get("name") or "").strip()
+    if name:
+        parts.append(f"이름(표시용): {name}")
+
+    birth_ymd = (saju.get("birthYmd") or "").strip()
+    if len(birth_ymd) >= 8:
+        y, m, d = birth_ymd[:4], birth_ymd[4:6], birth_ymd[6:8]
+        parts.append(f"생년월일: {y}년 {m}월 {d}일")
+    birth_hm = saju.get("birthHm")
+    time_unknown = saju.get("timeUnknown")
+    if not time_unknown and birth_hm and len(str(birth_hm)) >= 4:
+        h, mi = str(birth_hm).zfill(4)[:2], str(birth_hm).zfill(4)[2:4]
+        parts.append(f"생시: {h}시 {mi}분")
+    elif time_unknown:
+        parts.append("생시: 모름(자시 기준 등 적용)")
+    cal = saju.get("calendar") or ""
+    if cal in ("solar", "lunar"):
+        parts.append(f"기준: {'양력' if cal == 'solar' else '음력'}")
+    gender = saju.get("gender")
+    if gender in ("M", "F"):
+        parts.append("성별: 남" if gender == "M" else "성별: 여")
+
     result = saju.get("result") if isinstance(saju.get("result"), dict) else {}
     if result:
-        hour = result.get("hour") or {}
-        day = result.get("day") or {}
-        month = result.get("month") or {}
         year = result.get("year") or {}
-        if any([hour, day, month, year]):
+        month = result.get("month") or {}
+        day = result.get("day") or {}
+        hour = result.get("hour") or {}
+        y_str = _safe_hanja(year, "년")
+        m_str = _safe_hanja(month, "월")
+        d_str = _safe_hanja(day, "일")
+        h_str = _safe_hanja(hour, "시")
+        if y_str or m_str or d_str or h_str:
             parts.append(
-                f"사주팔자: 년주 {year.get('cheongan', {}).get('hanja', '')}{year.get('jiji', {}).get('hanja', '')} "
-                f"월주 {month.get('cheongan', {}).get('hanja', '')}{month.get('jiji', {}).get('hanja', '')} "
-                f"일주 {day.get('cheongan', {}).get('hanja', '')}{day.get('jiji', {}).get('hanja', '')} "
-                f"시주 {hour.get('cheongan', {}).get('hanja', '')}{hour.get('jiji', {}).get('hanja', '')}"
+                f"사주팔자(한자): 년주 {y_str or '-'}  월주 {m_str or '-'}  일주 {d_str or '-'}  시주 {h_str or '-'}"
             )
         summary = result.get("summary") if isinstance(result.get("summary"), dict) else {}
         if summary:
@@ -300,9 +335,10 @@ def _build_saju_context(saju: Optional[dict]) -> str:
         patterns = result.get("patterns") or []
         if patterns:
             parts.append("패턴/특징: " + ", ".join(str(p) for p in patterns[:15]))
-    if not parts:
+
+    if len(parts) <= 1:
         return ""
-    return "\n".join(["[사주 컨텍스트]", *parts])
+    return "\n".join(parts)
 
 
 @app.post("/api/chat")
@@ -332,6 +368,10 @@ async def api_chat(req: ChatRequest, request: Request):
     system_parts = [
         "당신은 한양사주의 AI 상담사입니다. 사주, 운세, 고민 상담 등에 대해 친절하고 쉽게 답변합니다.",
         "전문 용어(일간, 십성, 오행 등)는 가능한 한 쓰지 않고, 일상적인 말로 풀어서 설명해 주세요.",
+        "",
+        "【중요】 사용자의 만세력/사주를 물을 때:",
+        "- 아래 [이 사용자의 만세력 / 사주 컨텍스트]가 있으면, **그 안의 데이터만** 사용해서 답하세요. 생년월일·사주팔자·생시 등은 컨텍스트에 적힌 그대로만 말하세요. 지어내지 마세요.",
+        "- 컨텍스트가 없거나 비어 있으면, '저장된 사주가 없어요. 먼저 사주를 등록해 주시면 정확히 말씀드릴 수 있어요.'라고 안내하세요.",
     ]
     if theory_text:
         system_parts.append("\n\n[참고 이론]\n" + theory_text[:10000])
@@ -570,6 +610,38 @@ def health():
     return {"ok": True}
 
 
+@app.get("/saju/day-pillar")
+def get_day_pillar(date: Optional[str] = None):
+    """특정 날짜의 일진(일주) 반환. date=YYYY-MM-DD (없으면 서버 기준 오늘)."""
+    try:
+        if not date:
+            kst = timezone(timedelta(hours=9))
+            today = datetime.now(kst).date()
+        else:
+            parts = date.strip().split("-")
+            if len(parts) != 3:
+                raise ValueError("date는 YYYY-MM-DD 형식이어야 합니다")
+            today = date(int(parts[0]), int(parts[1]), int(parts[2]))
+        dt = datetime(today.year, today.month, today.day, 12, 0)
+        dj = test.calculate_day_pillar(dt)
+        hanja_map = {
+            "甲": "갑", "乙": "을", "丙": "병", "丁": "정", "戊": "무",
+            "己": "기", "庚": "경", "辛": "신", "壬": "임", "癸": "계",
+            "子": "자", "丑": "축", "寅": "인", "卯": "묘", "辰": "진",
+            "巳": "사", "午": "오", "未": "미", "申": "신", "酉": "유",
+            "戌": "술", "亥": "해"
+        }
+        hangul = "".join([hanja_map.get(c, c) for c in dj])
+        return {
+            "date": f"{today.year}-{today.month:02d}-{today.day:02d}",
+            "day_pillar": dj,
+            "day_pillar_hangul": hangul,
+        }
+    except Exception as e:
+        print(f"❌ /saju/day-pillar 에러: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.post("/saju/full")
 async def get_full_saju(req: SajuRequest):
     """✅ 전체 사주 분석 (프론트엔드에서 사용)"""
@@ -630,6 +702,22 @@ async def get_full_saju(req: SajuRequest):
             traceback.print_exc()
             jijanggan = {}
 
+        # 대운 계산 (기존 로직 사용)
+        daeun_start_age = None
+        daeun_direction = None
+        daeun_list = None
+        try:
+            gender = _parse_gender(req.gender)
+            d_num, d_list, d_dir = test.calculate_daeun(birth_dt, gender, yj, mj, DB)
+            daeun_start_age = d_num
+            daeun_direction = d_dir
+            daeun_list = d_list
+            print(f"✅ 대운: 시작 {d_num}세, {d_dir}, {len(d_list)}개")
+        except Exception as e:
+            print(f"⚠️ 대운 계산 실패: {e}")
+            import traceback
+            traceback.print_exc()
+
         return {
             "input_datetime": f"{req.year}-{req.month:02d}-{req.day:02d} {req.hour:02d}:{req.minute:02d}",
             "solar_datetime_used": solar_dt_used.strftime("%Y-%m-%d %H:%M"),
@@ -638,7 +726,10 @@ async def get_full_saju(req: SajuRequest):
             "day_pillar": dj,
             "hour_pillar": sj,
             "twelve_states": twelve_states,
-            "jijanggan": jijanggan
+            "jijanggan": jijanggan,
+            "daeun_start_age": daeun_start_age,
+            "daeun_direction": daeun_direction,
+            "daeun_list": daeun_list,
         }
     except Exception as e:
         print(f"❌ /saju/full 에러: {e}")

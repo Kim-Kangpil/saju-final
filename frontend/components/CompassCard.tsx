@@ -55,20 +55,27 @@ export function CompassCard({ data }: { data: CompassCardData }) {
   const r = 118;
   const { title, ji, jiName, sipsung, sipsungDesc, keywords, summary, desc } = data;
 
+  /* 한양사주AI 디자인 시스템 색상 (노랑·밝은 초록 제거, 베이지·무드 통일) */
+  const cardBg = "var(--bg-base)";
+  const borderColor = "var(--border-default)";
+  const accentMuted = "var(--text-secondary)";
+  const needleColor = "#6B6B6B";
+
   return (
     <div
-      className="rounded-2xl overflow-hidden mx-auto w-full max-w-[420px]"
+      className="rounded-2xl overflow-visible mx-auto w-full max-w-[420px]"
       style={{
-        background: "linear-gradient(160deg, #f5f7f4 0%, #eef4ee 50%, #f0f4f2 100%)",
-        border: "1px solid rgba(107, 138, 122, 0.35)",
+        background: cardBg,
+        border: `1px solid ${borderColor}`,
         padding: "20px 16px 24px",
+        fontFamily: "var(--font-sans)",
       }}
     >
       {/* 헤더 */}
       <div className="text-center mb-4">
         <div
           className="text-[10px] tracking-widest uppercase mb-1"
-          style={{ color: "#5a7a6a" }}
+          style={{ color: accentMuted }}
         >
           🧭 삶의 나침반
         </div>
@@ -83,41 +90,53 @@ export function CompassCard({ data }: { data: CompassCardData }) {
       {/* 나침반 의미 안내 */}
       <div
         className="text-center mb-3"
-        style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5 }}
+        style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6 }}
       >
         <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>↑ 나침반이 가리키는 방향</span>
         <span> = 당신의 핵심 가치(태어난 달)</span>
         <br />
-        <span style={{ color: "#6B8A7A" }}>다섯 글자 = 이 가치를 나타내는 키워드들</span>
+        <span style={{ color: accentMuted }}>다섯 글자 = 이 가치를 나타내는 키워드들</span>
       </div>
 
-      {/* 나침반 */}
-      <div className="relative w-[240px] h-[240px] mx-auto mb-4">
-        {/* 외곽 링 */}
+      {/* 나침반: 264px 영역에 링 포함해 중앙 정렬, 글자 가독성 확보 */}
+      <div
+        className="relative mx-auto mb-4 flex items-center justify-center"
+        style={{ width: 264, height: 264 }}
+      >
+        {/* 외곽 링: 264px 원으로 영역 안에 완전히 수용 */}
         <div
           className="absolute rounded-full border"
           style={{
-            inset: -12,
-            borderColor: "rgba(107, 138, 122, 0.2)",
-            background: "radial-gradient(circle, transparent 60%, rgba(107, 138, 122, 0.03) 100%)",
+            width: 264,
+            height: 264,
+            left: 0,
+            top: 0,
+            borderColor: "rgba(58, 58, 58, 0.12)",
+            background: "radial-gradient(circle, transparent 60%, rgba(58, 58, 58, 0.04) 100%)",
           }}
         />
 
-        <svg width="240" height="240" viewBox="0 0 240 240" className="absolute inset-0">
+        <svg
+          width={240}
+          height={240}
+          viewBox="0 0 240 240"
+          className="absolute"
+          style={{ left: 12, top: 12 }}
+        >
           {/* 배경 원 */}
           <circle
             cx={cx}
             cy={cy}
             r={r - 2}
-            fill="#f5f7f4"
-            stroke="rgba(107, 138, 122, 0.45)"
+            fill={cardBg}
+            stroke="rgba(58, 58, 58, 0.2)"
             strokeWidth="1.5"
           />
           {/* 내부 링 */}
-          <circle cx={cx} cy={cy} r={r * 0.65} fill="none" stroke="rgba(107, 138, 122, 0.13)" strokeWidth="1" />
-          <circle cx={cx} cy={cy} r={r * 0.38} fill="none" stroke="rgba(107, 138, 122, 0.13)" strokeWidth="1" />
+          <circle cx={cx} cy={cy} r={r * 0.65} fill="none" stroke="rgba(58, 58, 58, 0.1)" strokeWidth="1" />
+          <circle cx={cx} cy={cy} r={r * 0.38} fill="none" stroke="rgba(58, 58, 58, 0.1)" strokeWidth="1" />
 
-          {/* 방위 눈금선 + 키워드 (라벨을 바깥쪽으로 배치해 바늘과 겹치지 않게) */}
+          {/* 방위 눈금선 + 키워드 (가독성: 글자 크기·대비 강화) */}
           {DIRECTIONS.map((d, i) => {
             const inner = polarToXY(d.angle, r * 0.65, cx, cy);
             const outer = polarToXY(d.angle, r * 0.92, cx, cy);
@@ -131,7 +150,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
                   y1={inner.y}
                   x2={outer.x}
                   y2={outer.y}
-                  stroke="rgba(107, 138, 122, 0.33)"
+                  stroke="rgba(58, 58, 58, 0.2)"
                   strokeWidth="1"
                 />
                 <text
@@ -139,9 +158,9 @@ export function CompassCard({ data }: { data: CompassCardData }) {
                   y={pos.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize={isPointed ? "11" : "9.5"}
-                  fontWeight={isPointed ? "700" : "500"}
-                  fill={isPointed ? "var(--text-primary)" : "#6B8A7A"}
+                  fontSize={isPointed ? 13 : 11}
+                  fontWeight={isPointed ? 700 : 600}
+                  fill={isPointed ? "var(--text-primary)" : "var(--text-secondary)"}
                   fontFamily="var(--font-sans)"
                 >
                   {label}
@@ -150,7 +169,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             );
           })}
 
-          {/* 나침반 바늘 (중앙 글자 제거로 짧게 유지, 중앙은 작은 원만) */}
+          {/* 나침반 바늘 */}
           <g
             transform={`rotate(${needleAngle}, ${cx}, ${cy})`}
             style={{
@@ -159,19 +178,19 @@ export function CompassCard({ data }: { data: CompassCardData }) {
           >
             <polygon
               points={`${cx},${cy - r * 0.48} ${cx - 6},${cy + 2} ${cx + 6},${cy + 2}`}
-              fill="#6B8A7A"
-              opacity="0.95"
+              fill={needleColor}
+              opacity={0.95}
             />
             <polygon
               points={`${cx},${cy + r * 0.32} ${cx - 4},${cy - 2} ${cx + 4},${cy - 2}`}
-              fill="#5a7a6a"
-              opacity="0.9"
+              fill={needleColor}
+              opacity={0.7}
             />
-            <circle cx={cx} cy={cy} r="6" fill="#eef4ee" stroke="#6B8A7A" strokeWidth="1.5" />
+            <circle cx={cx} cy={cy} r="6" fill="var(--bg-base)" stroke={needleColor} strokeWidth="1.5" />
           </g>
         </svg>
 
-        {/* 정착 후 글로우 */}
+        {/* 정착 후 글로우 (무채색) */}
         {settled && (
           <div
             className="absolute rounded-full pointer-events-none animate-compass-pulse"
@@ -181,29 +200,29 @@ export function CompassCard({ data }: { data: CompassCardData }) {
               transform: "translate(-50%, -50%)",
               width: "48px",
               height: "48px",
-              background: "radial-gradient(circle, rgba(168, 212, 184, 0.12) 0%, transparent 70%)",
+              background: "radial-gradient(circle, rgba(58, 58, 58, 0.06) 0%, transparent 70%)",
             }}
           />
         )}
       </div>
 
-      {/* 중앙 정보: 지지·지명·십성 (SVG 밖으로 분리해 겹침 방지) */}
+      {/* 중앙 정보: 지지·지명·십성 */}
       <div
         className="flex flex-col items-center gap-0.5 mb-4"
         style={{
           padding: "10px 16px",
-          background: "rgba(107, 138, 122, 0.08)",
+          background: "var(--bg-surface)",
           borderRadius: "12px",
-          border: "1px solid rgba(107, 138, 122, 0.25)",
+          border: `1px solid ${borderColor}`,
         }}
       >
-        <div style={{ fontSize: "10px", color: "#6B8A7A", letterSpacing: "0.5px", marginBottom: "2px" }}>
+        <div style={{ fontSize: "11px", color: accentMuted, letterSpacing: "0.5px", marginBottom: "2px" }}>
           태어난 달(월지)
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: "6px", flexWrap: "wrap", justifyContent: "center" }}>
-          <span style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>{ji}</span>
+          <span style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-sans)" }}>{ji}</span>
           <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontFamily: "var(--font-sans)" }}>{jiName}</span>
-          <span style={{ fontSize: "11px", color: "#5a7a6a", fontWeight: 600 }}>· {sipsung}</span>
+          <span style={{ fontSize: "11px", color: accentMuted, fontWeight: 600 }}>· {sipsung}</span>
         </div>
       </div>
 
@@ -212,9 +231,9 @@ export function CompassCard({ data }: { data: CompassCardData }) {
         <div
           className="rounded-[30px] px-4 py-1.5 text-xs font-semibold tracking-wide"
           style={{
-            background: "rgba(168, 212, 184, 0.09)",
-            border: "1px solid rgba(168, 212, 184, 0.27)",
-            color: "#5a7a6a",
+            background: "var(--bg-input)",
+            border: `1px solid ${borderColor}`,
+            color: "var(--text-primary)",
           }}
         >
           {sipsung} · {sipsungDesc}
@@ -225,25 +244,25 @@ export function CompassCard({ data }: { data: CompassCardData }) {
       <div
         className="rounded-2xl px-5 py-4 max-w-[320px] mx-auto text-center mb-2"
         style={{
-          background: "#f5f7f4",
-          border: "1px solid rgba(107, 138, 122, 0.4)",
+          background: "var(--bg-surface)",
+          border: `1px solid ${borderColor}`,
         }}
       >
         <div
           className="text-[12px] mb-2 tracking-wide"
-          style={{ color: "#5a7a6a" }}
+          style={{ color: accentMuted }}
         >
           핵심 기준
         </div>
         <div
-          className="text-[15px] font-bold tracking-tight mb-2"
-          style={{ color: "var(--text-primary)" }}
+          className="text-[15px] font-bold tracking-tight mb-2 leading-snug"
+          style={{ color: "var(--text-primary)", fontFamily: "var(--font-sans)" }}
         >
           &quot;{summary}&quot;
         </div>
         <div
-          className="text-[11px] leading-relaxed"
-          style={{ color: "var(--text-secondary)" }}
+          className="text-[12px] leading-relaxed"
+          style={{ color: "var(--text-secondary)", fontFamily: "var(--font-sans)" }}
         >
           {desc}
         </div>

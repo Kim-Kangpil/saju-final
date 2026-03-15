@@ -107,12 +107,12 @@ export default function MembershipPage({
           opacity: 0.7;
         }
         .compare-col-highlight {
-          background: linear-gradient(135deg, var(--bg-input), #c1d8c3);
+          background: linear-gradient(135deg, var(--bg-input), var(--bg-sidebar));
           border: 2px solid var(--border-default);
         }
         .compare-col-plain {
-          background: #f8faf8;
-          border: 1.5px solid #e0e8e0;
+          background: var(--bg-surface);
+          border: 1.5px solid var(--border-default);
         }
       `}</style>
 
@@ -128,7 +128,7 @@ export default function MembershipPage({
             justifyContent: "space-between",
             padding: "16px 20px",
             margin: "0 -20px 0",
-            background: "#c1d8c3",
+            background: "var(--bg-base)",
             borderBottom: "3px solid var(--border-default)",
           }}
         >
@@ -389,7 +389,7 @@ export default function MembershipPage({
             ))}
             <div
               style={{
-                background: "linear-gradient(135deg, var(--bg-input), #c1d8c3)",
+                background: "linear-gradient(135deg, var(--bg-input), var(--bg-sidebar))",
                 padding: "14px 16px",
                 display: "flex",
                 justifyContent: "space-between",

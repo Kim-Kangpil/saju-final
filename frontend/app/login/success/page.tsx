@@ -123,7 +123,7 @@ export default function LoginSuccessPage({
               style={{
                 fontSize: 18,
                 fontWeight: 700,
-                color: "#2d4a1e",
+                color: "var(--text-primary)",
                 letterSpacing: "0.04em",
               }}
             >
@@ -154,7 +154,7 @@ export default function LoginSuccessPage({
           style={{
             background: "#ffffff",
             borderRadius: 20,
-            border: "1.5px solid #c8dac8",
+            border: "1.5px solid var(--border-default)",
             padding: "34px 24px",
             position: "relative",
             overflow: "hidden",
@@ -197,7 +197,7 @@ export default function LoginSuccessPage({
                   width: "100%",
                   height: "100%",
                   objectFit: "contain",
-                  filter: "drop-shadow(0 6px 16px rgba(85,107,47,.22))",
+                  filter: "drop-shadow(0 6px 16px rgba(58,58,58,.15))",
                 }}
               />
             </div>
@@ -212,8 +212,8 @@ export default function LoginSuccessPage({
             <div style={{ height: 12 }} />
 
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 999, border: "1px solid var(--border-default)", background: "var(--bg-input)" }}>
-              <span className="pulse" style={{ width: 8, height: 8, borderRadius: 999, background: "#22c55e", display: "inline-block" }} />
-              <span className="sans" style={{ fontSize: 12, fontWeight: 800, color: "#2d4a1e" }}>
+              <span className="pulse" style={{ width: 8, height: 8, borderRadius: 999, background: "var(--text-primary)", display: "inline-block" }} />
+              <span className="sans" style={{ fontSize: 12, fontWeight: 800, color: "var(--text-primary)" }}>
                 이동 중...
               </span>
             </div>

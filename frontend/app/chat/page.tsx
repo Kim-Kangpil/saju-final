@@ -466,7 +466,7 @@ export default function ChatPage({
 
 type ChatContentProps = {
   initialMessages: Array<{ role: string; parts: Array<{ type: string; text?: string }> }>;
-  transport: DefaultChatTransport;
+  transport: DefaultChatTransport<any>;
   onError: (msg: string | null) => void;
   isLoggedIn: boolean;
   showLoginCard: boolean;

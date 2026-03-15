@@ -211,7 +211,11 @@ export async function POST(req: Request) {
 
   const system = currentTimeBlock + systemBase;
 
-  const modelMessages = await convertToModelMessages(messages);
+  // Vercel AI SDK의 convertToModelMessages는 UIMessage 타입 배열을 기대하지만
+  // 여기서는 네트워크 JSON으로 들어온 메시지를 그대로 넘기므로 타입 단언을 사용한다.
+  const modelMessages = await convertToModelMessages(
+    messages as any
+  );
 
   const openai = createOpenAI({ apiKey: apiKey! });
   const result = streamText({

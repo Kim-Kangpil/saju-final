@@ -2,7 +2,6 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { use, useState, useEffect, useMemo, useRef, useCallback, Suspense } from "react";
-import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
 import { getAuthHeaders } from "@/lib/auth";
@@ -125,6 +124,22 @@ const ELEMENT_COLOR: Record<string, string> = {
   none: "var(--text-primary)",
 };
 
+const GANJI_60 = [
+  "甲子", "乙丑", "丙寅", "丁卯", "戊辰", "己巳", "庚午", "辛未", "壬申", "癸酉",
+  "甲戌", "乙亥", "丙子", "丁丑", "戊寅", "己卯", "庚辰", "辛巳", "壬午", "癸未",
+  "甲申", "乙酉", "丙戌", "丁亥", "戊子", "己丑", "庚寅", "辛卯", "壬辰", "癸巳",
+  "甲午", "乙未", "丙申", "丁酉", "戊戌", "己亥", "庚子", "辛丑", "壬寅", "癸卯",
+  "甲辰", "乙巳", "丙午", "丁未", "戊申", "己酉", "庚戌", "辛亥", "壬子", "癸丑",
+  "甲寅", "乙卯", "丙辰", "丁巳", "戊午", "己未", "庚申", "辛酉", "壬戌", "癸亥",
+];
+
+function getSeunPillar(year: number): string {
+  const baseYear = 2024;
+  const baseYearIndex = 40;
+  const idx = (baseYearIndex + (year - baseYear) + 60) % 60;
+  return GANJI_60[idx] ?? "";
+}
+
 interface SajuRow {
   id: number;
   name: string;
@@ -135,10 +150,22 @@ interface SajuRow {
   gender: string;
 }
 
+/** 로컬 테스트용 샘플 사주 (?test=1 사용 시) */
+const MOCK_SAJU: SajuRow = {
+  id: 0,
+  name: "테스트",
+  relation: null,
+  birthdate: "2025-08-18",
+  birth_time: "19:14",
+  calendar_type: "양력",
+  gender: "여자",
+};
+
 function SajuPreviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("id");
+  const isTestMode = searchParams.get("test") === "1";
 
   const [saju, setSaju] = useState<SajuRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -161,6 +188,11 @@ function SajuPreviewContent() {
     month: string;
     year: string;
   } | null>(null);
+  const [daeun, setDaeun] = useState<{
+    daeun_start_age: number | null;
+    daeun_direction: string | null;
+    daeun_list: string[] | null;
+  }>({ daeun_start_age: null, daeun_direction: null, daeun_list: null });
   const [deducting, setDeducting] = useState(false);
   const [showSeedSheet, setShowSeedSheet] = useState(false);
 
@@ -223,8 +255,8 @@ function SajuPreviewContent() {
   }
 
   useEffect(() => {
-    if (!sajuId) {
-      setError("사주 정보가 없습니다.");
+    if (!sajuId && !isTestMode) {
+      setError("사주 정보가 없습니다. 로컬 테스트: 주소에 ?test=1 을 붙여 보세요.");
       setLoading(false);
       return;
     }
@@ -233,18 +265,24 @@ function SajuPreviewContent() {
 
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, {
-          credentials: "include",
-          headers: getAuthHeaders(),
-        });
-        if (!res.ok) {
-          setError("사주를 불러올 수 없습니다.");
-          setLoading(false);
-          return;
+        let data: SajuRow;
+        if (isTestMode) {
+          data = MOCK_SAJU;
+          setSaju(data);
+        } else {
+          const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, {
+            credentials: "include",
+            headers: getAuthHeaders(),
+          });
+          if (!res.ok) {
+            setError("사주를 불러올 수 없습니다. (로그인 후 사주 목록에서 들어오거나, 테스트는 ?test=1 로 확인하세요)");
+            setLoading(false);
+            return;
+          }
+          data = await res.json();
+          if (cancelled) return;
+          setSaju(data);
         }
-        const data = await res.json();
-        if (cancelled) return;
-        setSaju(data);
 
         const [y, m, d] = (data.birthdate || "").split("-").map(Number);
         const timePart = (data.birth_time || "").trim();
@@ -286,6 +324,13 @@ function SajuPreviewContent() {
         });
         if (fullData.jijanggan) setJijanggan(fullData.jijanggan);
         if (fullData.twelve_states) setTwelveStates(fullData.twelve_states);
+        if (fullData.daeun_list != null) {
+          setDaeun({
+            daeun_start_age: fullData.daeun_start_age ?? null,
+            daeun_direction: fullData.daeun_direction ?? null,
+            daeun_list: fullData.daeun_list,
+          });
+        }
       } catch {
         if (!cancelled) setError("불러오기 실패");
       } finally {
@@ -296,7 +341,7 @@ function SajuPreviewContent() {
     return () => {
       cancelled = true;
     };
-  }, [sajuId]);
+  }, [sajuId, isTestMode]);
 
   const dayPillarKey = useMemo(() => {
     return pillars?.day_pillar ? dayPillarToKey(pillars.day_pillar) : "";
@@ -317,74 +362,44 @@ function SajuPreviewContent() {
     ];
   }, [pillars]);
 
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const [carouselIndex, setCarouselIndex] = useState(0);
+  const daeunRows = useMemo(() => {
+    const list = daeun.daeun_list ?? [];
+    const dayStem = pillars?.day_pillar?.[0] ?? "";
+    return list.map((s) => {
+      const m = s.match(/^(\d+)세\s*([^\s(]+)(?:\(([^)]+)\))?/);
+      const age = m ? parseInt(m[1], 10) : 0;
+      const ganji = m ? m[2].trim() : "";
+      const stem = ganji[0] ?? "";
+      const branch = ganji[1] ?? "";
+      const stemTg = tenGod(dayStem, stem);
+      const branchMs = branchMainStem(branch);
+      const branchTg = branchMs ? tenGod(dayStem, branchMs) : "";
+      return { age, ganji, stem, branch, stemTg, branchTg };
+    });
+  }, [daeun.daeun_list, pillars?.day_pillar]);
 
-  const updateCarouselIndex = useCallback(() => {
-    const el = carouselRef.current;
-    if (!el) return;
-    const w = el.offsetWidth;
-    const idx = Math.round(el.scrollLeft / w);
-    setCarouselIndex(Math.min(2, Math.max(0, idx)));
-  }, []);
-
-  const goToSlide = useCallback((index: number) => {
-    const el = carouselRef.current;
-    if (!el) return;
-    el.scrollTo({ left: index * el.offsetWidth, behavior: "smooth" });
-    setCarouselIndex(index);
-  }, []);
-
-  const CARD_BAR_COLORS = ["#a8d5b5", "#b5c8f0", "#f0d9a8"] as const;
-
-  const CARD_MIN_HEIGHT = 365;
-
-  const getCardStyle = (barColor: string) => ({
-    position: "relative" as const,
-    zIndex: 10,
-    background: "#ffffff",
-    borderRadius: 24,
-    border: "none",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.10)",
-    padding: 0,
-    marginBottom: 0,
-    overflow: "hidden" as const,
-    minHeight: CARD_MIN_HEIGHT,
-    display: "flex" as const,
-    flexDirection: "column" as const,
-  });
-
-  const cardBarStyle = (barColor: string) => ({
-    height: 8,
-    background: barColor,
-    width: "100%",
-    flexShrink: 0,
-  });
-
-  const cardBodyStyle = {
-    padding: "28px 24px",
-    flex: 1,
-    display: "flex" as const,
-    flexDirection: "column" as const,
-  };
-
-  const cardBodyStyleCentered = {
-    ...cardBodyStyle,
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
-  };
-
-  const labelStyle = {
-    fontSize: 12,
-    color: "#6b7280",
-    marginBottom: 4,
-  } as const;
-
-  const valueStyle = {
-    fontSize: 14,
-    fontWeight: 700,
-    color: "var(--text-primary)",
-  } as const;
+  const seunRows = useMemo(() => {
+    const dayStem = pillars?.day_pillar?.[0] ?? "";
+    const birthYear = saju?.birthdate ? parseInt(String(saju.birthdate).slice(0, 4), 10) : 0;
+    const currentYear = new Date().getFullYear();
+    const rows: { year: number; age: number; stem: string; branch: string; stemTg: string; branchTg: string }[] = [];
+    for (let i = 0; i < 10; i++) {
+      const year = currentYear + i;
+      const pillar = getSeunPillar(year);
+      const stem = pillar[0] ?? "";
+      const branch = pillar[1] ?? "";
+      const branchMs = branchMainStem(branch);
+      rows.push({
+        year,
+        age: birthYear > 0 ? year - birthYear : 0,
+        stem,
+        branch,
+        stemTg: tenGod(dayStem, stem),
+        branchTg: branchMs ? tenGod(dayStem, branchMs) : "",
+      });
+    }
+    return rows;
+  }, [pillars?.day_pillar, saju?.birthdate]);
 
   if (loading) {
     return (
@@ -449,461 +464,260 @@ function SajuPreviewContent() {
   }
 
   const timeDisplay = saju.birth_time && saju.birth_time.trim() ? saju.birth_time : "모름";
+  const birthDateFormatted = saju.birthdate
+    ? saju.birthdate.replace(/-/g, "/") + (timeDisplay !== "모름" ? ` (${timeDisplay})` : "")
+    : "";
+  const PREVIEW_BG = "#F5F1EA";
+  const PREVIEW_SURFACE = "#EDE7DB";
+  const PREVIEW_BORDER = "#D4C9B8";
+  const PREVIEW_TEXT = "#2C2417";
 
   return (
     <main
       style={{
-        background: "var(--bg-base)",
-        backgroundImage: "url('/images/hanji-bg.png')",
-        backgroundRepeat: "repeat",
-        backgroundSize: "auto",
+        background: PREVIEW_BG,
         minHeight: "100vh",
-        fontFamily: "var(--font-sans)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
+        fontFamily: "'GmarketSans', -apple-system, sans-serif",
+        paddingBottom: 40,
       }}
     >
       <style>{`
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .sans { font-family: var(--font-sans); }
-        .tap {
-          transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
-          -webkit-tap-highlight-color: transparent;
-          cursor: pointer;
-        }
-        .tap:active { transform: scale(.97); opacity: .9; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
-        .wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 20px 40px; }
-        @media (max-width: 390px) { .wrap { padding: 0 16px 40px; } }
-        .preview-carousel-wrap { position: relative; margin-bottom: 16px; }
-        .preview-carousel {
-          display: flex;
-          overflow-x: auto;
-          overflow-y: hidden;
-          scroll-snap-type: x mandatory;
-          scroll-behavior: smooth;
-          -webkit-overflow-scrolling: touch;
-          gap: 0;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .preview-carousel::-webkit-scrollbar { display: none; }
-        .preview-card {
-          flex: 0 0 100%;
-          min-width: 100%;
-          scroll-snap-align: start;
-          scroll-snap-stop: always;
-          padding: 0 4px;
-        }
-        .preview-arrow {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          border: none;
-          background: rgba(255,255,255,0.9);
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 20;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .preview-arrow:active { opacity: 0.85; }
-        .preview-arrow.left { left: 8px; }
-        .preview-arrow.right { right: 8px; }
+        .preview-tap { transition: transform .15s ease, opacity .15s ease; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+        .preview-tap:active { transform: scale(.97); opacity: .9; }
+        .preview-wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 16px 24px; }
+        .preview-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+        .preview-table th, .preview-table td { border: 1px solid #D4C9B8; padding: 8px 6px; text-align: center; }
+        .preview-table th { background: #EDE7DB; font-weight: 700; color: #2C2417; }
       `}</style>
 
-      <div className="wrap" style={{ position: "relative", zIndex: 10 }}>
-        <header
-          className="sans"
-          style={{
-            position: "relative",
-            zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "16px 20px",
-            margin: "0 -20px 16px",
-            background: "var(--bg-base)",
-            borderBottom: "3px solid var(--border-default)",
-          }}
-        >
-          <button
-            onClick={() => router.push("/home")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              background: "transparent",
-              border: "none",
-              padding: 0,
-              cursor: "pointer",
-            }}
-          >
-            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="로고" />
-            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.04em" }}>
-              한양사주
-            </span>
+      <div className="preview-wrap">
+        <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 0 12px", marginBottom: 12 }}>
+          <button type="button" className="preview-tap" aria-label="뒤로" onClick={() => router.push("/saju-list")} style={{ padding: 8, border: "none", background: "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", color: PREVIEW_TEXT }}>
+            <Icon icon="mdi:chevron-left" width={24} />
           </button>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => router.push("/seed-charge")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "6px 10px",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid var(--border-default)",
-                cursor: "pointer",
-              }}
-            >
-              <Icon icon="mdi:ticket-confirmation-outline" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>0</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/membership")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "6px 10px",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid var(--border-default)",
-                cursor: "pointer",
-              }}
-            >
-              <Icon icon="mdi:crown" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>한양사주 Pro</span>
-            </button>
-            <button
-              type="button"
-              className="tap"
-              aria-label="메뉴"
-              onClick={() => router.push("/saju-mypage")}
-              style={{
-                padding: 8,
-                borderRadius: 10,
-                border: "none",
-                background: "transparent",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
-            </button>
-          </div>
+          <span style={{ fontSize: 17, fontWeight: 700, color: PREVIEW_TEXT, letterSpacing: "0.02em" }}>한양사주 AI</span>
+          <button type="button" className="preview-tap" aria-label="메뉴" onClick={() => router.push("/saju-mypage")} style={{ padding: 8, border: "none", background: "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", color: PREVIEW_TEXT }}>
+            <Icon icon="mdi:menu" width={24} />
+          </button>
         </header>
 
-        <h1
-          className="sans"
-          style={{
-            fontSize: 18,
-            fontWeight: 700,
-            color: "var(--text-primary)",
-            marginBottom: 12,
-          }}
-        >
-          내 사주 미리보기
-        </h1>
-        <p className="sans" style={{ fontSize: 12, color: "var(--text-primary)", marginBottom: 14 }}>
-          좌우로 스와이프하거나 화살표로 카드를 넘겨보세요
-        </p>
-
-        {/* 슬라이더: 한 번에 한 장, 화살표 + 스와이프 */}
-        <div className="preview-carousel-wrap">
-          {carouselIndex > 0 && (
-            <button
-              type="button"
-              className="preview-arrow left"
-              aria-label="이전 카드"
-              onClick={() => goToSlide(carouselIndex - 1)}
-            >
-              <Icon icon="mdi:chevron-left" width={24} style={{ color: "var(--text-primary)" }} />
-            </button>
-          )}
-          {carouselIndex < 2 && (
-            <button
-              type="button"
-              className="preview-arrow right"
-              aria-label="다음 카드"
-              onClick={() => goToSlide(carouselIndex + 1)}
-            >
-              <Icon icon="mdi:chevron-right" width={24} style={{ color: "var(--text-primary)" }} />
-            </button>
-          )}
-          <div
-            ref={carouselRef}
-            className="preview-carousel"
-            onScroll={updateCarouselIndex}
-            role="region"
-            aria-label="사주 미리보기 카드"
-          >
-            {/* 카드 1: 일주 동물 */}
-            <div className="preview-card">
-              <section style={getCardStyle(CARD_BAR_COLORS[0])}>
-                <div style={cardBarStyle(CARD_BAR_COLORS[0])} />
-                <div style={cardBodyStyle}>
-                  {dayPillarKey ? (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-                      <img
-                        src={`/images/day_pillars/${dayPillarKey}.png`}
-                        alt={`${dayPillarKey} 일주 동물`}
-                        style={{
-                          width: 220,
-                          height: 220,
-                          objectFit: "contain",
-                          borderRadius: 16,
-                        }}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                      {dayPillarAnimalName && (
-                        <span
-                          style={{
-                            fontSize: 20,
-                            fontWeight: 700,
-                            color: getAnimalNameColor(dayPillarAnimalName),
-                          }}
-                        >
-                          {dayPillarAnimalName}
-                        </span>
-                      )}
-                      {dayPillarKey && (
-                        <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
-                          {dayPillarKey}일주
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: 14, color: "#6b7280" }}>일주 정보를 불러오는 중...</p>
-                  )}
-                </div>
-              </section>
+        <section style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: PREVIEW_TEXT, marginBottom: 8 }}>생년월일</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", background: PREVIEW_SURFACE, borderRadius: 16, border: `1px solid ${PREVIEW_BORDER}` }}>
+            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center", color: PREVIEW_TEXT }}>
+              <Icon icon="mdi:account-outline" width={22} />
             </div>
-
-            {/* 카드 2: 기본 정보 */}
-            <div className="preview-card">
-              <section style={getCardStyle(CARD_BAR_COLORS[1])}>
-                <div style={cardBarStyle(CARD_BAR_COLORS[1])} />
-                <div style={cardBodyStyle}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-                    {[
-                      { label: "이름", value: saju.name },
-                      { label: "나와의 관계", value: saju.relation || "-" },
-                      { label: "성별", value: saju.gender },
-                      { label: "생년월일 (양·음력)", value: `${saju.birthdate} (${saju.calendar_type})` },
-                      { label: "태어난 시각", value: timeDisplay },
-                    ].map((row, i) => (
-                      <div key={row.label}>
-                        {i > 0 && (
-                          <div style={{ height: 1, background: "#e5e7eb", margin: "12px 0" }} />
-                        )}
-                        <div style={labelStyle}>{row.label}</div>
-                        <div style={valueStyle}>{row.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            </div>
-
-            {/* 카드 3: 만세력 (정중앙 배치) */}
-            <div className="preview-card">
-              <section style={getCardStyle(CARD_BAR_COLORS[2])}>
-                <div style={cardBarStyle(CARD_BAR_COLORS[2])} />
-                <div style={cardBodyStyleCentered}>
-              {pillars ? (
-                <div
-                  style={{
-                    width: "100%",
-                    alignSelf: "stretch",
-                    border: "3px solid var(--border-default)",
-                    borderRadius: 14,
-                    background: "#fff",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(4, 1fr)",
-                      borderBottom: "2px solid var(--border-default)",
-                      background: "rgba(193, 216, 195, 0.15)",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "var(--text-primary)",
-                      textAlign: "center",
-                      padding: "6px 4px",
-                    }}
-                  >
-                    {["시주", "일주", "월주", "년주"].map((label, i) => (
-                      <div
-                        key={label}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          ...(i < 3 ? { borderRight: "2px solid var(--border-default)" } : {}),
-                        }}
-                      >
-                        {label}
-                      </div>
-                    ))}
-                  </div>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(4, 1fr)",
-                      gap: 0,
-                      textAlign: "center",
-                    }}
-                  >
-                    {pillarBlocks.map((p, idx) => {
-                      const pillarKey = (["hour", "day", "month", "year"] as const)[idx];
-                      const cheongan = p.value[0] ?? "";
-                      const jiji = p.value[1] ?? "";
-                      const dayStem = pillars.day_pillar[0] ?? "";
-                      const stemTenGod = tenGod(dayStem, cheongan);
-                      const branchMs = branchMainStem(jiji);
-                      const branchTenGod = branchMs ? tenGod(dayStem, branchMs) : "";
-                      const stemEl = hanjaToElement(cheongan);
-                      const branchEl = hanjaToElement(jiji);
-                      const jijangganList = jijanggan?.[pillarKey];
-                      const stateText = twelveStates?.[pillarKey];
-                      return (
-                        <div
-                          key={p.label}
-                          style={{
-                            padding: "10px 6px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: 4,
-                            ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid var(--border-default)" } : {}),
-                          }}
-                        >
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
-                            {stemTenGod}
-                          </div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "var(--text-primary)" }}>
-                            {cheongan}
-                          </div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "var(--text-primary)" }}>
-                            {jiji}
-                          </div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
-                            {branchTenGod}
-                          </div>
-                          {jijangganList && jijangganList.length > 0 && (
-                            <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", marginTop: 2 }}>
-                              {jijangganList.map((jj, jdx) => (
-                                <span
-                                  key={jdx}
-                                  style={{
-                                    fontSize: 9,
-                                    fontWeight: 700,
-                                    color: ELEMENT_COLOR[jj.element] ?? "var(--text-primary)",
-                                  }}
-                                >
-                                  {jj.hanja}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                          {stateText && (
-                            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-primary)", opacity: 0.85, marginTop: 1 }}>
-                              {stateText}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : (
-                <p style={{ fontSize: 14, color: "#6b7280" }}>만세력 정보를 불러오는 중...</p>
-              )}
-                </div>
-              </section>
+            <div style={{ flex: 1, fontSize: 14, color: PREVIEW_TEXT, fontWeight: 500 }}>
+              <span style={{ marginRight: 8 }}>{saju.gender}</span>
+              <span style={{ marginRight: 8 }}>{saju.calendar_type}</span>
+              <span>{birthDateFormatted || "-"}</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* 카드 인디케이터 (하단 점) */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 10,
-            marginBottom: 16,
-          }}
-        >
-          {[0, 1, 2].map((i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => goToSlide(i)}
-              aria-label={`${i + 1}번째 카드로 이동`}
-              style={{
-                width: carouselIndex === i ? 10 : 8,
-                height: carouselIndex === i ? 10 : 8,
-                borderRadius: "50%",
-                border: "none",
-                background: carouselIndex === i ? "var(--text-primary)" : "var(--border-default)",
-                cursor: "pointer",
-                transition: "background 0.2s ease, width 0.2s ease, height 0.2s ease",
-              }}
-            />
-          ))}
-        </div>
+        <section style={{ marginBottom: 24 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+            {dayPillarKey && (
+              <img src={`/images/day_pillars/${dayPillarKey}.png`} alt={`${dayPillarKey} 일주`} style={{ width: 100, height: 100, objectFit: "contain", borderRadius: 12 }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            )}
+            <div>
+              {dayPillarKey && <div style={{ fontSize: 15, fontWeight: 700, color: getAnimalNameColor(dayPillarAnimalName || ""), marginBottom: 4 }}>{dayPillarKey}일주: {dayPillarAnimalName || ""}</div>}
+              <div style={{ fontSize: 13, color: PREVIEW_TEXT, opacity: 0.9 }}>1단계</div>
+            </div>
+          </div>
+        </section>
 
-        {/* 하단 버튼 (위치·색상 교환) */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+        <section style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: PREVIEW_TEXT, marginBottom: 10 }}>내 사주팔자</div>
+          {pillars ? (
+          <div style={{ overflowX: "auto" }}>
+              <table className="preview-table">
+                <thead>
+                  <tr>
+                    {["생시", "생일", "생월", "생년"].map((h) => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    {pillarBlocks.map((p) => {
+                      const dayStem = pillars!.day_pillar[0] ?? "";
+                      const stem = p.value[0] ?? "";
+                      return <td key={p.label}>{tenGod(dayStem, stem)}</td>;
+                    })}
+                  </tr>
+                  <tr>
+                    {pillarBlocks.map((p) => {
+                      const stem = p.value[0] ?? "";
+                      const el = hanjaToElement(stem);
+                      return (
+                        <td key={p.label} style={{ fontWeight: 700, color: ELEMENT_COLOR[el] ?? PREVIEW_TEXT }}>
+                          {stem}{hanjaToHangul(stem)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    {pillarBlocks.map((p) => {
+                      const branch = p.value[1] ?? "";
+                      const el = hanjaToElement(branch);
+                      return (
+                        <td key={p.label} style={{ fontWeight: 700, color: ELEMENT_COLOR[el] ?? PREVIEW_TEXT }}>
+                          {branch}{hanjaToHangul(branch)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  <tr>
+                    {pillarBlocks.map((p) => {
+                      const dayStem = pillars!.day_pillar[0] ?? "";
+                      const branch = p.value[1] ?? "";
+                      const ms = branchMainStem(branch);
+                      return <td key={p.label}>{ms ? tenGod(dayStem, ms) : ""}</td>;
+                    })}
+                  </tr>
+                  {jijanggan && (
+                    <tr>
+                      {(["hour", "day", "month", "year"] as const).map((key) => (
+                        <td key={key} style={{ fontSize: 10, padding: 4 }}>
+                          {(jijanggan[key] ?? []).map((jj, i) => (
+                            <span key={i} style={{ color: ELEMENT_COLOR[jj.element] ?? PREVIEW_TEXT, marginRight: 2 }}>
+                              {jj.hanja}
+                            </span>
+                          ))}
+                        </td>
+                      ))}
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p style={{ fontSize: 13, color: "#6b7280" }}>만세력 정보를 불러오는 중...</p>
+          )}
+        </section>
+
+        {daeun.daeun_list && daeun.daeun_list.length > 0 && (
+          <section style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: PREVIEW_TEXT, marginBottom: 10 }}>
+              나의 대운 <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.8 }}>*10년 단위 운</span>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table className="preview-table">
+                <thead>
+                  <tr>
+                    {daeunRows.map((r) => (
+                      <th key={r.age} style={{ minWidth: 44 }}>{r.age}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    {daeunRows.map((r) => (
+                      <td key={r.age}>{r.stemTg}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    {daeunRows.map((r) => (
+                      <td key={r.age} style={{ fontWeight: 700, color: ELEMENT_COLOR[hanjaToElement(r.stem)] ?? PREVIEW_TEXT }}>{r.stem}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    {daeunRows.map((r) => (
+                      <td key={r.age} style={{ fontWeight: 700, color: ELEMENT_COLOR[hanjaToElement(r.branch)] ?? PREVIEW_TEXT }}>{r.branch}</td>
+                    ))}
+                  </tr>
+                  <tr>
+                    {daeunRows.map((r) => (
+                      <td key={r.age}>{r.branchTg}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
+        <section style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: PREVIEW_TEXT, marginBottom: 10 }}>
+            나의 세운 <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.8 }}>*1년 단위 운</span>
+          </div>
+          <div style={{ overflowX: "auto" }}>
+            <table className="preview-table">
+              <thead>
+                <tr>
+                  {seunRows.map((r) => (
+                    <th key={r.year} style={{ minWidth: 44 }}>{r.year}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  {seunRows.map((r) => (
+                    <td key={r.year} style={{ fontSize: 11 }}>{r.age > 0 ? r.age + "세" : "-"}</td>
+                  ))}
+                </tr>
+                <tr>
+                  {seunRows.map((r) => (
+                    <td key={r.year}>{r.stemTg}</td>
+                  ))}
+                </tr>
+                <tr>
+                  {seunRows.map((r) => (
+                    <td key={r.year} style={{ fontWeight: 700, color: ELEMENT_COLOR[hanjaToElement(r.stem)] ?? PREVIEW_TEXT }}>{r.stem}</td>
+                  ))}
+                </tr>
+                <tr>
+                  {seunRows.map((r) => (
+                    <td key={r.year} style={{ fontWeight: 700, color: ELEMENT_COLOR[hanjaToElement(r.branch)] ?? PREVIEW_TEXT }}>{r.branch}</td>
+                  ))}
+                </tr>
+                <tr>
+                  {seunRows.map((r) => (
+                    <td key={r.year}>{r.branchTg}</td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
           <button
             type="button"
-            className="tap sans"
+            className="preview-tap"
             onClick={handleStartAnalysis}
             disabled={deducting}
             style={{
               width: "100%",
-              padding: "11px 14px",
+              padding: "14px 16px",
               borderRadius: 14,
-              border: "1.5px solid var(--border-default)",
-              background: deducting ? "#9cbf9c" : "var(--bg-base)",
+              border: `1.5px solid ${PREVIEW_BORDER}`,
+              background: deducting ? "#c4b8a4" : PREVIEW_SURFACE,
               fontSize: 14,
               fontWeight: 700,
-              color: "var(--text-primary)",
+              color: PREVIEW_TEXT,
               cursor: deducting ? "wait" : "pointer",
-              transition: "background .2s",
+              fontFamily: "inherit",
             }}
           >
             {deducting ? "확인 중..." : "사주 분석 시작하기 (분석권 1개)"}
           </button>
           <button
             type="button"
-            className="tap sans"
+            className="preview-tap"
             onClick={() => router.push("/saju-list")}
             style={{
               width: "100%",
-              padding: "11px 14px",
+              padding: "14px 16px",
               borderRadius: 14,
-              border: "1.5px solid var(--border-default)",
-              background: "#ffffff",
+              border: `1.5px solid ${PREVIEW_BORDER}`,
+              background: "#fff",
               fontSize: 14,
               fontWeight: 700,
-              color: "var(--text-primary)",
+              color: PREVIEW_TEXT,
+              fontFamily: "inherit",
             }}
           >
             내 사주 목록으로

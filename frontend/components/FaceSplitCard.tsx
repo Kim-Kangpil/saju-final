@@ -47,14 +47,12 @@ const pick = <T,>(v: T | undefined, fallback: T) => (v === undefined || v === ""
 export type FaceSplitCardProps = {
   socialLabel: string;
   realLabel: string;
-  habitLabel: string;
   summary?: string;
 };
 
 export function FaceSplitCard({
   socialLabel,
   realLabel,
-  habitLabel,
   summary,
 }: FaceSplitCardProps) {
   const socialKeyword = pick(TEN_GOD_KEYWORD[socialLabel], socialLabel);
@@ -149,24 +147,6 @@ export function FaceSplitCard({
           >
             VS
           </div>
-        </div>
-
-        {/* 무의식 습관 배지 */}
-        <div
-          className="flex items-center justify-center gap-2 rounded-[40px] py-2 px-4 mt-2 sm:mt-3 shadow-sm"
-          style={{
-            background: "white",
-            border: "1.5px solid #E0D8F0",
-          }}
-        >
-          <span className="text-sm">⚡</span>
-          <span className="text-[11px] sm:text-[12px] text-[#9B8EA0] tracking-wide">무의식 습관</span>
-          <span
-            className="text-[11px] sm:text-[12px] font-bold px-2 py-0.5 rounded-[20px]"
-            style={{ color: "#A78BCA", background: "#F0EAF9" }}
-          >
-            {habitLabel}
-          </span>
         </div>
 
         {/* 요약 문장 */}

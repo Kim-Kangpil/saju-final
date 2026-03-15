@@ -89,8 +89,8 @@ export function CompassCard({ data }: { data: CompassCardData }) {
 
       {/* 나침반 의미 안내 */}
       <div
-        className="text-center mb-3"
-        style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6 }}
+        className="text-center"
+        style={{ fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 20 }}
       >
         <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>↑ 나침반이 가리키는 방향</span>
         <span> = 당신의 핵심 가치(태어난 달)</span>
@@ -98,11 +98,12 @@ export function CompassCard({ data }: { data: CompassCardData }) {
         <span style={{ color: accentMuted }}>다섯 글자 = 이 가치를 나타내는 키워드들</span>
       </div>
 
-      {/* 나침반: 264px 영역에 링 포함해 중앙 정렬, 글자 가독성 확보 */}
-      <div
-        className="relative mx-auto mb-4 flex items-center justify-center"
-        style={{ width: 264, height: 264 }}
-      >
+      {/* 나침반: 전체 너비 사용 후 내부 264px 블록만 중앙 배치, 위아래 여백으로 문단과 겹침 방지 */}
+      <div className="w-full" style={{ marginBottom: 24 }}>
+        <div
+          className="relative flex items-center justify-center"
+          style={{ width: 264, height: 264, margin: "0 auto" }}
+        >
         {/* 외곽 링: 264px 원으로 영역 안에 완전히 수용 */}
         <div
           className="absolute rounded-full border"
@@ -204,6 +205,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
             }}
           />
         )}
+        </div>
       </div>
 
       {/* 중앙 정보: 지지·지명·십성 */}

@@ -222,7 +222,7 @@ export async function POST(req: Request) {
     model: openai("gpt-4o-mini"),
     system,
     messages: modelMessages,
-    maxTokens: 2000,
+    maxOutputTokens: 2000,
     temperature: 0.6,
     tools: { get_saju },
     stopWhen: stepCountIs(3),

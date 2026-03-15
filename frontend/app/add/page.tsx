@@ -2475,7 +2475,6 @@ export default function Page({
                                                     <FaceSplitCard
                                                       socialLabel={maskVsNatureLabels.social}
                                                       realLabel={maskVsNatureLabels.real}
-                                                      habitLabel={maskVsNatureLabels.habit}
                                                     />
                                                   )}
                                                   {c.id === "identity_values" && coreValuesCompassData && (

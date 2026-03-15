@@ -2710,15 +2710,6 @@ export default function Page({
                                                     : c.kind === "preview"
                                                       ? "linear-gradient(to bottom right, #fefce8, #fff7ed)"
                                                       : "#fff",
-                                                cursor: c.kind === "preview" ? "pointer" : undefined,
-                                              }}
-                                              onClick={() => {
-                                                if (c.kind === "preview") return;
-                                                const loggedIn = localStorage.getItem("isLoggedIn") === "true";
-                                                if (!loggedIn) {
-                                                  router.push("/login");
-                                                  return;
-                                                }
                                               }}
                                             >
                                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
@@ -2767,10 +2758,17 @@ export default function Page({
                                                       alignItems: "flex-end",
                                                       justifyContent: "center",
                                                       paddingBottom: 12,
+                                                      pointerEvents: "none",
                                                     }}
                                                   >
-                                                    <div
+                                                    <button
+                                                      type="button"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.push("/login");
+                                                      }}
                                                       style={{
+                                                        pointerEvents: "auto",
                                                         textAlign: "center",
                                                         background: "rgba(255,255,255,0.95)",
                                                         backdropFilter: "blur(8px)",
@@ -2778,6 +2776,8 @@ export default function Page({
                                                         padding: "12px 16px",
                                                         border: "2px solid #facc15",
                                                         boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                                                        cursor: "pointer",
+                                                        font: "inherit",
                                                       }}
                                                     >
                                                       <div style={{ display: "flex", justifyContent: "center" }}>
@@ -2789,7 +2789,7 @@ export default function Page({
                                                       <p style={{ fontSize: 8, color: "#556b2f", opacity: 0.7, margin: "2px 0 0" }}>
                                                         카카오 로그인 후 이용 가능
                                                       </p>
-                                                    </div>
+                                                    </button>
                                                   </div>
                                                 </div>
                                               )}

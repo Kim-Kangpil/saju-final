@@ -6,6 +6,7 @@ import { Icon } from "@iconify/react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { getSavedSajuList } from "@/lib/sajuStorage";
+import MarkdownMessage from "../../components/MarkdownMessage";
 
 /** 게스트 3회 제한 — 잠시 끄기: true면 3번 질문 후 로그인 유도 */
 const GUEST_LIMIT_ENABLED = false;
@@ -20,9 +21,14 @@ function getTimeBasedGreeting(): string {
   return "안녕하세요";
 }
 
+/** localStorage 키 — 대화 히스토리 유지 */
+const CHAT_STORAGE_KEY = "chat_messages";
+
 const QUICK_PROMPTS = [
   { label: "사주 질문", text: "사주에 대해 궁금한 게 있어요." },
   { label: "오늘의 운세", text: "오늘 제 운세를 알려주세요." },
+  { label: "올해 재물운", text: "올해 재물운이 어떻게 되나요?" },
+  { label: "맞는 직업", text: "나랑 잘 맞는 직업이나 방향이 궁금해요." },
   { label: "고민 상담", text: "요즘 고민이 있어서 조언이 필요해요." },
   { label: "나와 맞는 방향", text: "제게 맞는 직업이나 방향이 궁금해요." },
 ];
@@ -43,9 +49,12 @@ export default function ChatPage({
   use(params ?? Promise.resolve({}));
   const router = useRouter();
   const listRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginCard, setShowLoginCard] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
+  const lastUserMessageRef = useRef<string | null>(null);
+  const handleRetryRef = useRef<((text: string) => void) | null>(null);
 
   const bodyRef = useRef<{ isGuest: boolean; saju?: unknown }>({ isGuest: true, saju: undefined });
 
@@ -95,49 +104,19 @@ export default function ChatPage({
     [],
   );
 
-  const initialMessages = useMemo(() => [], []);
-
-  const { messages, sendMessage, status } = useChat({
-    transport,
-    messages: initialMessages,
-    onError: (err) => {
-      setChatError(err?.message ?? "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
-    },
-  });
-
+  // 대화 히스토리: hydration 후에만 채팅 영역 마운트 (복원된 메시지로 useChat 초기화)
+  const [savedMessages, setSavedMessages] = useState<Array<{ role: string; parts: Array<{ type: string; text?: string }> }>>([]);
+  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
-
-  const handleSubmit = async (text: string) => {
-    if (!text.trim()) return;
-    setChatError(null);
-
-    if (GUEST_LIMIT_ENABLED) {
-      const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
-      if (!isLoggedIn && guestCount >= GUEST_LIMIT) {
-        setShowLoginCard(true);
-        return;
-      }
-      if (!isLoggedIn) {
-        localStorage.setItem("guest_chat_count", String(guestCount + 1));
-      }
-    }
-
+    if (typeof window === "undefined") return;
     try {
-      await sendMessage({ text: text.trim() });
-    } catch (e) {
-      setChatError(
-        e instanceof Error ? e.message : "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요."
-      );
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      setSavedMessages(raw ? JSON.parse(raw) : []);
+    } catch {
+      setSavedMessages([]);
     }
-  };
-
-  const sending = status === "submitted" || status === "streaming";
-
-  /** 사용자가 한 번도 메시지를 보내지 않았으면 초기 화면(중앙 프롬프트) 표시 */
-  const hasUserMessage = messages.some((m) => m.role === "user");
-  const isInitialView = !hasUserMessage && !showLoginCard;
+    setHydrated(true);
+  }, []);
 
   return (
     <>
@@ -257,20 +236,35 @@ export default function ChatPage({
         @media (min-width: 1024px) {
           .chat-list { padding: 24px 32px 32px; }
         }
-        .chat-msg { display: flex; margin-bottom: 14px; max-width: 88%; }
+        .chat-msg { display: flex; margin-bottom: 18px; max-width: 88%; }
         @media (min-width: 768px) {
-          .chat-msg { max-width: 75%; margin-bottom: 16px; }
+          .chat-msg { max-width: 72%; margin-bottom: 20px; }
         }
         @media (min-width: 1024px) {
-          .chat-msg { max-width: 65%; }
+          .chat-msg { max-width: 60%; }
         }
         .chat-msg.user { margin-left: auto; flex-direction: row-reverse; }
-        .chat-msg-bubble { padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.6; word-break: break-word; }
-        @media (min-width: 768px) {
-          .chat-msg-bubble { padding: 14px 18px; font-size: 15px; }
+        .chat-msg-bubble {
+          padding: 14px 18px;
+          border-radius: 18px;
+          font-size: 15px;
+          line-height: 1.8;
+          word-break: keep-all;
         }
-        .chat-msg.assistant .chat-msg-bubble { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
-        .chat-msg.user .chat-msg-bubble { background: #2C2A26; color: #F2EDE4; border-bottom-right-radius: 4px; }
+        @media (min-width: 768px) {
+          .chat-msg-bubble { padding: 16px 20px; font-size: 15px; }
+        }
+        .chat-msg.assistant .chat-msg-bubble {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          color: var(--text);
+          border-bottom-left-radius: 6px;
+        }
+        .chat-msg.user .chat-msg-bubble {
+          background: #2C2A26;
+          color: #F2EDE4;
+          border-bottom-right-radius: 6px;
+        }
         .chat-input-wrap {
           flex-shrink: 0;
           position: sticky;
@@ -350,6 +344,45 @@ export default function ChatPage({
         .chat-login-btn.primary { border: none; background: #2C2A26; color: #F2EDE4; }
         .chat-login-btn.secondary { border: 1px solid var(--border2); background: transparent; color: var(--sub); }
         .chat-login-btn:hover { opacity: .9; }
+        .chat-error-banner {
+          padding: 12px 16px;
+          margin: 0 16px 12px;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 12px;
+          font-size: 13px;
+          color: #b91c1c;
+        }
+        .chat-error-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+        .chat-error-btn {
+          background: none;
+          border: none;
+          color: inherit;
+          cursor: pointer;
+          font-size: inherit;
+          text-decoration: underline;
+        }
+        .chat-error-retry { font-weight: 600; }
+        .chat-msg-bubble-wrap { position: relative; }
+        .chat-msg-copy {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          border: none;
+          background: rgba(0,0,0,.06);
+          color: var(--sub);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0;
+          transition: opacity .15s;
+        }
+        .chat-msg-bubble-wrap:hover .chat-msg-copy { opacity: 1; }
+        .chat-msg.user .chat-msg-copy { right: auto; left: 8px; background: rgba(255,255,255,.2); color: rgba(255,255,255,.9); }
       `}</style>
 
       <div className="chat-wrap">
@@ -388,131 +421,247 @@ export default function ChatPage({
         </header>
 
         {chatError && (
-          <div
-            style={{
-              padding: "12px 16px",
-              margin: "0 16px 12px",
-              background: "#fef2f2",
-              border: "1px solid #fecaca",
-              borderRadius: 12,
-              fontSize: 13,
-              color: "#b91c1c",
-            }}
-          >
+          <div className="chat-error-banner">
             {chatError}
-            <button
-              type="button"
-              onClick={() => setChatError(null)}
-              style={{
-                marginLeft: 8,
-                textDecoration: "underline",
-                background: "none",
-                border: "none",
-                color: "inherit",
-                cursor: "pointer",
-                fontSize: "inherit",
-              }}
-            >
-              닫기
-            </button>
+            <div className="chat-error-actions">
+              <button type="button" onClick={() => setChatError(null)} className="chat-error-btn">
+                닫기
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setChatError(null);
+                  lastUserMessageRef.current && handleRetryRef.current?.(lastUserMessageRef.current);
+                }}
+                className="chat-error-btn chat-error-retry"
+              >
+                다시 시도
+              </button>
+            </div>
           </div>
         )}
 
-        <div className="chat-main">
-          {isInitialView ? (
-            <div className="chat-initial-area">
-              <div
-                className="chat-initial-icon"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 28,
-                  background: "var(--surface2)",
-                  overflow: "hidden",
-                }}
-              >
-                <img
-                  src="/images/yin-yang-logo.png"
-                  alt=""
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) parent.textContent = "☯";
-                  }}
-                />
-              </div>
-              <p className="chat-initial-greeting">
-                <span style={{ opacity: 0.8 }}>✦</span> {getTimeBasedGreeting()}
-                {(() => {
-                  const first = getSavedSajuList()?.[0];
-                  const name = first?.name?.trim();
-                  return name ? `, ${name}님` : "";
-                })()}
-              </p>
-              <p className="chat-initial-prompt">오늘 어떤 도움을 드릴까요?</p>
-            </div>
-          ) : (
-            <div className="chat-list" ref={listRef}>
-              {messages.map((m, i) => (
-                <div key={i} className={`chat-msg ${m.role}`}>
-                  <div className="chat-msg-bubble">{getMessageText(m)}</div>
-                </div>
-              ))}
-              {sending && (!messages[messages.length - 1] || getMessageText(messages[messages.length - 1]) === "") && (
-                <div className="chat-msg assistant">
-                  <div className="chat-typing">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                </div>
-              )}
-              {showLoginCard && (
-                <div className="chat-login-card">
-                  <h3>🔮 더 깊은 분석을 원하신다면</h3>
-                  <p>
-                    생년월일을 등록하면
-                    <br />
-                    나만의 맞춤 사주 분석을
-                    <br />
-                    받을 수 있어요.
-                  </p>
-                  <div className="chat-login-btns">
-                    <button type="button" className="chat-login-btn primary" onClick={() => router.push("/login")}>
-                      로그인하기
-                    </button>
-                    <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
-                      회원가입
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        {!hydrated ? (
+          <div className="chat-main" style={{ alignItems: "center", justifyContent: "center" }}>
+            <p className="chat-initial-greeting">불러오는 중...</p>
+          </div>
+        ) : (
+          <ChatContent
+            key="chat-hydrated"
+            initialMessages={savedMessages}
+            transport={transport}
+            onError={setChatError}
+            isLoggedIn={isLoggedIn}
+            showLoginCard={showLoginCard}
+            setShowLoginCard={setShowLoginCard}
+            router={router}
+            lastUserMessageRef={lastUserMessageRef}
+            handleRetryRef={handleRetryRef}
+          />
+        )}
+      </div>
+    </>
+  );
+}
 
-        {!showLoginCard && (
-          <div className="chat-input-wrap">
-            {isInitialView && (
-              <div className="chat-quick-chips">
-                {QUICK_PROMPTS.map((q) => (
-                  <button
-                    key={q.label}
-                    type="button"
-                    className="chat-quick-chip"
-                    onClick={() => handleSubmit(q.text)}
-                  >
-                    {q.label}
-                  </button>
-                ))}
+type ChatContentProps = {
+  initialMessages: Array<{ role: string; parts: Array<{ type: string; text?: string }> }>;
+  transport: DefaultChatTransport;
+  onError: (msg: string | null) => void;
+  isLoggedIn: boolean;
+  showLoginCard: boolean;
+  setShowLoginCard: (v: boolean) => void;
+  router: ReturnType<typeof useRouter>;
+  lastUserMessageRef: React.MutableRefObject<string | null>;
+  handleRetryRef: React.MutableRefObject<((text: string) => void) | null>;
+};
+
+function ChatContent({
+  initialMessages,
+  transport,
+  onError,
+  isLoggedIn,
+  showLoginCard,
+  setShowLoginCard,
+  router,
+  lastUserMessageRef,
+  handleRetryRef,
+}: ChatContentProps) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const skipFirstScrollRef = useRef(true);
+
+  const { messages, sendMessage, status } = useChat({
+    transport,
+    messages: initialMessages,
+    onError: (err) => {
+      onError(err?.message ?? "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
+    },
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || messages.length === 0) return;
+    try {
+      const toSave = messages.map((m) => ({ role: m.role, parts: m.parts ?? [] }));
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
+    } catch {
+      // ignore
+    }
+  }, [messages]);
+
+  // assistant 메시지가 추가/업데이트될 때만 맨 아래로 스크롤 (새로고침/초기 복원 시에는 스크롤 안 함)
+  useEffect(() => {
+    if (messages.length === 0) return;
+    const last = messages[messages.length - 1];
+    if (last?.role !== "assistant") return;
+    if (skipFirstScrollRef.current) {
+      skipFirstScrollRef.current = false;
+      return;
+    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  const handleSubmit = async (text: string) => {
+    if (!text.trim()) return;
+    onError(null);
+    lastUserMessageRef.current = text.trim();
+    handleRetryRef.current = (t: string) => sendMessage({ text: t });
+
+    if (GUEST_LIMIT_ENABLED) {
+      const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
+      if (!isLoggedIn && guestCount >= GUEST_LIMIT) {
+        setShowLoginCard(true);
+        return;
+      }
+      if (!isLoggedIn) {
+        localStorage.setItem("guest_chat_count", String(guestCount + 1));
+      }
+    }
+
+    try {
+      await sendMessage({ text: text.trim() });
+    } catch (e) {
+      onError(e instanceof Error ? e.message : "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
+    }
+  };
+
+  const sending = status === "submitted" || status === "streaming";
+  const hasUserMessage = messages.some((m) => m.role === "user");
+  const isInitialView = !hasUserMessage && !showLoginCard;
+
+  return (
+    <>
+      <div className="chat-main">
+        {isInitialView ? (
+          <div className="chat-initial-area">
+            <div
+              className="chat-initial-icon"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 28,
+                background: "var(--surface2)",
+                overflow: "hidden",
+              }}
+            >
+              <img
+                src="/images/yin-yang-logo.png"
+                alt=""
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) parent.textContent = "☯";
+                }}
+              />
+            </div>
+            <p className="chat-initial-greeting">
+              <span style={{ opacity: 0.8 }}>✦</span> {getTimeBasedGreeting()}
+              {(() => {
+                const first = getSavedSajuList()?.[0];
+                const name = first?.name?.trim();
+                return name ? `, ${name}님` : "";
+              })()}
+            </p>
+            <p className="chat-initial-prompt">오늘 어떤 도움을 드릴까요?</p>
+          </div>
+        ) : (
+          <div className="chat-list" ref={listRef}>
+            {messages.map((m, i) => {
+              const text = getMessageText(m);
+              const isAI = m.role === "assistant";
+              return (
+                <div key={i} className={`chat-msg ${m.role}`}>
+                  <div className="chat-msg-bubble-wrap">
+                    <div className="chat-msg-bubble">
+                      <MarkdownMessage text={text} isAI={isAI} />
+                    </div>
+                    <button
+                      type="button"
+                      className="chat-msg-copy"
+                      aria-label="복사"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(text).catch(() => {});
+                      }}
+                    >
+                      <Icon icon="mdi:content-copy" width={14} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+            {sending && (
+              <div className="chat-msg assistant">
+                <div className="chat-typing">
+                  <span />
+                  <span />
+                  <span />
+                </div>
               </div>
             )}
-            <ChatInput disabled={sending} onSubmit={handleSubmit} />
+            {showLoginCard && (
+              <div className="chat-login-card">
+                <h3>🔮 더 깊은 분석을 원하신다면</h3>
+                <p>
+                  생년월일을 등록하면
+                  <br />
+                  나만의 맞춤 사주 분석을
+                  <br />
+                  받을 수 있어요.
+                </p>
+                <div className="chat-login-btns">
+                  <button type="button" className="chat-login-btn primary" onClick={() => router.push("/login")}>
+                    로그인하기
+                  </button>
+                  <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
+                    회원가입
+                  </button>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
           </div>
         )}
       </div>
+
+      {!showLoginCard && (
+        <div className="chat-input-wrap">
+          <div className="chat-quick-chips">
+            {QUICK_PROMPTS.map((q) => (
+              <button
+                key={q.label}
+                type="button"
+                className="chat-quick-chip"
+                onClick={() => handleSubmit(q.text)}
+              >
+                {q.label}
+              </button>
+            ))}
+          </div>
+          <ChatInput disabled={sending} onSubmit={handleSubmit} />
+        </div>
+      )}
     </>
   );
 }
@@ -527,21 +676,38 @@ function ChatInput({
   placeholder?: string;
 }) {
   const [input, setInput] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSend = () => {
     const t = input.trim();
     if (!t || disabled) return;
     setInput("");
     onSubmit(t);
+    // 전송 후 textarea 높이 초기화
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+  };
+
+  // 입력창 자동 높이 조절 (최대 max-height 내에서)
+  const adjustHeight = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   };
 
   return (
     <div className="chat-input-row">
       <textarea
+        ref={textareaRef}
         className="chat-input"
         placeholder={placeholder}
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e) => {
+          setInput(e.target.value);
+          adjustHeight();
+        }}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();

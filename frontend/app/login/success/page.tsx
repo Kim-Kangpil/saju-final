@@ -61,19 +61,21 @@ export default function LoginSuccessPage({
   return (
     <main
       style={{
-        background: "#eef4ee",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        backgroundColor: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700;900&family=Gowun+Dodum&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .serif { font-family: 'Noto Serif KR', serif; }
-        .sans  { font-family: 'Gowun Dodum', sans-serif; }
+        .serif { font-family: var(--font-sans); }
+        .sans  { font-family: var(--font-sans); }
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(10px); }
@@ -135,10 +137,10 @@ export default function LoginSuccessPage({
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: "#556b2f",
+              color: "var(--text-primary)",
               padding: "6px 16px",
               borderRadius: 999,
-              border: "1.5px solid #adc4af",
+              border: "1.5px solid var(--border-default)",
               background: "transparent",
               cursor: "pointer",
             }}
@@ -166,7 +168,7 @@ export default function LoginSuccessPage({
               inset: 0,
               zIndex: 0,
               opacity: 0.03,
-              backgroundImage: "radial-gradient(circle, #556b2f 1px, transparent 1px)",
+              backgroundImage: "radial-gradient(circle, var(--text-primary) 1px, transparent 1px)",
               backgroundSize: "8px 8px",
               pointerEvents: "none",
             }}
@@ -177,20 +179,20 @@ export default function LoginSuccessPage({
               style={{
                 display: "inline-block",
                 padding: "5px 14px",
-                background: "#e8f0e8",
-                border: "1.5px solid #adc4af",
+                background: "var(--bg-input)",
+                border: "1.5px solid var(--border-default)",
                 borderRadius: 999,
                 marginBottom: 18,
               }}
             >
-              <span className="sans" style={{ fontSize: 11, fontWeight: 800, color: "#556b2f", letterSpacing: "0.08em" }}>
+              <span className="sans" style={{ fontSize: 11, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "0.08em" }}>
                 LOGIN SUCCESS
               </span>
             </div>
 
             <div className="ham-float" style={{ width: 110, height: 110, margin: "0 auto 14px" }}>
               <HamIcon
-                alt="햄스터"
+                alt="로고"
                 style={{
                   width: "100%",
                   height: "100%",
@@ -200,16 +202,16 @@ export default function LoginSuccessPage({
               />
             </div>
 
-            <h1 className="serif" style={{ fontSize: 22, fontWeight: 900, color: "#1a2e0e", marginBottom: 8 }}>
+            <h1 className="serif" style={{ fontSize: 22, fontWeight: 900, color: "var(--text-primary)", marginBottom: 8 }}>
               로그인 완료
             </h1>
-            <p className="sans" style={{ fontSize: 13, color: "#556b2f", opacity: 0.9, lineHeight: 1.6 }}>
+            <p className="sans" style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.9, lineHeight: 1.6 }}>
               저장된 사주를 확인할 준비 중이에요
             </p>
 
             <div style={{ height: 12 }} />
 
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 999, border: "1px solid rgba(85,107,47,.12)", background: "rgba(85,107,47,.06)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 999, border: "1px solid var(--border-default)", background: "var(--bg-input)" }}>
               <span className="pulse" style={{ width: 8, height: 8, borderRadius: 999, background: "#22c55e", display: "inline-block" }} />
               <span className="sans" style={{ fontSize: 12, fontWeight: 800, color: "#2d4a1e" }}>
                 이동 중...
@@ -219,7 +221,7 @@ export default function LoginSuccessPage({
         </section>
 
         <div style={{ padding: "20px 0", textAlign: "center" }}>
-          <p className="sans" style={{ fontSize: 10, color: "#556b2f", opacity: 0.35 }}>
+          <p className="sans" style={{ fontSize: 10, color: "var(--text-primary)", opacity: 0.35 }}>
             © 2026 한양사주 · AI 사주명리 분석 서비스
           </p>
         </div>

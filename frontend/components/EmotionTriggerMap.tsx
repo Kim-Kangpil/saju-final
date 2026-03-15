@@ -50,7 +50,7 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
 
   return (
     <div className="mt-2 space-y-3">
-      <p className="text-[11px] font-medium text-[#556b2f]">
+      <p className="text-[11px] font-medium text-[var(--text-primary)]">
         내 마음이 흔들리는 순간
       </p>
 
@@ -117,7 +117,7 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
 
       {/* 감정 민감도 바 */}
       <div className="space-y-1 pt-1">
-        <p className="text-[11px] font-medium text-[#556b2f]">감정 민감도</p>
+        <p className="text-[11px] font-medium text-[var(--text-primary)]">감정 민감도</p>
         {TRIGGER_LABELS.map(({ key, icon, label }) => (
           <div key={key} className="flex items-center gap-2">
             <div className="flex w-32 items-center gap-1 text-[10px] text-[#475569]">

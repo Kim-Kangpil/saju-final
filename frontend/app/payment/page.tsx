@@ -104,7 +104,7 @@ export default function PaymentPage({
   if (loading) {
     return (
       <main className="min-h-screen bg-[#eef4ee] flex items-center justify-center p-4">
-        <p className="text-[#556b2f] font-medium">결제 준비 중...</p>
+        <p className="text-[var(--text-primary)] font-medium">결제 준비 중...</p>
       </main>
     );
   }
@@ -116,7 +116,7 @@ export default function PaymentPage({
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-[#556b2f] text-white rounded-lg font-medium"
+          className="px-4 py-2 bg-[var(--text-primary)] text-white rounded-lg font-medium"
         >
           다시 시도
         </button>
@@ -128,7 +128,7 @@ export default function PaymentPage({
     <main className="min-h-screen bg-[#eef4ee] flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-sm rounded-2xl bg-white border-2 border-[#adc4af] shadow-lg p-6">
         <h1 className="text-lg font-bold text-[#2d4a1e] mb-1">{ORDER_NAME}</h1>
-        <p className="text-2xl font-bold text-[#556b2f] mb-6">
+        <p className="text-2xl font-bold text-[var(--text-primary)] mb-6">
           {AMOUNT.toLocaleString()}원
         </p>
 

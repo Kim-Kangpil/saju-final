@@ -22,7 +22,7 @@ export function RelationshipBalanceCard({ data }: { data: RelationshipStyleVisua
   return (
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[360px]"
-      style={{ fontFamily: "'Georgia', serif" }}
+      style={{ fontFamily: "var(--font-sans)" }}
     >
       {/* 타입 배지 */}
       <div

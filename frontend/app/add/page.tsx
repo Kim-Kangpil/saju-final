@@ -72,7 +72,6 @@ import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
 import { SummarySwipeCards } from "../../components/SummarySwipeCards";
 import { Icon } from "@iconify/react";
-import { HamIcon } from "../../components/HamIcon";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
 type Pillar = { hanja: string; hangul: string };
@@ -197,7 +196,7 @@ const ELEMENT_COLOR: Record<string, string> = {
   earth: "#b45309",
   metal: "#64748b",
   water: "#2563eb",
-  none: "#1a2e0e",
+  none: "var(--text-primary)",
 };
 
 function elementClass(el: string) {
@@ -2082,11 +2081,11 @@ export default function Page({
       />
 
       <main
-        className="min-h-screen flex flex-col items-center justify-center relative bg-[#eef4ee]"
-        style={{ position: "relative", zIndex: 10 }}
+        className="min-h-screen flex flex-col items-center justify-center relative"
+        style={{ position: "relative", zIndex: 10, backgroundColor: "var(--bg-base)", backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto" }}
       >
         <div className="w-full max-w-[450px] mx-auto">
-          <div className="border-4 border-[#adc4af] rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white">
+          <div className="rounded-[28px] overflow-hidden shadow-xl relative z-10 bg-white border-2 border-[var(--border-default)]"
             {/* 배경 이미지 레이어 */}
             <div
               className="absolute left-0 right-0 bottom-0 top-[64px]"
@@ -2107,8 +2106,8 @@ export default function Page({
             <header
               style={{
                 height: 64,
-                background: "#c1d8c3",
-                borderBottom: "3px solid #adc4af",
+                background: "var(--bg-base)",
+                borderBottom: "1px solid var(--border-default)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
@@ -2133,18 +2132,19 @@ export default function Page({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
+                  justifyContent: "center",
+                  width: 40,
+                  height: 40,
                   background: "transparent",
                   border: "none",
                   padding: 0,
                   cursor: "pointer",
+                  color: "var(--text-primary)",
                 }}
               >
-                <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="햄스터" />
-                <span style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
-                  한양사주
-                </span>
+                <Icon icon="mdi:chevron-left" width={28} />
               </button>
+              <h1 style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", flex: 1, textAlign: "center" }}>한양사주 AI</h1>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {(result || isLoggedIn) ? (
                   <>
@@ -2157,13 +2157,14 @@ export default function Page({
                         gap: 4,
                         padding: "6px 10px",
                         borderRadius: 999,
-                        background: "rgba(255,255,255,0.85)",
-                        border: "1.5px solid #adc4af",
+                        background: "var(--bg-surface)",
+                        border: "1.5px solid var(--border-default)",
                         cursor: "pointer",
+                        color: "var(--text-primary)",
                       }}
                     >
                       <Icon icon="mdi:seed-outline" width={18} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>{seedCount}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700 }}>{seedCount}</span>
                     </button>
                     <button
                       type="button"
@@ -2174,13 +2175,14 @@ export default function Page({
                         gap: 4,
                         padding: "6px 10px",
                         borderRadius: 999,
-                        background: "rgba(255,255,255,0.85)",
-                        border: "1.5px solid #adc4af",
+                        background: "var(--bg-surface)",
+                        border: "1.5px solid var(--border-default)",
                         cursor: "pointer",
+                        color: "var(--text-primary)",
                       }}
                     >
                       <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+                      <span style={{ fontSize: 12, fontWeight: 700 }}>멤버십</span>
                     </button>
                     <button
                       type="button"
@@ -2208,7 +2210,7 @@ export default function Page({
                         padding: "8px 12px",
                         fontSize: 14,
                         fontWeight: 700,
-                        color: "#556b2f",
+                        color: "var(--text-primary)",
                         background: "rgba(255,255,255,0.5)",
                         border: "none",
                         borderRadius: 8,
@@ -2224,7 +2226,7 @@ export default function Page({
                         fontSize: 14,
                         fontWeight: 700,
                         color: "#fff",
-                        background: "#556b2f",
+                        background: "var(--text-primary)",
                         border: "none",
                         borderRadius: 8,
                         cursor: "pointer",
@@ -2325,7 +2327,7 @@ export default function Page({
                             transition={{ delay: 0.6 }}
                             className="text-center px-4 sm:px-6"
                           >
-                            <p className="text-[#556b2f] font-bold text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-korean">
+                            <p className="text-[var(--text-primary)] font-bold text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-korean">
                               {loadingMessage}
                             </p>
                           </motion.div>
@@ -2337,18 +2339,18 @@ export default function Page({
                             className="w-full px-4 sm:px-8 space-y-2 sm:space-y-3 mt-4 sm:mt-6"
                           >
                             <div className="flex justify-between items-center px-1 sm:px-2">
-                              <span className="text-xs sm:text-sm font-bold text-[#556b2f]">
+                              <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">
                                 분석 진행중
                               </span>
                               <span
-                                className="text-xl sm:text-2xl font-black text-[#556b2f]"
-                                style={{ fontFamily: "monospace" }}
+                                className="text-xl sm:text-2xl font-black text-[var(--text-primary)]"
+                                style={{ fontFamily: "var(--font-sans)" }}
                               >
                                 {loadingProgress}% <span className="pixel-heart">💚</span>
                               </span>
                             </div>
 
-                            <div className="relative h-8 sm:h-10 bg-[#e9ecef] border-2 sm:border-4 border-[#556b2f] overflow-hidden shadow-[2px_2px_0px_0px_rgba(85,107,47,0.3)]">
+                            <div className="relative h-8 sm:h-10 bg-[#e9ecef] border-2 sm:border-4 border-[var(--text-primary)] overflow-hidden shadow-[2px_2px_0px_0px_rgba(58,58,58,0.15)]">
                               <motion.div
                                 className="h-full bg-gradient-to-r from-[#fef08a] via-[#fde047] to-[#facc15]"
                                 style={{ width: `${loadingProgress}%`, imageRendering: "pixelated" }}
@@ -2361,14 +2363,14 @@ export default function Page({
                               {[...Array(99)].map((_, i) => (
                                 <div
                                   key={i}
-                                  className="absolute top-0 bottom-0 w-[1px] bg-[#556b2f]"
+                                  className="absolute top-0 bottom-0 w-[1px] bg-[var(--text-primary)]"
                                   style={{ left: `${(i + 1) * 1}%`, opacity: 0.15 }}
                                 />
                               ))}
                               {[...Array(9)].map((_, i) => (
                                 <div
                                   key={`thick-${i}`}
-                                  className="absolute top-0 bottom-0 w-[2px] bg-[#556b2f]"
+                                  className="absolute top-0 bottom-0 w-[2px] bg-[var(--text-primary)]"
                                   style={{ left: `${(i + 1) * 10}%`, opacity: 0.4 }}
                                 />
                               ))}
@@ -2417,9 +2419,9 @@ export default function Page({
                               <div style={{ background: "#ffffff", borderRadius: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.10)", overflow: "hidden" }}>
                                 <div style={{ height: 8, background: "#a8d5b5", width: "100%" }} />
                                 <div style={{ padding: "28px 24px", textAlign: "center", minHeight: 140 }}>
-                                  <div style={{ fontSize: 14, fontWeight: 700, color: "#556b2f", marginBottom: 12 }}>일주 동물</div>
-                                  <div style={{ width: 80, height: 80, margin: "0 auto 8px", borderRadius: 12, background: "rgba(173,196,175,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#556b2f" }}>이미지</div>
-                                  <div style={{ fontSize: 13, color: "#556b2f", opacity: 0.9 }}>테스트용 · 스와이프로 다음 카드로</div>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>일주 동물</div>
+                                  <div style={{ width: 80, height: 80, margin: "0 auto 8px", borderRadius: 12, background: "rgba(173,196,175,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--text-primary)" }}>이미지</div>
+                                  <div style={{ fontSize: 13, color: "var(--text-primary)", opacity: 0.9 }}>테스트용 · 스와이프로 다음 카드로</div>
                                 </div>
                               </div>
                             </div>
@@ -2428,7 +2430,7 @@ export default function Page({
                               <div style={{ background: "#ffffff", borderRadius: 24, boxShadow: "0 8px 32px rgba(0,0,0,0.10)", overflow: "hidden" }}>
                                 <div style={{ height: 8, background: "#b5c8f0", width: "100%" }} />
                                 <div style={{ padding: "28px 24px", minHeight: 140 }}>
-                                  <div style={{ fontSize: 14, fontWeight: 700, color: "#556b2f", marginBottom: 14 }}>기본 정보</div>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>기본 정보</div>
                                   <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 13, color: "#374151" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>생년월일</span><span>YYYY-MM-DD</span></div>
                                     <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>성별</span><span>—</span></div>
@@ -2465,7 +2467,7 @@ export default function Page({
                                     style={{
                                       width: "100%",
                                       alignSelf: "stretch",
-                                      border: "3px solid #adc4af",
+                                      border: "3px solid var(--border-default)",
                                       borderRadius: 14,
                                       background: "#fff",
                                       overflow: "hidden",
@@ -2475,11 +2477,11 @@ export default function Page({
                                       style={{
                                         display: "grid",
                                         gridTemplateColumns: "repeat(4, 1fr)",
-                                        borderBottom: "2px solid #adc4af",
+                                        borderBottom: "2px solid var(--border-default)",
                                         background: "rgba(193, 216, 195, 0.15)",
                                         fontSize: 11,
                                         fontWeight: 700,
-                                        color: "#556b2f",
+                                        color: "var(--text-primary)",
                                         textAlign: "center",
                                         padding: "6px 4px",
                                       }}
@@ -2491,7 +2493,7 @@ export default function Page({
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "center",
-                                            ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
+                                            ...(i < 3 ? { borderRight: "2px solid var(--border-default)" } : {}),
                                           }}
                                         >
                                           {label}
@@ -2515,17 +2517,17 @@ export default function Page({
                                             flexDirection: "column",
                                             alignItems: "center",
                                             gap: 4,
-                                            ...(i < pillars.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
+                                            ...(i < pillars.length - 1 ? { borderRight: "2px solid var(--border-default)" } : {}),
                                           }}
                                         >
-                                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
                                             {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
                                           </div>
                                           <div
                                             style={{
                                               fontSize: 20,
                                               fontWeight: 700,
-                                              color: ELEMENT_COLOR[hanjaToElement(p.cheongan.hanja)] ?? "#1a2e0e",
+                                              color: ELEMENT_COLOR[hanjaToElement(p.cheongan.hanja)] ?? "var(--text-primary)",
                                             }}
                                           >
                                             {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
@@ -2534,12 +2536,12 @@ export default function Page({
                                             style={{
                                               fontSize: 20,
                                               fontWeight: 700,
-                                              color: ELEMENT_COLOR[hanjaToElement(p.jiji.hanja)] ?? "#1a2e0e",
+                                              color: ELEMENT_COLOR[hanjaToElement(p.jiji.hanja)] ?? "var(--text-primary)",
                                             }}
                                           >
                                             {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
                                           </div>
-                                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
                                             {(() => {
                                               const ms = branchMainStem(p.jiji.hanja);
                                               return ms ? tenGod(result.day.cheongan.hanja, ms) : "";
@@ -2551,7 +2553,7 @@ export default function Page({
                                             return jijangganList && jijangganList.length > 0 ? (
                                               <div style={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", marginTop: 2 }}>
                                                 {jijangganList.map((jj: any, idx: number) => (
-                                                  <span key={idx} style={{ fontSize: 9, fontWeight: 700, color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e" }}>
+                                                  <span key={idx} style={{ fontSize: 9, fontWeight: 700, color: ELEMENT_COLOR[jj.element] ?? "var(--text-primary)" }}>
                                                     {scriptMode === "hanja" ? jj.hanja : jj.hangul}
                                                   </span>
                                                 ))}
@@ -2559,7 +2561,7 @@ export default function Page({
                                             ) : null;
                                           })()}
                                           {result.twelve_states && (
-                                            <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
+                                            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-primary)", opacity: 0.85, marginTop: 1 }}>
                                               {i === 0 && result.twelve_states.hour}
                                               {i === 1 && result.twelve_states.day}
                                               {i === 2 && result.twelve_states.month}
@@ -2571,7 +2573,7 @@ export default function Page({
                                     </div>
                                   </div>
                                   <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 10 }}>
-                                    <div style={{ display: "flex", background: "#fffde7", padding: 2, borderRadius: 6, border: "1px solid #adc4af" }}>
+                                    <div style={{ display: "flex", background: "#fffde7", padding: 2, borderRadius: 6, border: "1px solid var(--border-default)" }}>
                                       <button
                                         type="button"
                                         onClick={() => setScriptMode("hanja")}
@@ -2583,7 +2585,7 @@ export default function Page({
                                           fontWeight: 700,
                                           border: "none",
                                           cursor: "pointer",
-                                          background: scriptMode === "hanja" ? "#556b2f" : "transparent",
+                                          background: scriptMode === "hanja" ? "var(--text-primary)" : "transparent",
                                           color: scriptMode === "hanja" ? "#fff" : "#374151",
                                         }}
                                       >
@@ -2600,7 +2602,7 @@ export default function Page({
                                           fontWeight: 700,
                                           border: "none",
                                           cursor: "pointer",
-                                          background: scriptMode === "hangul" ? "#556b2f" : "transparent",
+                                          background: scriptMode === "hangul" ? "var(--text-primary)" : "transparent",
                                           color: scriptMode === "hangul" ? "#fff" : "#374151",
                                         }}
                                       >
@@ -2627,7 +2629,7 @@ export default function Page({
                                   border: "none",
                                   padding: 0,
                                   cursor: "pointer",
-                                  background: previewCardIndex === i ? "#556b2f" : "rgba(85,107,47,0.3)",
+                                  background: previewCardIndex === i ? "var(--text-primary)" : "var(--bg-input)",
                                   transition: "background 0.2s",
                                 }}
                               />
@@ -2664,22 +2666,22 @@ export default function Page({
                                       display: "flex",
                                       alignItems: "center",
                                       justifyContent: "space-between",
-                                      background: isOpen ? "#eef4ee" : "transparent",
+                                      background: isOpen ? "var(--bg-base)" : "transparent",
                                       border: "none",
                                       cursor: "pointer",
                                     }}
                                   >
-                                    <p style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
+                                    <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
                                       <span style={{ fontSize: 14 }}>{sec.icon}</span>
                                       <span>{sec.title}</span>
                                     </p>
                                     <motion.span
                                       animate={{ rotate: isOpen ? 180 : 0 }}
                                       transition={{ duration: 0.18 }}
-                                      style={{ flexShrink: 0, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", color: "#556b2f" }}
+                                      style={{ flexShrink: 0, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-primary)" }}
                                       aria-hidden
                                     >
-                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: "#556b2f" }} aria-hidden>
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: "var(--text-primary)" }} aria-hidden>
                                         <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                                       </svg>
                                     </motion.span>
@@ -2714,7 +2716,7 @@ export default function Page({
                                             >
                                               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                                                 <span style={{ fontSize: 16 }}>{c.icon || "📌"}</span>
-                                                <div style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", wordBreak: "keep-all" }}>
+                                                <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", wordBreak: "keep-all" }}>
                                                   {c.title}
                                                 </div>
                                                 {c.kind === "ready" && (
@@ -2783,10 +2785,10 @@ export default function Page({
                                                       <div style={{ display: "flex", justifyContent: "center" }}>
                                                         <LockIcon />
                                                       </div>
-                                                      <p style={{ fontSize: 11, fontWeight: 700, color: "#556b2f", margin: "4px 0 0" }}>
+                                                      <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", margin: "4px 0 0" }}>
                                                         🔓 로그인 후 확인하기
                                                       </p>
-                                                      <p style={{ fontSize: 8, color: "#556b2f", opacity: 0.7, margin: "2px 0 0" }}>
+                                                      <p style={{ fontSize: 8, color: "var(--text-primary)", opacity: 0.7, margin: "2px 0 0" }}>
                                                         카카오 로그인 후 이용 가능
                                                       </p>
                                                     </button>
@@ -2965,7 +2967,7 @@ export default function Page({
                               padding: 12,
                               background: "#fffde7",
                               border: "1.5px solid #f0d060",
-                              color: "#1a2e0e",
+                              color: "var(--text-primary)",
                               borderRadius: 14,
                               fontWeight: 700,
                               fontSize: 14,
@@ -3066,13 +3068,13 @@ export default function Page({
                   padding: 24,
                   maxWidth: 320,
                   width: "100%",
-                  border: "1.5px solid #adc4af",
+                  border: "1.5px solid var(--border-default)",
                   boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-                  fontFamily: "'Gowun Dodum', sans-serif",
+                  fontFamily: "var(--font-sans)",
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e", marginBottom: 8 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8 }}>
                   💾 사주 저장하기
                 </h3>
                 <p style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6, marginBottom: 16 }}>
@@ -3096,9 +3098,9 @@ export default function Page({
                     width: "100%",
                     padding: "12px 14px",
                     borderRadius: 12,
-                    border: `1.5px solid ${saveDialogInputFocused ? "#6a994e" : "#adc4af"}`,
+                    border: `1.5px solid ${saveDialogInputFocused ? "#6a994e" : "var(--border-default)"}`,
                     fontSize: 14,
-                    fontFamily: "'Gowun Dodum', sans-serif",
+                    fontFamily: "var(--font-sans)",
                     outline: "none",
                     marginBottom: 6,
                   }}

@@ -100,18 +100,20 @@ function MyPageContent({
   return (
     <main
       style={{
-        background: "#eef4ee",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        backgroundColor: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .sans { font-family: 'Gowun Dodum', sans-serif; }
+        .sans { font-family: var(--font-sans); }
         .tap {
           transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
           -webkit-tap-highlight-color: transparent;
@@ -128,9 +130,9 @@ function MyPageContent({
           left: 50%;
           transform: translateX(-50%);
           z-index: 200;
-          background: #345024;
+          background: var(--text-primary);
           color: #fff;
-          font-family: 'Gowun Dodum', sans-serif;
+          font-family: var(--font-sans);
           font-size: 13px;
           font-weight: 700;
           padding: 10px 18px;
@@ -170,8 +172,8 @@ function MyPageContent({
             justifyContent: "space-between",
             padding: "16px 20px",
             margin: "0 -20px 0",
-            background: "#c1d8c3",
-            borderBottom: "3px solid #adc4af",
+            background: "var(--bg-base)",
+            borderBottom: "3px solid var(--border-default)",
           }}
         >
           <button
@@ -181,8 +183,8 @@ function MyPageContent({
               background: "transparent", border: "none", padding: 0, cursor: "pointer",
             }}
           >
-            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="햄스터" />
-            <span style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
+            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="로고" />
+            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.04em" }}>
               한양사주
             </span>
           </button>
@@ -194,11 +196,11 @@ function MyPageContent({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "6px 10px", borderRadius: 999,
-                background: "rgba(255,255,255,0.85)", border: "1.5px solid #adc4af", cursor: "pointer",
+                background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>{seedCount}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{seedCount}</span>
             </button>
             <button
               type="button"
@@ -206,11 +208,11 @@ function MyPageContent({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "6px 10px", borderRadius: 999,
-                background: "rgba(255,255,255,0.85)", border: "1.5px solid #adc4af", cursor: "pointer",
+                background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
               <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
             </button>
             <button
               type="button"
@@ -241,11 +243,11 @@ function MyPageContent({
           }}
         >
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e", marginBottom: 3 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>
               마이페이지
             </div>
-            <div style={{ fontSize: 12, color: "#556b2f" }}>
-              씨앗 <strong style={{ color: "#345024" }}>{seedCount}개</strong> 보유 중
+            <div style={{ fontSize: 12, color: "var(--text-primary)" }}>
+              씨앗 <strong style={{ color: "var(--text-primary)" }}>{seedCount}개</strong> 보유 중
             </div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -256,8 +258,8 @@ function MyPageContent({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "7px 12px", borderRadius: 10,
-                background: "#fff", border: "1.5px solid #adc4af",
-                fontSize: 12, fontWeight: 700, color: "#345024", cursor: "pointer",
+                background: "#fff", border: "1.5px solid var(--border-default)",
+                fontSize: 12, fontWeight: 700, color: "var(--text-primary)", cursor: "pointer",
               }}
             >
               <Icon icon="mdi:seed-outline" width={14} />
@@ -270,7 +272,7 @@ function MyPageContent({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "7px 12px", borderRadius: 10,
-                background: "#fff", border: "1.5px solid #adc4af",
+                background: "#fff", border: "1.5px solid var(--border-default)",
                 fontSize: 12, fontWeight: 700, color: "#6b7280", cursor: "pointer",
               }}
             >
@@ -317,7 +319,7 @@ function MyPageContent({
               marginBottom: 12,
             }}
           >
-            <h2 style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
               저장된 사주{" "}
               <span style={{ color: "#6b7280", fontWeight: 400 }}>
                 ({sajuList.length}/5)
@@ -330,8 +332,8 @@ function MyPageContent({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "5px 10px", borderRadius: 8,
-                background: "#fff", border: "1.5px solid #adc4af",
-                fontSize: 12, fontWeight: 700, color: "#345024", cursor: "pointer",
+                background: "#fff", border: "1.5px solid var(--border-default)",
+                fontSize: 12, fontWeight: 700, color: "var(--text-primary)", cursor: "pointer",
               }}
             >
               <Icon icon="mdi:plus" width={14} />
@@ -371,7 +373,7 @@ function MyPageContent({
               }}
             >
               <div style={{ fontSize: 40, marginBottom: 10 }}>📭</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", marginBottom: 6 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
                 저장된 사주가 없어요
               </div>
               <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 20 }}>
@@ -434,7 +436,7 @@ function MyPageContent({
                 alignItems: "center",
                 gap: 8,
                 fontSize: 12,
-                color: remaining > 0 ? "#556b2f" : "#9a3412",
+                color: remaining > 0 ? "var(--text-primary)" : "#9a3412",
                 fontWeight: 700,
               }}
             >
@@ -452,7 +454,7 @@ function MyPageContent({
 
         {/* ── 바로가기 ── */}
         <section className="sans" style={{ padding: "24px 0 0" }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e", marginBottom: 12 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
             바로가기
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -460,7 +462,7 @@ function MyPageContent({
               { icon: "mdi:seed-outline", label: "씨앗 충전", path: "/seed-charge", color: "#6a994e" },
               { icon: "fluent-emoji-flat:sunflower", label: "해바라기 멤버십", path: "/membership", color: "#c9a227" },
               { icon: "mdi:history", label: "분석 내역", path: "/history", color: "#6b7280" },
-              { icon: "mdi:home-outline", label: "홈으로", path: "/home", color: "#345024" },
+              { icon: "mdi:home-outline", label: "홈으로", path: "/home", color: "var(--text-primary)" },
             ].map((item) => (
               <button
                 key={item.label}
@@ -480,7 +482,7 @@ function MyPageContent({
                 }}
               >
                 <Icon icon={item.icon} width={20} style={{ color: item.color, flexShrink: 0 }} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#1a2e0e" }}>{item.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{item.label}</span>
               </button>
             ))}
           </div>
@@ -503,10 +505,10 @@ export default function MyPage(
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontFamily: "'Gowun Dodum', sans-serif",
+            fontFamily: "var(--font-sans)",
           }}
         >
-          <p style={{ fontSize: 14, color: "#556b2f" }}>불러오는 중...</p>
+          <p style={{ fontSize: 14, color: "var(--text-primary)" }}>불러오는 중...</p>
         </main>
       }
     >

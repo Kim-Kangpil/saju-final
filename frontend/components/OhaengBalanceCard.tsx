@@ -56,7 +56,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
   return (
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[360px]"
-      style={{ fontFamily: "'Georgia', serif" }}
+      style={{ fontFamily: "var(--font-sans)" }}
     >
       {/* 오각형 차트 */}
       <div
@@ -169,7 +169,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   fontSize="13"
                   fontWeight="700"
                   fill={isSelected ? el.color : "#3d4a3d"}
-                  fontFamily="Georgia, serif"
+                  fontFamily="var(--font-sans)"
                   style={{ transition: "fill 0.3s" }}
                 >
                   {el.label}
@@ -181,7 +181,7 @@ export function OhaengBalanceCard({ data }: { data: OhaengVisualData }) {
                   dominantBaseline="middle"
                   fontSize="8"
                   fill={el.count === 0 ? "#b87a6a" : "#5c6b5c"}
-                  fontFamily="Georgia, serif"
+                  fontFamily="var(--font-sans)"
                 >
                   {el.count}개
                 </text>

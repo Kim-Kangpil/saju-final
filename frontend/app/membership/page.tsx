@@ -64,9 +64,12 @@ export default function MembershipPage({
   return (
     <main
       style={{
-        background: "#eef4ee",
+        backgroundColor: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -74,9 +77,8 @@ export default function MembershipPage({
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .sans { font-family: 'Gowun Dodum', sans-serif; }
+        .sans { font-family: var(--font-sans); }
         .tap {
           transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
           -webkit-tap-highlight-color: transparent;
@@ -85,7 +87,7 @@ export default function MembershipPage({
         .tap:active { transform: scale(.97); opacity: .9; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
         .wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 20px 40px; }
         @media (max-width: 390px) { .wrap { padding: 0 16px 40px; } }
-        .faq-btn { width: 100%; background: none; border: none; cursor: pointer; text-align: left; font-family: 'Gowun Dodum', sans-serif; }
+        .faq-btn { width: 100%; background: none; border: none; cursor: pointer; text-align: left; font-family: var(--font-sans); }
         .sticky-cta {
           position: fixed;
           bottom: 0; left: 0; right: 0;
@@ -93,7 +95,7 @@ export default function MembershipPage({
           display: flex;
           justify-content: center;
           padding: 12px 20px 20px;
-          background: linear-gradient(to top, #eef4ee 60%, transparent);
+          background: linear-gradient(to top, var(--bg-base) 60%, transparent);
         }
         .sticky-cta-inner {
           width: 100%; max-width: 420px;
@@ -105,8 +107,8 @@ export default function MembershipPage({
           opacity: 0.7;
         }
         .compare-col-highlight {
-          background: linear-gradient(135deg, #d4edda, #c1d8c3);
-          border: 2px solid #8ab894;
+          background: linear-gradient(135deg, var(--bg-input), #c1d8c3);
+          border: 2px solid var(--border-default);
         }
         .compare-col-plain {
           background: #f8faf8;
@@ -127,7 +129,7 @@ export default function MembershipPage({
             padding: "16px 20px",
             margin: "0 -20px 0",
             background: "#c1d8c3",
-            borderBottom: "3px solid #adc4af",
+            borderBottom: "3px solid var(--border-default)",
           }}
         >
           <button
@@ -142,8 +144,8 @@ export default function MembershipPage({
               cursor: "pointer",
             }}
           >
-            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="햄스터" />
-            <span style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
+            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="로고" />
+            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.04em" }}>
               한양사주
             </span>
           </button>
@@ -155,11 +157,11 @@ export default function MembershipPage({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "6px 10px", borderRadius: 999,
-                background: "rgba(255,255,255,0.85)", border: "1.5px solid #adc4af", cursor: "pointer",
+                background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>0</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>0</span>
             </button>
             <button
               type="button"
@@ -167,11 +169,11 @@ export default function MembershipPage({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "6px 10px", borderRadius: 999,
-                background: "rgba(255,255,255,0.85)", border: "1.5px solid #adc4af", cursor: "pointer",
+                background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
               <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
             </button>
             <button
               type="button"
@@ -193,17 +195,17 @@ export default function MembershipPage({
           className="sans"
           style={{
             margin: "0 -20px",
-            background: "linear-gradient(160deg, #fffde7 0%, #e8f5e9 60%, #c8e6c9 100%)",
+            background: "linear-gradient(160deg, var(--bg-surface) 0%, var(--bg-input) 60%, var(--bg-input) 100%)",
             padding: "36px 24px 32px",
             textAlign: "center",
-            borderBottom: "1.5px solid #c8dac8",
+            borderBottom: "1.5px solid var(--border-default)",
           }}
         >
           <Icon icon="fluent-emoji-flat:sunflower" width={80} style={{ display: "block", margin: "0 auto 16px" }} />
           <div
             style={{
               display: "inline-block",
-              background: "#6a994e",
+              background: "var(--text-primary)",
               color: "#fff",
               fontSize: 11,
               fontWeight: 700,
@@ -215,10 +217,10 @@ export default function MembershipPage({
           >
             해바라기 맴버십
           </div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#1a2e0e", lineHeight: 1.45, marginBottom: 10 }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.45, marginBottom: 10 }}>
             더 깊은 사주 해석을,<br />더 가볍게 누리는 방법
           </h1>
-          <p style={{ fontSize: 13, color: "#556b2f", lineHeight: 1.7, marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 20 }}>
             매달 씨앗 혜택 + 맴버 전용 기능
           </p>
 
@@ -229,11 +231,11 @@ export default function MembershipPage({
                 key={t}
                 style={{
                   background: "rgba(255,255,255,0.8)",
-                  border: "1px solid #adc4af",
+                  border: "1px solid var(--border-default)",
                   borderRadius: 99,
                   padding: "4px 10px",
                   fontSize: 12,
-                  color: "#345024",
+                  color: "var(--text-primary)",
                   fontWeight: 700,
                 }}
               >
@@ -242,7 +244,7 @@ export default function MembershipPage({
             ))}
           </div>
 
-          <div style={{ fontSize: 22, fontWeight: 700, color: "#1a2e0e", marginBottom: 18 }}>
+          <div style={{ fontSize: 22, fontWeight: 700, color: "var(--text-primary)", marginBottom: 18 }}>
             월 3,900원
           </div>
           <button
@@ -254,7 +256,7 @@ export default function MembershipPage({
               padding: "13px 14px",
               borderRadius: 14,
               border: "none",
-              background: "#6a994e",
+              background: "var(--text-primary)",
               fontSize: 15,
               fontWeight: 700,
               color: "#fff",
@@ -269,7 +271,7 @@ export default function MembershipPage({
 
         {/* ── 2. 혜택 카드 4개 ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", marginBottom: 16 }}>맴버십 혜택</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>맴버십 혜택</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {benefits.map((b) => (
               <div
@@ -281,8 +283,8 @@ export default function MembershipPage({
                   padding: "14px 14px 16px",
                 }}
               >
-                <Icon icon={b.icon} width={22} style={{ color: "#6a994e", marginBottom: 8, display: "block" }} />
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#1a2e0e", marginBottom: 4 }}>{b.title}</div>
+                <Icon icon={b.icon} width={22} style={{ color: "var(--text-primary)", marginBottom: 8, display: "block" }} />
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>{b.title}</div>
                 <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>{b.desc}</div>
               </div>
             ))}
@@ -291,7 +293,7 @@ export default function MembershipPage({
 
         {/* ── 3. 비교표 ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", marginBottom: 16 }}>씨앗 단건 vs 맴버십</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>씨앗 단건 vs 맴버십</h2>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {/* 단건 */}
             <div
@@ -325,7 +327,7 @@ export default function MembershipPage({
                   position: "absolute",
                   top: -10,
                   right: 10,
-                  background: "#6a994e",
+                  background: "var(--text-primary)",
                   color: "#fff",
                   fontSize: 10,
                   fontWeight: 700,
@@ -336,14 +338,14 @@ export default function MembershipPage({
               >
                 추천
               </div>
-              <div style={{ fontSize: 12, color: "#1a2e0e", fontWeight: 700, marginBottom: 10 }}>해바라기 맴버십</div>
+              <div style={{ fontSize: 12, color: "var(--text-primary)", fontWeight: 700, marginBottom: 10 }}>해바라기 맴버십</div>
               {[
                 ["매달 혜택", "씨앗 10개"],
                 ["가격 효율", "고정 비용"],
                 ["전용 콘텐츠", "✅"],
                 ["신기능 체험", "✅"],
               ].map(([k, v]) => (
-                <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#1a2e0e", marginBottom: 7, lineHeight: 1.4 }}>
+                <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--text-primary)", marginBottom: 7, lineHeight: 1.4 }}>
                   <span style={{ color: "#4a7c3f" }}>{k}</span>
                   <span style={{ fontWeight: 700 }}>{v}</span>
                 </div>
@@ -357,7 +359,7 @@ export default function MembershipPage({
 
         {/* ── 4. 가격 납득 계산 카드 ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", marginBottom: 14 }}>이렇게 쓰면 바로 이득이에요</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>이렇게 쓰면 바로 이득이에요</h2>
           <div
             style={{
               background: "#fff",
@@ -387,14 +389,14 @@ export default function MembershipPage({
             ))}
             <div
               style={{
-                background: "linear-gradient(135deg, #d4edda, #c1d8c3)",
+                background: "linear-gradient(135deg, var(--bg-input), #c1d8c3)",
                 padding: "14px 16px",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#1a2e0e" }}>맴버십 가입 시</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>맴버십 가입 시</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#3a6b2a" }}>매달 씨앗 10개 자동 지급 🌱</span>
             </div>
           </div>
@@ -405,7 +407,7 @@ export default function MembershipPage({
 
         {/* ── 5. 미리보기 (블러) ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", marginBottom: 14 }}>맴버 전용 리포트 미리보기</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>맴버 전용 리포트 미리보기</h2>
           <div
             style={{
               background: "#fff",
@@ -417,7 +419,7 @@ export default function MembershipPage({
             }}
           >
             {/* 상단 일부 공개 */}
-            <div style={{ fontSize: 13, color: "#556b2f", fontWeight: 700, marginBottom: 8 }}>
+            <div style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 700, marginBottom: 8 }}>
               🌊 2026년 상반기 대운 흐름
             </div>
             <p style={{ fontSize: 13, color: "#374151", lineHeight: 1.7, marginBottom: 12 }}>
@@ -448,7 +450,7 @@ export default function MembershipPage({
                 paddingBottom: 14,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6a994e", fontWeight: 700 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--text-primary)", fontWeight: 700 }}>
                 <Icon icon="mdi:lock-outline" width={16} />
                 맴버십 가입 후 전체 열람 가능
               </div>
@@ -458,7 +460,7 @@ export default function MembershipPage({
 
         {/* ── 6. 사용 시나리오 ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", marginBottom: 14 }}>이런 분께 잘 맞아요</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>이런 분께 잘 맞아요</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {scenarios.map((s) => (
               <div
@@ -475,7 +477,7 @@ export default function MembershipPage({
               >
                 <span style={{ fontSize: 22, lineHeight: 1 }}>{s.emoji}</span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e", marginBottom: 3 }}>{s.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>{s.title}</div>
                   <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>{s.desc}</div>
                 </div>
               </div>
@@ -485,7 +487,7 @@ export default function MembershipPage({
 
         {/* ── 7. FAQ ── */}
         <section className="sans" style={{ padding: "28px 0 4px" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", marginBottom: 14 }}>자주 묻는 질문</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>자주 묻는 질문</h2>
           <div
             style={{
               background: "#fff",
@@ -507,7 +509,7 @@ export default function MembershipPage({
                     gap: 8,
                   }}
                 >
-                  <span style={{ fontSize: 13, color: "#1a2e0e", fontWeight: 700, lineHeight: 1.4 }}>{f.q}</span>
+                  <span style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 700, lineHeight: 1.4 }}>{f.q}</span>
                   <Icon
                     icon={openFaq === i ? "mdi:chevron-up" : "mdi:chevron-down"}
                     width={18}
@@ -529,14 +531,14 @@ export default function MembershipPage({
           className="sans"
           style={{
             margin: "28px -20px 0",
-            background: "linear-gradient(160deg, #e8f5e9 0%, #c8e6c9 100%)",
+            background: "linear-gradient(160deg, var(--bg-input) 0%, var(--bg-input) 100%)",
             padding: "28px 24px 32px",
             textAlign: "center",
-            borderTop: "1.5px solid #c8dac8",
+            borderTop: "1.5px solid var(--border-default)",
           }}
         >
           <Icon icon="fluent-emoji-flat:sunflower" width={48} style={{ display: "block", margin: "0 auto 12px" }} />
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#1a2e0e", lineHeight: 1.55, marginBottom: 6 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.55, marginBottom: 6 }}>
             내 흐름을 더 자주,<br />더 깊게 확인하고 싶다면
           </p>
           <p style={{ fontSize: 13, color: "#4a7c3f", marginBottom: 18 }}>월 3,900원</p>
@@ -549,7 +551,7 @@ export default function MembershipPage({
               padding: "13px 14px",
               borderRadius: 14,
               border: "none",
-              background: "#6a994e",
+              background: "var(--text-primary)",
               fontSize: 15,
               fontWeight: 700,
               color: "#fff",
@@ -575,7 +577,7 @@ export default function MembershipPage({
               padding: "13px 14px",
               borderRadius: 14,
               border: "none",
-              background: "#6a994e",
+              background: "var(--text-primary)",
               fontSize: 14,
               fontWeight: 700,
               color: "#fff",

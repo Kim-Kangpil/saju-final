@@ -91,7 +91,7 @@ export function GuiinStarMap(props: GuiinStarMapProps) {
             >
               <div
                 className={`text-[11px] font-bold ${
-                  active ? "text-[#556b2f]" : "text-[#8a9a8b]"
+                  active ? "text-[var(--text-primary)]" : "text-[#8a9a8b]"
                 }`}
               >
                 {GUIIN_NAME[key]}

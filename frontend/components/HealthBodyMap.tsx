@@ -32,7 +32,7 @@ export function HealthBodyMap({ data }: HealthBodyMapProps) {
   return (
     <div
       className="w-full"
-      style={{ fontFamily: "'Noto Sans KR', sans-serif" }}
+      style={{ fontFamily: "var(--font-sans)" }}
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-1 px-1">

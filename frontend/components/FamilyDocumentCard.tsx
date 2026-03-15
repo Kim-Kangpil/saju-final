@@ -17,7 +17,7 @@ export function FamilyDocumentCard({ data }: { data: AncestorVisualData }) {
   return (
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[360px]"
-      style={{ fontFamily: "'Georgia', 'Nanum Myeongjo', serif" }}
+      style={{ fontFamily: "var(--font-sans)" }}
     >
       {/* 헤더 */}
       <div style={{ textAlign: "center", marginBottom: "16px" }}>

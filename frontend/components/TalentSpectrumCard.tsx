@@ -23,7 +23,7 @@ export function TalentSpectrumCard({ data }: { data: AptitudeSpectrumData }) {
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[360px]"
       style={{
-        fontFamily: "'Georgia', serif",
+        fontFamily: "var(--font-sans)",
       }}
     >
       {/* 스펙트럼 차트 */}

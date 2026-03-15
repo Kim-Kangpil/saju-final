@@ -50,7 +50,7 @@ function getAnimalNameColor(animalName: string): string {
   for (const prefix of Object.keys(ANIMAL_COLOR_BY_PREFIX)) {
     if (animalName.startsWith(prefix)) return ANIMAL_COLOR_BY_PREFIX[prefix];
   }
-  return "#1a2e0e";
+  return "var(--text-primary)";
 }
 
 type Element = "wood" | "fire" | "earth" | "metal" | "water";
@@ -122,7 +122,7 @@ const ELEMENT_COLOR: Record<string, string> = {
   earth: "#b45309",
   metal: "#64748b",
   water: "#2563eb",
-  none: "#1a2e0e",
+  none: "var(--text-primary)",
 };
 
 interface SajuRow {
@@ -383,16 +383,19 @@ function SajuPreviewContent() {
   const valueStyle = {
     fontSize: 14,
     fontWeight: 700,
-    color: "#1a2e0e",
+    color: "var(--text-primary)",
   } as const;
 
   if (loading) {
     return (
       <main
         style={{
-          background: "#eef4ee",
+          background: "var(--bg-base)",
+          backgroundImage: "url('/images/hanji-bg.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
           minHeight: "100vh",
-          fontFamily: "'Gowun Dodum', sans-serif",
+          fontFamily: "var(--font-sans)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -400,7 +403,7 @@ function SajuPreviewContent() {
           padding: 20,
         }}
       >
-        <p style={{ fontSize: 14, color: "#556b2f" }}>불러오는 중...</p>
+        <p style={{ fontSize: 14, color: "var(--text-primary)" }}>불러오는 중...</p>
       </main>
     );
   }
@@ -409,9 +412,12 @@ function SajuPreviewContent() {
     return (
       <main
         style={{
-          background: "#eef4ee",
+          background: "var(--bg-base)",
+          backgroundImage: "url('/images/hanji-bg.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "auto",
           minHeight: "100vh",
-          fontFamily: "'Gowun Dodum', sans-serif",
+          fontFamily: "var(--font-sans)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -428,11 +434,11 @@ function SajuPreviewContent() {
           style={{
             padding: "10px 20px",
             borderRadius: 14,
-            border: "1.5px solid #adc4af",
-            background: "#c1d8c3",
+            border: "1.5px solid var(--border-default)",
+            background: "var(--bg-base)",
             fontSize: 14,
             fontWeight: 700,
-            color: "#1a2e0e",
+            color: "var(--text-primary)",
             cursor: "pointer",
           }}
         >
@@ -447,18 +453,20 @@ function SajuPreviewContent() {
   return (
     <main
       style={{
-        background: "#eef4ee",
+        background: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .sans { font-family: 'Gowun Dodum', sans-serif; }
+        .sans { font-family: var(--font-sans); }
         .tap {
           transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
           -webkit-tap-highlight-color: transparent;
@@ -520,8 +528,8 @@ function SajuPreviewContent() {
             justifyContent: "space-between",
             padding: "16px 20px",
             margin: "0 -20px 16px",
-            background: "#c1d8c3",
-            borderBottom: "3px solid #adc4af",
+            background: "var(--bg-base)",
+            borderBottom: "3px solid var(--border-default)",
           }}
         >
           <button
@@ -536,8 +544,8 @@ function SajuPreviewContent() {
               cursor: "pointer",
             }}
           >
-            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="햄스터" />
-            <span style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
+            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="로고" />
+            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.04em" }}>
               한양사주
             </span>
           </button>
@@ -552,12 +560,12 @@ function SajuPreviewContent() {
                 padding: "6px 10px",
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid #adc4af",
+                border: "1.5px solid var(--border-default)",
                 cursor: "pointer",
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>0</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>0</span>
             </button>
             <button
               type="button"
@@ -569,12 +577,12 @@ function SajuPreviewContent() {
                 padding: "6px 10px",
                 borderRadius: 999,
                 background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid #adc4af",
+                border: "1.5px solid var(--border-default)",
                 cursor: "pointer",
               }}
             >
               <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
             </button>
             <button
               type="button"
@@ -601,13 +609,13 @@ function SajuPreviewContent() {
           style={{
             fontSize: 18,
             fontWeight: 700,
-            color: "#1a2e0e",
+            color: "var(--text-primary)",
             marginBottom: 12,
           }}
         >
           내 사주 미리보기
         </h1>
-        <p className="sans" style={{ fontSize: 12, color: "#556b2f", marginBottom: 14 }}>
+        <p className="sans" style={{ fontSize: 12, color: "var(--text-primary)", marginBottom: 14 }}>
           좌우로 스와이프하거나 화살표로 카드를 넘겨보세요
         </p>
 
@@ -620,7 +628,7 @@ function SajuPreviewContent() {
               aria-label="이전 카드"
               onClick={() => goToSlide(carouselIndex - 1)}
             >
-              <Icon icon="mdi:chevron-left" width={24} style={{ color: "#1a2e0e" }} />
+              <Icon icon="mdi:chevron-left" width={24} style={{ color: "var(--text-primary)" }} />
             </button>
           )}
           {carouselIndex < 2 && (
@@ -630,7 +638,7 @@ function SajuPreviewContent() {
               aria-label="다음 카드"
               onClick={() => goToSlide(carouselIndex + 1)}
             >
-              <Icon icon="mdi:chevron-right" width={24} style={{ color: "#1a2e0e" }} />
+              <Icon icon="mdi:chevron-right" width={24} style={{ color: "var(--text-primary)" }} />
             </button>
           )}
           <div
@@ -672,7 +680,7 @@ function SajuPreviewContent() {
                         </span>
                       )}
                       {dayPillarKey && (
-                        <span style={{ fontSize: 18, fontWeight: 600, color: "#556b2f" }}>
+                        <span style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>
                           {dayPillarKey}일주
                         </span>
                       )}
@@ -720,7 +728,7 @@ function SajuPreviewContent() {
                   style={{
                     width: "100%",
                     alignSelf: "stretch",
-                    border: "3px solid #adc4af",
+                    border: "3px solid var(--border-default)",
                     borderRadius: 14,
                     background: "#fff",
                     overflow: "hidden",
@@ -730,11 +738,11 @@ function SajuPreviewContent() {
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(4, 1fr)",
-                      borderBottom: "2px solid #adc4af",
+                      borderBottom: "2px solid var(--border-default)",
                       background: "rgba(193, 216, 195, 0.15)",
                       fontSize: 11,
                       fontWeight: 700,
-                      color: "#556b2f",
+                      color: "var(--text-primary)",
                       textAlign: "center",
                       padding: "6px 4px",
                     }}
@@ -746,7 +754,7 @@ function SajuPreviewContent() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          ...(i < 3 ? { borderRight: "2px solid #adc4af" } : {}),
+                          ...(i < 3 ? { borderRight: "2px solid var(--border-default)" } : {}),
                         }}
                       >
                         {label}
@@ -782,19 +790,19 @@ function SajuPreviewContent() {
                             flexDirection: "column",
                             alignItems: "center",
                             gap: 4,
-                            ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid #adc4af" } : {}),
+                            ...(idx < pillarBlocks.length - 1 ? { borderRight: "2px solid var(--border-default)" } : {}),
                           }}
                         >
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
                             {stemTenGod}
                           </div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "#1a2e0e" }}>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[stemEl] ?? "var(--text-primary)" }}>
                             {cheongan}
                           </div>
-                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "#1a2e0e" }}>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: ELEMENT_COLOR[branchEl] ?? "var(--text-primary)" }}>
                             {jiji}
                           </div>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#556b2f", opacity: 0.9 }}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)", opacity: 0.9 }}>
                             {branchTenGod}
                           </div>
                           {jijangganList && jijangganList.length > 0 && (
@@ -805,7 +813,7 @@ function SajuPreviewContent() {
                                   style={{
                                     fontSize: 9,
                                     fontWeight: 700,
-                                    color: ELEMENT_COLOR[jj.element] ?? "#1a2e0e",
+                                    color: ELEMENT_COLOR[jj.element] ?? "var(--text-primary)",
                                   }}
                                 >
                                   {jj.hanja}
@@ -814,7 +822,7 @@ function SajuPreviewContent() {
                             </div>
                           )}
                           {stateText && (
-                            <div style={{ fontSize: 10, fontWeight: 600, color: "#556b2f", opacity: 0.85, marginTop: 1 }}>
+                            <div style={{ fontSize: 10, fontWeight: 600, color: "var(--text-primary)", opacity: 0.85, marginTop: 1 }}>
                               {stateText}
                             </div>
                           )}
@@ -872,11 +880,11 @@ function SajuPreviewContent() {
               width: "100%",
               padding: "11px 14px",
               borderRadius: 14,
-              border: "1.5px solid #adc4af",
-              background: deducting ? "#9cbf9c" : "#c1d8c3",
+              border: "1.5px solid var(--border-default)",
+              background: deducting ? "#9cbf9c" : "var(--bg-base)",
               fontSize: 14,
               fontWeight: 700,
-              color: "#1a2e0e",
+              color: "var(--text-primary)",
               cursor: deducting ? "wait" : "pointer",
               transition: "background .2s",
             }}
@@ -891,11 +899,11 @@ function SajuPreviewContent() {
               width: "100%",
               padding: "11px 14px",
               borderRadius: 14,
-              border: "1.5px solid #adc4af",
+              border: "1.5px solid var(--border-default)",
               background: "#ffffff",
               fontSize: 14,
               fontWeight: 700,
-              color: "#1a2e0e",
+              color: "var(--text-primary)",
             }}
           >
             내 사주 목록으로
@@ -925,7 +933,7 @@ function SajuPreviewContent() {
               background: "#fff",
               borderRadius: "20px 20px 0 0",
               padding: "28px 24px 40px",
-              fontFamily: "'Gowun Dodum', sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -935,7 +943,7 @@ function SajuPreviewContent() {
                 width={40}
                 style={{ color: "#6a994e", display: "block", margin: "0 auto 12px" }}
               />
-              <div style={{ fontSize: 17, fontWeight: 700, color: "#1a2e0e", marginBottom: 6 }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>
                 씨앗이 부족해요
               </div>
               <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.6 }}>
@@ -993,9 +1001,9 @@ function PreviewFallback() {
   return (
     <main
       style={{
-        background: "#eef4ee",
+        background: "var(--bg-base)",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -1003,7 +1011,7 @@ function PreviewFallback() {
         padding: 20,
       }}
     >
-      <p style={{ fontSize: 14, color: "#556b2f" }}>불러오는 중...</p>
+      <p style={{ fontSize: 14, color: "var(--text-primary)" }}>불러오는 중...</p>
     </main>
   );
 }

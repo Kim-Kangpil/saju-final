@@ -65,7 +65,7 @@ export function StrengthCard({ data }: { data: StrengthWeaknessVisualData }) {
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[360px]"
       style={{
-        fontFamily: "'Georgia', serif",
+        fontFamily: "var(--font-sans)",
       }}
     >
       {/* 강점 카드 */}

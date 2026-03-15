@@ -12,17 +12,17 @@ export default function PrivacyPage({
       <div className="w-full max-w-[450px]">
         {/* 타이틀 */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#556b2f] mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--text-primary)] mb-2">
             개인정보처리방침
           </h1>
-          <p className="text-sm text-[#556b2f] opacity-70">
+          <p className="text-sm text-[var(--text-primary)] opacity-70">
             최종 수정일: 2026년 2월 11일
           </p>
         </div>
 
         {/* 본문 카드 */}
         <div className="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border-4 border-[#c1d8c3]">
-          <div className="space-y-6 text-[#556b2f]">
+          <div className="space-y-6 text-[var(--text-primary)]">
             {/* 1. 수집하는 개인정보 */}
             <section>
               <h2 className="text-lg font-bold mb-3">1. 수집하는 개인정보</h2>
@@ -84,7 +84,7 @@ export default function PrivacyPage({
           <div className="mt-8 pt-6 border-t-2 border-[#c1d8c3] flex justify-center">
             <Link
               href="/home"
-              className="px-6 py-3 bg-[#f4e5a1] text-[#556b2f] rounded-xl font-bold hover:bg-[#f0d97f] transition-colors shadow-lg"
+              className="px-6 py-3 bg-[#f4e5a1] text-[var(--text-primary)] rounded-xl font-bold hover:bg-[#f0d97f] transition-colors shadow-lg"
             >
               홈으로 돌아가기
             </Link>

@@ -26,15 +26,15 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#c1d8c3] border-b-4 border-[#adc4af] shadow-lg">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg-base)] border-b-4 border-[var(--border-default)] shadow-lg">
       <div className="w-full max-w-[450px] mx-auto px-4 py-3 flex items-center justify-between">
         {/* 로고 클릭 시 /home으로 */}
         <button
           onClick={() => router.push("/home")}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <HamIcon alt="햄스터" className="w-10 h-10 object-contain" />
-          <span className="text-lg font-bold text-[#556b2f]">한양사주</span>
+          <HamIcon alt="로고" className="w-10 h-10 object-contain" />
+          <span className="text-lg font-bold text-[var(--text-primary)]">한양사주</span>
         </button>
 
         {/* 오른쪽: 로그인/회원가입 또는 씨앗 & 햄버거 메뉴 */}
@@ -45,10 +45,10 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => router.push("/seed-charge")}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[var(--border-default)] hover:bg-white transition-colors"
               >
                 <Icon icon="mdi:seed-outline" width={18} />
-                <span className="text-xs font-semibold text-[#556b2f]">
+                <span className="text-xs font-semibold text-[var(--text-primary)]">
                   {seedCount}
                 </span>
               </button>
@@ -56,14 +56,14 @@ export default function Header() {
               <button
                 type="button"
                 onClick={() => router.push("/membership")}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[#adc4af] hover:bg-white transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/70 border border-[var(--border-default)] hover:bg-white transition-colors"
               >
                 <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-                <span className="text-xs font-semibold text-[#556b2f]">멤버십</span>
+                <span className="text-xs font-semibold text-[var(--text-primary)]">멤버십</span>
               </button>
               <button
                 type="button"
-                className="p-3 rounded-lg hover:bg-[#adc4af] transition-colors"
+                className="p-3 rounded-lg hover:bg-[var(--border-default)] transition-colors"
                 aria-label="메뉴 열기"
               >
                 <Icon icon="mdi:menu" width={24} style={{ marginLeft: 14 }} />
@@ -73,13 +73,13 @@ export default function Header() {
             <>
               <button
                 onClick={() => router.push("/login")}
-                className="px-3 py-2 text-sm font-bold text-[#556b2f] bg-white/50 hover:bg-white rounded-lg transition-colors"
+                className="px-3 py-2 text-sm font-bold text-[var(--text-primary)] bg-white/50 hover:bg-white rounded-lg transition-colors"
               >
                 로그인
               </button>
               <button
                 onClick={() => router.push("/signup")}
-                className="px-3 py-2 text-sm font-bold bg-[#556b2f] text-white rounded-lg hover:bg-[#6d8b3a] transition-colors"
+                className="px-3 py-2 text-sm font-bold bg-[var(--text-primary)] text-white rounded-lg hover:bg-[#6d8b3a] transition-colors"
               >
                 회원가입
               </button>

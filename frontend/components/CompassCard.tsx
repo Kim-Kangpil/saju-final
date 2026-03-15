@@ -74,7 +74,7 @@ export function CompassCard({ data }: { data: CompassCardData }) {
         </div>
         <div
           className="text-base font-bold tracking-tight"
-          style={{ color: "#3d4a3d" }}
+          style={{ color: "var(--text-primary)" }}
         >
           {title}
         </div>
@@ -83,9 +83,9 @@ export function CompassCard({ data }: { data: CompassCardData }) {
       {/* 나침반 의미 안내 */}
       <div
         className="text-center mb-3"
-        style={{ fontSize: "11px", color: "#5c6b5c", lineHeight: 1.5 }}
+        style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5 }}
       >
-        <span style={{ fontWeight: 600, color: "#3d4a3d" }}>↑ 나침반이 가리키는 방향</span>
+        <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>↑ 나침반이 가리키는 방향</span>
         <span> = 당신의 핵심 가치(태어난 달)</span>
         <br />
         <span style={{ color: "#6B8A7A" }}>다섯 글자 = 이 가치를 나타내는 키워드들</span>
@@ -141,8 +141,8 @@ export function CompassCard({ data }: { data: CompassCardData }) {
                   dominantBaseline="middle"
                   fontSize={isPointed ? "11" : "9.5"}
                   fontWeight={isPointed ? "700" : "500"}
-                  fill={isPointed ? "#3d4a3d" : "#6B8A7A"}
-                  fontFamily="Georgia, 'Nanum Myeongjo', serif"
+                  fill={isPointed ? "var(--text-primary)" : "#6B8A7A"}
+                  fontFamily="var(--font-sans)"
                 >
                   {label}
                 </text>
@@ -201,8 +201,8 @@ export function CompassCard({ data }: { data: CompassCardData }) {
           태어난 달(월지)
         </div>
         <div style={{ display: "flex", alignItems: "baseline", gap: "6px", flexWrap: "wrap", justifyContent: "center" }}>
-          <span style={{ fontSize: "20px", fontWeight: 800, color: "#3d4a3d", fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>{ji}</span>
-          <span style={{ fontSize: "12px", color: "#5c6b5c", fontFamily: "Georgia, serif" }}>{jiName}</span>
+          <span style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "Georgia, 'Nanum Myeongjo', serif" }}>{ji}</span>
+          <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontFamily: "var(--font-sans)" }}>{jiName}</span>
           <span style={{ fontSize: "11px", color: "#5a7a6a", fontWeight: 600 }}>· {sipsung}</span>
         </div>
       </div>
@@ -237,13 +237,13 @@ export function CompassCard({ data }: { data: CompassCardData }) {
         </div>
         <div
           className="text-[15px] font-bold tracking-tight mb-2"
-          style={{ color: "#3d4a3d" }}
+          style={{ color: "var(--text-primary)" }}
         >
           &quot;{summary}&quot;
         </div>
         <div
           className="text-[11px] leading-relaxed"
-          style={{ color: "#5c6b5c" }}
+          style={{ color: "var(--text-secondary)" }}
         >
           {desc}
         </div>

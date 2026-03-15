@@ -29,11 +29,11 @@ export default async function RootLayout({
     <html lang="ko">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
-        <meta name="theme-color" content="#556b2f" />
+        <meta name="theme-color" content="#F5F2EE" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className="antialiased bg-gradient-to-b from-white via-[#fefae0] to-[#f8f4e6]" style={{ paddingBottom: 64 }}>
+      <body className="antialiased" style={{ paddingBottom: 64, background: "var(--bg-base)" }}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe

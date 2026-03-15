@@ -196,27 +196,37 @@ export default function SajuAddPage({
     : "모름";
   const genderDisplay = gender === "male" ? "남자" : "여자";
 
+  const inputBg = "var(--bg-input)";
+  const textDark = "var(--text-primary)";
+  const borderSelected = "#333333";
+  const borderField = "#B4A292";
+  const placeholderColor = "#A09D94";
+  const radius = 12;
+
   return (
     <main
       style={{
-        background: "#eef4ee",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        position: "relative",
+        backgroundColor: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .sans  { font-family: 'Gowun Dodum', sans-serif; }
+        .sans { font-family: var(--font-sans); }
         .tap {
-          transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+          transition: transform .15s ease, opacity .15s ease;
           -webkit-tap-highlight-color: transparent;
           cursor: pointer;
         }
-        .tap:active { transform: scale(.97); opacity: .9; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
+        .tap:active { transform: scale(.97); opacity: .9; }
         .wrap {
           width: 100%;
           max-width: 420px;
@@ -226,10 +236,13 @@ export default function SajuAddPage({
         @media (max-width: 390px) {
           .wrap { padding: 0 16px 40px; }
         }
+        .saju-add-input::placeholder {
+          color: #A09D94;
+        }
       `}</style>
 
       <div className="wrap">
-        {/* 헤더 – saju-list와 동일 */}
+        {/* 헤더 – 시안: 흰 배경, 다크 텍스트, 한양사주 AI */}
         <header
           className="sans"
           style={{
@@ -240,37 +253,38 @@ export default function SajuAddPage({
             justifyContent: "space-between",
             padding: "16px 20px",
             margin: "0 -20px 16px",
-            background: "#c1d8c3",
-            borderBottom: "3px solid #adc4af",
+            background: "var(--bg-surface)",
+            borderBottom: "1px solid var(--border-default)",
           }}
         >
           <button
-            onClick={() => router.push("/home")}
+            onClick={() => router.back()}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              justifyContent: "center",
+              width: 40,
+              height: 40,
               background: "transparent",
               border: "none",
               padding: 0,
               cursor: "pointer",
+              color: textDark,
             }}
           >
-            <HamIcon
-              style={{ width: 40, height: 40, objectFit: "contain" }}
-              alt="햄스터"
-            />
-            <span
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: "#2d4a1e",
-                letterSpacing: "0.04em",
-              }}
-            >
-              한양사주
-            </span>
+            <Icon icon="mdi:chevron-left" width={28} />
           </button>
+          <span
+            style={{
+              flex: 1,
+              textAlign: "center",
+              fontSize: 18,
+              fontWeight: 700,
+              color: textDark,
+            }}
+          >
+            한양사주 AI
+          </span>
 
           <div
             style={{
@@ -289,24 +303,18 @@ export default function SajuAddPage({
                 gap: 4,
                 padding: "6px 10px",
                 borderRadius: 999,
-                background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid #adc4af",
+                background: inputBg,
+                border: "1.5px solid var(--border-default)",
                 cursor: "pointer",
+                color: textDark,
+                fontSize: 12,
+                fontWeight: 700,
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#345024",
-                }}
-              >
-                0
-              </span>
+              <span>0</span>
             </button>
 
-            {/* 해바라기 멤버십 (클릭 시 멤버십 페이지) */}
             <button
               type="button"
               onClick={() => router.push("/membership")}
@@ -316,16 +324,18 @@ export default function SajuAddPage({
                 gap: 4,
                 padding: "6px 10px",
                 borderRadius: 999,
-                background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid #adc4af",
+                background: inputBg,
+                border: "1.5px solid var(--border-default)",
                 cursor: "pointer",
+                color: textDark,
+                fontSize: 12,
+                fontWeight: 700,
               }}
             >
               <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+              <span>멤버십</span>
             </button>
 
-            {/* 햄버거 메뉴 아이콘 */}
             <button
               type="button"
               className="tap"
@@ -339,253 +349,92 @@ export default function SajuAddPage({
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
+                color: textDark,
               }}
             >
-              <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
+              <Icon icon="mdi:menu" width={22} />
             </button>
           </div>
         </header>
 
-        {/* 새 사주 입력 섹션 */}
+        {/* 새 사주 입력 섹션 – 시안: 베이지 배경, 라운드 입력/버튼 */}
         <section
           className="sans"
           style={{
             position: "relative",
-            background: "#ffffff",
-            borderRadius: 0,
-            border: "1.5px solid #c8dac8",
-            padding: "20px 20px 24px",
-            margin: "0 -20px 0",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.03)",
+            padding: "8px 0 24px",
           }}
         >
-          <h1
-            style={{
-              fontSize: 18,
-              fontWeight: 700,
-              color: "#1a2e0e",
-              marginBottom: 14,
-            }}
-          >
-            새로운 사주 추가
-          </h1>
-
           <div
             style={{
               display: "flex",
               flexDirection: "column",
-              gap: 12,
+              gap: 20,
             }}
           >
-            {/* 1. 이름 (필수) */}
+            {/* 1. 성별 – 버튼 각각 분리 */}
             <div>
-              <label
-                style={{
-                  fontSize: 13,
-                  color: "#1a2e0e",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                이름{" "}
-                <span style={{ color: "#e11d48", fontWeight: 700 }}>＊</span>
+              <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
+                성별 <span style={{ color: "#e11d48" }}>*</span>
               </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="이름을 입력하세요"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 14,
-                  border: errors.name
-                    ? "1.5px solid #e11d48"
-                    : "1.5px solid #c8dac8",
-                  fontSize: 14,
-                  outline: "none",
-                  background: "#ffffff",
-                }}
-              />
-            </div>
-
-            {/* 2. 나와의 관계 (선택) */}
-            <div>
-              <label
-                style={{
-                  fontSize: 13,
-                  color: "#1a2e0e",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                나와의 관계{" "}
-                <span style={{ fontSize: 11, color: "#6b7280" }}> (선택)</span>
-              </label>
-              <input
-                type="text"
-                value={relation}
-                onChange={(e) => setRelation(e.target.value)}
-                placeholder="예: 나, 엄마, 친구 등"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 14,
-                  border: "1.5px solid #c8dac8",
-                  fontSize: 14,
-                  outline: "none",
-                  background: "#ffffff",
-                }}
-              />
-            </div>
-
-            {/* 3. 생년월일 (필수) */}
-            <div>
-              <label
-                style={{
-                  fontSize: 13,
-                  color: "#1a2e0e",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                생년월일 (8자리 숫자){" "}
-                <span style={{ color: "#e11d48", fontWeight: 700 }}>＊</span>
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={displayBirth()}
-                onChange={(e) => formatBirth(e.target.value)}
-                onKeyDown={handleBirthKeyDown}
-                placeholder="예: 19981231"
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  borderRadius: 14,
-                  border: errors.birth
-                    ? "1.5px solid #e11d48"
-                    : "1.5px solid #c8dac8",
-                  fontSize: 14,
-                  outline: "none",
-                  background: "#ffffff",
-                }}
-              />
-            </div>
-
-            {/* 4. 태어난 시간 (필수) */}
-            <div>
-              <label
-                style={{
-                  fontSize: 13,
-                  color: "#1a2e0e",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                태어난 시간{" "}
-                <span style={{ color: "#e11d48", fontWeight: 700 }}>＊</span>
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  marginBottom: knowTime === "yes" ? 8 : 0,
-                }}
-              >
+              <div style={{ display: "flex", gap: 10 }}>
                 <button
                   type="button"
                   className="tap sans"
-                  onClick={() => setKnowTime("yes")}
+                  onClick={() => setGender("female")}
                   style={{
                     flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: 14,
-                    border: "1.5px solid #adc4af",
-                    background: knowTime === "yes" ? "#c1d8c3" : "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#1a2e0e",
+                    padding: "12px 16px",
+                    borderRadius: radius,
+                    border: gender === "female" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    background: inputBg,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: textDark,
                   }}
                 >
-                  알아요
+                  여자
                 </button>
                 <button
                   type="button"
                   className="tap sans"
-                  onClick={() => setKnowTime("no")}
+                  onClick={() => setGender("male")}
                   style={{
                     flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: 14,
-                    border: "1.5px solid #adc4af",
-                    background: knowTime === "no" ? "#c1d8c3" : "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#1a2e0e",
+                    padding: "12px 16px",
+                    borderRadius: radius,
+                    border: gender === "male" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    background: inputBg,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: textDark,
                   }}
                 >
-                  몰라요
+                  남자
                 </button>
               </div>
-
-              {knowTime === "yes" && (
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={displayTime()}
-                  onChange={(e) => formatTime(e.target.value)}
-                  placeholder="예: 1430 → 14:30"
-                  style={{
-                    width: "100%",
-                    padding: 12,
-                    borderRadius: 14,
-                    border: errors.time
-                      ? "1.5px solid #e11d48"
-                      : "1.5px solid #c8dac8",
-                    fontSize: 14,
-                    outline: "none",
-                    background: "#ffffff",
-                  }}
-                />
-              )}
+              {errors.gender && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>성별을 선택해주세요.</p>}
             </div>
 
-            {/* 5. 양력 / 음력 (필수) */}
+            {/* 2. 양/음력 – 버튼 각각 분리 */}
             <div>
-              <label
-                style={{
-                  fontSize: 13,
-                  color: "#1a2e0e",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                양력 / 음력{" "}
-                <span style={{ color: "#e11d48", fontWeight: 700 }}>＊</span>
+              <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
+                양/음력 <span style={{ color: "#e11d48" }}>*</span>
               </label>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                }}
-              >
+              <div style={{ display: "flex", gap: 10 }}>
                 <button
                   type="button"
                   className="tap sans"
                   onClick={() => setCalendarType("solar")}
                   style={{
                     flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: 14,
-                    border: errors.calendar
-                      ? "1.5px solid #e11d48"
-                      : "1.5px solid #adc4af",
-                    background:
-                      calendarType === "solar" ? "#c1d8c3" : "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#1a2e0e",
+                    padding: "12px 16px",
+                    borderRadius: radius,
+                    border: calendarType === "solar" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    background: inputBg,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: textDark,
                   }}
                 >
                   양력
@@ -596,157 +445,190 @@ export default function SajuAddPage({
                   onClick={() => setCalendarType("lunar")}
                   style={{
                     flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: 14,
-                    border: errors.calendar
-                      ? "1.5px solid #e11d48"
-                      : "1.5px solid #adc4af",
-                    background:
-                      calendarType === "lunar" ? "#c1d8c3" : "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#1a2e0e",
+                    padding: "12px 16px",
+                    borderRadius: radius,
+                    border: calendarType === "lunar" ? `1.5px solid ${borderSelected}` : `1.5px solid ${borderField}`,
+                    background: inputBg,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: textDark,
                   }}
                 >
                   음력
                 </button>
               </div>
+              {errors.calendar && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>양력/음력을 선택해주세요.</p>}
             </div>
 
-            {/* 6. 성별 (필수) */}
+            {/* 3. 생년월일시 */}
             <div>
-              <label
-                style={{
-                  fontSize: 13,
-                  color: "#1a2e0e",
-                  marginBottom: 6,
-                  display: "block",
-                }}
-              >
-                성별{" "}
-                <span style={{ color: "#e11d48", fontWeight: 700 }}>＊</span>
+              <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
+                생년월일시 <span style={{ color: "#e11d48" }}>*</span>
               </label>
-              <div
+              <input
+                type="text"
+                inputMode="numeric"
+                value={displayBirth()}
+                onChange={(e) => formatBirth(e.target.value)}
+                onKeyDown={handleBirthKeyDown}
+                placeholder="생년월일시 (예: 2025 0818 0500)"
+                className="saju-add-input"
                 style={{
-                  display: "flex",
-                  gap: 8,
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: radius,
+                  border: errors.birth ? "1.5px solid #e11d48" : `1.5px solid ${borderField}`,
+                  fontSize: 14,
+                  outline: "none",
+                  background: inputBg,
+                  color: textDark,
                 }}
-              >
+              />
+              <p style={{ marginTop: 8, fontSize: 13, color: textDark }}>
                 <button
                   type="button"
-                  className="tap sans"
-                  onClick={() => setGender("male")}
+                  className="tap"
+                  onClick={() => setKnowTime(knowTime === "no" ? "yes" : "no")}
                   style={{
-                    flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: 14,
-                    border: errors.gender
-                      ? "1.5px solid #e11d48"
-                      : "1.5px solid #adc4af",
-                    background: gender === "male" ? "#c1d8c3" : "#ffffff",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    color: textDark,
                     fontSize: 13,
-                    fontWeight: 700,
-                    color: "#1a2e0e",
                   }}
                 >
-                  남자
+                  <span
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: "50%",
+                      border: `1.5px solid ${knowTime === "no" ? borderSelected : "var(--border-default)"}`,
+                      background: knowTime === "no" ? borderSelected : "transparent",
+                    }}
+                  />
+                  시간 모름
                 </button>
-                <button
-                  type="button"
-                  className="tap sans"
-                  onClick={() => setGender("female")}
+              </p>
+              {knowTime === "yes" && (
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={displayTime()}
+                  onChange={(e) => formatTime(e.target.value)}
+                  placeholder="예: 1430 → 14:30"
+                  className="saju-add-input"
                   style={{
-                    flex: 1,
-                    padding: "8px 10px",
-                    borderRadius: 14,
-                    border: errors.gender
-                      ? "1.5px solid #e11d48"
-                      : "1.5px solid #adc4af",
-                    background: gender === "female" ? "#c1d8c3" : "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "#1a2e0e",
+                    width: "100%",
+                    marginTop: 8,
+                    padding: "14px 16px",
+                    borderRadius: radius,
+                    border: errors.time ? "1.5px solid #e11d48" : `1.5px solid ${borderField}`,
+                    fontSize: 14,
+                    outline: "none",
+                    background: inputBg,
+                    color: textDark,
                   }}
-                >
-                  여자
-                </button>
-              </div>
+                />
+              )}
+              {errors.birth && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>생년월일 8자리를 입력해주세요.</p>}
+              {errors.time && knowTime === "yes" && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>시간 4자리를 입력해주세요.</p>}
+            </div>
+
+            {/* 4. 이름 (기능 유지) */}
+            <div>
+              <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
+                이름 <span style={{ color: "#e11d48" }}>*</span>
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="이름을 입력하세요"
+                className="saju-add-input"
+                style={{
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: radius,
+                  border: errors.name ? "1.5px solid #e11d48" : `1.5px solid ${borderField}`,
+                  fontSize: 14,
+                  outline: "none",
+                  background: inputBg,
+                  color: textDark,
+                }}
+              />
+              {errors.name && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>이름을 입력해주세요.</p>}
+            </div>
+
+            {/* 5. 나와의 관계 (기능 유지) */}
+            <div>
+              <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
+                나와의 관계 <span style={{ fontSize: 12, color: "var(--text-secondary)" }}>(선택)</span>
+              </label>
+              <input
+                type="text"
+                value={relation}
+                onChange={(e) => setRelation(e.target.value)}
+                placeholder="예: 나, 엄마, 친구 등"
+                className="saju-add-input"
+                style={{
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: radius,
+                  border: `1.5px solid ${borderField}`,
+                  fontSize: 14,
+                  outline: "none",
+                  background: inputBg,
+                  color: textDark,
+                }}
+              />
             </div>
           </div>
 
           {errors.global && (
-            <p
-              style={{
-                marginTop: 10,
-                fontSize: 12,
-                color: "#e11d48",
-              }}
-            >
+            <p style={{ marginTop: 10, fontSize: 12, color: "#e11d48" }}>
               필수 항목을 입력해주세요.
             </p>
           )}
 
-          {/* 7. 하단 버튼들 */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              marginTop: 18,
-            }}
-          >
+          {/* 하단 버튼 – 시안: 만세력 불러오기, 저장하기 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 24 }}>
+            <button
+              type="button"
+              onClick={goList}
+              className="tap sans"
+              style={{
+                width: "100%",
+                padding: "14px 16px",
+                borderRadius: radius,
+                border: `1.5px solid ${borderField}`,
+                background: inputBg,
+                fontSize: 14,
+                fontWeight: 700,
+                color: textDark,
+              }}
+            >
+              만세력 불러오기
+            </button>
             <button
               type="button"
               onClick={handleSave}
               className="tap sans"
               style={{
                 width: "100%",
-                padding: "11px 14px",
-                borderRadius: 14,
-                border: "1.5px solid #adc4af",
-                background: "#c1d8c3",
+                padding: "14px 16px",
+                borderRadius: radius,
+                border: `1.5px solid ${borderField}`,
+                background: inputBg,
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#1a2e0e",
+                color: textDark,
               }}
             >
               저장하기
-            </button>
-
-            <button
-              type="button"
-              onClick={goList}
-              className="tap sans"
-              style={{
-                width: "100%",
-                padding: "11px 14px",
-                borderRadius: 14,
-                border: "1.5px solid #adc4af",
-                background: "#ffffff",
-                fontSize: 14,
-                fontWeight: 700,
-                color: "#1a2e0e",
-              }}
-            >
-              취소
-            </button>
-
-            <button
-              type="button"
-              onClick={goList}
-              className="sans"
-              style={{
-                marginTop: 4,
-                padding: 6,
-                border: "none",
-                background: "transparent",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#556b2f",
-                textDecoration: "underline",
-              }}
-            >
-              사주 목록으로 돌아가기
             </button>
           </div>
         </section>
@@ -765,19 +647,19 @@ export default function SajuAddPage({
             alignItems: "center",
             justifyContent: "center",
             padding: 20,
-            background: "rgba(0,0,0,0.5)",
+            background: "rgba(0,0,0,0.4)",
           }}
           onClick={() => setShowConfirmModal(false)}
         >
           <div
             className="sans"
             style={{
-              background: "#fff",
+              background: "var(--bg-base)",
               borderRadius: 16,
               padding: 24,
               width: "100%",
               maxWidth: 360,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -786,78 +668,79 @@ export default function SajuAddPage({
               style={{
                 fontSize: 16,
                 fontWeight: 700,
-                color: "#1a2e0e",
-                marginBottom: 16,
+                color: textDark,
+                marginBottom: 20,
+                textAlign: "center",
               }}
             >
-              입력 내용을 확인해주세요
+              입력하신 프로필을 확인해주세요.
             </h2>
-            <dl
-              style={{
-                margin: 0,
-                fontSize: 14,
-                color: "#1a2e0e",
-                lineHeight: 1.7,
-              }}
-            >
-              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>이름</dt>
-                <dd style={{ margin: 0 }}>{name || "-"}</dd>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>성별</label>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>
+                  <Icon icon="mdi:account-outline" width={20} />
+                  {genderDisplay}
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>나와의 관계</dt>
-                <dd style={{ margin: 0 }}>{relation || "-"}</dd>
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>양/음력</label>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>
+                  <Icon icon="mdi:white-balance-sunny" width={20} />
+                  {calendarLabel}
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>생년월일</dt>
-                <dd style={{ margin: 0 }}>{birthdateDisplay} ({calendarLabel})</dd>
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>생년월일시</label>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>
+                  <Icon icon="mdi:calendar" width={20} />
+                  {birthdateDisplay} {timeDisplay !== "모름" ? `(${timeDisplay})` : ""}
+                </div>
               </div>
-              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>태어난 시간</dt>
-                <dd style={{ margin: 0 }}>{timeDisplay}</dd>
-              </div>
-              <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                <dt style={{ margin: 0, minWidth: 90, color: "#556b2f" }}>성별</dt>
-                <dd style={{ margin: 0 }}>{genderDisplay}</dd>
-              </div>
-            </dl>
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                marginTop: 20,
-              }}
-            >
+              {name && (
+                <div>
+                  <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>이름</label>
+                  <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>{name}</div>
+                </div>
+              )}
+              {relation && (
+                <div>
+                  <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>나와의 관계</label>
+                  <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>{relation}</div>
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 24 }}>
               <button
                 type="button"
                 className="tap sans"
                 onClick={() => setShowConfirmModal(false)}
                 style={{
-                  flex: 1,
-                  padding: "11px 14px",
-                  borderRadius: 14,
-                  border: "1.5px solid #adc4af",
-                  background: "#ffffff",
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: radius,
+                  border: `1.5px solid ${borderField}`,
+                  background: inputBg,
                   fontSize: 14,
                   fontWeight: 700,
-                  color: "#1a2e0e",
+                  color: textDark,
                 }}
               >
-                수정하기
+                다시 입력하기
               </button>
               <button
                 type="button"
                 className="tap sans"
                 onClick={handleConfirmSave}
                 style={{
-                  flex: 1,
-                  padding: "11px 14px",
-                  borderRadius: 14,
-                  border: "1.5px solid #adc4af",
-                  background: "#c1d8c3",
+                  width: "100%",
+                  padding: "14px 16px",
+                  borderRadius: radius,
+                  border: `1.5px solid ${borderField}`,
+                  background: inputBg,
                   fontSize: 14,
                   fontWeight: 700,
-                  color: "#1a2e0e",
+                  color: textDark,
                 }}
               >
                 저장하기

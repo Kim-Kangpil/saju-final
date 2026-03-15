@@ -40,7 +40,7 @@ export function CharismaOrbitCard({ data }: { data: CharismaVisualData }) {
   return (
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[360px]"
-      style={{ fontFamily: "'Georgia', serif" }}
+      style={{ fontFamily: "var(--font-sans)" }}
     >
       {/* 1. 제목 + 한 줄 설명 */}
       <div className="text-center mb-4">
@@ -85,8 +85,8 @@ export function CharismaOrbitCard({ data }: { data: CharismaVisualData }) {
         >
           <defs>
             <radialGradient id="dotGlow" cx="50%" cy="50%">
-              <stop offset="0%" stopColor="#556b2f" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#556b2f" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--text-primary)" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="var(--text-primary)" stopOpacity="0" />
             </radialGradient>
           </defs>
 
@@ -119,7 +119,7 @@ export function CharismaOrbitCard({ data }: { data: CharismaVisualData }) {
             cy={dot.y}
             r={5}
             fill="#ffffff"
-            stroke="#556b2f"
+            stroke="var(--text-primary)"
             strokeWidth="1.5"
             opacity={animate ? 1 : 0}
           />

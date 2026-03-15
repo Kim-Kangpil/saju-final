@@ -27,7 +27,7 @@ export function TenGodAbilityCards({ data }: { data: TenGodAbilityCardsData }) {
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[320px]"
       style={{
-        fontFamily: "'Georgia', serif",
+        fontFamily: "var(--font-sans)",
         userSelect: "none",
       }}
     >

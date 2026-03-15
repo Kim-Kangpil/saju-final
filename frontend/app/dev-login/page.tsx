@@ -31,9 +31,12 @@ export default function DevLoginPage({
   return (
     <main
       style={{
-        background: "#eef4ee",
+        background: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -48,7 +51,7 @@ export default function DevLoginPage({
           maxWidth: 360,
           background: "#ffffff",
           borderRadius: 20,
-          border: "1.5px solid #c8dac8",
+          border: "1.5px solid var(--border-default)",
           padding: "20px 18px 22px",
           boxShadow: "0 4px 16px rgba(0,0,0,0.04)",
           textAlign: "center",
@@ -58,7 +61,7 @@ export default function DevLoginPage({
           style={{
             fontSize: 18,
             fontWeight: 700,
-            color: "#1a2e0e",
+            color: "var(--text-primary)",
             marginBottom: 10,
           }}
         >
@@ -68,7 +71,7 @@ export default function DevLoginPage({
           style={{
             fontSize: 14,
             lineHeight: 1.7,
-            color: "#556b2f",
+            color: "var(--text-primary)",
             marginBottom: 18,
           }}
         >
@@ -86,11 +89,11 @@ export default function DevLoginPage({
             width: "100%",
             padding: "11px 14px",
             borderRadius: 999,
-            border: "1.5px solid #8fb28f",
-            background: "#f4faf4",
+            border: "1.5px solid var(--border-default)",
+            background: "var(--bg-input)",
             fontSize: 14,
             fontWeight: 700,
-            color: "#345024",
+            color: "var(--text-primary)",
           }}
         >
           테스트용 로그인 후 사주목록으로 이동

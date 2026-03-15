@@ -29,7 +29,7 @@ export function GongmangStructureMap({ slots }: GongmangStructureMapProps) {
 
   return (
     <div className="mt-2 space-y-3">
-      <p className="text-[11px] font-medium text-[#556b2f]">
+      <p className="text-[11px] font-medium text-[var(--text-primary)]">
         공망은 인생에서 힘을 덜 써도 되는 영역을 보여줍니다.
       </p>
 

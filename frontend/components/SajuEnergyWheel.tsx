@@ -201,7 +201,7 @@ export function SajuEnergyWheel({ dayStem, yangCount, yinCount, size = 220 }: Sa
           {dayStem} {ilgan.label}
         </p>
         {/* ✅ 타이틀 변경: 나의 에너지 휠 → 내 음양 에너지 분포 */}
-        <p className="text-[10px] text-[#556b2f] opacity-60 mt-0.5">내 음양 에너지 분포</p>
+        <p className="text-[10px] text-[var(--text-primary)] opacity-60 mt-0.5">내 음양 에너지 분포</p>
       </div>
 
       <div className="flex gap-2">

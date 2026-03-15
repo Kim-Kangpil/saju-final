@@ -150,19 +150,21 @@ export default function SeedChargePage({
   return (
     <main
       style={{
-        background: "#eef4ee",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         paddingBottom: 88,
+        backgroundColor: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .sans { font-family: 'Gowun Dodum', sans-serif; }
+        .sans { font-family: var(--font-sans); }
         .tap {
           transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
           -webkit-tap-highlight-color: transparent;
@@ -186,7 +188,7 @@ export default function SeedChargePage({
           display: flex;
           justify-content: center;
           padding: 12px 20px 20px;
-          background: linear-gradient(to top, #eef4ee 70%, transparent);
+          background: linear-gradient(to top, var(--bg-base) 70%, transparent);
         }
         .sticky-cta-inner { width: 100%; max-width: 420px; }
       `}</style>
@@ -203,8 +205,8 @@ export default function SeedChargePage({
             justifyContent: "space-between",
             padding: "16px 20px",
             margin: "0 -20px 0",
-            background: "#c1d8c3",
-            borderBottom: "3px solid #adc4af",
+            background: "var(--bg-base)",
+            borderBottom: "1px solid var(--border-default)",
           }}
         >
           <button
@@ -214,8 +216,8 @@ export default function SeedChargePage({
               background: "transparent", border: "none", padding: 0, cursor: "pointer",
             }}
           >
-            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="햄스터" />
-            <span style={{ fontSize: 18, fontWeight: 700, color: "#2d4a1e", letterSpacing: "0.04em" }}>
+            <HamIcon style={{ width: 40, height: 40, objectFit: "contain" }} alt="로고" />
+            <span style={{ fontSize: 18, fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.04em" }}>
               한양사주
             </span>
           </button>
@@ -227,11 +229,11 @@ export default function SeedChargePage({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "6px 10px", borderRadius: 999,
-                background: "rgba(255,255,255,0.85)", border: "1.5px solid #adc4af", cursor: "pointer",
+                background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
               <Icon icon="mdi:seed-outline" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>{seedCount}</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{seedCount}</span>
             </button>
             <button
               type="button"
@@ -239,11 +241,11 @@ export default function SeedChargePage({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 4,
                 padding: "6px 10px", borderRadius: 999,
-                background: "rgba(255,255,255,0.85)", border: "1.5px solid #adc4af", cursor: "pointer",
+                background: "rgba(255,255,255,0.85)", border: "1.5px solid var(--border-default)", cursor: "pointer",
               }}
             >
               <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>멤버십</span>
             </button>
             <button
               type="button"
@@ -265,17 +267,17 @@ export default function SeedChargePage({
           className="sans"
           style={{
             margin: "0 -20px",
-            background: "linear-gradient(160deg, #fffde7 0%, #e8f5e9 100%)",
+            background: "linear-gradient(160deg, var(--bg-surface) 0%, var(--bg-input) 100%)",
             padding: "22px 24px 20px",
-            borderBottom: "1.5px solid #c8dac8",
+            borderBottom: "1.5px solid var(--border-default)",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-            <Icon icon="mdi:seed-outline" width={28} style={{ color: "#6a994e" }} />
+            <Icon icon="mdi:seed-outline" width={28} style={{ color: "var(--text-primary)" }} />
             <div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#1a2e0e" }}>씨앗 충전</div>
-              <div style={{ fontSize: 12, color: "#556b2f" }}>
-                현재 보유 <strong style={{ color: "#345024" }}>{seedCount}개</strong>
+              <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)" }}>씨앗 충전</div>
+              <div style={{ fontSize: 12, color: "var(--text-secondary)" }}>
+                현재 보유 <strong style={{ color: "var(--text-primary)" }}>{seedCount}개</strong>
               </div>
             </div>
           </div>
@@ -288,14 +290,14 @@ export default function SeedChargePage({
                 style={{
                   flex: 1,
                   background: "rgba(255,255,255,0.75)",
-                  border: "1px solid #c8dac8",
+                  border: "1px solid var(--border-default)",
                   borderRadius: 10,
                   padding: "8px 6px",
                   textAlign: "center",
                 }}
               >
-                <Icon icon={u.icon} width={18} style={{ color: "#6a994e", display: "block", margin: "0 auto 4px" }} />
-                <div style={{ fontSize: 11, color: "#1a2e0e", fontWeight: 700 }}>{u.label}</div>
+                <Icon icon={u.icon} width={18} style={{ color: "var(--text-primary)", display: "block", margin: "0 auto 4px" }} />
+                <div style={{ fontSize: 11, color: "var(--text-primary)", fontWeight: 700 }}>{u.label}</div>
                 <div style={{ fontSize: 11, color: "#9ca3af" }}>씨앗 {u.cost}개</div>
               </div>
             ))}
@@ -304,7 +306,7 @@ export default function SeedChargePage({
 
         {/* ── 패키지 선택 ── */}
         <section className="sans" style={{ padding: "24px 0 0" }}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e", marginBottom: 12 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
             충전 패키지 선택
           </h2>
 
@@ -336,10 +338,10 @@ export default function SeedChargePage({
                   onClick={() => setSelected(pkg.key)}
                   style={{
                     background: isSelected
-                      ? "linear-gradient(135deg, #d4edda, #c1d8c3)"
+                      ? "var(--bg-input)"
                       : "#ffffff",
                     border: isSelected
-                      ? "2px solid #6a994e"
+                      ? "2px solid var(--text-primary)"
                       : "1.5px solid #e0ece0",
                     position: "relative",
                   }}
@@ -350,7 +352,7 @@ export default function SeedChargePage({
                         position: "absolute",
                         top: -10,
                         right: 12,
-                        background: pkg.badge === "최대 혜택" ? "#c9a227" : "#6a994e",
+                        background: pkg.badge === "최대 혜택" ? "#c9a227" : "var(--text-primary)",
                         color: "#fff",
                         fontSize: 10,
                         fontWeight: 700,
@@ -380,13 +382,13 @@ export default function SeedChargePage({
                           flexShrink: 0,
                         }}
                       >
-                        <Icon icon="mdi:seed-outline" width={18} style={{ color: "#6a994e" }} />
-                        <span style={{ fontSize: 11, fontWeight: 800, color: "#345024", lineHeight: 1.2 }}>
+                        <Icon icon="mdi:seed-outline" width={18} style={{ color: "var(--text-primary)" }} />
+                        <span style={{ fontSize: 11, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1.2 }}>
                           {totalSeeds}
                         </span>
                       </div>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#1a2e0e" }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
                           씨앗 {pkg.seeds}개
                           {pkg.bonus > 0 && (
                             <span
@@ -407,7 +409,7 @@ export default function SeedChargePage({
 
                     {/* 오른쪽: 가격 + 라디오 */}
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: "#345024" }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
                         {pkg.price.toLocaleString()}원
                       </span>
                       <div
@@ -415,8 +417,8 @@ export default function SeedChargePage({
                           width: 20,
                           height: 20,
                           borderRadius: "50%",
-                          border: isSelected ? "2px solid #6a994e" : "2px solid #d1d5db",
-                          background: isSelected ? "#6a994e" : "transparent",
+                          border: isSelected ? "2px solid var(--text-primary)" : "2px solid #d1d5db",
+                          background: isSelected ? "var(--text-primary)" : "transparent",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -439,7 +441,7 @@ export default function SeedChargePage({
         <section className="sans" style={{ padding: "24px 0 0" }}>
           <div
             style={{
-              background: "linear-gradient(135deg, #fffde7, #fff9c4)",
+              background: "linear-gradient(135deg, var(--bg-surface), #fff9c4)",
               border: "1.5px solid #f0d060",
               borderRadius: 14,
               padding: "14px 16px",
@@ -450,7 +452,7 @@ export default function SeedChargePage({
           >
             <Icon icon="fluent-emoji-flat:sunflower" width={32} style={{ flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#1a2e0e", marginBottom: 3 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>
                 자주 쓴다면 맴버십이 더 이득이에요
               </div>
               <div style={{ fontSize: 12, color: "#7a6020", lineHeight: 1.5 }}>
@@ -526,7 +528,7 @@ export default function SeedChargePage({
               padding: "13px 14px",
               borderRadius: 14,
               border: "none",
-              background: paying ? "#9cbf9c" : "#6a994e",
+              background: paying ? "#9cbf9c" : "var(--text-primary)",
               fontSize: 15,
               fontWeight: 700,
               color: "#fff",

@@ -23,7 +23,7 @@ export default function SajuCard({ saju, onView, onEdit, onDelete }: SajuCardPro
       {/* 헤더 */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="text-lg font-bold text-[#556b2f] mb-1">{saju.name}</h3>
+          <h3 className="text-lg font-bold text-[var(--text-primary)] mb-1">{saju.name}</h3>
           <div className="text-xs text-gray-500">
             저장일: {new Date(saju.createdAt).toLocaleDateString('ko-KR')}
           </div>
@@ -41,14 +41,14 @@ export default function SajuCard({ saju, onView, onEdit, onDelete }: SajuCardPro
       <div className="space-y-2 mb-4">
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-500">생년월일:</span>
-          <span className="font-semibold text-[#556b2f]">
+          <span className="font-semibold text-[var(--text-primary)]">
             {formatBirthDate(saju.birthYmd)} ({calendarText})
           </span>
         </div>
         
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-500">태어난 시간:</span>
-          <span className="font-semibold text-[#556b2f]">
+          <span className="font-semibold text-[var(--text-primary)]">
             {saju.timeUnknown ? '모름' : formatBirthTime(saju.birthHm)}
           </span>
         </div>
@@ -58,7 +58,7 @@ export default function SajuCard({ saju, onView, onEdit, onDelete }: SajuCardPro
       <div className="grid grid-cols-3 gap-2">
         <button
           onClick={() => onView(saju)}
-          className="py-2 bg-[#556b2f] text-white rounded-lg text-sm font-bold hover:bg-[#6d8b3a] transition-colors"
+          className="py-2 bg-[var(--text-primary)] text-white rounded-lg text-sm font-bold hover:bg-[var(--text-primary)] transition-colors"
         >
           보기
         </button>

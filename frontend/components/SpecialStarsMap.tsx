@@ -25,7 +25,7 @@ export function SpecialStarsMap({ cards }: { cards: SpecialStarVisualCard[] }) {
                   {c.name}
                 </div>
                 {active && (
-                  <div className="text-[10px] font-bold text-[#556b2f] bg-[#dfeadf] border border-[#adc4af] px-2 py-[1px] rounded-full leading-none">
+                  <div className="text-[10px] font-bold text-[var(--text-primary)] bg-[#dfeadf] border border-[#adc4af] px-2 py-[1px] rounded-full leading-none">
                     {c.count >= 2 ? `${c.count}곳` : "활성"}
                   </div>
                 )}

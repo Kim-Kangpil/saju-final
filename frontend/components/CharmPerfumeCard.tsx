@@ -29,7 +29,7 @@ export function CharmPerfumeCard({ data }: { data: CharmVisualData }) {
   return (
     <div
       className="rounded-2xl overflow-hidden mx-auto w-full max-w-[320px]"
-      style={{ fontFamily: "'Georgia', serif" }}
+      style={{ fontFamily: "var(--font-sans)" }}
     >
       {/* 헤더 */}
       <div style={{ textAlign: "center", marginBottom: "16px" }}>

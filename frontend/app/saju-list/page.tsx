@@ -2,13 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
-import { HamIcon } from "@/components/HamIcon";
 import { Icon } from "@iconify/react";
 import { dayPillarTexts } from "@/data/dayPillarAnimal";
 import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
+const borderField = "#B4A292";
+const textDark = "var(--text-primary)";
+const radius = 12;
 
 type SajuRow = {
   id: number;
@@ -95,6 +98,7 @@ export default function SajuListPage({
   const [items, setItems] = useState<SajuWithAnimal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortBy] = useState<"등록일순">("등록일순");
 
   useEffect(() => {
     let cancelled = false;
@@ -182,355 +186,273 @@ export default function SajuListPage({
     };
   }, []);
 
+  function formatItemLine(item: SajuWithAnimal): string {
+    const dateStr = (item.birthdate || "").replace(/-/g, "/");
+    const timeStr = (item.birth_time || "").trim() || "00:00";
+    return `${item.gender} ${item.calendar_type} ${dateStr} (${timeStr})`;
+  }
+
+  const sortedItems = [...items].sort((a, b) => {
+    const at = new Date(a.created_at || 0).getTime();
+    const bt = new Date(b.created_at || 0).getTime();
+    return bt - at;
+  });
+
   return (
     <main
       style={{
-        background: "#eef4ee",
         minHeight: "100vh",
-        fontFamily: "'Gowun Dodum', sans-serif",
+        fontFamily: "var(--font-sans)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        position: "relative",
+        backgroundColor: "var(--bg-base)",
+        backgroundImage: "url('/images/hanji-bg.png')",
+        backgroundRepeat: "repeat",
+        backgroundSize: "auto",
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        .sans  { font-family: 'Gowun Dodum', sans-serif; }
         .tap {
-          transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+          transition: transform .15s ease, opacity .15s ease;
           -webkit-tap-highlight-color: transparent;
           cursor: pointer;
         }
-        .tap:active { transform: scale(.97); opacity: .9; box-shadow: 0 4px 10px rgba(0,0,0,.12); }
-        .wrap {
-          width: 100%;
-          max-width: 420px;
-          margin: 0 auto;
-          padding: 0 20px 40px;
-        }
-        @media (max-width: 390px) {
-          .wrap { padding: 0 16px 40px; }
-        }
+        .tap:active { transform: scale(.97); opacity: .9; }
+        .wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 20px 40px; }
+        @media (max-width: 390px) { .wrap { padding: 0 16px 40px; } }
       `}</style>
 
       <div className="wrap">
-        {/* 헤더 – start 페이지와 톤 맞춤 + 캐시/햄버거 */}
+        {/* 헤더 – 시안: 뒤로가기, 한양사주 만세력, 햄버거 */}
         <header
-          className="sans"
           style={{
-            position: "relative",
-            zIndex: 10,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "16px 20px",
-            margin: "0 -20px 16px",
-            background: "#c1d8c3",
-            borderBottom: "3px solid #adc4af",
+            padding: "16px 0 24px",
           }}
         >
           <button
+            type="button"
+            className="tap"
             onClick={() => router.push("/home")}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
+              justifyContent: "center",
+              width: 40,
+              height: 40,
               background: "transparent",
               border: "none",
               padding: 0,
               cursor: "pointer",
+              color: textDark,
             }}
           >
-            <HamIcon
-              style={{ width: 40, height: 40, objectFit: "contain" }}
-              alt="햄스터"
-            />
-            <span
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: "#2d4a1e",
-                letterSpacing: "0.04em",
-              }}
-            >
-              한양사주
-            </span>
+            <Icon icon="mdi:chevron-left" width={28} />
           </button>
-
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-            }}
-          >
-            {/* 씨앗 캐시 (클릭 시 충전 페이지) */}
-            <button
-              type="button"
-              onClick={() => router.push("/seed-charge")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "6px 10px",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid #adc4af",
-                cursor: "pointer",
-              }}
-            >
-              <Icon icon="mdi:seed-outline" width={18} />
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: "#345024",
-                }}
-              >
-                0
-              </span>
-            </button>
-
-            {/* 해바라기 멤버십 (클릭 시 멤버십 페이지) */}
-            <button
-              type="button"
-              onClick={() => router.push("/membership")}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "6px 10px",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.85)",
-                border: "1.5px solid #adc4af",
-                cursor: "pointer",
-              }}
-            >
-              <Icon icon="fluent-emoji-flat:sunflower" width={18} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#345024" }}>멤버십</span>
-            </button>
-
-            {/* 햄버거 메뉴 아이콘 */}
-            <button
-              type="button"
-              className="tap"
-              aria-label="메뉴 열기"
-              onClick={() => router.push("/saju-mypage")}
-              style={{
-                padding: 8,
-                borderRadius: 10,
-                border: "none",
-                background: "transparent",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon icon="mdi:menu" width={22} style={{ marginLeft: 14 }} />
-            </button>
-          </div>
-        </header>
-
-        {/* 사주 목록 섹션 */}
-        <section
-          className="sans"
-          style={{
-            position: "relative",
-            background: "#ffffff",
-            borderRadius: 0,
-            border: "1.5px solid #c8dac8",
-            padding: "20px 20px 110px",
-            margin: "0 -20px 0",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.03)",
-          }}
-        >
           <h1
             style={{
               fontSize: 18,
               fontWeight: 700,
-              color: "#1a2e0e",
-              marginBottom: 10,
+              color: textDark,
+              flex: 1,
+              textAlign: "center",
             }}
           >
-            사주목록
+            한양사주 만세력
           </h1>
-
-          {/* 새로운 사주 추가하기 버튼 */}
           <button
             type="button"
-            onClick={() => router.push("/saju-add")}
-            className="tap sans"
+            className="tap"
+            aria-label="메뉴"
+            onClick={() => router.push("/saju-mypage")}
             style={{
-              width: "100%",
-              padding: "11px 14px",
-              borderRadius: 14,
-              border: "1.5px solid #adc4af",
-              background: "#c1d8c3",
+              width: 40,
+              height: 40,
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              color: textDark,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon icon="mdi:menu" width={24} />
+          </button>
+        </header>
+
+        {/* 저장된 만세력 섹션 */}
+        <section style={{ padding: "0 0 24px" }}>
+          <h2
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: textDark,
+              marginBottom: 16,
+              textAlign: "left",
+            }}
+          >
+            저장된 만세력
+          </h2>
+
+          {/* 등록일순 드롭다운 */}
+          <button
+            type="button"
+            className="tap"
+            onClick={() => {}}
+            style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              width: "100%",
+              maxWidth: 200,
+              padding: "10px 14px",
+              borderRadius: radius,
+              border: `1.5px solid #E0E0E0`,
+              background: "var(--bg-surface)",
               fontSize: 14,
-              fontWeight: 700,
-              color: "#1a2e0e",
-              marginBottom: 16,
+              color: textDark,
+              marginBottom: 24,
             }}
           >
-            <span>새로운 사주 추가하기</span>
-            <span style={{ fontSize: 16 }}>➕</span>
+            <span>{sortBy}</span>
+            <Icon icon="mdi:chevron-down" width={20} style={{ flexShrink: 0 }} />
           </button>
 
-          {/* 사주 카드 목록 */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
-            {loading ? (
-              <div
-                style={{
-                  padding: 14,
-                  textAlign: "center",
-                  fontSize: 13,
-                  color: "#556b2f",
-                }}
-              >
-                불러오는 중...
-              </div>
-            ) : error ? (
-              <div
-                style={{
-                  padding: 14,
-                  textAlign: "center",
-                  fontSize: 13,
-                  color: "#b91c1c",
-                }}
-              >
-                {error}
-              </div>
-            ) : items.length === 0 ? (
-              <div
-                style={{
-                  padding: 14,
-                  textAlign: "center",
-                  fontSize: 13,
-                  color: "#6b7280",
-                }}
-              >
-                아직 저장된 사주가 없습니다
-              </div>
-            ) : (
-              items.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="tap sans"
-                  onClick={() => router.push(`/saju-preview?id=${item.id}`)}
-                  style={{
-                    width: "100%",
-                    textAlign: "left",
-                    background: "#ffffff",
-                    border: "1.5px solid #c8dac8",
-                    borderRadius: 14,
-                    padding: 14,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                  }}
-                >
-                  {/* 왼쪽: 일주 동물 이미지 */}
+          {loading && (
+            <div style={{ padding: 24, textAlign: "center", fontSize: 14, color: "var(--text-secondary)" }}>
+              불러오는 중...
+            </div>
+          )}
+          {error && (
+            <div style={{ padding: 24, textAlign: "center", fontSize: 14, color: "#b91c1c" }}>
+              {error}
+            </div>
+          )}
+          {!loading && !error && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 32 }}>
+              {sortedItems.map((item) => (
                   <div
+                    key={item.id}
+                    role="button"
+                    tabIndex={0}
+                    className="tap"
+                    onClick={() => router.push(`/saju-preview?id=${item.id}`)}
+                    onKeyDown={(e) => e.key === "Enter" && router.push(`/saju-preview?id=${item.id}`)}
                     style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 14,
-                      overflow: "hidden",
-                      background: "#f3f4f6",
-                      flexShrink: 0,
+                      width: "100%",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {item.dayPillarKey ? (
-                      <img
-                        src={`/images/day_pillars/${item.dayPillarKey}.png`}
-                        alt={`${item.dayPillarKey} 일주 동물`}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    ) : (
-                      <span
-                        style={{
-                          fontSize: 11,
-                          color: "#9ca3af",
-                        }}
-                      >
-                        동물
-                      </span>
-                    )}
-                  </div>
-
-                  {/* 오른쪽: 텍스트 정보 */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 2,
+                      gap: 12,
+                      padding: "14px 16px",
+                      borderRadius: radius,
+                      border: "1.5px solid #E0E0E0",
+                      background: "var(--bg-surface)",
+                      textAlign: "left",
                     }}
                   >
                     <div
                       style={{
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: "#1a2e0e",
+                        width: 48,
+                        height: 48,
+                        borderRadius: 10,
+                        overflow: "hidden",
+                        background: "var(--bg-input)",
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      {item.name}
-                      {item.relation ? ` · ${item.relation}` : ""}
+                      {item.dayPillarKey ? (
+                        <img
+                          src={`/images/day_pillars/${item.dayPillarKey}.png`}
+                          alt=""
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <Icon icon="mdi:account-outline" width={24} style={{ color: "var(--text-secondary)" }} />
+                      )}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: "#4b5563",
-                      }}
-                    >
-                      {item.birthdate} ({item.calendar_type}) · {item.gender}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        color: "#4b5563",
-                      }}
-                    >
-                      태어난 시각:{" "}
-                      {item.birth_time && item.birth_time.trim()
-                        ? item.birth_time
-                        : "시간 모름"}
-                    </div>
-                    {item.animalName && (
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: getAnimalNameColor(item.animalName),
-                          marginTop: 2,
-                        }}
-                      >
-                        {item.animalName}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, color: textDark }}>
+                        {formatItemLine(item)}
                       </div>
-                    )}
+                    </div>
+                    <button
+                      type="button"
+                      className="tap"
+                      aria-label="수정"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/saju-add?edit=${item.id}`);
+                      }}
+                      style={{
+                        padding: 8,
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      <Icon icon="mdi:pencil-outline" width={20} />
+                    </button>
+                    <button
+                      type="button"
+                      className="tap"
+                      aria-label="삭제"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm("이 만세력을 삭제하시겠습니까?")) {
+                          setItems((prev) => prev.filter((i) => i.id !== item.id));
+                        }
+                      }}
+                      style={{
+                        padding: 8,
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "var(--text-secondary)",
+                      }}
+                    >
+                      <Icon icon="mdi:trash-can-outline" width={20} />
+                    </button>
                   </div>
-                </button>
-              ))
-            )}
+                ))}
+            </div>
+          )}
+
+          {/* 추가하기 – 원형 버튼 + 하단 텍스트 (시안) */}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, marginTop: 8 }}>
+            <button
+              type="button"
+              className="tap"
+              onClick={() => router.push("/saju-add")}
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                border: "2px solid #E0E0E0",
+                background: "var(--bg-surface)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: textDark,
+              }}
+            >
+              <Icon icon="mdi:plus" width={36} />
+            </button>
+            <span style={{ fontSize: 14, fontWeight: 500, color: textDark }}>추가하기</span>
           </div>
         </section>
       </div>

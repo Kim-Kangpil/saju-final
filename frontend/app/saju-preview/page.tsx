@@ -229,6 +229,7 @@ function SajuPreviewContent() {
     daeun_direction: string | null;
     daeun_list: string[] | null;
   }>({ daeun_start_age: null, daeun_direction: null, daeun_list: null });
+  const [selectedDaeunIndex, setSelectedDaeunIndex] = useState<number | null>(null);
   const [deducting, setDeducting] = useState(false);
   const [showSeedSheet, setShowSeedSheet] = useState(false);
 
@@ -416,7 +417,7 @@ function SajuPreviewContent() {
   const daeunRows = useMemo(() => {
     const list = daeun.daeun_list ?? [];
     const dayStem = pillars?.day_pillar?.[0] ?? "";
-    return list.map((s) => {
+    const rows = list.map((s) => {
       const m = s.match(/^(\d+)세\s*([^\s(]+)(?:\(([^)]+)\))?/);
       const age = m ? parseInt(m[1], 10) : 0;
       const ganji = m ? m[2].trim() : "";
@@ -428,15 +429,39 @@ function SajuPreviewContent() {
       const twelveState = getTwelveState(dayStem, branch);
       return { age, ganji, stem, branch, stemTg, branchTg, twelveState };
     });
+    // 대운은 오른쪽에서 왼쪽으로 나이가 줄어들게 표시하고 싶으므로
+    // 배열 자체는 나이 내림차순으로 정렬해 둔다.
+    return rows.sort((a, b) => b.age - a.age);
   }, [daeun.daeun_list, pillars?.day_pillar]);
+
+  // 기본 선택 대운: 기준 연도(2026년)에서 사용자의 나이가 속한 구간
+  useEffect(() => {
+    if (!saju || daeunRows.length === 0) return;
+    if (selectedDaeunIndex != null) return;
+    const birthYear = saju.birthdate ? parseInt(String(saju.birthdate).slice(0, 4), 10) : 0;
+    const baseYear = 2026;
+    const baseAge = birthYear > 0 ? baseYear - birthYear : 0;
+    let idx = daeunRows.findIndex((r, i) => {
+      const start = r.age;
+      const end = i > 0 ? daeunRows[i - 1].age - 1 : start + 9;
+      return baseAge >= start && baseAge <= end;
+    });
+    if (idx === -1) idx = 0;
+    setSelectedDaeunIndex(idx);
+  }, [saju, daeunRows, selectedDaeunIndex]);
 
   const seunRows = useMemo(() => {
     const dayStem = pillars?.day_pillar?.[0] ?? "";
     const birthYear = saju?.birthdate ? parseInt(String(saju.birthdate).slice(0, 4), 10) : 0;
     const currentYear = new Date().getFullYear();
+    // 선택된 대운이 있다면 그 대운의 시작 나이 기준으로 10년 세운을 생성
+    const selected = selectedDaeunIndex != null ? daeunRows[selectedDaeunIndex] : null;
+    const selectedAge = selected ? selected.age : null;
+    const startYear =
+      birthYear > 0 && selectedAge != null ? birthYear + selectedAge : currentYear;
     const rows: { year: number; age: number; stem: string; branch: string; stemTg: string; branchTg: string; twelveState: string }[] = [];
     for (let i = 0; i < 10; i++) {
-      const year = currentYear + i;
+      const year = startYear + i;
       const pillar = getSeunPillar(year);
       const stem = pillar[0] ?? "";
       const branch = pillar[1] ?? "";
@@ -451,8 +476,10 @@ function SajuPreviewContent() {
         twelveState: getTwelveState(dayStem, branch),
       });
     }
-    return rows;
-  }, [pillars?.day_pillar, saju?.birthdate]);
+    // 세운도 오른쪽에서 왼쪽으로 시간이 과거→현재가 되도록
+    // 연도를 내림차순으로 정렬해 사용한다.
+    return rows.sort((a, b) => b.year - a.year);
+  }, [pillars?.day_pillar, saju?.birthdate, daeunRows, selectedDaeunIndex]);
 
   if (loading) {
     return (
@@ -538,12 +565,40 @@ function SajuPreviewContent() {
         .preview-tap { transition: transform .15s ease, opacity .15s ease; -webkit-tap-highlight-color: transparent; cursor: pointer; }
         .preview-tap:active { transform: scale(.97); opacity: .9; }
         .preview-wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 16px 24px; }
-        .preview-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-        .preview-table th, .preview-table td { border: 1px solid #D4C9B8; padding: 8px 6px; text-align: center; }
+        .preview-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 12px;
+          background: #fff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06);
+          table-layout: fixed;
+        }
+        .preview-table th,
+        .preview-table td {
+          border: 1px solid #D4C9B8;
+          padding: 8px 6px;
+          text-align: center;
+        }
         .preview-table th { background: #EDE7DB; font-weight: 700; color: #2C2417; }
         .preview-saju-row-label td { font-size: 11px; color: #5c5346; }
-        .preview-pillar-box { padding: 10px 8px; border-radius: 8px; text-align: center; min-width: 44px; }
-        .preview-daeun-seun-box { padding: 8px 6px; border-radius: 6px; text-align: center; min-width: 36px; color: #fff; font-weight: 700; }
+        .preview-pillar-box {
+          padding: 10px 8px;
+          border-radius: 8px;
+          text-align: center;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .preview-daeun-seun-box {
+          padding: 8px 6px;
+          border-radius: 6px;
+          text-align: center;
+          width: 100%;
+          box-sizing: border-box;
+          color: #fff;
+          font-weight: 700;
+        }
       `}</style>
 
       <div className="preview-wrap">
@@ -574,11 +629,28 @@ function SajuPreviewContent() {
         <section style={{ marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
             {dayPillarKey && (
-              <img src={`/images/day_pillars/${dayPillarKey}.png`} alt={`${dayPillarKey} 일주`} style={{ width: 100, height: 100, objectFit: "contain", borderRadius: 12 }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <img
+                src={`/images/day_pillars/${dayPillarKey}.png`}
+                alt={`${dayPillarKey} 일주`}
+                style={{ width: 100, height: 100, objectFit: "contain", borderRadius: 12 }}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
             )}
             <div>
-              {dayPillarKey && <div style={{ fontSize: 15, fontWeight: 700, color: getAnimalNameColor(dayPillarAnimalName || ""), marginBottom: 4 }}>{dayPillarKey}일주: {dayPillarAnimalName || ""}</div>}
-              <div style={{ fontSize: 13, color: PREVIEW_TEXT, opacity: 0.9 }}>1단계</div>
+              {dayPillarKey && (
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: getAnimalNameColor(dayPillarAnimalName || ""),
+                    marginBottom: 4,
+                  }}
+                >
+                  {dayPillarKey}일주: {dayPillarAnimalName || ""}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -593,13 +665,15 @@ function SajuPreviewContent() {
               >
                 <thead>
                   <tr>
-                    {["생시", "생일", "생월", "생년"].map((h) => (
+                    <th style={{ width: 80 }} />
+                    {["시주", "일주", "월주", "년주"].map((h) => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="preview-saju-row-label">
+                    <td style={{ fontSize: 11, color: PREVIEW_TEXT, textAlign: "center" }}>십성(천간)</td>
                     {pillarBlocks.map((p) => {
                       const dayStem = pillars!.day_pillar[0] ?? "";
                       const stem = p.value[0] ?? "";
@@ -607,6 +681,7 @@ function SajuPreviewContent() {
                     })}
                   </tr>
                   <tr>
+                    <td style={{ fontSize: 11, color: PREVIEW_TEXT, textAlign: "center" }}>천간</td>
                     {pillarBlocks.map((p) => {
                       const stem = p.value[0] ?? "";
                       const el = hanjaToElement(stem);
@@ -630,6 +705,7 @@ function SajuPreviewContent() {
                     })}
                   </tr>
                   <tr>
+                    <td style={{ fontSize: 11, color: PREVIEW_TEXT, textAlign: "center" }}>지지</td>
                     {pillarBlocks.map((p) => {
                       const branch = p.value[1] ?? "";
                       const el = hanjaToElement(branch);
@@ -653,6 +729,7 @@ function SajuPreviewContent() {
                     })}
                   </tr>
                   <tr className="preview-saju-row-label">
+                    <td style={{ fontSize: 11, color: PREVIEW_TEXT, textAlign: "center" }}>십성(지지)</td>
                     {pillarBlocks.map((p) => {
                       const dayStem = pillars!.day_pillar[0] ?? "";
                       const branch = p.value[1] ?? "";
@@ -662,19 +739,22 @@ function SajuPreviewContent() {
                   </tr>
                   {jijanggan && (
                     <tr>
+                      <td style={{ fontSize: 11, color: PREVIEW_TEXT, textAlign: "center" }}>지장간</td>
                       {(["hour", "day", "month", "year"] as const).map((key) => {
                         const dayStem = pillars!.day_pillar[0] ?? "";
                         const items = (jijanggan[key] ?? []) as Array<{ hanja: string; hangul: string; element: string }>;
-                        const text = items
-                          .map((jj) => {
-                            const elKr = ELEMENT_NAME_KR[jj.element] ?? "";
-                            const tg = tenGod(dayStem, jj.hanja);
-                            return `${jj.hanja}${elKr} ${tg}`;
-                          })
-                          .join(", ");
                         return (
-                          <td key={key} style={{ fontSize: 10, padding: 6, textAlign: "left", lineHeight: 1.5 }}>
-                            {text}
+                          <td key={key} style={{ fontSize: 10, padding: 6, textAlign: "center", lineHeight: 1.5 }}>
+                            {items.map((jj, idx) => {
+                              const elKr = ELEMENT_NAME_KR[jj.element] ?? "";
+                              const tg = tenGod(dayStem, jj.hanja);
+                              return (
+                                <div key={idx}>
+                                  {jj.hanja}
+                                  {elKr} ({tg})
+                                </div>
+                              );
+                            })}
                           </td>
                         );
                       })}
@@ -682,6 +762,7 @@ function SajuPreviewContent() {
                   )}
                   {twelveStates && (
                     <tr className="preview-saju-row-label">
+                      <td style={{ fontSize: 11, color: PREVIEW_TEXT, textAlign: "center" }}>십이운성</td>
                       {(["hour", "day", "month", "year"] as const).map((key) => (
                         <td key={key}>{twelveStates[key]}</td>
                       ))}
@@ -705,14 +786,39 @@ function SajuPreviewContent() {
                 <thead>
                   <tr>
                     {daeunRows.map((r) => (
-                      <th key={r.age} style={{ minWidth: 44 }}>{r.age}</th>
+                      <th
+                        key={r.age}
+                        style={{
+                          minWidth: 44,
+                          cursor: "pointer",
+                          background:
+                            selectedDaeunIndex != null &&
+                            daeunRows[selectedDaeunIndex]?.age === r.age
+                              ? "#E3D9CB"
+                              : "#EDE7DB",
+                        }}
+                        onClick={() => setSelectedDaeunIndex(daeunRows.findIndex(d => d.age === r.age))}
+                      >
+                        {r.age}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="preview-saju-row-label">
                     {daeunRows.map((r) => (
-                      <td key={r.age}>{r.stemTg}</td>
+                      <td
+                        key={r.age}
+                        style={{
+                          background:
+                            selectedDaeunIndex != null &&
+                            daeunRows[selectedDaeunIndex]?.age === r.age
+                              ? "rgba(212,201,184,0.2)"
+                              : undefined,
+                        }}
+                      >
+                        {r.stemTg}
+                      </td>
                     ))}
                   </tr>
                   <tr>
@@ -720,7 +826,17 @@ function SajuPreviewContent() {
                       const el = hanjaToElement(r.stem);
                       const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                       return (
-                        <td key={r.age} style={{ padding: 4 }}>
+                        <td
+                          key={r.age}
+                          style={{
+                            padding: 4,
+                            background:
+                              selectedDaeunIndex != null &&
+                              daeunRows[selectedDaeunIndex]?.age === r.age
+                                ? "rgba(212,201,184,0.15)"
+                                : undefined,
+                          }}
+                        >
                           <div
                             className="preview-daeun-seun-box"
                             style={{
@@ -729,7 +845,6 @@ function SajuPreviewContent() {
                               border: `1px solid ${col.border}`,
                             }}
                           >
-                            {r.stem}
                             {hanjaToHangul(r.stem)}
                           </div>
                         </td>
@@ -741,7 +856,17 @@ function SajuPreviewContent() {
                       const el = hanjaToElement(r.branch);
                       const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                       return (
-                        <td key={r.age} style={{ padding: 4 }}>
+                        <td
+                          key={r.age}
+                          style={{
+                            padding: 4,
+                            background:
+                              selectedDaeunIndex != null &&
+                              daeunRows[selectedDaeunIndex]?.age === r.age
+                                ? "rgba(212,201,184,0.15)"
+                                : undefined,
+                          }}
+                        >
                           <div
                             className="preview-daeun-seun-box"
                             style={{
@@ -750,7 +875,6 @@ function SajuPreviewContent() {
                               border: `1px solid ${col.border}`,
                             }}
                           >
-                            {r.branch}
                             {hanjaToHangul(r.branch)}
                           </div>
                         </td>
@@ -759,12 +883,34 @@ function SajuPreviewContent() {
                   </tr>
                   <tr className="preview-saju-row-label">
                     {daeunRows.map((r) => (
-                      <td key={r.age}>{r.branchTg}</td>
+                      <td
+                        key={r.age}
+                        style={{
+                          background:
+                            selectedDaeunIndex != null &&
+                            daeunRows[selectedDaeunIndex]?.age === r.age
+                              ? "rgba(212,201,184,0.2)"
+                              : undefined,
+                        }}
+                      >
+                        {r.branchTg}
+                      </td>
                     ))}
                   </tr>
                   <tr className="preview-saju-row-label">
                     {daeunRows.map((r) => (
-                      <td key={r.age}>{r.twelveState}</td>
+                      <td
+                        key={r.age}
+                        style={{
+                          background:
+                            selectedDaeunIndex != null &&
+                            daeunRows[selectedDaeunIndex]?.age === r.age
+                              ? "rgba(212,201,184,0.2)"
+                              : undefined,
+                        }}
+                      >
+                        {r.twelveState}
+                      </td>
                     ))}
                   </tr>
                 </tbody>
@@ -778,18 +924,25 @@ function SajuPreviewContent() {
             나의 세운 <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.8 }}>*1년 단위 운</span>
           </div>
           <div style={{ overflowX: "auto" }}>
-            <table className="preview-table">
+            <table
+              className="preview-table"
+              style={{ tableLayout: "fixed", width: "100%" }}
+            >
               <thead>
                 <tr>
                   {seunRows.map((r) => (
-                    <th key={r.year} style={{ minWidth: 44 }}>{r.year}</th>
+                    <th key={r.year} style={{ textAlign: "center" }}>
+                      {r.year}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   {seunRows.map((r) => (
-                    <td key={r.year} style={{ fontSize: 11 }}>{r.age > 0 ? r.age + "세" : "-"}</td>
+                    <td key={r.year} style={{ fontSize: 11 }}>
+                      {r.age > 0 ? r.age + "세" : "-"}
+                    </td>
                   ))}
                 </tr>
                 <tr className="preview-saju-row-label">
@@ -799,20 +952,40 @@ function SajuPreviewContent() {
                 </tr>
                 <tr>
                   {seunRows.map((r) => {
-                    const bg = ELEMENT_COLOR[hanjaToElement(r.stem)] ?? PREVIEW_SURFACE;
+                    const el = hanjaToElement(r.stem);
+                    const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                     return (
                       <td key={r.year} style={{ padding: 4 }}>
-                        <div className="preview-daeun-seun-box" style={{ background: bg }}>{r.stem}{hanjaToHangul(r.stem)}</div>
+                        <div
+                          className="preview-daeun-seun-box"
+                          style={{
+                            background: col.bg,
+                            color: col.text,
+                            border: `1px solid ${col.border}`,
+                          }}
+                        >
+                          {hanjaToHangul(r.stem)}
+                        </div>
                       </td>
                     );
                   })}
                 </tr>
                 <tr>
                   {seunRows.map((r) => {
-                    const bg = ELEMENT_COLOR[hanjaToElement(r.branch)] ?? PREVIEW_SURFACE;
+                    const el = hanjaToElement(r.branch);
+                    const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                     return (
                       <td key={r.year} style={{ padding: 4 }}>
-                        <div className="preview-daeun-seun-box" style={{ background: bg }}>{r.branch}{hanjaToHangul(r.branch)}</div>
+                        <div
+                          className="preview-daeun-seun-box"
+                          style={{
+                            background: col.bg,
+                            color: col.text,
+                            border: `1px solid ${col.border}`,
+                          }}
+                        >
+                          {hanjaToHangul(r.branch)}
+                        </div>
                       </td>
                     );
                   })}

@@ -914,8 +914,27 @@ export default function HomePage({
           font-weight: 700;
         }
 
-        .msr-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-        .msr-table th, .msr-table td { border: 1px solid var(--beige); padding: 10px 6px; text-align: center; height: 70px; }
+        .msr-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+          background: #fff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06);
+          table-layout: fixed;
+        }
+        .msr-table th,
+        .msr-table td {
+          border: 1px solid var(--beige);
+          padding: 10px 6px;
+          text-align: center;
+          height: 70px;
+        }
+        .msr-table th:first-child,
+        .msr-table td:first-child {
+          width: 72px;
+        }
         .msr-table th { background: var(--cream2); font-weight: 700; color: var(--ink); }
         .msr-table .msr-row-label td { font-size: 12px; color: var(--ink3); text-align: center; }
         .msr-table .msr-pillar-box {
@@ -929,6 +948,25 @@ export default function HomePage({
           color: #fff;
           font-weight: 700;
           font-size: 20px;
+        }
+
+        @media (max-width: 480px) {
+          .msr-table th,
+          .msr-table td {
+            height: 60px;
+            padding: 8px 4px;
+          }
+          .msr-table th:first-child,
+          .msr-table td:first-child {
+            width: 64px;
+            font-size: 10px;
+          }
+          .msr-table .msr-row-label td {
+            font-size: 11px;
+          }
+          .msr-table .msr-pillar-box {
+            font-size: 18px;
+          }
         }
 
         /* ── 피처 그리드 ── */
@@ -1575,6 +1613,7 @@ export default function HomePage({
               <table className="msr-table">
                 <thead>
                   <tr>
+                    <th style={{ width: 80 }} />
                     {messages.manseryeok.headers.map((h) => (
                       <th key={h}>{h}</th>
                     ))}
@@ -1583,12 +1622,14 @@ export default function HomePage({
                 <tbody>
                   {/* 천간 기준 십성 */}
                   <tr className="msr-row-label">
+                    <td style={{ fontSize: 11, color: S.ink3, textAlign: "center" }}>십성(천간)</td>
                     {messages.manseryeok.sipsung_top.map((s, i) => (
                       <td key={i}>{s}</td>
                     ))}
                   </tr>
                   {/* 천간 색 박스 */}
                   <tr>
+                    <td style={{ fontSize: 11, color: S.ink3, textAlign: "center" }}>천간</td>
                     {[
                       { char: "계癸", el: "water" as const },
                       { char: "기己", el: "earth" as const },
@@ -1614,6 +1655,7 @@ export default function HomePage({
                   </tr>
                   {/* 지지 색 박스 */}
                   <tr>
+                    <td style={{ fontSize: 11, color: S.ink3, textAlign: "center" }}>지지</td>
                     {[
                       { char: "유酉", el: "metal" as const },
                       { char: "미未", el: "earth" as const },
@@ -1639,12 +1681,14 @@ export default function HomePage({
                   </tr>
                   {/* 지지 기준 십성 */}
                   <tr className="msr-row-label">
+                    <td style={{ fontSize: 11, color: S.ink3, textAlign: "center" }}>십성(지지)</td>
                     {messages.manseryeok.sipsung_bot.map((s, i) => (
                       <td key={i}>{s}</td>
                     ))}
                   </tr>
                   {/* 지장간 */}
                   <tr>
+                    <td style={{ fontSize: 11, color: S.ink3, textAlign: "center" }}>지장간</td>
                     <td style={{ fontSize: 10, padding: 6, textAlign: "center", lineHeight: 1.5, color: S.ink3 }}>
                       <div>경금 (상관)</div>
                       <div>신금 (식신)</div>
@@ -1667,6 +1711,7 @@ export default function HomePage({
                   </tr>
                   {/* 십이운성 — 기토 일간 기준, 지지(유·미·신·사)에 대한 실제 판별 결과 */}
                   <tr className="msr-row-label">
+                    <td style={{ fontSize: 11, color: S.ink3, textAlign: "center" }}>십이운성</td>
                     {messages.manseryeok.twelve.map((s, i) => (
                       <td key={i}>{s}</td>
                     ))}

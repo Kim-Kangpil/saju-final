@@ -30,6 +30,35 @@ const S = {
   font: "'Gmarket Sans'",
 };
 
+// 만세력 미리보기용 오행 색상 팔레트
+const FIVE_ELEMENT_COLORS = {
+  wood: {
+    text: "#27500A",
+    bg: "#C0DD97",
+    border: "#3B6D11",
+  },
+  fire: {
+    text: "#712B13",
+    bg: "#F0997B",
+    border: "#993C1D",
+  },
+  earth: {
+    text: "#633806",
+    bg: "#FAC775",
+    border: "#854F0B",
+  },
+  metal: {
+    text: "#444441",
+    bg: "#B4B2A9",
+    border: "#5F5E5A",
+  },
+  water: {
+    text: "#0C447C",
+    bg: "#85B7EB",
+    border: "#185FA5",
+  },
+} as const;
+
 // ─────────────────────────────────────────────────────
 // 데이터
 // ─────────────────────────────────────────────────────
@@ -1561,28 +1590,52 @@ export default function HomePage({
                   {/* 천간 색 박스 */}
                   <tr>
                     {[
-                      { char: "계癸", bg: S.water },
-                      { char: "기己", bg: S.earth },
-                      { char: "갑甲", bg: S.wood },
-                      { char: "을乙", bg: S.wood },
-                    ].map((c, i) => (
-                      <td key={i} style={{ padding: 4, verticalAlign: "middle" }}>
-                        <div className="msr-pillar-box" style={{ background: c.bg }}>{c.char}</div>
-                      </td>
-                    ))}
+                      { char: "계癸", el: "water" as const },
+                      { char: "기己", el: "earth" as const },
+                      { char: "갑甲", el: "wood" as const },
+                      { char: "을乙", el: "wood" as const },
+                    ].map((c, i) => {
+                      const col = FIVE_ELEMENT_COLORS[c.el];
+                      return (
+                        <td key={i} style={{ padding: 4, verticalAlign: "middle" }}>
+                          <div
+                            className="msr-pillar-box"
+                            style={{
+                              background: col.bg,
+                              color: col.text,
+                              border: `1px solid ${col.border}`,
+                            }}
+                          >
+                            {c.char}
+                          </div>
+                        </td>
+                      );
+                    })}
                   </tr>
                   {/* 지지 색 박스 */}
                   <tr>
                     {[
-                      { char: "유酉", bg: S.metal },
-                      { char: "미未", bg: S.earth },
-                      { char: "신申", bg: S.metal },
-                      { char: "사巳", bg: S.fire },
-                    ].map((c, i) => (
-                      <td key={i} style={{ padding: 4, verticalAlign: "middle" }}>
-                        <div className="msr-pillar-box" style={{ background: c.bg }}>{c.char}</div>
-                      </td>
-                    ))}
+                      { char: "유酉", el: "metal" as const },
+                      { char: "미未", el: "earth" as const },
+                      { char: "신申", el: "metal" as const },
+                      { char: "사巳", el: "fire" as const },
+                    ].map((c, i) => {
+                      const col = FIVE_ELEMENT_COLORS[c.el];
+                      return (
+                        <td key={i} style={{ padding: 4, verticalAlign: "middle" }}>
+                          <div
+                            className="msr-pillar-box"
+                            style={{
+                              background: col.bg,
+                              color: col.text,
+                              border: `1px solid ${col.border}`,
+                            }}
+                          >
+                            {c.char}
+                          </div>
+                        </td>
+                      );
+                    })}
                   </tr>
                   {/* 지지 기준 십성 */}
                   <tr className="msr-row-label">

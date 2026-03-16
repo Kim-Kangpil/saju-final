@@ -115,6 +115,7 @@ function hanjaToElement(h: string): Element | "none" {
   return "none";
 }
 
+// 기본 오행 색상 (기존 용도 유지)
 const ELEMENT_COLOR: Record<string, string> = {
   wood: "#059669",
   fire: "#e11d48",
@@ -122,6 +123,16 @@ const ELEMENT_COLOR: Record<string, string> = {
   metal: "#64748b",
   water: "#2563eb",
   none: "var(--text-primary)",
+};
+
+// 만세력/대운 표 전용 팔레트
+const ELEMENT_PALETTE: Record<string, { text: string; bg: string; border: string }> = {
+  wood: { text: "#27500A", bg: "#C0DD97", border: "#3B6D11" },
+  fire: { text: "#712B13", bg: "#F0997B", border: "#993C1D" },
+  earth: { text: "#633806", bg: "#FAC775", border: "#854F0B" },
+  metal: { text: "#444441", bg: "#B4B2A9", border: "#5F5E5A" },
+  water: { text: "#0C447C", bg: "#85B7EB", border: "#185FA5" },
+  none: { text: "var(--text-primary)", bg: "#EDE7DB", border: "#D4C9B8" },
 };
 
 /** 오행 영문 → 한글 (지장간 표기용) */
@@ -231,6 +242,21 @@ function SajuPreviewContent() {
       jiji: { hanja: j, hangul: hanjaToHangul(j) },
     };
   }
+
+  // 일간 기준 십이운성 계산 (홈 만세력과 동일한 로직)
+  useEffect(() => {
+    if (!pillars) return;
+    const dayStem = pillars.day_pillar?.[0];
+    if (!dayStem) return;
+    const mk = (p: string | undefined) =>
+      p && p.length >= 2 ? getTwelveState(dayStem, p[1]) : "";
+    setTwelveStates({
+      hour: mk(pillars.hour_pillar),
+      day: mk(pillars.day_pillar),
+      month: mk(pillars.month_pillar),
+      year: mk(pillars.year_pillar),
+    });
+  }, [pillars?.day_pillar, pillars?.hour_pillar, pillars?.month_pillar, pillars?.year_pillar]);
 
   async function handleStartAnalysis() {
     if (!saju || !pillars) return;
@@ -561,7 +587,10 @@ function SajuPreviewContent() {
           <div style={{ fontSize: 14, fontWeight: 700, color: PREVIEW_TEXT, marginBottom: 10 }}>내 사주팔자</div>
           {pillars ? (
             <div style={{ overflowX: "auto" }}>
-              <table className="preview-table preview-sajutable">
+              <table
+                className="preview-table preview-sajutable"
+                style={{ tableLayout: "fixed", width: "100%" }}
+              >
                 <thead>
                   <tr>
                     {["생시", "생일", "생월", "생년"].map((h) => (
@@ -581,11 +610,20 @@ function SajuPreviewContent() {
                     {pillarBlocks.map((p) => {
                       const stem = p.value[0] ?? "";
                       const el = hanjaToElement(stem);
-                      const bg = ELEMENT_COLOR[el] ?? PREVIEW_SURFACE;
+                      const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                       return (
                         <td key={p.label} style={{ padding: 4, verticalAlign: "middle" }}>
-                          <div className="preview-pillar-box" style={{ background: bg, color: "#fff", fontWeight: 700 }}>
-                            {stem}{hanjaToHangul(stem)}
+                          <div
+                            className="preview-pillar-box"
+                            style={{
+                              background: col.bg,
+                              color: col.text,
+                              fontWeight: 700,
+                              border: `1px solid ${col.border}`,
+                            }}
+                          >
+                            {stem}
+                            {hanjaToHangul(stem)}
                           </div>
                         </td>
                       );
@@ -595,11 +633,20 @@ function SajuPreviewContent() {
                     {pillarBlocks.map((p) => {
                       const branch = p.value[1] ?? "";
                       const el = hanjaToElement(branch);
-                      const bg = ELEMENT_COLOR[el] ?? PREVIEW_SURFACE;
+                      const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                       return (
                         <td key={p.label} style={{ padding: 4, verticalAlign: "middle" }}>
-                          <div className="preview-pillar-box" style={{ background: bg, color: "#fff", fontWeight: 700 }}>
-                            {branch}{hanjaToHangul(branch)}
+                          <div
+                            className="preview-pillar-box"
+                            style={{
+                              background: col.bg,
+                              color: col.text,
+                              fontWeight: 700,
+                              border: `1px solid ${col.border}`,
+                            }}
+                          >
+                            {branch}
+                            {hanjaToHangul(branch)}
                           </div>
                         </td>
                       );
@@ -633,6 +680,13 @@ function SajuPreviewContent() {
                       })}
                     </tr>
                   )}
+                  {twelveStates && (
+                    <tr className="preview-saju-row-label">
+                      {(["hour", "day", "month", "year"] as const).map((key) => (
+                        <td key={key}>{twelveStates[key]}</td>
+                      ))}
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -663,20 +717,42 @@ function SajuPreviewContent() {
                   </tr>
                   <tr>
                     {daeunRows.map((r) => {
-                      const bg = ELEMENT_COLOR[hanjaToElement(r.stem)] ?? PREVIEW_SURFACE;
+                      const el = hanjaToElement(r.stem);
+                      const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                       return (
                         <td key={r.age} style={{ padding: 4 }}>
-                          <div className="preview-daeun-seun-box" style={{ background: bg }}>{r.stem}{hanjaToHangul(r.stem)}</div>
+                          <div
+                            className="preview-daeun-seun-box"
+                            style={{
+                              background: col.bg,
+                              color: col.text,
+                              border: `1px solid ${col.border}`,
+                            }}
+                          >
+                            {r.stem}
+                            {hanjaToHangul(r.stem)}
+                          </div>
                         </td>
                       );
                     })}
                   </tr>
                   <tr>
                     {daeunRows.map((r) => {
-                      const bg = ELEMENT_COLOR[hanjaToElement(r.branch)] ?? PREVIEW_SURFACE;
+                      const el = hanjaToElement(r.branch);
+                      const col = ELEMENT_PALETTE[el] ?? ELEMENT_PALETTE.none;
                       return (
                         <td key={r.age} style={{ padding: 4 }}>
-                          <div className="preview-daeun-seun-box" style={{ background: bg }}>{r.branch}{hanjaToHangul(r.branch)}</div>
+                          <div
+                            className="preview-daeun-seun-box"
+                            style={{
+                              background: col.bg,
+                              color: col.text,
+                              border: `1px solid ${col.border}`,
+                            }}
+                          >
+                            {r.branch}
+                            {hanjaToHangul(r.branch)}
+                          </div>
                         </td>
                       );
                     })}

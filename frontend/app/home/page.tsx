@@ -179,7 +179,9 @@ export default function HomePage({
 
         body {
           font-family: ${S.font};
-          background: var(--cream);
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
           color: var(--ink);
           -webkit-font-smoothing: antialiased;
         }
@@ -192,6 +194,9 @@ export default function HomePage({
           margin: 0 auto;
           padding-bottom: 80px;
           position: relative;
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
         }
 
         @media (min-width: 900px) {
@@ -212,6 +217,9 @@ export default function HomePage({
             max-width: 960px;
             margin: 0 auto;
             padding: 0 0 80px;
+            background: var(--cream) url('/images/texture_paper_6.png');
+            background-repeat: repeat;
+            background-size: auto;
           }
         }
 
@@ -292,6 +300,9 @@ export default function HomePage({
         .sec {
           padding: 36px 20px;
           border-bottom: 1px solid var(--beige);
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
         }
 
         .badge {
@@ -335,21 +346,16 @@ export default function HomePage({
         .hero {
           padding: 44px 20px 36px;
           text-align: center;
-          background: var(--cream);
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
           border-bottom: 1px solid var(--beige);
           position: relative;
           overflow: hidden;
         }
 
         .hero::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background-image: url('/images/hanji-bg.png');
-          background-repeat: repeat;
-          background-size: auto;
-          opacity: 0.045;
-          pointer-events: none;
+          content: none;
         }
 
         .hero-eyebrow {
@@ -1060,7 +1066,7 @@ export default function HomePage({
           background-image: url('/images/hanji-bg.png');
           background-repeat: repeat;
           background-size: auto;
-          opacity: 0.04;
+          opacity: 0.08;
           pointer-events: none;
         }
 
@@ -1129,7 +1135,9 @@ export default function HomePage({
         .footer {
           padding: 24px 20px;
           text-align: center;
-          background: var(--cream);
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
           border-top: 1px solid var(--beige);
         }
 

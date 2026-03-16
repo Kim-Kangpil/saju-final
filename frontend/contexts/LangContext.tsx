@@ -13,7 +13,9 @@ import en from "@/locales/en";
 
 export type Lang = "ko" | "en";
 
-type Messages = typeof ko;
+// ko/en 구조가 거의 같지만 리터럴 값이 달라서,
+// 공통적으로만 쓰일 수 있도록 union 타입으로 완화.
+type Messages = typeof ko | typeof en;
 
 type LangContextValue = {
   lang: Lang;

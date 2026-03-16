@@ -96,8 +96,8 @@ const S = {
   metal: "#5A6475",
   water: "#1B3A5C",
   // gmarketsans를 메인으로 사용
-  fontDisplay: "'GmarketSans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-  fontBody: "'GmarketSans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  fontDisplay: "'Gmarket Sans'",
+  fontBody: "'Gmarket Sans'",
 } as const;
 
 const ELEMENT_COLOR: Record<string, string> = {

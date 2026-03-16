@@ -504,7 +504,7 @@ function SajuPreviewContent() {
       style={{
         background: PREVIEW_BG,
         minHeight: "100vh",
-        fontFamily: "'GmarketSans', -apple-system, sans-serif",
+        fontFamily: "'Gmarket Sans'",
         paddingBottom: 40,
       }}
     >

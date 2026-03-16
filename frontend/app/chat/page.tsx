@@ -407,7 +407,13 @@ export default function ChatPage({
             type="button"
             className="chat-back"
             aria-label="메뉴"
-            onClick={() => router.push("/home")}
+            onClick={() => {
+              if (isLoggedIn) {
+                router.push("/saju-mypage");
+              } else {
+                router.push("/start");
+              }
+            }}
             style={{
               padding: 8,
               borderRadius: 10,

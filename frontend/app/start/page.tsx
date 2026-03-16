@@ -274,12 +274,6 @@ export default function StartPage({
               </span>
               네이버 계정으로 로그인하기
             </button>
-            <button type="button" onClick={goEmail} className="tap" style={btnBase}>
-              <span style={iconCircleStyle("#E8E5DF")}>
-                <Icon icon="mdi:email-outline" width={iconSize} height={iconSize} />
-              </span>
-              이메일로 로그인하기
-            </button>
           </div>
         </section>
       </div>

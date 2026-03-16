@@ -24,7 +24,7 @@ const S = {
   earth: "#B45309",
   metal: "#64748B",
   fire: "#E11D48",
-  font: "'GmarketSans', system-ui, -apple-system, sans-serif",
+  font: "'Gmarket Sans'",
 };
 
 // ─────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ const FEATURES = [
   { icon: "🤝", title: "인간관계", desc: "합충 기반 관계 에너지" },
   { icon: "🔮", title: "공망·귀인", desc: "숨겨진 조력자와 공백 분석" },
   { icon: "🏥", title: "체질·건강", desc: "오행 체질 맞춤 건강 정보" },
-  { icon: "📜", title: "종합 인생 가이드", desc: "GPT 기반 맞춤 요약" },
+  { icon: "📜", title: "종합 인생 가이드", desc: "사주 전체를 한눈에 정리한 요약" },
 ];
 
 const ALL_ANIMALS = [
@@ -160,8 +160,6 @@ export default function HomePage({
   return (
     <>
       <style>{`
-        @import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
-
         :root {
           --cream:  ${S.cream};
           --cream2: ${S.cream2};
@@ -198,24 +196,21 @@ export default function HomePage({
 
         @media (min-width: 900px) {
           .page {
-            max-width: 100%;
+            max-width: 1200px;
             padding-bottom: 0;
           }
           .pc-layout {
-            display: grid !important;
-            grid-template-columns: 420px 1fr;
+            display: flex;
+            justify-content: center;
             min-height: 100dvh;
           }
           .pc-sidebar {
-            position: sticky;
-            top: 0;
-            height: 100dvh;
-            overflow-y: auto;
-            border-right: 1px solid var(--beige);
-            background: var(--cream);
+            display: none;
           }
           .pc-main {
-            overflow-y: auto;
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
             padding: 0 0 80px;
           }
         }
@@ -433,6 +428,220 @@ export default function HomePage({
           margin-bottom: 28px;
         }
 
+        /* ── 문제 제기 섹션 ─ */
+        .problem-sec {
+          background: var(--ink);
+          padding: 48px 20px;
+          text-align: center;
+        }
+
+        .problem-label {
+          font-size: 11px;
+          color: rgba(245,241,234,.5);
+          letter-spacing: 0.12em;
+          margin-bottom: 16px;
+          font-weight: 700;
+        }
+
+        .problem-main {
+          font-family: ${S.font};
+          font-size: clamp(1.35rem, 4.5vw, 1.65rem);
+          font-weight: 900;
+          color: var(--cream);
+          line-height: 1.4;
+          margin-bottom: 10px;
+        }
+
+        .problem-sub {
+          font-family: ${S.font};
+          font-size: clamp(1.35rem, 4.5vw, 1.65rem);
+          font-weight: 900;
+          color: var(--goldL);
+          line-height: 1.4;
+          margin-bottom: 32px;
+        }
+
+        .problem-divider {
+          width: 40px;
+          height: 1px;
+          background: rgba(245,241,234,.2);
+          margin: 0 auto 28px;
+        }
+
+        .problem-desc {
+          font-size: 13px;
+          color: rgba(245,241,234,.6);
+          line-height: 1.85;
+          text-align: center;
+        }
+
+        /* ── 범용 AI vs 사주 전문 AI ─ */
+        .compare-sec {
+          background: var(--cream);
+          padding: 44px 20px;
+          border-bottom: 1px solid var(--beige);
+        }
+
+        .compare-title {
+          font-family: ${S.font};
+          font-size: clamp(1.3rem, 4vw, 1.55rem);
+          font-weight: 900;
+          color: var(--ink);
+          line-height: 1.4;
+          margin-bottom: 28px;
+        }
+
+        .compare-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .compare-card {
+          flex: 1;
+          padding: 20px 16px;
+          border-radius: 14px;
+        }
+
+        .compare-left {
+          background: #fff;
+          border: 1px solid var(--beige);
+          opacity: 0.55;
+          transform: scale(0.97);
+        }
+
+        .compare-right {
+          background: var(--ink);
+          border: 1.5px solid var(--gold);
+          box-shadow: 0 0 0 1px var(--gold), 0 8px 24px rgba(139,115,85,.2);
+          animation: compareFadeInScale .6s cubic-bezier(.34,1.56,.64,1) .2s both;
+        }
+
+        .compare-label {
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--muted);
+          letter-spacing: 0.1em;
+          margin-bottom: 14px;
+          text-transform: uppercase;
+        }
+
+        .compare-label-right {
+          color: var(--goldL);
+        }
+
+        .compare-chip-col {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .compare-chip {
+          padding: 6px 12px;
+          border-radius: 6px;
+          background: var(--cream2);
+          border: 1px solid var(--beige);
+          font-size: 12px;
+          color: var(--ink3);
+        }
+
+        .compare-note {
+          font-size: 11px;
+          color: var(--muted);
+          margin-top: 14px;
+        }
+
+        .compare-arrow {
+          font-size: 20px;
+          color: var(--beige2);
+          flex-shrink: 0;
+          animation: compareArrowFade .4s ease .1s both;
+        }
+
+        .compare-logo-wrap {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 10px;
+        }
+
+        .compare-logo {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          border: 1.5px solid var(--gold);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .compare-logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .compare-service-name {
+          font-family: ${S.font};
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--cream);
+          text-align: center;
+          margin-bottom: 14px;
+        }
+
+        .compare-right-note {
+          font-size: 11px;
+          color: rgba(245,241,234,.55);
+          margin-top: 0;
+          text-align: center;
+        }
+
+        .engine-card {
+          margin-top: 28px;
+          background: var(--cream2);
+          border: 1px solid var(--beige);
+          border-radius: 12px;
+          padding: 18px 16px;
+        }
+
+        .engine-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          text-align: center;
+        }
+
+        .engine-row span {
+          font-family: ${S.font};
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+
+        .engine-x {
+          font-size: 16px;
+          color: var(--beige2);
+        }
+
+        .engine-sub {
+          font-size: 12px;
+          color: var(--ink3);
+          margin-top: 10px;
+          text-align: center;
+        }
+
+        @keyframes compareFadeInScale {
+          from { opacity: 0; transform: scale(0.92); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes compareArrowFade {
+          from { opacity: 0; transform: translateX(-4px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
         .hero-btns {
           display: flex;
           flex-direction: column;
@@ -503,8 +712,10 @@ export default function HomePage({
           padding: 18px 20px;
           display: flex;
           align-items: center;
+          justify-content: center;
           gap: 14px;
           flex-wrap: wrap;
+          text-align: center;
         }
 
         .first-band-tag {
@@ -525,8 +736,8 @@ export default function HomePage({
           color: var(--cream);
           line-height: 1.6;
           letter-spacing: 0.01em;
-          flex: 1;
-          min-width: 200px;
+          flex: 0 1 620px;
+          text-align: center;
         }
 
         /* ── 채팅 미리보기 ── */
@@ -662,11 +873,22 @@ export default function HomePage({
           font-weight: 700;
         }
 
-        .msr-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-        .msr-table th, .msr-table td { border: 1px solid var(--beige); padding: 8px 6px; text-align: center; }
+        .msr-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+        .msr-table th, .msr-table td { border: 1px solid var(--beige); padding: 10px 6px; text-align: center; height: 70px; }
         .msr-table th { background: var(--cream2); font-weight: 700; color: var(--ink); }
-        .msr-table .msr-row-label td { font-size: 11px; color: var(--ink3); }
-        .msr-table .msr-pillar-box { padding: 10px 8px; border-radius: 8px; text-align: center; min-width: 44px; color: #fff; font-weight: 700; }
+        .msr-table .msr-row-label td { font-size: 12px; color: var(--ink3); text-align: center; }
+        .msr-table .msr-pillar-box {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          border-radius: 0;
+          color: #fff;
+          font-weight: 700;
+          font-size: 20px;
+        }
 
         /* ── 피처 그리드 ── */
         .feature-grid {
@@ -931,7 +1153,7 @@ export default function HomePage({
           max-width: 400px;
         }
 
-        @media (min-width: 900px) {
+        @media (min-width: 1024px) {
           .floating-cta { display: none; }
         }
 
@@ -1029,7 +1251,7 @@ export default function HomePage({
             <button className="hd-btn-fill" onClick={() => router.push("/chat")}>채팅 시작</button>
           ) : (
             <>
-            <button className="hd-btn" onClick={() => router.push("/start")}>로그인</button>
+              <button className="hd-btn" onClick={() => router.push("/start")}>로그인</button>
               <button className="hd-btn-fill" onClick={() => router.push("/start")}>무료 시작</button>
             </>
           )}
@@ -1072,13 +1294,15 @@ export default function HomePage({
             </div>
 
             <h1 className="hero-title reveal">
-              가장 정확한 만세력 계산,<br />
-              <em>사주를 아는 AI</em>와 대화하세요
+              ChatGPT는 똑똑합니다.<br />
+              하지만 사주는 잘 모릅니다.<br />
+              그래서 만들었습니다.<br />
+              <em>사주 전문 AI</em>
             </h1>
 
             <p className="hero-desc reveal">
-              전통 사주명리학을 AI로 풀어낸 한양사주.<br />
-              생년월일 하나로 내 사주의 모든 것을 확인하세요.
+              이제 사주를 검색해서 보지 마세요.<br />
+              AI에게 직접 물어보세요.
             </p>
 
             <div className="hero-btns reveal">
@@ -1098,18 +1322,68 @@ export default function HomePage({
             </div>
           </section>
 
-          {/* ── 국내 최초 띠 ── */}
-          <div className="first-band">
-            <span className="first-band-tag">국내 최초</span>
-            <p className="first-band-text">
-              가장 정확한 만세력 자동 계산 + 사주 전용 AI 채팅을<br />
-              동시에 제공하는 유일한 서비스입니다.
+          {/* ── 문제 제기 섹션 ── */}
+          <section className="problem-sec">
+            <div className="problem-label">지금까지의 방식</div>
+            <h2 className="problem-main">이제 사주를 검색해서 보지 마세요.</h2>
+            <h3 className="problem-sub">AI에게 직접 물어보세요.</h3>
+            <div className="problem-divider" />
+            <p className="problem-desc">
+              사주 정보를 검색하고, 내용을 이해하고, 내 상황에 대입하는 과정.<br />
+              한양사주 AI는 이 과정을 대화 한 번으로 줄입니다.
             </p>
-          </div>
+          </section>
+
+          {/* ── 범용 AI vs 사주 전문 AI 비교 ── */}
+          <section className="compare-sec">
+            <div className="badge">왜 전용 AI가 필요한가</div>
+            <h2 className="compare-title">
+              ChatGPT는 똑똑합니다.<br />
+              하지만 사주는 모릅니다.
+            </h2>
+
+            <div className="compare-row">
+              <div className="compare-card compare-left">
+                <div className="compare-label">범용 AI</div>
+                <div className="compare-chip-col">
+                  <div className="compare-chip">ChatGPT</div>
+                  <div className="compare-chip">Claude</div>
+                  <div className="compare-chip">Gemini</div>
+                </div>
+                <p className="compare-note">사주 비전문 · 일반 대화 최적화</p>
+              </div>
+
+              <div className="compare-arrow">→</div>
+
+              <div className="compare-card compare-right">
+                <div className="compare-label compare-label-right">사주 전문 AI</div>
+                <div className="compare-logo-wrap">
+                  <div className="compare-logo">
+                    <img
+                      src="/images/yin-yang-logo.png"
+                      alt="한양사주"
+                      onError={e => { (e.currentTarget.style.display = "none"); e.currentTarget.parentElement!.textContent = "☯"; }}
+                    />
+                  </div>
+                </div>
+                <div className="compare-service-name">한양사주 AI</div>
+                <p className="compare-right-note">사주명리 전용 알고리즘 탑재</p>
+              </div>
+            </div>
+
+            <div className="engine-card">
+              <div className="engine-row">
+                <span>최신 AI 모델</span>
+                <span className="engine-x">×</span>
+                <span>사주명리 전용 알고리즘</span>
+              </div>
+              <p className="engine-sub">범용 AI가 아닌, 사주를 위해 설계된 AI입니다.</p>
+            </div>
+          </section>
 
           {/* ── AI 채팅 미리보기 ── */}
-          <section className="sec">
-            <div className="badge badge-gold">💬 사주 AI 채팅</div>
+          <section className="sec" style={{ textAlign: "center" }}>
+            <div className="badge badge-gold" style={{ marginLeft: "auto", marginRight: "auto" }}>💬 사주 AI 채팅</div>
             <h2 className="sec-title">
               ChatGPT처럼 대화하되,<br />사주 이론으로 답합니다
             </h2>
@@ -1265,7 +1539,7 @@ export default function HomePage({
             <div style={{ marginTop: 16, padding: "12px 14px", background: S.cream2, borderRadius: 10, border: `1px solid ${S.beige}` }}>
               <p style={{ fontSize: 12, color: S.ink3, lineHeight: 1.7 }}>
                 + 대운 · 세운 · 공망 · 귀인 · 체질 · 행운 아이템<br />
-                <strong style={{ color: S.gold }}>GPT 기반 종합 인생 가이드</strong>까지
+                <strong style={{ color: S.gold }}>사주 전체를 종합한 인생 가이드</strong>까지
               </p>
             </div>
           </section>

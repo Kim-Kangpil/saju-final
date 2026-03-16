@@ -25,8 +25,13 @@ export default function Header() {
     router.push("/home");
   };
 
+  const fontFamily = "'Gmarket Sans'";
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg-base)] border-b-4 border-[var(--border-default)] shadow-lg">
+    <header
+      className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg-base)] border-b-4 border-[var(--border-default)] shadow-lg"
+      style={{ fontFamily }}
+    >
       <div className="w-full max-w-[450px] mx-auto px-4 py-3 flex items-center justify-between">
         {/* 로고 클릭 시 /home으로 */}
         <button

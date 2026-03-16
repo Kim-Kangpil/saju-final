@@ -1343,7 +1343,7 @@ export default function HomePage({
           </section>
 
           {/* ── 범용 AI vs 사주 전문 AI 비교 ── */}
-          <section className="compare-sec">
+          <section className="compare-sec" style={{ textAlign: "center" }}>
             <div className="badge">왜 전용 AI가 필요한가</div>
             <h2 className="compare-title">
               ChatGPT는 똑똑합니다.<br />
@@ -1428,7 +1428,7 @@ export default function HomePage({
           </section>
 
           {/* ── 만세력 정확도 ── */}
-          <section className="sec">
+          <section className="sec" style={{ textAlign: "center" }}>
             <div className="badge">📅 정확한 만세력</div>
             <h2 className="sec-title">
               절기·음력 변환까지<br />자동으로 정확하게
@@ -1528,7 +1528,7 @@ export default function HomePage({
           </section>
 
           {/* ── 분석 항목 ── */}
-          <section className="sec">
+          <section className="sec" style={{ textAlign: "center" }}>
             <div className="badge">🔍 분석 항목</div>
             <h2 className="sec-title">
               사주 8글자에서<br />이 모든 걸 읽어냅니다
@@ -1588,7 +1588,7 @@ export default function HomePage({
           </section>
 
           {/* ── 신뢰 지표 ── */}
-          <section className="sec" style={{ background: S.cream2 }}>
+          <section className="sec" style={{ background: S.cream2, textAlign: "center" }}>
             <div className="badge">📊 이용 현황</div>
 
             <div className="trust-grid">
@@ -1612,7 +1612,7 @@ export default function HomePage({
           </section>
 
           {/* ── 리뷰 ── */}
-          <section className="sec">
+          <section className="sec" style={{ textAlign: "center" }}>
             <div className="badge">💬 실제 후기</div>
             <h2 className="sec-title" style={{ fontSize: "1.25rem" }}>
               직접 써본 분들의 이야기
@@ -1656,7 +1656,7 @@ export default function HomePage({
           </section>
 
           {/* ── 핵심 기능 4가지 ── */}
-          <section className="sec">
+          <section className="sec" style={{ textAlign: "center" }}>
             <div className="badge">⚙️ 핵심 기능</div>
             <h2 className="sec-title">
               필요한 것만,<br />제대로 갖췄습니다

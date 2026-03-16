@@ -5,38 +5,22 @@ import { useState, useEffect } from "react";
 import { Icon } from "@iconify/react";
 import { HamIcon } from "@/components/HamIcon";
 import { clearStoredToken } from "@/lib/auth";
+import { useLang } from "@/contexts/LangContext";
 
 export default function Header() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [seedCount] = useState<number>(0); // 기본값 0, 추후 충전 로직과 연동 예정
-  const [lang, setLang] = useState<"KR" | "EN">("KR");
+  const { lang, setLang } = useLang();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const loggedIn = localStorage.getItem("isLoggedIn");
     setIsLoggedIn(loggedIn === "true");
-
-    const storedLang = localStorage.getItem("ui_lang");
-    if (storedLang === "KR" || storedLang === "EN") {
-      setLang(storedLang);
-    } else {
-      const browserLang =
-        (navigator.languages && navigator.languages[0]) || navigator.language || "ko";
-      const initial = browserLang.toLowerCase().startsWith("ko") ? "KR" : "EN";
-      setLang(initial);
-      localStorage.setItem("ui_lang", initial);
-    }
   }, []);
 
   const handleToggleLang = () => {
-    setLang(prev => {
-      const next = prev === "KR" ? "EN" : "KR";
-      if (typeof window !== "undefined") {
-        localStorage.setItem("ui_lang", next);
-      }
-      return next;
-    });
+    setLang(lang === "ko" ? "en" : "ko");
   };
 
   const handleLogout = () => {
@@ -70,9 +54,9 @@ export default function Header() {
           <button
             type="button"
             onClick={handleToggleLang}
-            className="px-2.5 py-1 rounded-full bg-white/70 border border-[var(--border-default)] text-[10px] font-semibold text-[var(--text-primary)] hover:bg-white transition-colors"
+            className="px-2 py-1 rounded-full bg-white/70 border border-[var(--border-default)] text-[10px] font-semibold text-[var(--text-primary)] hover:bg-white transition-colors"
           >
-            {lang === "KR" ? "KR · 한국어" : "EN · English"}
+            {lang === "ko" ? "KR" : "EN"}
           </button>
           {isLoggedIn ? (
             <>

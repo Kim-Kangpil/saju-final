@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import Footer from "../components/footer";
 import BottomTabBar from "../components/BottomTabBar";
+import { LangProvider } from "../contexts/LangContext";
 
 export const metadata: Metadata = {
   title: "사주 프로젝트",
@@ -33,6 +34,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="antialiased" style={{ paddingBottom: 0, background: "var(--bg-base)" }}>
+        <LangProvider>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -70,6 +72,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           </div>
 
         </div>
+        </LangProvider>
       </body>
     </html>
   );

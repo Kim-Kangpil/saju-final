@@ -3,6 +3,7 @@
 import { use, useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getSavedSajuList } from "@/lib/sajuStorage";
+import { useLang } from "@/contexts/LangContext";
 
 // ─────────────────────────────────────────────────────
 // 디자인 토큰 (add/page.tsx 와 동일한 S 객체)
@@ -108,6 +109,7 @@ export default function HomePage({
   const [chatIdx, setChatIdx] = useState(0);
   const [reviewScroll, setReviewScroll] = useState(0);
   const reviewRef = useRef<HTMLDivElement>(null);
+  const { lang, setLang } = useLang();
 
   const getTodayCount = () => {
     if (typeof window === "undefined") return 128;
@@ -1254,7 +1256,24 @@ export default function HomePage({
           </div>
           <span className="hd-logo-text">한양사주</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <button
+            type="button"
+            onClick={() => setLang(lang === "ko" ? "en" : "ko")}
+            style={{
+              padding: "4px 9px",
+              borderRadius: 999,
+              border: `1px solid ${S.beige2}`,
+              background: "rgba(255,255,255,0.7)",
+              fontFamily: S.font,
+              fontSize: 10,
+              fontWeight: 700,
+              color: S.ink3,
+              letterSpacing: "0.08em",
+            }}
+          >
+            {lang === "ko" ? "EN" : "KR"}
+          </button>
           {isLoggedIn ? (
             <button className="hd-btn-fill" onClick={() => router.push("/chat")}>채팅 시작</button>
           ) : (
@@ -1491,21 +1510,21 @@ export default function HomePage({
                   </tr>
                   {/* 지장간 */}
                   <tr>
-                    <td style={{ fontSize: 10, padding: 6, textAlign: "left", lineHeight: 1.5, color: S.ink3 }}>
+                    <td style={{ fontSize: 10, padding: 6, textAlign: "center", lineHeight: 1.5, color: S.ink3 }}>
                       <div>경금 (상관)</div>
                       <div>신금 (식신)</div>
                     </td>
-                    <td style={{ fontSize: 10, padding: 6, textAlign: "left", lineHeight: 1.5, color: S.ink3 }}>
+                    <td style={{ fontSize: 10, padding: 6, textAlign: "center", lineHeight: 1.5, color: S.ink3 }}>
                       <div>정화 (편인)</div>
                       <div>을목 (편관)</div>
                       <div>기토 (비견)</div>
                     </td>
-                    <td style={{ fontSize: 10, padding: 6, textAlign: "left", lineHeight: 1.5, color: S.ink3 }}>
+                    <td style={{ fontSize: 10, padding: 6, textAlign: "center", lineHeight: 1.5, color: S.ink3 }}>
                       <div>무토 (겁재)</div>
                       <div>임수 (정재)</div>
                       <div>경금 (상관)</div>
                     </td>
-                    <td style={{ fontSize: 10, padding: 6, textAlign: "left", lineHeight: 1.5, color: S.ink3 }}>
+                    <td style={{ fontSize: 10, padding: 6, textAlign: "center", lineHeight: 1.5, color: S.ink3 }}>
                       <div>무토 (겁재)</div>
                       <div>경금 (상관)</div>
                       <div>병화 (정인)</div>
@@ -1553,7 +1572,7 @@ export default function HomePage({
           </section>
 
           {/* ── 일주 동물 ── */}
-          <section className="sec">
+          <section className="sec" style={{ textAlign: "center" }}>
             <div className="badge">🐾 일주 동물</div>
             <h2 className="sec-title">
               60가지 중 단 하나,<br />나만의 일주 동물

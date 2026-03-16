@@ -22,6 +22,11 @@ export default function SajuAddPage({
   const [timeRaw, setTimeRaw] = useState(""); // 4자리 숫자만
   const [calendarType, setCalendarType] = useState<"solar" | "lunar" | null>(null);
   const [gender, setGender] = useState<"male" | "female" | null>(null);
+  const [city, setCity] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [useLongitudeCorrection, setUseLongitudeCorrection] = useState(false);
+  const [useEquationOfTime, setUseEquationOfTime] = useState(false);
+  const [timeAccuracy, setTimeAccuracy] = useState<"exact" | "approx" | "unknown">("unknown");
   const [errors, setErrors] = useState({
     name: false,
     birth: false,
@@ -104,7 +109,19 @@ export default function SajuAddPage({
         : null;
     const calendar_type = calendarType === "solar" ? "양력" : "음력";
     const genderText = gender === "male" ? "남자" : "여자";
-    return { name, relation, birthdate, birth_time, calendar_type, gender: genderText };
+    return {
+      name,
+      relation,
+      birthdate,
+      birth_time,
+      calendar_type,
+      gender: genderText,
+      city: city.trim() || null,
+      longitude: longitude.trim() || null,
+      use_longitude_correction: useLongitudeCorrection,
+      use_equation_of_time: useEquationOfTime,
+      time_accuracy: timeAccuracy,
+    };
   };
 
   const handleSave = () => {
@@ -136,7 +153,19 @@ export default function SajuAddPage({
   };
 
   const handleConfirmSave = async () => {
-    const { name: n, relation: r, birthdate, birth_time, calendar_type, gender: genderText } = getPayload();
+    const {
+      name: n,
+      relation: r,
+      birthdate,
+      birth_time,
+      calendar_type,
+      gender: genderText,
+      city: payloadCity,
+      longitude: payloadLongitude,
+      use_longitude_correction,
+      use_equation_of_time,
+      time_accuracy,
+    } = getPayload();
     try {
       const res = await fetch(`${API_BASE}/api/saju/save`, {
         method: "POST",
@@ -152,6 +181,11 @@ export default function SajuAddPage({
           birth_time,
           calendar_type,
           gender: genderText,
+          city: payloadCity,
+          longitude: payloadLongitude,
+          use_longitude_correction,
+          use_equation_of_time,
+          time_accuracy,
         }),
       });
       const body = await res.json().catch(() => ({}));

@@ -7,14 +7,21 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { getSavedSajuList } from "@/lib/sajuStorage";
 import MarkdownMessage from "../../components/MarkdownMessage";
+import { useLang } from "@/contexts/LangContext";
 
 /** 게스트 3회 제한 — 잠시 끄기: true면 3번 질문 후 로그인 유도 */
 const GUEST_LIMIT_ENABLED = false;
 const GUEST_LIMIT = 3;
 
-/** 시간대별 인사 문구 */
-function getTimeBasedGreeting(): string {
+/** 시간대별 인사 문구 (다국어) */
+function getTimeBasedGreeting(lang: "ko" | "en"): string {
   const h = new Date().getHours();
+  if (lang === "en") {
+    if (h >= 5 && h < 12) return "Good morning.";
+    if (h >= 12 && h < 17) return "Hope your afternoon is going well.";
+    if (h >= 17 && h < 21) return "Good evening.";
+    return "Hello.";
+  }
   if (h >= 5 && h < 12) return "아침 인사드려요";
   if (h >= 12 && h < 17) return "오후 잘 보내고 계신가요";
   if (h >= 17 && h < 21) return "저녁 인사드려요";
@@ -24,13 +31,22 @@ function getTimeBasedGreeting(): string {
 /** localStorage 키 — 대화 히스토리 유지 */
 const CHAT_STORAGE_KEY = "chat_messages";
 
-const QUICK_PROMPTS = [
+const QUICK_PROMPTS_KO = [
   { label: "사주 질문", text: "사주에 대해 궁금한 게 있어요." },
   { label: "오늘의 운세", text: "오늘 제 운세를 알려주세요." },
   { label: "올해 재물운", text: "올해 재물운이 어떻게 되나요?" },
   { label: "맞는 직업", text: "나랑 잘 맞는 직업이나 방향이 궁금해요." },
   { label: "고민 상담", text: "요즘 고민이 있어서 조언이 필요해요." },
   { label: "나와 맞는 방향", text: "제게 맞는 직업이나 방향이 궁금해요." },
+];
+
+const QUICK_PROMPTS_EN = [
+  { label: "Ask about Saju", text: "I have a question about my Saju." },
+  { label: "Today's luck", text: "Please tell me my luck for today." },
+  { label: "Wealth this year", text: "How is my wealth luck this year?" },
+  { label: "Career direction", text: "What kind of job or direction fits me well?" },
+  { label: "Worry counseling", text: "I have something on my mind and need some advice." },
+  { label: "Best direction", text: "I want to know which direction in life suits me." },
 ];
 
 function getMessageText(message: { parts?: Array<{ type: string; text?: string }> }): string {
@@ -48,6 +64,7 @@ export default function ChatPage({
 }) {
   use(params ?? Promise.resolve({}));
   const router = useRouter();
+  const { lang } = useLang();
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -98,10 +115,11 @@ export default function ChatPage({
           body: {
             messages,
             ...bodyRef.current,
+            lang,
           },
         }),
       }),
-    [],
+    [lang],
   );
 
   // 대화 히스토리: hydration 후에만 채팅 영역 마운트 (복원된 메시지로 useChat 초기화)
@@ -652,10 +670,12 @@ function ChatContent({
                 />
               </div>
               <p className="chat-initial-greeting">
-                <span style={{ opacity: 0.8 }}>✦</span> {getTimeBasedGreeting()}
-                {savedSajuName ? `, ${savedSajuName}님` : ""}
+                <span style={{ opacity: 0.8 }}>✦</span> {getTimeBasedGreeting(lang)}
+                {savedSajuName ? (lang === "en" ? `, ${savedSajuName}` : `, ${savedSajuName}님`) : ""}
               </p>
-              <p className="chat-initial-prompt">오늘 어떤 도움을 드릴까요?</p>
+              <p className="chat-initial-prompt">
+                {lang === "en" ? "What can I help you with today?" : "오늘 어떤 도움을 드릴까요?"}
+              </p>
             </div>
           ) : (
             <>
@@ -698,20 +718,26 @@ function ChatContent({
               )}
               {showLoginCard && (
                 <div className="chat-login-card">
-                  <h3>🔮 더 깊은 분석을 원하신다면</h3>
+                  <h3>
+                    {lang === "en"
+                      ? "🔮 Want deeper, personalized analysis?"
+                      : "🔮 더 깊은 분석을 원하신다면"}
+                  </h3>
                   <p>
-                    생년월일을 등록하면
+                    {lang === "en" ? "Save your birth data to get" : "생년월일을 등록하면"}
                     <br />
-                    나만의 맞춤 사주 분석을
+                    {lang === "en"
+                      ? "personalized Saju readings just for you."
+                      : "나만의 맞춤 사주 분석을"}
                     <br />
-                    받을 수 있어요.
+                    {lang === "en" ? "" : "받을 수 있어요."}
                   </p>
                   <div className="chat-login-btns">
                     <button type="button" className="chat-login-btn primary" onClick={() => router.push("/start")}>
-                      로그인하기
+                      {lang === "en" ? "Log in" : "로그인하기"}
                     </button>
                     <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
-                      회원가입
+                      {lang === "en" ? "Sign up" : "회원가입"}
                     </button>
                   </div>
                 </div>
@@ -726,7 +752,7 @@ function ChatContent({
         <div className="chat-input-wrap">
           {!hasUserMessage && (
             <div className="chat-quick-chips">
-              {QUICK_PROMPTS.map((q) => (
+              {(lang === "en" ? QUICK_PROMPTS_EN : QUICK_PROMPTS_KO).map((q) => (
                 <button
                   key={q.label}
                   type="button"
@@ -738,7 +764,11 @@ function ChatContent({
               ))}
             </div>
           )}
-          <ChatInput disabled={sending} onSubmit={handleSubmit} />
+          <ChatInput
+            disabled={sending}
+            onSubmit={handleSubmit}
+            placeholder={lang === "en" ? "Ask anything about your Saju" : "무엇이든 물어보세요"}
+          />
         </div>
       )}
 

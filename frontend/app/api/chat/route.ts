@@ -187,7 +187,7 @@ export async function POST(req: Request) {
     });
   }
 
-  let body: { messages?: unknown[]; isGuest?: boolean; saju?: unknown };
+  let body: { messages?: unknown[]; isGuest?: boolean; saju?: unknown; lang?: "ko" | "en" | string };
   try {
     body = await req.json();
   } catch {
@@ -200,6 +200,7 @@ export async function POST(req: Request) {
   const messages = Array.isArray(body.messages) ? body.messages : [];
   const isGuest = body.isGuest === true;
   const saju = body.saju;
+  const lang: "ko" | "en" = body.lang === "en" ? "en" : "ko";
   const hasSaju = saju != null && typeof saju === "object" && (saju as Record<string, unknown>).result != null;
 
   const koreaNow = getKoreaNowString();
@@ -225,12 +226,17 @@ export async function POST(req: Request) {
   const currentTimeBlock =
     `${CURRENT_TIME_RULE}\n- 현재 시각: ${koreaNow}` + dayPillarLine;
 
+  const languageRule =
+    lang === "en"
+      ? "\n[Language]\n- You must respond in English only.\n- The user speaks English. All your responses must be in English.\n"
+      : "";
+
   const systemBase =
     isGuest || !hasSaju
       ? GUEST_SYSTEM_PROMPT
       : `${LOGGED_IN_SYSTEM_PREFIX}\n\n${buildSajuContext(saju)}`;
 
-  const system = currentTimeBlock + systemBase;
+  const system = currentTimeBlock + languageRule + systemBase;
 
   // Vercel AI SDK의 convertToModelMessages는 UIMessage 타입 배열을 기대하지만
   // 여기서는 네트워크 JSON으로 들어온 메시지를 그대로 넘기므로 타입 단언을 사용한다.

@@ -522,6 +522,7 @@ function ChatContent({
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const isUserScrollingRef = useRef(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const { lang } = useLang();
 
   const { messages, sendMessage, status } = useChat({
     transport,

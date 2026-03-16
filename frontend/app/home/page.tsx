@@ -4,6 +4,8 @@ import { use, useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getSavedSajuList } from "@/lib/sajuStorage";
 import { useLang } from "@/contexts/LangContext";
+import ko from "@/locales/ko";
+import en from "@/locales/en";
 
 // ─────────────────────────────────────────────────────
 // 디자인 토큰 (add/page.tsx 와 동일한 S 객체)
@@ -109,7 +111,9 @@ export default function HomePage({
   const [chatIdx, setChatIdx] = useState(0);
   const [reviewScroll, setReviewScroll] = useState(0);
   const reviewRef = useRef<HTMLDivElement>(null);
-  const { lang, setLang } = useLang();
+  const { lang, setLang, t } = useLang();
+  const messages = lang === "ko" ? ko : en;
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
 
   const getTodayCount = () => {
     if (typeof window === "undefined") return 128;
@@ -1256,24 +1260,85 @@ export default function HomePage({
           </div>
           <span className="hd-logo-text">한양사주</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <button
-            type="button"
-            onClick={() => setLang(lang === "ko" ? "en" : "ko")}
-            style={{
-              padding: "4px 9px",
-              borderRadius: 999,
-              border: `1px solid ${S.beige2}`,
-              background: "rgba(255,255,255,0.7)",
-              fontFamily: S.font,
-              fontSize: 10,
-              fontWeight: 700,
-              color: S.ink3,
-              letterSpacing: "0.08em",
-            }}
-          >
-            {lang === "ko" ? "EN" : "KR"}
-          </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, position: "relative" }}>
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setLangMenuOpen((o) => !o)}
+              style={{
+                padding: "4px 9px",
+                borderRadius: 999,
+                border: `1px solid ${S.beige2}`,
+                background: "rgba(255,255,255,0.7)",
+                fontFamily: S.font,
+                fontSize: 10,
+                fontWeight: 700,
+                color: S.ink3,
+                letterSpacing: "0.08em",
+              }}
+            >
+              {lang === "ko" ? "언어 ▾" : "Language ▾"}
+            </button>
+            {langMenuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  marginTop: 4,
+                  minWidth: 90,
+                  borderRadius: 8,
+                  border: `1px solid ${S.beige2}`,
+                  background: "rgba(255,255,255,0.98)",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
+                  padding: 4,
+                  zIndex: 40,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLang("ko");
+                    setLangMenuOpen(false);
+                  }}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    border: "none",
+                    background: lang === "ko" ? "rgba(0,0,0,0.05)" : "transparent",
+                    fontFamily: S.font,
+                    fontSize: 12,
+                    color: S.ink,
+                    cursor: "pointer",
+                  }}
+                >
+                  한국어
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLang("en");
+                    setLangMenuOpen(false);
+                  }}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    border: "none",
+                    background: lang === "en" ? "rgba(0,0,0,0.05)" : "transparent",
+                    fontFamily: S.font,
+                    fontSize: 12,
+                    color: S.ink,
+                    cursor: "pointer",
+                  }}
+                >
+                  English
+                </button>
+              </div>
+            )}
+          </div>
           {isLoggedIn ? (
             <button className="hd-btn-fill" onClick={() => router.push("/chat")}>채팅 시작</button>
           ) : (
@@ -1290,14 +1355,14 @@ export default function HomePage({
         {/* ───────────── PC 사이드바 (md 이상에서만 보임) ───────────── */}
         <div className="pc-sidebar" style={{ display: "none" }}>
           <div className="pc-sticky-cta">
-            <p className="serif" style={{ fontSize: 15, fontWeight: 700, color: S.ink, lineHeight: 1.5 }}>
-              지금 바로<br />내 사주를 확인하세요
+            <p className="serif" style={{ fontSize: 15, fontWeight: 700, color: S.ink, lineHeight: 1.5, whiteSpace: "pre-line" }}>
+              {t("cta.title")}
             </p>
             <button className="btn-primary" onClick={handleStart}>
-              무료로 사주 분석하기
+              {t("cta.primary")}
             </button>
             <button className="btn-secondary" onClick={() => router.push("/chat")}>
-              AI와 먼저 대화하기
+              {t("cta.secondary")}
             </button>
           </div>
         </div>
@@ -1309,7 +1374,7 @@ export default function HomePage({
           <section className="hero">
             <div className="hero-eyebrow">
               <span className="hero-dot" />
-              국내 최초 사주 전용 AI 채팅 서비스
+              {t("hero.badge")}
             </div>
 
             <div className="hero-logo">
@@ -1320,70 +1385,68 @@ export default function HomePage({
               />
             </div>
 
-            <h1 className="hero-title reveal">
-              ChatGPT는 똑똑합니다.<br />
-              하지만 사주는 잘 모릅니다.<br />
-              그래서 만들었습니다.<br />
-              <em>사주 전문 AI</em>
+            <h1 className="hero-title reveal" style={{ whiteSpace: "pre-line" }}>
+              {t("hero.title")}
             </h1>
 
-            <p className="hero-desc reveal">
-              이제 사주를 검색해서 보지 마세요.<br />
-              AI에게 직접 물어보세요.
+            <p className="hero-desc reveal" style={{ whiteSpace: "pre-line" }}>
+              {t("hero.sub")}
             </p>
 
             <div className="hero-btns reveal">
               <button className="btn-primary" onClick={handleStart}>
-                무료로 사주 분석 시작하기
+                {t("hero.cta_primary")}
               </button>
               <button className="btn-secondary" onClick={() => router.push("/chat")}>
-                AI에게 먼저 물어보기 →
+                {t("hero.cta_secondary")}
               </button>
             </div>
 
             <div ref={counterRef} className="counter-row reveal">
               <div className="counter-dot" />
               <span style={{ fontSize: 12, color: S.ink3, fontWeight: 500 }}>
-                오늘 이미 <strong style={{ color: S.ink, fontWeight: 800 }}>{count}</strong>명이 분석했습니다
+                {t("hero.counter", { count: count.toLocaleString() })}
               </span>
             </div>
           </section>
 
           {/* ── 문제 제기 섹션 ── */}
           <section className="problem-sec">
-            <div className="problem-label">지금까지의 방식</div>
-            <h2 className="problem-main">이제 사주를 검색해서 보지 마세요.</h2>
-            <h3 className="problem-sub">AI에게 직접 물어보세요.</h3>
+            <div className="problem-label">{t("problem.eyebrow")}</div>
+            <h2 className="problem-main" style={{ whiteSpace: "pre-line" }}>
+              {t("problem.title")}
+            </h2>
+            <h3 className="problem-sub" style={{ whiteSpace: "pre-line" }}>
+              {t("problem.title_gold")}
+            </h3>
             <div className="problem-divider" />
-            <p className="problem-desc">
-              사주 정보를 검색하고, 내용을 이해하고, 내 상황에 대입하는 과정.<br />
-              한양사주 AI는 이 과정을 대화 한 번으로 줄입니다.
+            <p className="problem-desc" style={{ whiteSpace: "pre-line" }}>
+              {t("problem.body")}
             </p>
           </section>
 
-          {/* ── 범용 AI vs 사주 전문 AI 비교 ── */}
+          {/* ── 범용 AI vs 사주 전문 AI 비교 ─ */}
           <section className="compare-sec" style={{ textAlign: "center" }}>
-            <div className="badge">왜 전용 AI가 필요한가</div>
-            <h2 className="compare-title">
-              ChatGPT는 똑똑합니다.<br />
-              하지만 사주는 모릅니다.
+            <div className="badge">{t("compare.badge")}</div>
+            <h2 className="compare-title" style={{ whiteSpace: "pre-line" }}>
+              {t("compare.title")}
             </h2>
 
             <div className="compare-row">
-              <div className="compare-card compare-left">
-                <div className="compare-label">범용 AI</div>
+                <div className="compare-card compare-left">
+                  <div className="compare-label">{t("compare.left_label")}</div>
                 <div className="compare-chip-col">
                   <div className="compare-chip">ChatGPT</div>
                   <div className="compare-chip">Claude</div>
                   <div className="compare-chip">Gemini</div>
                 </div>
-                <p className="compare-note">사주 비전문 · 일반 대화 최적화</p>
+                <p className="compare-note">{t("compare.left_note")}</p>
               </div>
 
               <div className="compare-arrow">→</div>
 
-              <div className="compare-card compare-right">
-                <div className="compare-label compare-label-right">사주 전문 AI</div>
+                <div className="compare-card compare-right">
+                  <div className="compare-label compare-label-right">{t("compare.right_label")}</div>
                 <div className="compare-logo-wrap">
                   <div className="compare-logo">
                     <img
@@ -1393,30 +1456,31 @@ export default function HomePage({
                     />
                   </div>
                 </div>
-                <div className="compare-service-name">한양사주 AI</div>
-                <p className="compare-right-note">사주명리 전용 알고리즘 탑재</p>
+                <div className="compare-service-name">{t("compare.right_name")}</div>
+                <p className="compare-right-note">{t("compare.right_note")}</p>
               </div>
             </div>
 
-            <div className="engine-card">
-              <div className="engine-row">
-                <span>최신 AI 모델</span>
+              <div className="engine-card">
+                <div className="engine-row">
+                  <span>{t("compare.engine_a")}</span>
                 <span className="engine-x">×</span>
-                <span>사주명리 전용 알고리즘</span>
+                  <span>{t("compare.engine_b")}</span>
               </div>
-              <p className="engine-sub">범용 AI가 아닌, 사주를 위해 설계된 AI입니다.</p>
+                <p className="engine-sub">{t("compare.engine_sub")}</p>
             </div>
           </section>
 
           {/* ── AI 채팅 미리보기 ── */}
           <section className="sec" style={{ textAlign: "center" }}>
-            <div className="badge badge-gold" style={{ marginLeft: "auto", marginRight: "auto" }}>💬 사주 AI 채팅</div>
-            <h2 className="sec-title">
-              ChatGPT처럼 대화하되,<br />사주 이론으로 답합니다
+            <div className="badge badge-gold" style={{ marginLeft: "auto", marginRight: "auto" }}>
+              {t("chat_preview.badge")}
+            </div>
+            <h2 className="sec-title" style={{ whiteSpace: "pre-line" }}>
+              {t("chat_preview.title")}
             </h2>
-            <p className="sec-sub" style={{ marginBottom: 18 }}>
-              일반 질문부터 개인 사주 기반 맞춤 분석까지.<br />
-              궁금한 걸 그냥 물어보세요.
+            <p className="sec-sub" style={{ marginBottom: 18, whiteSpace: "pre-line" }}>
+              {t("chat_preview.sub")}
             </p>
 
             <div className="chat-preview">
@@ -1428,19 +1492,40 @@ export default function HomePage({
                     onError={e => { (e.currentTarget.style.display = "none"); e.currentTarget.parentElement!.textContent = "☯"; }}
                   />
                 </div>
-                <span className="chat-preview-name">한양사주 AI</span>
-                <span style={{ fontSize: 10, color: S.ink3, marginLeft: "auto" }}>사주 전문 · 24시간</span>
+                <span className="chat-preview-name">{t("chat_preview.ai_name")}</span>
+                <span style={{ fontSize: 10, color: S.ink3, marginLeft: "auto" }}>
+                  {t("chat_preview.ai_status")}
+                </span>
               </div>
               <div className="chat-preview-body" key={chatIdx}>
-                <div className="chat-bubble-user">{CHAT_BUBBLES[chatIdx].q}</div>
-                <div className="chat-bubble-ai">{CHAT_BUBBLES[chatIdx].a}</div>
+                {(() => {
+                  const bubbles = messages.chat_preview.bubbles;
+                  const b = bubbles[chatIdx] || bubbles[0];
+                  return (
+                    <>
+                      <div className="chat-bubble-user">{b.q}</div>
+                      <div className="chat-bubble-ai">{b.a}</div>
+                    </>
+                  );
+                })()}
               </div>
               <div style={{ padding: "10px 14px", borderTop: `1px solid ${S.cream3}` }}>
                 <button
                   onClick={() => router.push("/chat")}
-                  style={{ width: "100%", padding: "10px", borderRadius: 8, border: `1px solid ${S.beige}`, background: S.cream, font: "inherit", fontSize: 13, color: S.ink3, cursor: "pointer", fontFamily: S.font }}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    borderRadius: 8,
+                    border: `1px solid ${S.beige}`,
+                    background: S.cream,
+                    font: "inherit",
+                    fontSize: 13,
+                    color: S.ink3,
+                    cursor: "pointer",
+                    fontFamily: S.font,
+                  }}
                 >
-                  한양사주 AI에게 물어보기 →
+                  {t("chat_preview.cta")}
                 </button>
               </div>
             </div>
@@ -1448,13 +1533,12 @@ export default function HomePage({
 
           {/* ── 만세력 정확도 ── */}
           <section className="sec" style={{ textAlign: "center" }}>
-            <div className="badge">📅 정확한 만세력</div>
-            <h2 className="sec-title">
-              절기·음력 변환까지<br />자동으로 정확하게
+            <div className="badge">{t("manseryeok.badge")}</div>
+            <h2 className="sec-title" style={{ whiteSpace: "pre-line" }}>
+              {t("manseryeok.title")}
             </h2>
-            <p className="sec-sub" style={{ marginBottom: 4 }}>
-              직접 계산하거나 앱을 비교할 필요가 없습니다.<br />
-              생년월일시를 입력하면 즉시 정확한 사주팔자를 계산합니다.
+            <p className="sec-sub" style={{ marginBottom: 4, whiteSpace: "pre-line" }}>
+              {t("manseryeok.sub")}
             </p>
 
             {/* 만세력 샘플 테이블 (사주팔자만세력 동일 퀄리티) */}
@@ -1462,7 +1546,7 @@ export default function HomePage({
               <table className="msr-table">
                 <thead>
                   <tr>
-                    {["시주", "일주", "월주", "년주"].map((h) => (
+                    {messages.manseryeok.headers.map((h) => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -1470,10 +1554,9 @@ export default function HomePage({
                 <tbody>
                   {/* 천간 기준 십성 */}
                   <tr className="msr-row-label">
-                    <td>편재</td>
-                    <td>비견</td>
-                    <td>정관</td>
-                    <td>편관</td>
+                    {messages.manseryeok.sipsung_top.map((s, i) => (
+                      <td key={i}>{s}</td>
+                    ))}
                   </tr>
                   {/* 천간 색 박스 */}
                   <tr>
@@ -1503,10 +1586,9 @@ export default function HomePage({
                   </tr>
                   {/* 지지 기준 십성 */}
                   <tr className="msr-row-label">
-                    <td>식신</td>
-                    <td>비견</td>
-                    <td>상관</td>
-                    <td>정인</td>
+                    {messages.manseryeok.sipsung_bot.map((s, i) => (
+                      <td key={i}>{s}</td>
+                    ))}
                   </tr>
                   {/* 지장간 */}
                   <tr>
@@ -1532,30 +1614,29 @@ export default function HomePage({
                   </tr>
                   {/* 십이운성 — 기토 일간 기준, 지지(유·미·신·사)에 대한 실제 판별 결과 */}
                   <tr className="msr-row-label">
-                    <td>태</td>
-                    <td>묘</td>
-                    <td>절</td>
-                    <td>병</td>
+                    {messages.manseryeok.twelve.map((s, i) => (
+                      <td key={i}>{s}</td>
+                    ))}
                   </tr>
                 </tbody>
               </table>
             </div>
 
             <p style={{ fontSize: 11, color: S.ink3, marginTop: 10, textAlign: "center" }}>
-              ※ 위 사주는 예시입니다
+              {t("manseryeok.note")}
             </p>
           </section>
 
           {/* ── 분석 항목 ── */}
           <section className="sec" style={{ textAlign: "center" }}>
-            <div className="badge">🔍 분석 항목</div>
-            <h2 className="sec-title">
-              사주 8글자에서<br />이 모든 걸 읽어냅니다
+            <div className="badge">{t("features.badge")}</div>
+            <h2 className="sec-title" style={{ whiteSpace: "pre-line" }}>
+              {t("features.title")}
             </h2>
 
             <div className="feature-grid">
-              {FEATURES.map(f => (
-                <div key={f.title} className="feature-card">
+              {messages.features.items.map((f, idx) => (
+                <div key={idx} className="feature-card">
                   <span className="feature-icon">{f.icon}</span>
                   <div className="feature-title">{f.title}</div>
                   <div className="feature-desc">{f.desc}</div>
@@ -1564,22 +1645,23 @@ export default function HomePage({
             </div>
 
             <div style={{ marginTop: 16, padding: "12px 14px", background: S.cream2, borderRadius: 10, border: `1px solid ${S.beige}` }}>
-              <p style={{ fontSize: 12, color: S.ink3, lineHeight: 1.7 }}>
-                + 대운 · 세운 · 공망 · 귀인 · 체질 · 행운 아이템<br />
-                <strong style={{ color: S.gold }}>사주 전체를 종합한 인생 가이드</strong>까지
+              <p style={{ fontSize: 12, color: S.ink3, lineHeight: 1.7, whiteSpace: "pre-line" }}>
+                {t("features.more")}
+                <br />
+                <strong style={{ color: S.gold }}>{t("features.more_strong")}</strong>
+                {t("features.more_suffix")}
               </p>
             </div>
           </section>
 
           {/* ── 일주 동물 ── */}
           <section className="sec" style={{ textAlign: "center" }}>
-            <div className="badge">🐾 일주 동물</div>
-            <h2 className="sec-title">
-              60가지 중 단 하나,<br />나만의 일주 동물
+            <div className="badge">{t("animals.badge")}</div>
+            <h2 className="sec-title" style={{ whiteSpace: "pre-line" }}>
+              {t("animals.title")}
             </h2>
-            <p className="sec-sub" style={{ marginBottom: 4 }}>
-              생년월일로 결정되는 나의 일간과 일지.<br />
-              이 두 글자가 나의 본성을 가장 정확히 나타냅니다.
+            <p className="sec-sub" style={{ marginBottom: 4, whiteSpace: "pre-line" }}>
+              {t("animals.sub")}
             </p>
 
             <div className="animal-grid">
@@ -1602,39 +1684,33 @@ export default function HomePage({
               ))}
             </div>
             <p style={{ fontSize: 11, color: S.ink3, textAlign: "center", marginTop: 10 }}>
-              이 중 하나가 당신의 일주 동물입니다.
+              {t("animals.note")}
             </p>
           </section>
 
           {/* ── 신뢰 지표 ── */}
           <section className="sec" style={{ background: S.cream2, textAlign: "center" }}>
-            <div className="badge">📊 이용 현황</div>
+            <div className="badge">{t("trust.badge")}</div>
 
             <div className="trust-grid">
-              <div className="trust-card">
-                <div ref={reviewCountRef} className="trust-num">{reviewCount.toLocaleString()}+</div>
-                <div className="trust-label">누적 사주 분석</div>
-              </div>
-              <div className="trust-card">
-                <div className="trust-num">4.9</div>
-                <div className="trust-label">평균 만족도<br />(★★★★★)</div>
-              </div>
-              <div className="trust-card">
-                <div className="trust-num">60</div>
-                <div className="trust-label">갑자 일주 동물<br />전체 지원</div>
-              </div>
-              <div className="trust-card">
-                <div className="trust-num">무료</div>
-                <div className="trust-label">기본 분석<br />완전 무료</div>
-              </div>
+              {messages.trust.items.map((item, idx) => (
+                <div key={idx} className="trust-card">
+                  <div className="trust-num">
+                    {idx === 0 ? reviewCount.toLocaleString() + "+" : item.val}
+                  </div>
+                  <div className="trust-label" style={{ whiteSpace: "pre-line" }}>
+                    {item.lbl.replace("{count}", reviewCount.toLocaleString())}
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
 
           {/* ── 리뷰 ── */}
           <section className="sec" style={{ textAlign: "center" }}>
-            <div className="badge">💬 실제 후기</div>
+            <div className="badge">{t("reviews.badge")}</div>
             <h2 className="sec-title" style={{ fontSize: "1.25rem" }}>
-              직접 써본 분들의 이야기
+              {t("reviews.title")}
             </h2>
 
             <div
@@ -1654,7 +1730,7 @@ export default function HomePage({
                 document.addEventListener("mouseup", () => document.removeEventListener("mousemove", onMove), { once: true });
               }}
             >
-              {REVIEWS.map((r, i) => (
+              {messages.reviews.items.map((r, i) => (
                 <div key={i} className="review-card">
                   <div className="review-top">
                     <div>
@@ -1663,49 +1739,28 @@ export default function HomePage({
                     </div>
                     <span className="review-tag">{r.tag}</span>
                   </div>
-                  <div className="review-stars">{"★".repeat(r.stars)}</div>
+                  <div className="review-stars">{"★".repeat(5)}</div>
                   <p className="review-text">"{r.text}"</p>
                 </div>
               ))}
             </div>
 
             <p style={{ fontSize: 11, color: S.beige2, textAlign: "center", marginTop: 6 }}>
-              ← 스크롤하여 더 보기
+              {t("reviews.hint")}
             </p>
           </section>
 
           {/* ── 핵심 기능 4가지 ── */}
           <section className="sec" style={{ textAlign: "center" }}>
-            <div className="badge">⚙️ 핵심 기능</div>
-            <h2 className="sec-title">
-              필요한 것만,<br />제대로 갖췄습니다
+            <div className="badge">{t("core_features.badge")}</div>
+            <h2 className="sec-title" style={{ whiteSpace: "pre-line" }}>
+              {t("core_features.title")}
             </h2>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18 }}>
-              {[
-                {
-                  num: "01",
-                  title: "무제한 사주 AI 채팅",
-                  tag: "국내 최초",
-                  desc: "사주 이론에 특화된 AI와 제한 없이 대화하세요. 일반 질문부터 내 사주 기반 맞춤 분석까지 모두 가능합니다.",
-                  icon: "💬",
-                },
-                {
-                  num: "02",
-                  title: "정확한 만세력 자동 계산",
-                  tag: "국내 최초 엔진",
-                  desc: "절기·음력 변환을 포함한 전통 만세력 계산 엔진을 탑재했습니다. 생년월일시를 입력하면 즉시 정확한 사주팔자를 확인할 수 있습니다.",
-                  icon: "📅",
-                },
-                {
-                  num: "03",
-                  title: "전문 심화 풀이",
-                  desc: "일주 동물 · 십성 · 대운 · 신강약 · 공망 · 귀인 · 합충형 등 전통 사주명리학의 핵심 이론을 기반으로 심층 분석을 제공합니다.",
-                  icon: "🔮",
-                },
-              ].map(item => (
+              {messages.core_features.items.slice(0, 3).map((item, idx) => (
                 <div
-                  key={item.num}
+                  key={idx}
                   style={{
                     background: "#fff",
                     border: `1px solid ${S.beige}`,
@@ -1760,9 +1815,9 @@ export default function HomePage({
 
           {/* 이용 요금 섹션 숨김 */}
           <section className="sec" style={{ background: S.cream2, display: "none" }} aria-hidden>
-            <div className="badge">💳 이용 요금</div>
-            <h2 className="sec-title" style={{ fontSize: "1.25rem" }}>
-              기본은 무료,<br />필요할 때만 선택하세요
+            <div className="badge">{t("pricing.badge")}</div>
+            <h2 className="sec-title" style={{ fontSize: "1.25rem", whiteSpace: "pre-line" }}>
+              {t("pricing.title")}
             </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 18 }} />
           </section>
@@ -1770,29 +1825,29 @@ export default function HomePage({
           {/* ── 최종 CTA ── */}
           <section className="cta-sec">
             <p style={{ fontSize: 11, color: "rgba(245,241,234,.5)", letterSpacing: "0.12em", marginBottom: 14, fontWeight: 700 }}>
-              지금 바로 시작하세요
+              {t("cta.eyebrow")}
             </p>
-            <h2 className="cta-title">
-              내 사주, 지금<br />무료로 확인해보세요
+            <h2 className="cta-title" style={{ whiteSpace: "pre-line" }}>
+              {t("cta.title")}
             </h2>
-            <p className="cta-sub">
-              생년월일 하나로 시작하는 사주 분석.<br />
-              회원가입 없이도 AI와 대화할 수 있습니다.
+            <p className="cta-sub" style={{ whiteSpace: "pre-line" }}>
+              {t("cta.sub")}
             </p>
 
             <button className="cta-btn" onClick={handleStart}>
-              무료 사주 분석 시작하기
+              {t("cta.primary")}
             </button>
             <button className="cta-chat-btn" onClick={() => router.push("/chat")}>
-              AI에게 먼저 물어보기
+              {t("cta.secondary")}
             </button>
           </section>
 
           {/* ── 푸터 ── */}
           <footer className="footer">
-            <p className="footer-text">
-              © 2026 한양사주 · AI 사주명리 분석 서비스<br />
-              전통 사주명리학 기반의 참고용 서비스입니다.
+            <p className="footer-text" style={{ whiteSpace: "pre-line" }}>
+              {t("footer.copy")}
+              <br />
+              {t("footer.sub")}
             </p>
           </footer>
 

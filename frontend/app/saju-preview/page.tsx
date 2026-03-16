@@ -658,7 +658,7 @@ function SajuPreviewContent() {
         <section style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: PREVIEW_TEXT, marginBottom: 10 }}>내 사주팔자</div>
           {pillars ? (
-            <div style={{ overflowX: "auto" }}>
+            <div style={{ overflowX: "auto", padding: "0 8px" }}>
               <table
                 className="preview-table preview-sajutable"
                 style={{ tableLayout: "fixed", width: "100%" }}
@@ -810,12 +810,18 @@ function SajuPreviewContent() {
                       <td
                         key={r.age}
                         style={{
+                          cursor: "pointer",
                           background:
                             selectedDaeunIndex != null &&
                             daeunRows[selectedDaeunIndex]?.age === r.age
                               ? "rgba(212,201,184,0.2)"
                               : undefined,
                         }}
+                        onClick={() =>
+                          setSelectedDaeunIndex(
+                            daeunRows.findIndex((d) => d.age === r.age),
+                          )
+                        }
                       >
                         {r.stemTg}
                       </td>
@@ -830,12 +836,18 @@ function SajuPreviewContent() {
                           key={r.age}
                           style={{
                             padding: 4,
+                            cursor: "pointer",
                             background:
                               selectedDaeunIndex != null &&
                               daeunRows[selectedDaeunIndex]?.age === r.age
                                 ? "rgba(212,201,184,0.15)"
                                 : undefined,
                           }}
+                          onClick={() =>
+                            setSelectedDaeunIndex(
+                              daeunRows.findIndex((d) => d.age === r.age),
+                            )
+                          }
                         >
                           <div
                             className="preview-daeun-seun-box"
@@ -860,12 +872,18 @@ function SajuPreviewContent() {
                           key={r.age}
                           style={{
                             padding: 4,
+                            cursor: "pointer",
                             background:
                               selectedDaeunIndex != null &&
                               daeunRows[selectedDaeunIndex]?.age === r.age
                                 ? "rgba(212,201,184,0.15)"
                                 : undefined,
                           }}
+                          onClick={() =>
+                            setSelectedDaeunIndex(
+                              daeunRows.findIndex((d) => d.age === r.age),
+                            )
+                          }
                         >
                           <div
                             className="preview-daeun-seun-box"
@@ -886,12 +904,18 @@ function SajuPreviewContent() {
                       <td
                         key={r.age}
                         style={{
+                          cursor: "pointer",
                           background:
                             selectedDaeunIndex != null &&
                             daeunRows[selectedDaeunIndex]?.age === r.age
                               ? "rgba(212,201,184,0.2)"
                               : undefined,
                         }}
+                        onClick={() =>
+                          setSelectedDaeunIndex(
+                            daeunRows.findIndex((d) => d.age === r.age),
+                          )
+                        }
                       >
                         {r.branchTg}
                       </td>
@@ -902,12 +926,18 @@ function SajuPreviewContent() {
                       <td
                         key={r.age}
                         style={{
+                          cursor: "pointer",
                           background:
                             selectedDaeunIndex != null &&
                             daeunRows[selectedDaeunIndex]?.age === r.age
                               ? "rgba(212,201,184,0.2)"
                               : undefined,
                         }}
+                        onClick={() =>
+                          setSelectedDaeunIndex(
+                            daeunRows.findIndex((d) => d.age === r.age),
+                          )
+                        }
                       >
                         {r.twelveState}
                       </td>
@@ -923,7 +953,7 @@ function SajuPreviewContent() {
           <div style={{ fontSize: 14, fontWeight: 700, color: PREVIEW_TEXT, marginBottom: 10 }}>
             나의 세운 <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.8 }}>*1년 단위 운</span>
           </div>
-          <div style={{ overflowX: "auto" }}>
+          <div style={{ overflowX: "auto", padding: "0 8px" }}>
             <table
               className="preview-table"
               style={{ tableLayout: "fixed", width: "100%" }}

@@ -33,7 +33,7 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body className="antialiased" style={{ paddingBottom: 64, background: "var(--bg-base)" }}>
+      <body className="antialiased" style={{ paddingBottom: 0, background: "var(--bg-base)" }}>
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -63,8 +63,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           {/* BottomTabBar — 나중에 사용할 수 있음 */}
           {/* <BottomTabBar /> */}
 
-          {/* 푸터 중앙 정렬 래퍼 — 하단 여백으로 스크롤 시 상호명·주소가 탭바에 가리지 않게 */}
-          <div style={{ width: "100%", background: "inherit", paddingBottom: 96 }}>
+          {/* 푸터 중앙 정렬 래퍼 */}
+          <div style={{ width: "100%", background: "inherit", paddingBottom: 16 }}>
             <div style={{ maxWidth: 390, margin: "0 auto", padding: "0 20px" }}>
               <Footer />
             </div>

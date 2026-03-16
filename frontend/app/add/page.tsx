@@ -895,7 +895,7 @@ export default function Page({
   function handleSaveSaju() {
     if (!isLoggedIn) {
       if (confirm('로그인이 필요합니다. 로그인 하시겠습니까?')) {
-        router.push('/login');
+      router.push('/start');
       }
       return;
     }
@@ -945,7 +945,7 @@ export default function Page({
 
       if (res.status === 401) {
         alert("로그인이 필요합니다.");
-        router.push("/login");
+      router.push("/start");
         return;
       }
 
@@ -1035,7 +1035,7 @@ export default function Page({
   const handleLoginRequired = () => {
     if (!isLoggedIn) {
       if (confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동하시겠습니까?')) {
-        router.push('/login');
+      router.push('/start');
       }
       return false;
     }
@@ -2165,7 +2165,7 @@ export default function Page({
                   </>
                 ) : (
                   <>
-                    <button onClick={() => router.push("/login")} style={{ padding: "6px 11px", fontSize: 13, fontWeight: 600, color: S.ink, background: "transparent", border: `1px solid ${S.beige}`, borderRadius: 6, cursor: "pointer" }}>로그인</button>
+                    <button onClick={() => router.push("/start")} style={{ padding: "6px 11px", fontSize: 13, fontWeight: 600, color: S.ink, background: "transparent", border: `1px solid ${S.beige}`, borderRadius: 6, cursor: "pointer" }}>로그인</button>
                     <button onClick={() => router.push("/signup")} style={{ padding: "6px 11px", fontSize: 13, fontWeight: 700, color: "#fff", background: S.gold, border: "none", borderRadius: 6, cursor: "pointer" }}>회원가입</button>
                   </>
                 )}
@@ -2457,7 +2457,7 @@ export default function Page({
                                                       pointerEvents: "none",
                                                     }}
                                                   >
-                                                    <button type="button" onClick={e => { e.stopPropagation(); router.push("/login"); }} style={{ pointerEvents: "auto", background: "#fff", border: `1px solid ${S.beige}`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", boxShadow: "0 2px 12px rgba(44,36,23,0.08)" }}>
+                                                    <button type="button" onClick={e => { e.stopPropagation(); router.push("/start"); }} style={{ pointerEvents: "auto", background: "#fff", border: `1px solid ${S.beige}`, borderRadius: 8, padding: "10px 18px", cursor: "pointer", boxShadow: "0 2px 12px rgba(44,36,23,0.08)" }}>
                                                       <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
                                                         <LockIcon />
                                                         <span className="saju-serif" style={{ fontSize: 12, fontWeight: 600, color: S.ink }}>로그인 후 확인하기</span>

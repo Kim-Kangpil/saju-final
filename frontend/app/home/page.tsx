@@ -1029,7 +1029,7 @@ export default function HomePage({
             <button className="hd-btn-fill" onClick={() => router.push("/chat")}>채팅 시작</button>
           ) : (
             <>
-              <button className="hd-btn" onClick={() => router.push("/login")}>로그인</button>
+            <button className="hd-btn" onClick={() => router.push("/start")}>로그인</button>
               <button className="hd-btn-fill" onClick={() => router.push("/start")}>무료 시작</button>
             </>
           )}
@@ -1229,12 +1229,12 @@ export default function HomePage({
                       <div>병화 (정인)</div>
                     </td>
                   </tr>
-                  {/* 십이운성 (예시) */}
+                  {/* 십이운성 — 기토 일간 기준, 지지(유·미·신·사)에 대한 실제 판별 결과 */}
                   <tr className="msr-row-label">
-                    <td>장생</td>
-                    <td>목욕</td>
-                    <td>병</td>
                     <td>태</td>
+                    <td>묘</td>
+                    <td>절</td>
+                    <td>병</td>
                   </tr>
                 </tbody>
               </table>

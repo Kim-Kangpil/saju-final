@@ -72,7 +72,7 @@ export default function Header() {
           ) : (
             <>
               <button
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/start")}
                 className="px-3 py-2 text-sm font-bold text-[var(--text-primary)] bg-white/50 hover:bg-white rounded-lg transition-colors"
               >
                 로그인

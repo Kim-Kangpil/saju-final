@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export default function Footer() {
+    const pathname = usePathname();
+
+    // 채팅 화면에서는 푸터를 숨겨서 대화에만 집중할 수 있게 한다.
+    if (pathname === "/chat") {
+        return null;
+    }
+
     return (
         <footer className="w-full bg-gradient-to-b from-transparent to-[#f8f4e6] py-6 sm:py-8 px-4 sm:px-6 mt-8">
             <div className="max-w-[450px] mx-auto">

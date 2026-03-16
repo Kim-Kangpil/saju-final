@@ -226,7 +226,7 @@ export default function StartPage({
             <button
               type="button"
               className="tap"
-              onClick={() => router.push("/login")}
+              onClick={goEmail}
               style={{
                 width: "100%",
                 padding: "10px 16px",
@@ -238,7 +238,7 @@ export default function StartPage({
                 color: textDark,
               }}
             >
-              로그인
+              이메일로 회원가입
             </button>
           </div>
 

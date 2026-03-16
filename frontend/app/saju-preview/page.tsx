@@ -244,7 +244,7 @@ function SajuPreviewContent() {
       const data = await res.json();
 
       if (res.status === 401) {
-        router.push("/login");
+        router.push("/start");
         return;
       }
       if (!data.success) {

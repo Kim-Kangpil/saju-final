@@ -163,7 +163,7 @@ export default function SajuAddPage({
           "서버의 FRONTEND_URL·CORS_ORIGINS가 실제 접속 주소(예: https://www.hsaju.com)와 일치하는지 확인해 주세요."
         );
         setShowConfirmModal(false);
-        router.push("/login");
+        router.push("/start");
         return;
       }
 

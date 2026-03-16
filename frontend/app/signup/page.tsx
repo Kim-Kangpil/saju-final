@@ -27,7 +27,7 @@ export default function Signup({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     alert('회원가입이 완료되었습니다!');
-    window.location.href = '/login';
+    window.location.href = '/start';
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -383,7 +383,7 @@ export default function Signup({
             <p className="text-sm text-[var(--text-primary)] opacity-70">
               이미 계정이 있으신가요?{' '}
               <Link
-                href="/login"
+                href="/start"
                 className="font-semibold text-[var(--text-primary)] hover:underline"
               >
                 로그인

@@ -34,7 +34,7 @@ function MyPageContent({
 
     if (!loggedIn) {
       alert("로그인이 필요합니다.");
-      router.push("/login");
+      router.push("/start");
       return;
     }
 

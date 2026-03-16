@@ -106,12 +106,15 @@ export default function ChatPage({
 
   // 대화 히스토리: hydration 후에만 채팅 영역 마운트 (복원된 메시지로 useChat 초기화)
   const [savedMessages, setSavedMessages] = useState<Array<{ role: string; parts: Array<{ type: string; text?: string }> }>>([]);
+  const [savedSajuName, setSavedSajuName] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const raw = localStorage.getItem(CHAT_STORAGE_KEY);
       setSavedMessages(raw ? JSON.parse(raw) : []);
+      const first = getSavedSajuList()?.[0];
+      setSavedSajuName(first?.name?.trim() ?? null);
     } catch {
       setSavedMessages([]);
     }
@@ -135,8 +138,8 @@ export default function ChatPage({
           --sans:      'Gmarket Sans', -apple-system, sans-serif;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { -webkit-text-size-adjust: 100%; }
-        body { background: var(--bg); color: var(--text); font-family: var(--sans); min-width: 320px; }
+        html { -webkit-text-size-adjust: 100%; font-size: 16px; }
+        body { background: var(--bg); color: var(--text); font-family: var(--sans); min-width: 320px; font-size: 16px; }
         .chat-wrap {
           width: 100%;
           max-width: 480px;
@@ -148,11 +151,11 @@ export default function ChatPage({
           background: var(--bg);
         }
         @media (min-width: 640px) {
-          .chat-wrap { max-width: 560px; }
+          .chat-wrap { max-width: 640px; }
         }
         @media (min-width: 768px) {
           .chat-wrap {
-            max-width: 720px;
+            max-width: 740px;
             min-height: 100vh;
             border-radius: 12px;
             box-shadow: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,.06);
@@ -160,7 +163,7 @@ export default function ChatPage({
           }
         }
         @media (min-width: 1024px) {
-          .chat-wrap { max-width: 800px; margin: 24px auto; min-height: calc(100vh - 48px); }
+          .chat-wrap { max-width: 820px; margin: 24px auto; min-height: calc(100vh - 48px); }
         }
         .chat-header {
           flex-shrink: 0;
@@ -192,10 +195,10 @@ export default function ChatPage({
           min-height: 0;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
-          padding: 12px 16px 20px;
+          padding: 16px 16px 24px;
           padding-left: max(16px, env(safe-area-inset-left));
           padding-right: max(16px, env(safe-area-inset-right));
-          padding-bottom: max(20px, env(safe-area-inset-bottom));
+          padding-bottom: max(24px, env(safe-area-inset-bottom));
         }
         .chat-initial-area {
           flex: 1;
@@ -236,23 +239,23 @@ export default function ChatPage({
         @media (min-width: 1024px) {
           .chat-list { padding: 24px 32px 32px; }
         }
-        .chat-msg { display: flex; margin-bottom: 18px; max-width: 88%; }
+        .chat-msg { display: flex; margin-bottom: 18px; max-width: 100%; }
         @media (min-width: 768px) {
-          .chat-msg { max-width: 72%; margin-bottom: 20px; }
+          .chat-msg { max-width: 78%; margin-bottom: 20px; }
         }
         @media (min-width: 1024px) {
           .chat-msg { max-width: 60%; }
         }
         .chat-msg.user { margin-left: auto; flex-direction: row-reverse; }
         .chat-msg-bubble {
-          padding: 14px 18px;
+          padding: 12px 14px;
           border-radius: 18px;
           font-size: 15px;
-          line-height: 1.8;
-          word-break: keep-all;
+          line-height: 1.6;
+          word-break: break-word;
         }
         @media (min-width: 768px) {
-          .chat-msg-bubble { padding: 16px 20px; font-size: 15px; }
+          .chat-msg-bubble { padding: 14px 18px; font-size: 15px; }
         }
         .chat-msg.assistant .chat-msg-bubble {
           background: var(--surface);
@@ -286,20 +289,20 @@ export default function ChatPage({
         .chat-input {
           flex: 1;
           min-width: 0;
-          padding: 12px 16px;
-          border-radius: 20px;
+          padding: 10px 14px;
+          border-radius: 999px;
           border: 1px solid var(--border2);
           background: var(--surface);
           font-family: var(--sans);
           font-size: 15px;
           color: var(--text);
           resize: none;
-          min-height: 48px;
-          max-height: 120px;
-          transition: border-color .15s;
+          min-height: 44px;
+          max-height: 140px;
+          transition: border-color .15s, box-shadow .15s;
         }
         @media (min-width: 768px) {
-          .chat-input { padding: 14px 18px; min-height: 52px; font-size: 15px; }
+          .chat-input { padding: 12px 18px; min-height: 50px; font-size: 15px; }
         }
         .chat-input::placeholder { color: var(--muted); }
         .chat-input:focus { outline: none; border-color: var(--accent); }
@@ -457,6 +460,7 @@ export default function ChatPage({
             router={router}
             lastUserMessageRef={lastUserMessageRef}
             handleRetryRef={handleRetryRef}
+            savedSajuName={savedSajuName}
           />
         )}
       </div>
@@ -474,6 +478,7 @@ type ChatContentProps = {
   router: ReturnType<typeof useRouter>;
   lastUserMessageRef: React.MutableRefObject<string | null>;
   handleRetryRef: React.MutableRefObject<((text: string) => void) | null>;
+  savedSajuName: string | null;
 };
 
 function ChatContent({
@@ -486,10 +491,13 @@ function ChatContent({
   router,
   lastUserMessageRef,
   handleRetryRef,
+  savedSajuName,
 }: ChatContentProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const skipFirstScrollRef = useRef(true);
+  const lastUserMsgRef = useRef<HTMLDivElement>(null);
+  const isUserScrollingRef = useRef(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   const { messages, sendMessage, status } = useChat({
     transport,
@@ -498,6 +506,17 @@ function ChatContent({
       onError(err?.message ?? "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
     },
   });
+
+  const isLoading = status === "submitted" || status === "streaming";
+
+  // 마지막 유저 메시지 인덱스 (findLastIndex 대신 호환성 있게 계산)
+  let lastUserIndex = -1;
+  for (let j = messages.length - 1; j >= 0; j--) {
+    if ((messages[j] as any).role === "user") {
+      lastUserIndex = j;
+      break;
+    }
+  }
 
   useEffect(() => {
     if (typeof window === "undefined" || messages.length === 0) return;
@@ -509,17 +528,66 @@ function ChatContent({
     }
   }, [messages]);
 
-  // assistant 메시지가 추가/업데이트될 때만 맨 아래로 스크롤 (새로고침/초기 복원 시에는 스크롤 안 함)
+  // 스크롤 이벤트 핸들러
+  const handleScroll = () => {
+    const el = listRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (distanceFromBottom > 150) {
+      isUserScrollingRef.current = true;
+      setShowScrollBtn(true);
+    } else {
+      isUserScrollingRef.current = false;
+      setShowScrollBtn(false);
+    }
+  };
+
+  // 맨 아래로 스크롤
+  const scrollToBottom = (behavior: "smooth" | "instant" | "auto" = "smooth") => {
+    bottomRef.current?.scrollIntoView({ behavior: behavior as ScrollBehavior, block: "end" });
+  };
+
+  // 세션 불러온 직후: 애니메이션 없이 즉시 맨 아래로
+  useEffect(() => {
+    if (messages.length === 0) return;
+    scrollToBottom("instant" as ScrollBehavior);
+  }, []);
+
+  // 메시지 추가될 때:
+  // - 마지막이 user면: 그 user 메시지가 화면 상단 근처로 오도록 스크롤 (Claude 스타일)
+  // - 마지막이 assistant면: 유저가 스크롤 안 건드렸으면 자동으로 따라가기
   useEffect(() => {
     if (messages.length === 0) return;
     const last = messages[messages.length - 1];
-    if (last?.role !== "assistant") return;
-    if (skipFirstScrollRef.current) {
-      skipFirstScrollRef.current = false;
+    if (last?.role === "user") {
+      lastUserMsgRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!isUserScrollingRef.current) {
+      scrollToBottom("smooth");
+    }
   }, [messages]);
+
+  // 스트리밍 중 자동 스크롤 / 완료 후 동작
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+
+    if (!isLoading) {
+      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (dist < 300) {
+        scrollToBottom("smooth");
+      }
+      return;
+    }
+
+    const id = setInterval(() => {
+      if (!isUserScrollingRef.current) {
+        scrollToBottom("smooth");
+      }
+    }, 120);
+    return () => clearInterval(id);
+  }, [isLoading]);
 
   const handleSubmit = async (text: string) => {
     if (!text.trim()) return;
@@ -545,122 +613,154 @@ function ChatContent({
     }
   };
 
-  const sending = status === "submitted" || status === "streaming";
+  const sending = isLoading;
   const hasUserMessage = messages.some((m) => m.role === "user");
-  const isInitialView = !hasUserMessage && !showLoginCard;
+  const isInitialView = messages.filter((m) => m.role === "user").length === 0 && !showLoginCard;
 
   return (
     <>
       <div className="chat-main">
-        {isInitialView ? (
-          <div className="chat-initial-area">
-            <div
-              className="chat-initial-icon"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 28,
-                background: "var(--surface2)",
-                overflow: "hidden",
-              }}
-            >
-              <img
-                src="/images/yin-yang-logo.png"
-                alt=""
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) parent.textContent = "☯";
+        <div className="chat-list" ref={listRef} onScroll={handleScroll}>
+          {isInitialView ? (
+            <div className="chat-initial-area">
+              <div
+                className="chat-initial-icon"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 28,
+                  background: "var(--surface2)",
+                  overflow: "hidden",
                 }}
-              />
+              >
+                <img
+                  src="/images/yin-yang-logo.png"
+                  alt=""
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) parent.textContent = "☯";
+                  }}
+                />
+              </div>
+              <p className="chat-initial-greeting">
+                <span style={{ opacity: 0.8 }}>✦</span> {getTimeBasedGreeting()}
+                {savedSajuName ? `, ${savedSajuName}님` : ""}
+              </p>
+              <p className="chat-initial-prompt">오늘 어떤 도움을 드릴까요?</p>
             </div>
-            <p className="chat-initial-greeting">
-              <span style={{ opacity: 0.8 }}>✦</span> {getTimeBasedGreeting()}
-              {(() => {
-                const first = getSavedSajuList()?.[0];
-                const name = first?.name?.trim();
-                return name ? `, ${name}님` : "";
-              })()}
-            </p>
-            <p className="chat-initial-prompt">오늘 어떤 도움을 드릴까요?</p>
-          </div>
-        ) : (
-          <div className="chat-list" ref={listRef}>
-            {messages.map((m, i) => {
-              const text = getMessageText(m);
-              const isAI = m.role === "assistant";
-              return (
-                <div key={i} className={`chat-msg ${m.role}`}>
-                  <div className="chat-msg-bubble-wrap">
-                    <div className="chat-msg-bubble">
-                      <MarkdownMessage text={text} isAI={isAI} />
+          ) : (
+            <>
+              {messages.map((m, i) => {
+                const text = getMessageText(m);
+                const isAI = m.role === "assistant";
+                const isLastUser = m.role === "user" && lastUserIndex === i;
+                return (
+                  <div
+                    key={i}
+                    className={`chat-msg ${m.role}`}
+                    ref={isLastUser ? lastUserMsgRef : undefined}
+                  >
+                    <div className="chat-msg-bubble-wrap">
+                      <div className="chat-msg-bubble">
+                        <MarkdownMessage text={text} isAI={isAI} />
+                      </div>
+                      <button
+                        type="button"
+                        className="chat-msg-copy"
+                        aria-label="복사"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(text).catch(() => {});
+                        }}
+                      >
+                        <Icon icon="mdi:content-copy" width={14} />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      className="chat-msg-copy"
-                      aria-label="복사"
-                      onClick={() => {
-                        navigator.clipboard?.writeText(text).catch(() => {});
-                      }}
-                    >
-                      <Icon icon="mdi:content-copy" width={14} />
+                  </div>
+                );
+              })}
+              {sending && (
+                <div className="chat-msg assistant">
+                  <div className="chat-typing">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
+              )}
+              {showLoginCard && (
+                <div className="chat-login-card">
+                  <h3>🔮 더 깊은 분석을 원하신다면</h3>
+                  <p>
+                    생년월일을 등록하면
+                    <br />
+                    나만의 맞춤 사주 분석을
+                    <br />
+                    받을 수 있어요.
+                  </p>
+                  <div className="chat-login-btns">
+                    <button type="button" className="chat-login-btn primary" onClick={() => router.push("/start")}>
+                      로그인하기
+                    </button>
+                    <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
+                      회원가입
                     </button>
                   </div>
                 </div>
-              );
-            })}
-            {sending && (
-              <div className="chat-msg assistant">
-                <div className="chat-typing">
-                  <span />
-                  <span />
-                  <span />
-                </div>
-              </div>
-            )}
-            {showLoginCard && (
-              <div className="chat-login-card">
-                <h3>🔮 더 깊은 분석을 원하신다면</h3>
-                <p>
-                  생년월일을 등록하면
-                  <br />
-                  나만의 맞춤 사주 분석을
-                  <br />
-                  받을 수 있어요.
-                </p>
-                <div className="chat-login-btns">
-                  <button type="button" className="chat-login-btn primary" onClick={() => router.push("/login")}>
-                    로그인하기
-                  </button>
-                  <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
-                    회원가입
-                  </button>
-                </div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-        )}
+              )}
+            </>
+          )}
+          <div ref={bottomRef} />
+        </div>
       </div>
 
       {!showLoginCard && (
         <div className="chat-input-wrap">
-          <div className="chat-quick-chips">
-            {QUICK_PROMPTS.map((q) => (
-              <button
-                key={q.label}
-                type="button"
-                className="chat-quick-chip"
-                onClick={() => handleSubmit(q.text)}
-              >
-                {q.label}
-              </button>
-            ))}
-          </div>
+          {!hasUserMessage && (
+            <div className="chat-quick-chips">
+              {QUICK_PROMPTS.map((q) => (
+                <button
+                  key={q.label}
+                  type="button"
+                  className="chat-quick-chip"
+                  onClick={() => handleSubmit(q.text)}
+                >
+                  {q.label}
+                </button>
+              ))}
+            </div>
+          )}
           <ChatInput disabled={sending} onSubmit={handleSubmit} />
         </div>
+      )}
+
+      {showScrollBtn && (
+        <button
+          type="button"
+          onClick={() => {
+            isUserScrollingRef.current = false;
+            scrollToBottom("smooth");
+            setShowScrollBtn(false);
+          }}
+          style={{
+            position: "fixed",
+            right: 16,
+            bottom: 90,
+            zIndex: 40,
+            borderRadius: 999,
+            border: "1px solid var(--border2)",
+            background: "var(--surface)",
+            padding: "8px 12px",
+            fontSize: 12,
+            color: "var(--text)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+            cursor: "pointer",
+          }}
+        >
+          ↓ 최신 메시지로
+        </button>
       )}
     </>
   );

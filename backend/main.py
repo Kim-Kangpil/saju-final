@@ -365,10 +365,18 @@ async def api_chat(req: ChatRequest, request: Request):
         print(f"⚠️ TheoryRetriever 오류: {e}")
 
     saju_context = _build_saju_context(req.saju)
+    ten_gods_rule = (
+        "\n[십성(十神)·육친 정의 — 절대 준수] "
+        "십성은 일간 기준 오행 관계. 성별에 따라 육친이 다름. "
+        "정관: 남자=직업·명예·자식에 대한 책임감(아내 아님). 여자=남편·직장·책임감. "
+        "정관을 '남편이자 아내'라고 하지 말 것. 남자 아내=재성, 여자 남편=관성(정관·편관). "
+        "편관: 남자=자식에 대한 부담·강한 책임, 여자=남편 또는 강한 이성. "
+        "재성=재물·아버지, 남자에게 아내. 인성=어머니·학문. 식상=표현·재능, 여자에게 자식. 비겁=형제·동료.\n"
+    )
     system_parts = [
         "당신은 한양사주의 AI 상담사입니다. 사주, 운세, 고민 상담 등에 대해 친절하고 쉽게 답변합니다.",
         "전문 용어(일간, 십성, 오행 등)는 가능한 한 쓰지 않고, 일상적인 말로 풀어서 설명해 주세요.",
-        "",
+        ten_gods_rule,
         "【중요】 사용자의 만세력/사주를 물을 때:",
         "- 아래 [이 사용자의 만세력 / 사주 컨텍스트]가 있으면, **그 안의 데이터만** 사용해서 답하세요. 생년월일·사주팔자·생시 등은 컨텍스트에 적힌 그대로만 말하세요. 지어내지 마세요.",
         "- 컨텍스트가 없거나 비어 있으면, '저장된 사주가 없어요. 먼저 사주를 등록해 주시면 정확히 말씀드릴 수 있어요.'라고 안내하세요.",
@@ -611,18 +619,27 @@ def health():
 
 
 @app.get("/saju/day-pillar")
-def get_day_pillar(date: Optional[str] = None):
-    """특정 날짜의 일진(일주) 반환. date=YYYY-MM-DD (없으면 서버 기준 오늘)."""
+def get_day_pillar(date_str: Optional[str] = None):
+    """특정 날짜의 일진(일주) 반환. date=YYYY-MM-DD (없으면 대한민국(KST) 기준 오늘).
+
+    주의: 내부 만세력 기준과의 오프셋 때문에, 실제 캘린더와 맞추기 위해 하루를 보정(+1일)한다.
+    """
     try:
-        if not date:
+        # 1) 기준 날짜: 대한민국 시간(KST) 기준
+        if not date_str:
             kst = timezone(timedelta(hours=9))
             today = datetime.now(kst).date()
         else:
-            parts = date.strip().split("-")
+            parts = date_str.strip().split("-")
             if len(parts) != 3:
                 raise ValueError("date는 YYYY-MM-DD 형식이어야 합니다")
             today = date(int(parts[0]), int(parts[1]), int(parts[2]))
-        dt = datetime(today.year, today.month, today.day, 12, 0)
+
+        # 2) 내부 만세력 기준이 하루 앞서 있는 문제 보정: +1일
+        adjusted = today + timedelta(days=1)
+
+        # 3) KST 정오 기준으로 일진 계산
+        dt = datetime(adjusted.year, adjusted.month, adjusted.day, 12, 0)
         dj = test.calculate_day_pillar(dt)
         hanja_map = {
             "甲": "갑", "乙": "을", "丙": "병", "丁": "정", "戊": "무",

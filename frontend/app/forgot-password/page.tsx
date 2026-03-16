@@ -30,7 +30,7 @@ export default function ForgotPassword({
                                 {email}로 비밀번호 재설정 링크를 보냈습니다.
                             </p>
                             <a
-                                href="/login"
+                                href="/start"
                                 className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 text-white font-bold rounded-xl hover:shadow-lg transition-all"
                             >
                                 로그인으로 돌아가기
@@ -82,7 +82,7 @@ export default function ForgotPassword({
                             </button>
 
                             <div className="text-center">
-                                <a href="/login" className="text-sm text-gray-600 hover:text-gray-900">
+                                <a href="/start" className="text-sm text-gray-600 hover:text-gray-900">
                                     ← 로그인으로 돌아가기
                                 </a>
                             </div>

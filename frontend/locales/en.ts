@@ -53,26 +53,28 @@ const en = {
     ],
   },
   manseryeok: {
-    badge: "📅 Accurate Manseryeok",
+    badge: "📅 Accurate BaZi Chart",
     title: "Solar terms & lunar calendar\nconverted automatically",
-    sub: "No need to calculate manually or compare apps.\nEnter your birth date and time for an instant accurate Saju chart.",
+    sub: "No need to calculate manually or compare apps.\nEnter your birth date and time for an instant accurate BaZi (Four Pillars) chart.",
     note: "※ Above chart is an example",
-    headers: ["Hour", "Day", "Month", "Year"],
-    sipsung_top: ["Pyeon-jae", "Bi-gyeon", "Jeong-gwan", "Pyeon-gwan"],
-    sipsung_bot: ["Sik-sin", "Bi-gyeon", "Sang-gwan", "Jeong-in"],
-    twelve: ["Tae", "Myo", "Jeol", "Byeong"],
+    headers: ["Hour Pillar", "Day Pillar", "Month Pillar", "Year Pillar"],
+    // Ten Gods row (top): Indirect Wealth, Friend, Direct Officer, Seven Killings
+    sipsung_top: ["Indirect Wealth", "Friend", "Direct Officer", "Seven Killings"],
+    // Ten Gods row (bottom): Eating God, Friend, Hurting Officer, Direct Resource
+    sipsung_bot: ["Eating God", "Friend", "Hurting Officer", "Direct Resource"],
+    twelve: ["Conception", "Growth", "Tomb", "Sickness"],
   },
   features: {
     badge: "🔍 Analysis Areas",
-    title: "All of this decoded\nfrom 8 Saju characters",
-    more: "+ Daeun · Seun · Gongmang · Guiin · Constitution · Lucky items",
+    title: "All of this decoded\nfrom 8 BaZi characters",
+    more: "+ 10‑Year Luck Pillars, Annual Luck, Void (Empty Branch), Nobleman Stars, Constitution, Lucky items",
     more_strong: "A complete life guide",
-    more_suffix: " synthesizing your entire Saju",
+    more_suffix: " synthesizing your entire BaZi chart",
     items: [
       { icon: "🎭", title: "Innate Nature", desc: "Your core self through Yin-Yang & Five Elements" },
-      { icon: "💰", title: "Wealth & Career", desc: "Ten-god based wealth & aptitude analysis" },
+      { icon: "💰", title: "Wealth & Career", desc: "Ten Gods–based wealth and career analysis" },
       { icon: "🤝", title: "Relationships", desc: "Relationship energy through harmony & conflict" },
-      { icon: "🔮", title: "Gongmang & Guiin", desc: "Hidden helpers and karmic voids" },
+      { icon: "🔮", title: "Void & Nobleman Stars", desc: "Hidden helpers (Nobleman Stars) and karmic voids (Void/Emptiness)" },
       { icon: "🏥", title: "Health & Constitution", desc: "Five-element based health insights" },
       { icon: "📜", title: "Life Guide Summary", desc: "Your entire Saju at a glance" },
     ],
@@ -80,7 +82,7 @@ const en = {
   animals: {
     badge: "🐾 Day Pillar Animal",
     title: "One of 60, uniquely\nyours",
-    sub: "Your Day Stem and Branch determined by your birth date.\nThese two characters reveal your true nature most accurately.",
+    sub: "Your Day Stem and Branch (Day Master and its Branch) determined by your birth date.\nThese two characters reveal your true nature most accurately.",
     note: "One of these is your Day Pillar Animal.",
   },
   trust: {
@@ -155,7 +157,7 @@ const en = {
         icon: "🔮",
         title: "Expert Deep Analysis",
         tag: "",
-        desc: "In-depth analysis based on core Saju theory: Day Pillar Animal, Ten Gods, Daeun, Gongmang, Guiin, harmony & conflict patterns.",
+        desc: "In-depth analysis based on core BaZi theory: Day Master & Day Pillar Animal, Ten Gods, 10‑Year Luck Pillars, Void (Empty Branch), Nobleman Stars, and harmony/clash patterns.",
       },
       {
         icon: "💳",

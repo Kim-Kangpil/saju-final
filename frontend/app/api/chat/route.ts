@@ -84,6 +84,34 @@ const SAJU_TEN_GODS_KNOWLEDGE = `
 인성: 편인·정인 — 나를 생(生)해 주는 오행. 어머니, 학문, 인내, 보호.
 `;
 
+/** English BaZi terminology guide — used when lang === "en" */
+const SAJU_EN_TERMS_GUIDE = `
+[BaZi / Four Pillars of Destiny — English terminology]
+
+- Use "BaZi" or "Four Pillars of Destiny" instead of raw Korean terms.
+- Use "Day Master" for 일간, and "Year / Month / Day / Hour Pillar" for 년/월/일/시주.
+- Use the Five Elements as Wood, Fire, Earth, Metal, Water.
+
+[Ten Gods (십성) — English names]
+- 비견: Friend (same element, same polarity)
+- 겁재: Rob Wealth (same element, opposite polarity)
+- 식신: Eating God (talent, output, contentment)
+- 상관: Hurting Officer (rebellious, unconventional output)
+- 편재: Indirect Wealth (irregular income, windfalls)
+- 정재: Direct Wealth (stable income, long‑term resources)
+- 편관: Seven Killings (7K) — pressure, challenges, tough authority
+- 정관: Direct Officer — career, status, rules, responsibility
+- 편인: Indirect Resource — intuition, unconventional learning, spirituality
+- 정인: Direct Resource — study, support, mother figure.
+
+[Auxiliary / Symbolic Stars]
+- 도화살: Peach Blossom Star — charm, attractiveness, social and romantic magnetism.
+- 역마살: Travelling Horse Star — movement, travel, frequent change.
+- 공망: Void / Emptiness — weakens or "hollows out" what it touches.
+- 귀인: Nobleman Stars — helpful people and strong support.
+
+Always explain these in clear, everyday English. Avoid raw jargon like "식신, 상관" unless you immediately translate them, e.g. "Hurting Officer (상관)".`;
+
 const GUEST_SYSTEM_PROMPT = `당신은 한양사주 AI입니다.
 현재 사용자는 사주 데이터를 등록하지 않았습니다.
 
@@ -236,7 +264,11 @@ export async function POST(req: Request) {
       ? GUEST_SYSTEM_PROMPT
       : `${LOGGED_IN_SYSTEM_PREFIX}\n\n${buildSajuContext(saju)}`;
 
-  const system = currentTimeBlock + languageRule + systemBase;
+  const system =
+    currentTimeBlock +
+    languageRule +
+    (lang === "en" ? `\n${SAJU_EN_TERMS_GUIDE}\n` : "") +
+    systemBase;
 
   // Vercel AI SDK의 convertToModelMessages는 UIMessage 타입 배열을 기대하지만
   // 여기서는 네트워크 JSON으로 들어온 메시지를 그대로 넘기므로 타입 단언을 사용한다.

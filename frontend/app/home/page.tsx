@@ -1804,7 +1804,7 @@ export default function HomePage({
                         </span>
                       )}
                     </div>
-                    <p style={{ fontSize: 12.5, color: S.ink3, lineHeight: 1.75, wordBreak: "keep-all" }}>
+                    <p style={{ fontSize: 12.5, color: S.ink3, lineHeight: 1.75, wordBreak: "keep-all", textAlign: "left" }}>
                       {item.desc}
                     </p>
                   </div>

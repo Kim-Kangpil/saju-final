@@ -97,7 +97,13 @@ export function SajuEnergyWheel({ dayStem, yangCount, yinCount, size = 220 }: Sa
         width={svgSize}
         height={svgSize}
         viewBox={`0 0 ${svgSize} ${svgSize}`}
-        style={{ maxWidth: "100%", height: "auto", display: "block", margin: "0 auto" }}
+        style={{
+          maxWidth: "100%",
+          height: "auto",
+          display: "block",
+          margin: "0 auto",
+          position: "relative",
+        }}
         preserveAspectRatio="xMidYMid meet"
       >
         <defs>

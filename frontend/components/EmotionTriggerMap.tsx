@@ -49,75 +49,77 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
   };
 
   return (
-    <div className="w-full space-y-0">
+    <div className="w-full space-y-0 mt-2">
       {/* 라벨과 지도 사이 여백 확보로 겹침 방지 */}
-      <p className="text-[11px] font-medium text-[var(--text-primary)] mb-3">
+      <p className="text-[11px] font-medium text-[var(--text-primary)] mb-4">
         내 마음이 흔들리는 순간
       </p>
 
       {/* 감정 트리거 지도 - 상단 이모지 여유 공간 확보 */}
-      <div className="relative mx-auto flex h-44 w-full max-w-[220px] items-center justify-center pt-2 pb-1">
-        {/* 중심 포인트 (현재 감정 트리거의 방향) */}
-        <div
-          className="absolute flex h-5 w-5 items-center justify-center text-[13px]"
-          style={{
-            left: centerX,
-            top: centerY,
-            transform: "translate(-50%, -50%)",
-            transition: "left 0.3s ease, top 0.3s ease",
-          }}
-        >
-          <span className="inline-block animate-heartPulse drop-shadow-sm">💗</span>
-        </div>
-
-        {/* 세로 축 */}
-        <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#d4e0d5]" />
-        {/* 가로 축 */}
-        <div className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-[#d4e0d5]" />
-
-        {/* 평가 (위) */}
-        <div className="absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-[11px]">
-          <span
-            className="text-base"
-            style={{ opacity: 0.5 + getRatio("evaluation") * 0.5 }}
+      <div className="w-full flex justify-center mb-6">
+        <div className="relative flex h-44 w-full max-w-[220px] items-center justify-center pt-2 pb-1">
+          {/* 중심 포인트 (현재 감정 트리거의 방향) */}
+          <div
+            className="absolute flex h-5 w-5 items-center justify-center text-[13px]"
+            style={{
+              left: centerX,
+              top: centerY,
+              transform: "translate(-50%, -50%)",
+              transition: "left 0.3s ease, top 0.3s ease",
+            }}
           >
-            🎓
-          </span>
-        </div>
+            <span className="inline-block animate-heartPulse drop-shadow-sm">💗</span>
+          </div>
 
-        {/* 실수 (아래) */}
-        <div className="absolute bottom-0 left-1/2 flex translate-y-1/2 -translate-x-1/2 flex-col items-center text-[11px]">
-          <span
-            className="text-base"
-            style={{ opacity: 0.5 + getRatio("mistake") * 0.5 }}
-          >
-            ⚠️
-          </span>
-        </div>
+          {/* 세로 축 */}
+          <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#d4e0d5]" />
+          {/* 가로 축 */}
+          <div className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-[#d4e0d5]" />
 
-        {/* 권위 (왼쪽) */}
-        <div className="absolute left-0 top-1/2 flex -translate-y-1/2 -translate-x-1/2 flex-col items-center text-[11px]">
-          <span
-            className="text-base"
-            style={{ opacity: 0.5 + getRatio("authority") * 0.5 }}
-          >
-            👔
-          </span>
-        </div>
+          {/* 평가 (위) */}
+          <div className="absolute left-1/2 top-0 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center text-[11px]">
+            <span
+              className="text-base"
+              style={{ opacity: 0.5 + getRatio("evaluation") * 0.5 }}
+            >
+              🎓
+            </span>
+          </div>
 
-        {/* 기대 (오른쪽) */}
-        <div className="absolute right-0 top-1/2 flex -translate-y-1/2 translate-x-1/2 flex-col items-center text-[11px]">
-          <span
-            className="text-base"
-            style={{ opacity: 0.5 + getRatio("expectation") * 0.5 }}
-          >
-            🎯
-          </span>
+          {/* 실수 (아래) */}
+          <div className="absolute bottom-0 left-1/2 flex translate-y-1/2 -translate-x-1/2 flex-col items-center text-[11px]">
+            <span
+              className="text-base"
+              style={{ opacity: 0.5 + getRatio("mistake") * 0.5 }}
+            >
+              ⚠️
+            </span>
+          </div>
+
+          {/* 권위 (왼쪽) */}
+          <div className="absolute left-0 top-1/2 flex -translate-y-1/2 -translate-x-1/2 flex-col items-center text-[11px]">
+            <span
+              className="text-base"
+              style={{ opacity: 0.5 + getRatio("authority") * 0.5 }}
+            >
+              👔
+            </span>
+          </div>
+
+          {/* 기대 (오른쪽) */}
+          <div className="absolute right-0 top-1/2 flex -translate-y-1/2 translate-x-1/2 flex-col items-center text-[11px]">
+            <span
+              className="text-base"
+              style={{ opacity: 0.5 + getRatio("expectation") * 0.5 }}
+            >
+              🎯
+            </span>
+          </div>
         </div>
       </div>
 
       {/* 감정 민감도 게이지 - 구간 분리·가독성 개선 */}
-      <div className="space-y-2.5 pt-4 mt-2 border-t border-[#e2e8f0]">
+      <div className="space-y-2.5 pt-4 mt-6 border-t border-[#e2e8f0]">
         <p className="text-[11px] font-medium text-[var(--text-primary)]">감정 민감도</p>
         {TRIGGER_LABELS.map(({ key, icon, label }) => (
           <div key={key} className="flex items-center gap-2 min-h-[20px]">

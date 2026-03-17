@@ -66,23 +66,27 @@ export function CharismaOrbitCard({ data }: { data: CharismaVisualData }) {
       </div>
 
       {/* 3. 삼각형 */}
-      <div
-        className="relative mx-auto mb-4"
-        style={{
-          width: `${W}px`,
-          height: `${H}px`,
-          maxWidth: "100%",
-          background: "#f5f7f4",
-          borderRadius: "20px",
-          border: "1px solid rgba(107,138,122,0.35)",
-        }}
-      >
-        <svg
-          width={W}
-          height={H}
-          viewBox={`0 0 ${W} ${H}`}
-          style={{ position: "absolute", inset: 0 }}
+      <div className="w-full flex justify-center mb-4">
+        <div
+          style={{
+            width: `${W}px`,
+            height: `${H}px`,
+            maxWidth: "100%",
+            background: "#f5f7f4",
+            borderRadius: "20px",
+            border: "1px solid rgba(107,138,122,0.35)",
+            position: "relative",
+          }}
         >
+          <svg
+            width={W}
+            height={H}
+            viewBox={`0 0 ${W} ${H}`}
+            style={{
+              display: "block",
+              margin: "0 auto",
+            }}
+          >
           <defs>
             <radialGradient id="dotGlow" cx="50%" cy="50%">
               <stop offset="0%" stopColor="var(--text-primary)" stopOpacity="0.2" />
@@ -124,6 +128,7 @@ export function CharismaOrbitCard({ data }: { data: CharismaVisualData }) {
             opacity={animate ? 1 : 0}
           />
         </svg>
+        </div>
       </div>
 
       {/* 4. 3축 바 */}

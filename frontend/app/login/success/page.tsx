@@ -19,8 +19,9 @@ export default function LoginSuccessPage() {
           headers: getAuthHeaders(),
         });
         if (res.status === 401) {
-          // 세션이 없다면 다시 시작 페이지로
-          router.replace("/start");
+          // 모바일 카카오 브라우저 등에서 쿠키 전파가 늦어져도
+          // 일단 사주 입력 페이지로 보내서 바로 사용 흐름을 이어가도록
+          router.replace("/saju-add");
           return;
         }
         const data = await res.json().catch(() => []);

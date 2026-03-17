@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 
@@ -21,6 +21,35 @@ export default function StartPage({
   const backend =
     process.env.NEXT_PUBLIC_BACKEND_URL ||
     "https://saju-backend-eqd6.onrender.com";
+
+  // 카카오/구글 등 외부 로그인 이후 이미 세션이 생겼다면
+  // 다시 로그인 폼을 보여주지 않고 바로 다음 화면으로 보낸다.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(`${backend}/api/saju/list`, {
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = await res.json().catch(() => []);
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : [];
+        if (list.length > 0) {
+          router.replace("/saju-list");
+        } else {
+          router.replace("/saju-add");
+        }
+      } catch {
+        // 로그인 안 되었거나, 네트워크 이슈면 그냥 로그인 화면 유지
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [backend, router]);
 
   const goKakao = () => {
     if (typeof window !== "undefined") {

@@ -49,13 +49,14 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
   };
 
   return (
-    <div className="mt-2 space-y-3">
-      <p className="text-[11px] font-medium text-[var(--text-primary)]">
+    <div className="w-full space-y-0">
+      {/* 라벨과 지도 사이 여백 확보로 겹침 방지 */}
+      <p className="text-[11px] font-medium text-[var(--text-primary)] mb-3">
         내 마음이 흔들리는 순간
       </p>
 
-      {/* 감정 트리거 지도 */}
-      <div className="relative mx-auto mt-1 flex h-40 w-full max-w-[220px] items-center justify-center">
+      {/* 감정 트리거 지도 - 상단 이모지 여유 공간 확보 */}
+      <div className="relative mx-auto flex h-44 w-full max-w-[220px] items-center justify-center pt-2 pb-1">
         {/* 중심 포인트 (현재 감정 트리거의 방향) */}
         <div
           className="absolute flex h-5 w-5 items-center justify-center text-[13px]"
@@ -115,18 +116,18 @@ export function EmotionTriggerMap({ triggers }: EmotionTriggerMapProps) {
         </div>
       </div>
 
-      {/* 감정 민감도 바 */}
-      <div className="space-y-1 pt-1">
+      {/* 감정 민감도 게이지 - 구간 분리·가독성 개선 */}
+      <div className="space-y-2.5 pt-4 mt-2 border-t border-[#e2e8f0]">
         <p className="text-[11px] font-medium text-[var(--text-primary)]">감정 민감도</p>
         {TRIGGER_LABELS.map(({ key, icon, label }) => (
-          <div key={key} className="flex items-center gap-2">
-            <div className="flex w-32 items-center gap-1 text-[10px] text-[#475569]">
+          <div key={key} className="flex items-center gap-2 min-h-[20px]">
+            <div className="flex shrink-0 w-28 items-center gap-1 text-[11px] text-[#475569]">
               <span>{icon}</span>
               <span>{label}</span>
             </div>
-            <div className="flex-1 overflow-hidden rounded-full bg-[#e2e8f0] h-1.5">
+            <div className="flex-1 min-w-0 rounded-full bg-[#e2e8f0] h-2 overflow-hidden">
               <div
-                className="h-1.5 rounded-full bg-[#64748b]"
+                className="h-2 rounded-full bg-[#475569] transition-[width] duration-300"
                 style={{ width: barWidth(key) }}
               />
             </div>

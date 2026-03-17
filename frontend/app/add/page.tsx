@@ -1759,8 +1759,12 @@ export default function Page({
         if (it.key === "lucky" && luckyItems) {
           return asContent("solution_lucky", it.title, luckyItems, it.icon, "local");
         }
-        if (it.key === "summary" && summaryGuide) {
-          return asContent("solution_summary", it.title, summaryGuide, it.icon, "gpt");
+        if (it.key === "summary") {
+          const content =
+            summaryGuide ??
+            "당신의 사주 전체 흐름과 삶의 방향을 한 번에 정리해 주는 종합 요약 기능입니다. 지금은 서버에서 내용을 불러오는 중이거나 준비 단계일 수 있어요. 잠시 후 다시 시도해 보거나, 다른 분석 카드들을 먼저 살펴봐 주세요.";
+          const source: "gpt" | "local" = summaryGuide ? "gpt" : "local";
+          return asContent("solution_summary", it.title, content, it.icon, source);
         }
         return asReady(`solution_${it.key}`, it.title, it.icon);
       }),
@@ -2574,7 +2578,17 @@ export default function Page({
                                                   {c.id === "solution_summary" && <div style={{ margin: "0 2px", width: "100%" }}><SummarySwipeCards text={c.content} /></div>}
 
                                                   {c.id === "solution_summary" ? null : (
-                                                    <div style={{ fontSize: 13, color: S.ink2, lineHeight: 1.9, wordBreak: "keep-all", width: "100%" }} dangerouslySetInnerHTML={{ __html: c.title === "일주 동물의 형상과 본성" ? c.content : c.content.replace(/\n/g, "<br />") }} />
+                                                    <div
+                                                      style={{
+                                                        fontSize: 13,
+                                                        color: S.ink2,
+                                                        lineHeight: 1.9,
+                                                        wordBreak: "keep-all",
+                                                        width: "100%",
+                                                        marginTop: c.id === "insight_emotion" ? 16 : 0,
+                                                      }}
+                                                      dangerouslySetInnerHTML={{ __html: c.title === "일주 동물의 형상과 본성" ? c.content : c.content.replace(/\n/g, "<br />") }}
+                                                    />
                                                   )}
                                                 </div>
                                               )}

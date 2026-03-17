@@ -215,9 +215,10 @@ export default function ChatPage({
         .chat-back { padding: 8px 14px; min-height: 40px; border-radius: 999px; border: 1px solid var(--border2); background: transparent; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--sub); cursor: pointer; transition: background .15s; }
         .chat-back:hover { background: var(--surface2); }
         .chat-layout {
+          flex: 1;
           display: flex;
           flex-direction: column;
-          height: 100%;
+          min-height: 0;
         }
         @media (min-width: 768px) {
           .chat-layout {
@@ -234,6 +235,7 @@ export default function ChatPage({
             width: 260px;
             border-right: 1px solid var(--border);
             background: #f8f5ef;
+            min-height: 0;
           }
         }
         .chat-sidebar-header {

@@ -137,15 +137,43 @@ export function useChatSessions() {
     });
   };
 
-  // 첫 유저 메시지로 제목 자동 설정
+  // 첫 유저 메시지로 제목 자동 설정 (오타 그대로 쓰지 않고 안전한 카테고리형 제목 사용)
   const ensureTitleFromFirstMessage = (sessionId: string, firstUserText: string): void => {
     const target = sessions.find((s) => s.id === sessionId);
     if (!target || target.title) return;
-    setSessionTitle(sessionId, firstUserText);
+
+    const raw = (firstUserText || "").trim().replace(/\s+/g, " ");
+    let safeTitle = "새 대화";
+
+    if (raw) {
+      const lower = raw.toLowerCase();
+      const hasKorean = /[가-힣]/.test(raw);
+
+      if (/사주|팔자|명식|사주풀이/.test(raw)) {
+        safeTitle = "사주 상담";
+      } else if (/오늘|데일리|일간/.test(raw) && /운세|운/.test(raw)) {
+        safeTitle = "오늘의 운세";
+      } else if (/재물|돈|수입|사업/.test(raw)) {
+        safeTitle = "재물·돈 고민";
+      } else if (/직업|진로|커리어|일하고/.test(raw)) {
+        safeTitle = "직업·진로 상담";
+      } else if (/연애|연인|짝사랑|썸|결혼|이혼|관계/.test(raw)) {
+        safeTitle = "연애·관계 고민";
+      } else if (/가족|부모|형제|자녀|아이/.test(raw)) {
+        safeTitle = "가족·관계 이야기";
+      } else if (/공부|시험|수능|자격증/.test(raw)) {
+        safeTitle = "공부·시험 이야기";
+      } else if (hasKorean && raw.length >= 6) {
+        // 한글이 있고 너무 짧지 않으면 앞부분만 안정적으로 사용
+        safeTitle = raw.slice(0, 18);
+      }
+    }
+
+    setSessionTitle(sessionId, safeTitle);
     setSessions((prev) =>
       prev.map((s) =>
         s.id === sessionId && !s.title
-          ? { ...s, title: firstUserText.slice(0, 20), updatedAt: Date.now() }
+          ? { ...s, title: safeTitle, updatedAt: Date.now() }
           : s,
       ),
     );

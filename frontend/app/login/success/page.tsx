@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getAuthHeaders } from "@/lib/auth";
+import { getAuthHeaders, setStoredToken } from "@/lib/auth";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -11,7 +11,27 @@ export default function LoginSuccessPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // 해시(#t=...)는 백엔드에서 토큰을 넣어주지만, 현재는 쿠키 기반으로만 사용하므로 별도 처리 없이 무시
+    // 1) 해시(#t=TOKEN)에서 세션 토큰 추출 → 저장
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash || "";
+      const m = hash.match(/t=([^&]+)/);
+      if (m && m[1]) {
+        try {
+          const token = decodeURIComponent(m[1]);
+          if (token) {
+            setStoredToken(token);
+          }
+        } catch {
+          // 토큰 파싱 실패 시에는 무시하고, 쿠키만으로 시도
+        }
+      }
+      // URL 깔끔하게 정리
+      if (window.location.hash) {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    }
+
+    // 2) 토큰/쿠키로 실제 로그인 상태 확인
     async function proceed() {
       try {
         const res = await fetch(`${API_BASE}/api/saju/list`, {
@@ -19,9 +39,8 @@ export default function LoginSuccessPage() {
           headers: getAuthHeaders(),
         });
         if (res.status === 401) {
-          // 모바일 카카오 브라우저 등에서 쿠키 전파가 늦어져도
-          // 일단 사주 입력 페이지로 보내서 바로 사용 흐름을 이어가도록
-          router.replace("/saju-add");
+          // 토큰/쿠키 모두 유효하지 않으면, 로그인 실패로 간주하고 시작 화면으로 돌려보냄
+          router.replace("/start");
           return;
         }
         const data = await res.json().catch(() => []);

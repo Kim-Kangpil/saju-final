@@ -67,6 +67,7 @@ export default function ChatPage({
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginCard, setShowLoginCard] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [chatError, setChatError] = useState<string | null>(null);
   const lastUserMessageRef = useRef<string | null>(null);
   const handleRetryRef = useRef<((text: string) => void) | null>(null);
@@ -546,6 +547,61 @@ export default function ChatPage({
         }
         .chat-msg-bubble-wrap:hover .chat-msg-copy { opacity: 1; }
         .chat-msg.user .chat-msg-copy { right: auto; left: 8px; background: rgba(255,255,255,.2); color: rgba(255,255,255,.9); }
+        /* 삭제 확인 모달 */
+        .chat-confirm-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.35);
+          z-index: 80;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 18px;
+        }
+        .chat-confirm-modal {
+          width: 100%;
+          max-width: 360px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+          padding: 14px 14px 12px;
+        }
+        .chat-confirm-title {
+          font-size: 14px;
+          font-weight: 800;
+          color: var(--text);
+          margin-bottom: 6px;
+          font-family: var(--serif);
+        }
+        .chat-confirm-desc {
+          font-size: 12px;
+          color: var(--sub);
+          line-height: 1.6;
+          margin-bottom: 12px;
+        }
+        .chat-confirm-actions {
+          display: flex;
+          gap: 8px;
+          justify-content: flex-end;
+        }
+        .chat-confirm-btn {
+          border-radius: 10px;
+          padding: 10px 12px;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .chat-confirm-btn.cancel {
+          background: transparent;
+          border: 1px solid var(--border2);
+          color: var(--sub);
+        }
+        .chat-confirm-btn.danger {
+          background: #2c2a26;
+          border: 1px solid #2c2a26;
+          color: #fdf9f1;
+        }
       `}</style>
 
       <div className="chat-wrap">
@@ -580,11 +636,7 @@ export default function ChatPage({
               className="chat-back"
               aria-label="메뉴"
               onClick={() => {
-                if (isLoggedIn) {
-                  router.push("/saju-mypage");
-                } else {
-                  router.push("/start");
-                }
+                router.push(isLoggedIn ? "/saju-mypage" : "/start");
               }}
             >
               <Icon icon="mdi:menu" width={22} />
@@ -619,6 +671,45 @@ export default function ChatPage({
           </div>
         ) : (
           <div className="chat-layout">
+            {pendingDeleteId && (
+              <div
+                className="chat-confirm-backdrop"
+                onClick={() => setPendingDeleteId(null)}
+                role="presentation"
+              >
+                <div
+                  className="chat-confirm-modal"
+                  onClick={(e) => e.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <div className="chat-confirm-title">대화를 삭제할까요?</div>
+                  <div className="chat-confirm-desc">
+                    삭제하면 이 대화 기록은 되돌릴 수 없어요.
+                  </div>
+                  <div className="chat-confirm-actions">
+                    <button
+                      type="button"
+                      className="chat-confirm-btn cancel"
+                      onClick={() => setPendingDeleteId(null)}
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="button"
+                      className="chat-confirm-btn danger"
+                      onClick={() => {
+                        removeSession(pendingDeleteId);
+                        setPendingDeleteId(null);
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 모바일 세션 드로어 */}
             {showMobileSidebar && (
               <>
@@ -679,7 +770,7 @@ export default function ChatPage({
                             aria-label="대화 삭제"
                             onClick={(e) => {
                               e.stopPropagation();
-                              removeSession(s.id);
+                              setPendingDeleteId(s.id);
                             }}
                           >
                             <Icon icon="mdi:trash-can-outline" width={14} />
@@ -743,7 +834,7 @@ export default function ChatPage({
                         aria-label="대화 삭제"
                         onClick={(e) => {
                           e.stopPropagation();
-                          removeSession(s.id);
+                          setPendingDeleteId(s.id);
                         }}
                       >
                         <Icon icon="mdi:trash-can-outline" width={14} />

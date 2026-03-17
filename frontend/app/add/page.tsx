@@ -1495,6 +1495,10 @@ export default function Page({
           const promptData = buildSummaryPromptData(summaryInput);
           const userPrompt = buildSummaryUserPrompt(promptData);
 
+          // UI가 "곧 업데이트 예정"으로 떨어지지 않도록, 먼저 로컬 요약을 즉시 채워두고
+          // GPT 응답이 오면 그 내용으로 덮어쓴다.
+          setSummaryGuide(getSummaryGuideFallback(summaryInput));
+
           fetch(`${API_BASE}/saju/summary-gpt`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },

@@ -3,6 +3,7 @@
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
+import { clearStoredToken, getAuthHeaders } from "@/lib/auth";
 
 const borderField = "#B4A292";
 const inputBg = "var(--bg-input)";
@@ -31,8 +32,19 @@ export default function StartPage({
       try {
         const res = await fetch(`${backend}/api/saju/list`, {
           credentials: "include",
+          headers: getAuthHeaders(),
         });
-        if (!res.ok) return;
+        if (!res.ok) {
+          // 세션/토큰이 유효하지 않으면 "가짜 로그인" 상태를 정리
+          if (typeof window !== "undefined") {
+            localStorage.setItem("isLoggedIn", "false");
+          }
+          clearStoredToken();
+          return;
+        }
+        if (typeof window !== "undefined") {
+          localStorage.setItem("isLoggedIn", "true");
+        }
         const data = await res.json().catch(() => []);
         if (cancelled) return;
         const list = Array.isArray(data) ? data : [];
@@ -42,7 +54,7 @@ export default function StartPage({
           router.replace("/saju-add");
         }
       } catch {
-        // 로그인 안 되었거나, 네트워크 이슈면 그냥 로그인 화면 유지
+        // 네트워크 이슈면 상태를 건드리지 않고 로그인 화면 유지
       }
     })();
 

@@ -4,6 +4,7 @@ import { use, useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getSavedSajuList } from "@/lib/sajuStorage";
 import { useLang } from "@/contexts/LangContext";
+import { clearStoredToken, getAuthHeaders } from "@/lib/auth";
 import ko from "@/locales/ko";
 import en from "@/locales/en";
 
@@ -165,7 +166,25 @@ export default function HomePage({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+      // 서버 세션 기준으로 로그인 상태 동기화 (가짜 로그인 방지)
+      const backend =
+        process.env.NEXT_PUBLIC_BACKEND_URL ||
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://saju-backend-eqd6.onrender.com";
+      (async () => {
+        try {
+          const res = await fetch(`${backend}/api/saju/list`, {
+            credentials: "include",
+            headers: getAuthHeaders(),
+          });
+          const ok = res.ok;
+          localStorage.setItem("isLoggedIn", ok ? "true" : "false");
+          if (!ok) clearStoredToken();
+          setIsLoggedIn(ok);
+        } catch {
+          setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+        }
+      })();
     }
     const shuffled = [...ALL_ANIMALS].sort(() => Math.random() - 0.5);
     setAnimals(shuffled.slice(0, 6));

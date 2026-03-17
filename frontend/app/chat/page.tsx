@@ -10,6 +10,7 @@ import MarkdownMessage from "../../components/MarkdownMessage";
 import { useLang } from "@/contexts/LangContext";
 import { useChatSessions } from "@/hooks/useChatSessions";
 import type { Message as SessionMessage } from "@/lib/chatStorage";
+import { clearStoredToken, getAuthHeaders } from "@/lib/auth";
 
 /** 게스트 3회 제한 — 잠시 끄기: true면 3번 질문 후 로그인 유도 */
 const GUEST_LIMIT_ENABLED = false;
@@ -91,13 +92,51 @@ export default function ChatPage({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
-    if (!GUEST_LIMIT_ENABLED) return;
-    const count = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
-    if (!(localStorage.getItem("isLoggedIn") === "true") && count >= GUEST_LIMIT) {
-      setShowLoginCard(true);
-    }
+    const backend =
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      process.env.NEXT_PUBLIC_API_URL ||
+      "https://saju-backend-eqd6.onrender.com";
+
+    // 서버 세션 기준으로 로그인 상태 동기화 (가짜 로그인 방지)
+    (async () => {
+      try {
+        const res = await fetch(`${backend}/api/saju/list`, {
+          credentials: "include",
+          headers: getAuthHeaders(),
+        });
+        const ok = res.ok;
+        localStorage.setItem("isLoggedIn", ok ? "true" : "false");
+        if (!ok) clearStoredToken();
+        setIsLoggedIn(ok);
+
+        if (!GUEST_LIMIT_ENABLED) return;
+        const count = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
+        if (!ok && count >= GUEST_LIMIT) {
+          setShowLoginCard(true);
+        }
+      } catch {
+        // 네트워크 이슈면 기존 상태 유지
+        setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+      }
+    })();
   }, []);
+
+  const goMenu = () => {
+    const target = isLoggedIn ? "/saju-mypage" : "/start";
+    try {
+      router.push(target);
+    } finally {
+      // 일부 모바일 웹뷰/상황에서 push가 먹지 않는 경우를 대비한 폴백
+      if (typeof window !== "undefined") {
+        const current = window.location.pathname;
+        window.setTimeout(() => {
+          if (window.location.pathname === current) {
+            window.location.assign(target);
+          }
+        }, 200);
+      }
+    }
+  };
 
   const getSajuBody = () => {
     const saved = getSavedSajuList();
@@ -213,7 +252,24 @@ export default function ChatPage({
         .chat-logo img { width: 100%; height: 100%; object-fit: cover; }
         .chat-title { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: 0.02em; }
         @media (min-width: 768px) { .chat-title { font-size: 18px; } }
-        .chat-back { padding: 8px 14px; min-height: 40px; border-radius: 999px; border: 1px solid var(--border2); background: transparent; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--sub); cursor: pointer; transition: background .15s; }
+        .chat-back {
+          width: 40px;
+          height: 40px;
+          padding: 0;
+          border-radius: 12px;
+          border: 1px solid var(--border2);
+          background: transparent;
+          font-family: var(--sans);
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--sub);
+          cursor: pointer;
+          transition: background .15s;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          line-height: 1;
+        }
         .chat-back:hover { background: var(--surface2); }
         .chat-layout {
           flex: 1;
@@ -635,9 +691,7 @@ export default function ChatPage({
               type="button"
               className="chat-back"
               aria-label="메뉴"
-              onClick={() => {
-                router.push(isLoggedIn ? "/saju-mypage" : "/start");
-              }}
+              onClick={goMenu}
             >
               <Icon icon="mdi:menu" width={22} />
             </button>

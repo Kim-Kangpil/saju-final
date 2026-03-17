@@ -138,14 +138,14 @@ function buildPartsFromText(raw: string): ParsedPart[] {
 
   return ORDER.map((key, idx) => {
     const cleaned = stripLeadingHeading(orderedBodies[idx] || "");
-    const { title, body } = firstLineAsTitle(cleaned, PART_LABEL[key]);
-    const bodyWithoutMarkers = body
+    // 제목은 따로 쓰지 않고, 전체를 한 덩어리 문장으로 사용
+    const bodyWithoutMarkers = normalizeText(cleaned)
       .replace(/[1-5]️⃣/g, "")
       .replace(/[①②③④⑤]/g, "")
       .trim();
     return {
       key,
-      title,
+      title: PART_LABEL[key],
       body: bodyWithoutMarkers,
     };
   });
@@ -268,29 +268,12 @@ export function SajuSummaryCard({ text, name, sub, pillar }: SajuSummaryCardProp
                     fontSize: 11,
                     fontWeight: 700,
                     color: "#4A3F30",
-                    marginBottom: part.body ? 2 : 0,
+                    marginBottom: part.body ? 4 : 0,
                     letterSpacing: "-0.01em",
                   }}
                 >
                   {PART_LABEL[part.key]}
                 </div>
-
-                {/* 제목과 라벨이 완전히 같고 내용이 비어 있을 때는 중복 표시하지 않음 */}
-                {!(part.title === PART_LABEL[part.key] && !part.body) && (
-                  <div
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "#2C2417",
-                      marginBottom: part.body ? 5 : 0,
-                      lineHeight: 1.5,
-                      wordBreak: "keep-all",
-                      whiteSpace: "pre-line",
-                    }}
-                  >
-                    {part.title}
-                  </div>
-                )}
 
                 <div
                   style={{

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE =
@@ -9,7 +9,6 @@ const API_BASE =
 
 export default function LoginSuccessPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     // 해시(#t=...)는 백엔드에서 토큰을 넣어주지만, 현재는 쿠키 기반으로만 사용하므로 별도 처리 없이 무시
@@ -39,7 +38,7 @@ export default function LoginSuccessPage() {
     }
 
     proceed();
-  }, [router, searchParams]);
+  }, [router]);
 
   return (
     <main

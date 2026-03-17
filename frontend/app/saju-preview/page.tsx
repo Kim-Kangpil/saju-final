@@ -564,7 +564,7 @@ function SajuPreviewContent() {
       <style>{`
         .preview-tap { transition: transform .15s ease, opacity .15s ease; -webkit-tap-highlight-color: transparent; cursor: pointer; }
         .preview-tap:active { transform: scale(.97); opacity: .9; }
-        .preview-wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 16px 24px; }
+        .preview-wrap { width: 100%; max-width: 520px; margin: 0 auto; padding: 0 16px 24px; }
         .preview-table {
           width: 100%;
           border-collapse: collapse;

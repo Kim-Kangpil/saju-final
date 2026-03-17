@@ -130,8 +130,10 @@ const ELEMENT_PALETTE: Record<string, { text: string; bg: string; border: string
   wood: { text: "#27500A", bg: "#C0DD97", border: "#3B6D11" },
   fire: { text: "#712B13", bg: "#F0997B", border: "#993C1D" },
   earth: { text: "#633806", bg: "#FAC775", border: "#854F0B" },
-  metal: { text: "#444441", bg: "#B4B2A9", border: "#5F5E5A" },
-  water: { text: "#0C447C", bg: "#85B7EB", border: "#185FA5" },
+  // 금(경금·신금·유금)은 박스 배경을 흰색으로 빼고, 글자·테두리만 짙게 유지
+  metal: { text: "#444441", bg: "#FFFFFF", border: "#D4C9B8" },
+  // 수(임수·계수, 자수·해수)는 기존 금색 팔레트를 사용
+  water: { text: "#444441", bg: "#B4B2A9", border: "#5F5E5A" },
   none: { text: "var(--text-primary)", bg: "#EDE7DB", border: "#D4C9B8" },
 };
 
@@ -268,16 +270,16 @@ function SajuPreviewContent() {
         credentials: "include",
         headers: getAuthHeaders(),
       });
-      const data = await res.json();
-
       if (res.status === 401) {
         router.push("/start");
         return;
       }
-      if (!data.success) {
-        setShowSeedSheet(true);
-        return;
-      }
+      // TODO: 분석권 정책 확정 전까지는, 부족해도 일단 분석은 진행
+      // const data = await res.json();
+      // if (!data.success) {
+      //   setShowSeedSheet(true);
+      //   return;
+      // }
       const birthYmd = (saju.birthdate || "").replace(/-/g, "").slice(0, 8);
       const birthHm = (saju.birth_time || "").replace(/\D/g, "").slice(0, 4) || "1200";
       const gender = saju.gender === "남자" ? "M" : "F";
@@ -468,7 +470,8 @@ function SajuPreviewContent() {
       const branchMs = branchMainStem(branch);
       rows.push({
         year,
-        age: birthYear > 0 ? year - birthYear : 0,
+        // 한국식 만나이+1로 표시 (출생 연도 기준)
+        age: birthYear > 0 ? year - birthYear + 1 : 0,
         stem,
         branch,
         stemTg: tenGod(dayStem, stem),

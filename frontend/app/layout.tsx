@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "../components/footer";
 import BottomTabBar from "../components/BottomTabBar";
 import { LangProvider } from "../contexts/LangContext";
+import PageTransition from "../components/PageTransition";
 
 export const metadata: Metadata = {
   title: "사주 프로젝트",
@@ -58,7 +59,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         />
         <div className="flex flex-col min-h-screen relative" style={{ zIndex: 1 }}>
           <main className="flex-grow pb-0">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </main>
 
           {/* BottomTabBar — 나중에 사용할 수 있음 */}

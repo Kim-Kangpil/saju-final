@@ -132,6 +132,24 @@ export function updateLastMessage(sessionId: string, text: string): void {
   saveRaw(sortSessions(sessions).slice(0, MAX_SESSIONS));
 }
 
+// 세션 전체 메시지를 한 번에 교체 (스트리밍 이후 동기화용)
+export function setSessionMessages(sessionId: string, messages: Message[]): void {
+  if (!isBrowser()) return;
+  const sessions = loadRaw();
+  const idx = sessions.findIndex((s) => s.id === sessionId);
+  if (idx === -1) return;
+
+  const session = sessions[idx];
+  const updated: ChatSession = {
+    ...session,
+    messages: [...messages],
+    updatedAt: Date.now(),
+  };
+
+  sessions[idx] = updated;
+  saveRaw(sortSessions(sessions).slice(0, MAX_SESSIONS));
+}
+
 export function deleteSession(id: string): void {
   if (!isBrowser()) return;
   const sessions = loadRaw();

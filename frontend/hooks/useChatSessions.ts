@@ -8,6 +8,8 @@ import {
   updateLastMessage as storageUpdateLastMessage,
   deleteSession as storageDeleteSession,
   searchSessions as storageSearchSessions,
+  setSessionMessages,
+  setSessionTitle,
 } from "@/lib/chatStorage";
 
 export function useChatSessions() {
@@ -124,6 +126,31 @@ export function useChatSessions() {
   const currentSession =
     sessions.find((s) => s.id === currentId) ?? null;
 
+  // 세션 전체 메시지 교체 (useChat와 동기화용)
+  const replaceMessages = (sessionId: string, msgs: Message[]): void => {
+    setSessionMessages(sessionId, msgs);
+    setSessions((prev) => {
+      const next = prev.map((s) =>
+        s.id === sessionId ? { ...s, messages: [...msgs], updatedAt: Date.now() } : s,
+      );
+      return [...next].sort((a, b) => b.updatedAt - a.updatedAt);
+    });
+  };
+
+  // 첫 유저 메시지로 제목 자동 설정
+  const ensureTitleFromFirstMessage = (sessionId: string, firstUserText: string): void => {
+    const target = sessions.find((s) => s.id === sessionId);
+    if (!target || target.title) return;
+    setSessionTitle(sessionId, firstUserText);
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === sessionId && !s.title
+          ? { ...s, title: firstUserText.slice(0, 20), updatedAt: Date.now() }
+          : s,
+      ),
+    );
+  };
+
   return {
     sessions,
     currentId,
@@ -137,6 +164,8 @@ export function useChatSessions() {
     removeSession,
     search,
     setSearchQuery,
+    replaceMessages,
+    ensureTitleFromFirstMessage,
   };
 }
 

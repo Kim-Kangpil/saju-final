@@ -8,6 +8,8 @@ import { DefaultChatTransport } from "ai";
 import { getSavedSajuList } from "@/lib/sajuStorage";
 import MarkdownMessage from "../../components/MarkdownMessage";
 import { useLang } from "@/contexts/LangContext";
+import { useChatSessions } from "@/hooks/useChatSessions";
+import type { Message as SessionMessage } from "@/lib/chatStorage";
 
 /** 게스트 3회 제한 — 잠시 끄기: true면 3번 질문 후 로그인 유도 */
 const GUEST_LIMIT_ENABLED = false;
@@ -27,9 +29,6 @@ function getTimeBasedGreeting(lang: "ko" | "en"): string {
   if (h >= 17 && h < 21) return "저녁 인사드려요";
   return "안녕하세요";
 }
-
-/** localStorage 키 — 대화 히스토리 유지 */
-const CHAT_STORAGE_KEY = "chat_messages";
 
 const QUICK_PROMPTS_KO = [
   { label: "사주 질문", text: "사주에 대해 궁금한 게 있어요." },
@@ -65,13 +64,27 @@ export default function ChatPage({
   use(params ?? Promise.resolve({}));
   const router = useRouter();
   const { lang } = useLang();
-  const listRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginCard, setShowLoginCard] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const lastUserMessageRef = useRef<string | null>(null);
   const handleRetryRef = useRef<((text: string) => void) | null>(null);
+
+  // 로컬 세션 관리 (ChatGPT 스타일 최근 대화 리스트)
+  const {
+    sessions,
+    currentId,
+    currentSession,
+    startNewChat,
+    selectSession,
+    removeSession,
+    searchQuery,
+    searchResults,
+    search,
+    replaceMessages,
+    ensureTitleFromFirstMessage,
+  } = useChatSessions();
 
   const bodyRef = useRef<{ isGuest: boolean; saju?: unknown }>({ isGuest: true, saju: undefined });
 
@@ -122,19 +135,15 @@ export default function ChatPage({
     [lang],
   );
 
-  // 대화 히스토리: hydration 후에만 채팅 영역 마운트 (복원된 메시지로 useChat 초기화)
-  const [savedMessages, setSavedMessages] = useState<Array<{ role: string; parts: Array<{ type: string; text?: string }> }>>([]);
   const [savedSajuName, setSavedSajuName] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-      setSavedMessages(raw ? JSON.parse(raw) : []);
       const first = getSavedSajuList()?.[0];
       setSavedSajuName(first?.name?.trim() ?? null);
     } catch {
-      setSavedMessages([]);
+      // ignore
     }
     setHydrated(true);
   }, []);
@@ -160,7 +169,7 @@ export default function ChatPage({
         body { background: var(--bg); color: var(--text); font-family: var(--sans); min-width: 320px; font-size: 16px; }
         .chat-wrap {
           width: 100%;
-          max-width: 480px;
+          max-width: 960px;
           margin: 0 auto;
           min-height: 100dvh;
           min-height: 100vh;
@@ -168,12 +177,9 @@ export default function ChatPage({
           flex-direction: column;
           background: var(--bg);
         }
-        @media (min-width: 640px) {
-          .chat-wrap { max-width: 640px; }
-        }
         @media (min-width: 768px) {
           .chat-wrap {
-            max-width: 740px;
+            max-width: 960px;
             min-height: 100vh;
             border-radius: 12px;
             box-shadow: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,.06);
@@ -181,7 +187,7 @@ export default function ChatPage({
           }
         }
         @media (min-width: 1024px) {
-          .chat-wrap { max-width: 820px; margin: 24px auto; min-height: calc(100vh - 48px); }
+          .chat-wrap { max-width: 1024px; margin: 24px auto; min-height: calc(100vh - 48px); }
         }
         .chat-header {
           flex-shrink: 0;
@@ -208,6 +214,140 @@ export default function ChatPage({
         @media (min-width: 768px) { .chat-title { font-size: 18px; } }
         .chat-back { padding: 8px 14px; min-height: 40px; border-radius: 999px; border: 1px solid var(--border2); background: transparent; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--sub); cursor: pointer; transition: background .15s; }
         .chat-back:hover { background: var(--surface2); }
+        .chat-layout {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+        @media (min-width: 768px) {
+          .chat-layout {
+            flex-direction: row;
+          }
+        }
+        .chat-sidebar {
+          display: none;
+        }
+        @media (min-width: 768px) {
+          .chat-sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 260px;
+            border-right: 1px solid var(--border);
+            background: #f8f5ef;
+          }
+        }
+        .chat-sidebar-header {
+          padding: 10px 14px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+        .chat-sidebar-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text);
+        }
+        .chat-sidebar-new {
+          border: 1px solid var(--border2);
+          border-radius: 999px;
+          padding: 4px 10px;
+          font-size: 11px;
+          background: #fff;
+          cursor: pointer;
+        }
+        .chat-sidebar-search {
+          padding: 8px 12px;
+          border-bottom: 1px solid var(--border);
+        }
+        .chat-sidebar-search input {
+          width: 100%;
+          border-radius: 999px;
+          border: 1px solid var(--border2);
+          padding: 6px 10px;
+          font-size: 11px;
+          background: #fffcf7;
+        }
+        .chat-sidebar-list {
+          flex: 1;
+          overflow-y: auto;
+          padding: 6px 4px 8px;
+        }
+        .chat-sidebar-item {
+          border-radius: 10px;
+          padding: 8px 8px;
+          margin: 2px 4px;
+          display: flex;
+          flex-direction: row;
+          align-items: flex-start;
+          gap: 6px;
+          cursor: pointer;
+        }
+        .chat-sidebar-item.active {
+          background: #2c2a26;
+          color: #fdf9f1;
+        }
+        .chat-sidebar-item-title {
+          font-size: 12px;
+          font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .chat-sidebar-item-sub {
+          font-size: 11px;
+          opacity: 0.7;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .chat-sidebar-item-main {
+          flex: 1;
+          min-width: 0;
+        }
+        .chat-sidebar-item-delete {
+          flex-shrink: 0;
+          border: none;
+          background: transparent;
+          color: inherit;
+          opacity: 0.6;
+          cursor: pointer;
+          padding: 2px;
+        }
+        .chat-sidebar-item-delete:hover {
+          opacity: 1;
+        }
+        /* 모바일용 세션 선택 바 */
+        /* 모바일용 세션 드로어 */
+        .chat-mobile-drawer-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.35);
+          z-index: 40;
+        }
+        .chat-mobile-drawer {
+          position: fixed;
+          inset: 0 auto 0 0;
+          width: min(80vw, 320px);
+          background: #f8f5ef;
+          border-right: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          z-index: 50;
+          box-shadow: 4px 0 18px rgba(0,0,0,0.15);
+        }
+        @media (min-width: 768px) {
+          .chat-mobile-drawer,
+          .chat-mobile-drawer-backdrop {
+            display: none;
+          }
+        }
+        .chat-main-shell {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
         .chat-list {
           flex: 1;
           min-height: 0;
@@ -421,30 +561,33 @@ export default function ChatPage({
             </div>
             <span className="chat-title">한양사주 AI</span>
           </div>
-          <button
-            type="button"
-            className="chat-back"
-            aria-label="메뉴"
-            onClick={() => {
-              if (isLoggedIn) {
-                router.push("/saju-mypage");
-              } else {
-                router.push("/start");
-              }
-            }}
-            style={{
-              padding: 8,
-              borderRadius: 10,
-              border: "1px solid var(--border2)",
-              background: "transparent",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "var(--text-primary)",
-            }}
-          >
-            <Icon icon="mdi:menu" width={22} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* 모바일: 세션 드로어 토글 */}
+            <button
+              type="button"
+              className="chat-back"
+              aria-label="대화 목록"
+              onClick={() => setShowMobileSidebar(true)}
+              style={{ display: "inline-flex" }}
+            >
+              <Icon icon="mdi:chat-outline" width={20} />
+            </button>
+            {/* PC: 마이페이지/로그인 이동 */}
+            <button
+              type="button"
+              className="chat-back"
+              aria-label="메뉴"
+              onClick={() => {
+                if (isLoggedIn) {
+                  router.push("/saju-mypage");
+                } else {
+                  router.push("/start");
+                }
+              }}
+            >
+              <Icon icon="mdi:menu" width={22} />
+            </button>
+          </div>
         </header>
 
         {chatError && (
@@ -473,19 +616,162 @@ export default function ChatPage({
             <p className="chat-initial-greeting">불러오는 중...</p>
           </div>
         ) : (
-          <ChatContent
-            key="chat-hydrated"
-            initialMessages={savedMessages}
-            transport={transport}
-            onError={setChatError}
-            isLoggedIn={isLoggedIn}
-            showLoginCard={showLoginCard}
-            setShowLoginCard={setShowLoginCard}
-            router={router}
-            lastUserMessageRef={lastUserMessageRef}
-            handleRetryRef={handleRetryRef}
-            savedSajuName={savedSajuName}
-          />
+          <div className="chat-layout">
+            {/* 모바일 세션 드로어 */}
+            {showMobileSidebar && (
+              <>
+                <div
+                  className="chat-mobile-drawer-backdrop"
+                  onClick={() => setShowMobileSidebar(false)}
+                />
+                <aside className="chat-mobile-drawer">
+                  <div className="chat-sidebar-header">
+                    <span className="chat-sidebar-title">최근 대화</span>
+                    <button
+                      type="button"
+                      className="chat-sidebar-new"
+                      onClick={() => {
+                        setChatError(null);
+                        startNewChat();
+                      }}
+                    >
+                      + 새 대화
+                    </button>
+                  </div>
+                  <div className="chat-sidebar-search">
+                    <input
+                      placeholder="대화 검색"
+                      value={searchQuery}
+                      onChange={(e) => search(e.target.value)}
+                    />
+                  </div>
+                  <div className="chat-sidebar-list">
+                    {(searchQuery ? searchResults : sessions).map((s) => {
+                      const isActive = s.id === currentId;
+                      const title =
+                        s.title ||
+                        (s.messages[0]?.text
+                          ? s.messages[0].text.slice(0, 20)
+                          : "새 대화");
+                      const lastText = s.messages[s.messages.length - 1]?.text ?? "";
+                      return (
+                        <div
+                          key={s.id}
+                          className={`chat-sidebar-item ${isActive ? "active" : ""}`}
+                          onClick={() => {
+                            selectSession(s.id);
+                            setShowMobileSidebar(false);
+                          }}
+                        >
+                          <div className="chat-sidebar-item-main">
+                            <div className="chat-sidebar-item-title">{title}</div>
+                            {lastText && (
+                              <div className="chat-sidebar-item-sub">
+                                {lastText.slice(0, 26)}
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            className="chat-sidebar-item-delete"
+                            aria-label="대화 삭제"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeSession(s.id);
+                            }}
+                          >
+                            <Icon icon="mdi:trash-can-outline" width={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </aside>
+              </>
+            )}
+
+            {/* 좌측 세션 리스트 (태블릿 이상) */}
+            <aside className="chat-sidebar">
+              <div className="chat-sidebar-header">
+                <span className="chat-sidebar-title">최근 대화</span>
+                <button
+                  type="button"
+                  className="chat-sidebar-new"
+                  onClick={() => {
+                    setChatError(null);
+                    startNewChat();
+                  }}
+                >
+                  + 새 대화
+                </button>
+              </div>
+              <div className="chat-sidebar-search">
+                <input
+                  placeholder="대화 검색"
+                  value={searchQuery}
+                  onChange={(e) => search(e.target.value)}
+                />
+              </div>
+              <div className="chat-sidebar-list">
+                {(searchQuery ? searchResults : sessions).map((s) => {
+                  const isActive = s.id === currentId;
+                  const title =
+                    s.title ||
+                    (s.messages[0]?.text
+                      ? s.messages[0].text.slice(0, 20)
+                      : "새 대화");
+                  const lastText = s.messages[s.messages.length - 1]?.text ?? "";
+                  return (
+                    <div
+                      key={s.id}
+                      className={`chat-sidebar-item ${isActive ? "active" : ""}`}
+                      onClick={() => selectSession(s.id)}
+                    >
+                      <div className="chat-sidebar-item-main">
+                        <div className="chat-sidebar-item-title">{title}</div>
+                        {lastText && (
+                          <div className="chat-sidebar-item-sub">
+                            {lastText.slice(0, 26)}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="chat-sidebar-item-delete"
+                        aria-label="대화 삭제"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeSession(s.id);
+                        }}
+                      >
+                        <Icon icon="mdi:trash-can-outline" width={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </aside>
+
+            {/* 우측 채팅 영역 */}
+            <main className="chat-main-shell">
+              <ChatContent
+                key={currentId || "chat-hydrated"}
+                sessionId={currentId}
+                initialSessionMessages={currentSession?.messages ?? []}
+                transport={transport}
+                onError={setChatError}
+                isLoggedIn={isLoggedIn}
+                showLoginCard={showLoginCard}
+                setShowLoginCard={setShowLoginCard}
+                router={router}
+                lastUserMessageRef={lastUserMessageRef}
+                handleRetryRef={handleRetryRef}
+                savedSajuName={savedSajuName}
+                replaceMessages={replaceMessages}
+                ensureTitleFromFirstMessage={ensureTitleFromFirstMessage}
+              />
+            </main>
+          </div>
         )}
       </div>
     </>
@@ -493,7 +779,10 @@ export default function ChatPage({
 }
 
 type ChatContentProps = {
-  initialMessages: Array<{ role: string; parts: Array<{ type: string; text?: string }> }>;
+  sessionId: string | null;
+  initialSessionMessages: SessionMessage[];
+  replaceMessages: (sessionId: string, msgs: SessionMessage[]) => void;
+  ensureTitleFromFirstMessage: (sessionId: string, firstUserText: string) => void;
   transport: DefaultChatTransport<any>;
   onError: (msg: string | null) => void;
   isLoggedIn: boolean;
@@ -506,7 +795,10 @@ type ChatContentProps = {
 };
 
 function ChatContent({
-  initialMessages,
+  sessionId,
+  initialSessionMessages,
+  replaceMessages,
+  ensureTitleFromFirstMessage,
   transport,
   onError,
   isLoggedIn,
@@ -523,6 +815,16 @@ function ChatContent({
   const isUserScrollingRef = useRef(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const { lang } = useLang();
+
+  // 세션이 아직 선택되지 않은 경우(예: 초기화 이전)에는 빈 배열로 시작
+  const initialMessages = useMemo(
+    () =>
+      (initialSessionMessages || []).map((m) => ({
+        role: m.role,
+        parts: [{ type: "text", text: m.text }],
+      })),
+    [initialSessionMessages],
+  );
 
   const { messages, sendMessage, status } = useChat({
     transport,
@@ -543,15 +845,17 @@ function ChatContent({
     }
   }
 
+  // useChat 메시지를 세션 스토리지와 동기화
   useEffect(() => {
-    if (typeof window === "undefined" || messages.length === 0) return;
-    try {
-      const toSave = messages.map((m) => ({ role: m.role, parts: m.parts ?? [] }));
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(toSave));
-    } catch {
-      // ignore
-    }
-  }, [messages]);
+    if (!sessionId) return;
+    const mapped: SessionMessage[] = messages.map((m) => ({
+      id: `${sessionId}-${m.id ?? Math.random().toString(36).slice(2)}`,
+      role: m.role as "user" | "assistant",
+      text: getMessageText(m as any),
+      createdAt: Date.now(),
+    }));
+    replaceMessages(sessionId, mapped);
+  }, [messages, replaceMessages, sessionId]);
 
   // 스크롤 이벤트 핸들러
   const handleScroll = () => {
@@ -617,7 +921,8 @@ function ChatContent({
   const handleSubmit = async (text: string) => {
     if (!text.trim()) return;
     onError(null);
-    lastUserMessageRef.current = text.trim();
+    const trimmed = text.trim();
+    lastUserMessageRef.current = trimmed;
     handleRetryRef.current = (t: string) => sendMessage({ text: t });
 
     if (GUEST_LIMIT_ENABLED) {
@@ -631,8 +936,13 @@ function ChatContent({
       }
     }
 
+    // 첫 유저 메시지로 세션 제목 설정
+    if (sessionId && trimmed) {
+      ensureTitleFromFirstMessage(sessionId, trimmed);
+    }
+
     try {
-      await sendMessage({ text: text.trim() });
+      await sendMessage({ text: trimmed });
     } catch (e) {
       onError(e instanceof Error ? e.message : "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
     }

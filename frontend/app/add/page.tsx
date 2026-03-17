@@ -70,7 +70,7 @@ import { GongmangStructureMap } from "../../components/GongmangStructureMap";
 import { SpecialStarsMap } from "../../components/SpecialStarsMap";
 import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
-import { SummarySwipeCards } from "../../components/SummarySwipeCards";
+import { SajuSummaryCard } from "../../components/SummarySwipeCards";
 import { Icon } from "@iconify/react";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
@@ -2575,7 +2575,39 @@ export default function Page({
                                                     />
                                                   )}
 
-                                                  {c.id === "solution_summary" && <div style={{ margin: "0 2px", width: "100%" }}><SummarySwipeCards text={c.content} /></div>}
+                                                  {c.id === "solution_summary" && (
+                                                    <div style={{ margin: "0 2px", width: "100%" }}>
+                                                      <SajuSummaryCard
+                                                        text={c.content}
+                                                        name={
+                                                          birthYmd
+                                                            ? `${birthYmd.slice(0, 4)}년생 · ${
+                                                                gender === "M" ? "남자" : "여자"
+                                                              }`
+                                                            : "사주 종합 요약"
+                                                        }
+                                                        sub={
+                                                          birthYmd
+                                                            ? `${calendar === "solar" ? "양력" : "음력"} ${birthYmd.slice(
+                                                                0,
+                                                                4
+                                                              )}.${birthYmd.slice(4, 6)}.${birthYmd.slice(6, 8)}${
+                                                                timeUnknown
+                                                                  ? " · 시간 미상"
+                                                                  : birthHm
+                                                                  ? ` · ${birthHm.slice(0, 2)}:${birthHm.slice(2, 4)}`
+                                                                  : ""
+                                                              }`
+                                                            : ""
+                                                        }
+                                                        pillar={
+                                                          result
+                                                            ? `${result.day.cheongan.hangul}${result.day.jiji.hangul}일주`
+                                                            : ""
+                                                        }
+                                                      />
+                                                    </div>
+                                                  )}
 
                                                   {c.id === "solution_summary" ? null : (
                                                     <div

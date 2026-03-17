@@ -1759,12 +1759,9 @@ export default function Page({
         if (it.key === "lucky" && luckyItems) {
           return asContent("solution_lucky", it.title, luckyItems, it.icon, "local");
         }
-        if (it.key === "summary") {
-          const content =
-            summaryGuide ??
-            "당신의 사주 전체 흐름과 삶의 방향을 한 번에 정리해 주는 종합 요약 기능입니다. 지금은 서버에서 내용을 불러오는 중이거나 준비 단계일 수 있어요. 잠시 후 다시 시도해 보거나, 다른 분석 카드들을 먼저 살펴봐 주세요.";
-          const source: "gpt" | "local" = summaryGuide ? "gpt" : "local";
-          return asContent("solution_summary", it.title, content, it.icon, source);
+        if (it.key === "summary" && summaryGuide) {
+          // GPT 또는 로컬 요약이 준비된 경우에만 종합 요약 카드를 노출
+          return asContent("solution_summary", it.title, summaryGuide, it.icon, "gpt");
         }
         return asReady(`solution_${it.key}`, it.title, it.icon);
       }),

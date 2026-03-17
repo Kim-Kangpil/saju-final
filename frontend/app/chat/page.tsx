@@ -312,7 +312,7 @@ export default function ChatPage({
           border: 1px solid var(--border2);
           background: var(--surface);
           font-family: var(--sans);
-          font-size: 15px;
+          font-size: 16px;
           color: var(--text);
           resize: none;
           min-height: 44px;
@@ -320,7 +320,7 @@ export default function ChatPage({
           transition: border-color .15s, box-shadow .15s;
         }
         @media (min-width: 768px) {
-          .chat-input { padding: 12px 18px; min-height: 50px; font-size: 15px; }
+          .chat-input { padding: 12px 18px; min-height: 50px; font-size: 16px; }
         }
         .chat-input::placeholder { color: var(--muted); }
         .chat-input:focus { outline: none; border-color: var(--accent); }

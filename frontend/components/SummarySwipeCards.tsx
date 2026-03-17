@@ -268,25 +268,30 @@ export function SajuSummaryCard({ text, name, sub, pillar }: SajuSummaryCardProp
                     fontSize: 11,
                     fontWeight: 700,
                     color: "#4A3F30",
-                    marginBottom: 4,
+                    marginBottom: part.body ? 2 : 0,
                     letterSpacing: "-0.01em",
                   }}
                 >
                   {PART_LABEL[part.key]}
                 </div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: "#2C2417",
-                    marginBottom: 5,
-                    lineHeight: 1.5,
-                    wordBreak: "keep-all",
-                    whiteSpace: "pre-line",
-                  }}
-                >
-                  {part.title}
-                </div>
+
+                {/* 제목과 라벨이 완전히 같고 내용이 비어 있을 때는 중복 표시하지 않음 */}
+                {!(part.title === PART_LABEL[part.key] && !part.body) && (
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "#2C2417",
+                      marginBottom: part.body ? 5 : 0,
+                      lineHeight: 1.5,
+                      wordBreak: "keep-all",
+                      whiteSpace: "pre-line",
+                    }}
+                  >
+                    {part.title}
+                  </div>
+                )}
+
                 <div
                   style={{
                     fontSize: 12,
@@ -296,7 +301,10 @@ export function SajuSummaryCard({ text, name, sub, pillar }: SajuSummaryCardProp
                     whiteSpace: "pre-line",
                   }}
                 >
-                  {part.body || "내용을 준비 중입니다."}
+                  {part.body ||
+                    (part.title === PART_LABEL[part.key]
+                      ? "이 파트에 대한 요약을 준비 중입니다."
+                      : "내용을 준비 중입니다.")}
                 </div>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders, clearStoredToken } from "@/lib/auth";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 const textDark = "var(--text-primary)";
@@ -32,10 +33,18 @@ export default function SajuMyPage({
 }: { params?: Promise<Record<string, string | string[]>> } = {}) {
   use(params ?? Promise.resolve({}));
   const router = useRouter();
+  const { isLoggedIn, loading } = useAuthStatus();
   const [userInfo, setUserInfo] = useState<UserInfo>(null);
   const [userInfoLoading, setUserInfoLoading] = useState(true);
   const [seedCount, setSeedCount] = useState<number>(0);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!isLoggedIn) {
+      router.replace("/start");
+    }
+  }, [isLoggedIn, loading, router]);
 
   useEffect(() => {
     let cancelled = false;

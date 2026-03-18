@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getSavedSajuList } from "@/lib/sajuStorage";
 import { useLang } from "@/contexts/LangContext";
 import { clearStoredToken, getAuthHeaders, getStoredToken } from "@/lib/auth";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 import ko from "@/locales/ko";
 import en from "@/locales/en";
 
@@ -135,7 +136,7 @@ export default function HomePage({
   use(params ?? Promise.resolve({}));
   const router = useRouter();
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn } = useAuthStatus();
   const [animals, setAnimals] = useState<string[]>([]);
   const [animalRound, setAnimalRound] = useState(0);
   const [chatIdx, setChatIdx] = useState(0);
@@ -165,34 +166,6 @@ export default function HomePage({
   const { count: reviewCount, ref: reviewCountRef } = useCounter(2847);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // 서버 세션 기준으로 로그인 상태 동기화 (가짜 로그인 방지)
-      const backend =
-        process.env.NEXT_PUBLIC_BACKEND_URL ||
-        process.env.NEXT_PUBLIC_API_URL ||
-        "https://saju-backend-eqd6.onrender.com";
-      (async () => {
-        // 토큰도 없고, 아직 로그인 플래그도 없다면 굳이 서버 요청을 보내지 않는다.
-        const hasToken = !!getStoredToken();
-        const localFlag = localStorage.getItem("isLoggedIn");
-        if (!hasToken && localFlag !== "true") {
-          setIsLoggedIn(false);
-          return;
-        }
-        try {
-          const res = await fetch(`${backend}/api/saju/list`, {
-            credentials: "include",
-            headers: getAuthHeaders(),
-          });
-          const ok = res.ok;
-          localStorage.setItem("isLoggedIn", ok ? "true" : "false");
-          if (!ok) clearStoredToken();
-          setIsLoggedIn(ok);
-        } catch {
-          setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
-        }
-      })();
-    }
     const shuffled = [...ALL_ANIMALS].sort(() => Math.random() - 0.5);
     setAnimals(shuffled.slice(0, 6));
   }, []);

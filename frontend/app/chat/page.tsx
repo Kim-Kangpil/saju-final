@@ -11,6 +11,7 @@ import { useLang } from "@/contexts/LangContext";
 import { useChatSessions } from "@/hooks/useChatSessions";
 import type { Message as SessionMessage } from "@/lib/chatStorage";
 import { clearStoredToken, getAuthHeaders, getStoredToken } from "@/lib/auth";
+import { useAuthStatus } from "@/hooks/useAuthStatus";
 
 /** 게스트 3회 제한 — 잠시 끄기: true면 3번 질문 후 로그인 유도 */
 const GUEST_LIMIT_ENABLED = false;
@@ -65,7 +66,7 @@ export default function ChatPage({
   use(params ?? Promise.resolve({}));
   const router = useRouter();
   const { lang } = useLang();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, refresh: refreshAuth } = useAuthStatus();
   const [showLoginCard, setShowLoginCard] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -92,37 +93,18 @@ export default function ChatPage({
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const backend =
-      process.env.NEXT_PUBLIC_BACKEND_URL ||
-      process.env.NEXT_PUBLIC_API_URL ||
-      "https://saju-backend-eqd6.onrender.com";
-
-    // 서버 세션 기준으로 로그인 상태 동기화 (가짜 로그인 방지)
+    if (!GUEST_LIMIT_ENABLED) return;
     (async () => {
       try {
-        const hasToken = !!getStoredToken();
-        const localFlag = localStorage.getItem("isLoggedIn");
-        if (!hasToken && localFlag !== "true") {
-          setIsLoggedIn(false);
-          return;
-        }
-        const res = await fetch(`${backend}/api/saju/list`, {
-          credentials: "include",
-          headers: getAuthHeaders(),
-        });
-        const ok = res.ok;
-        localStorage.setItem("isLoggedIn", ok ? "true" : "false");
-        if (!ok) clearStoredToken();
-        setIsLoggedIn(ok);
-
-        if (!GUEST_LIMIT_ENABLED) return;
-        const count = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
-        if (!ok && count >= GUEST_LIMIT) {
+        // useAuthStatus가 기본 동기화를 해주므로, 여기서는 저장된 플래그만 참고
+        const ok = window.localStorage.getItem("isLoggedIn") === "true";
+        if (ok) return;
+        const count = parseInt(window.localStorage.getItem("guest_chat_count") || "0", 10);
+        if (count >= GUEST_LIMIT) {
           setShowLoginCard(true);
         }
       } catch {
-        // 네트워크 이슈면 기존 상태 유지
-        setIsLoggedIn(localStorage.getItem("isLoggedIn") === "true");
+        // 무시
       }
     })();
   }, []);

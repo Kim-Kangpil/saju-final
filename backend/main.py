@@ -4,6 +4,8 @@ from logic.twelve_states import calculate_twelve_states, get_twelve_state
 from logic import test
 from logic import lunar_converter
 from logic.jijanggan import calculate_jijanggan_for_pillars
+from logic.saju_core import compute_full_saju
+from logic.feature_flags import use_new_saju_engine, get_engine_version_label
 from logic.theory_retriever import TheoryRetriever
 from auth_kakao import router as kakao_router
 from auth_google2 import router as google_router
@@ -311,6 +313,7 @@ def _build_saju_context(saju: Optional[dict]) -> str:
         parts.append("성별: 남" if gender == "M" else "성별: 여")
 
     result = saju.get("result") if isinstance(saju.get("result"), dict) else {}
+    season = result.get("season") if isinstance(result.get("season"), dict) else {}
     if result:
         year = result.get("year") or {}
         month = result.get("month") or {}
@@ -335,6 +338,13 @@ def _build_saju_context(saju: Optional[dict]) -> str:
         patterns = result.get("patterns") or []
         if patterns:
             parts.append("패턴/특징: " + ", ".join(str(p) for p in patterns[:15]))
+
+    # 월지 기준 계절 요약(있을 때만)
+    if season:
+        name = season.get("name")
+        detail = season.get("detail")
+        if name and detail:
+            parts.append(f"월지 기준 계절: {name} — {detail}")
 
     if len(parts) <= 1:
         return ""
@@ -373,10 +383,18 @@ async def api_chat(req: ChatRequest, request: Request):
         "편관: 남자=자식에 대한 부담·강한 책임, 여자=남편 또는 강한 이성. "
         "재성=재물·아버지, 남자에게 아내. 인성=어머니·학문. 식상=표현·재능, 여자에게 자식. 비겁=형제·동료.\n"
     )
+    month_branch_rule = (
+        "\n[월지(寅·卯·辰·巳·午·未·申·酉) 표현 규칙 — 반드시 지킬 것]\n"
+        "- 사용자가 'OO월'이라고 말하더라도, 사주에서의 월은 '월지(지지)'를 기준으로 해석한다.\n"
+        "- 월지를 설명할 때 절대로 '4월', '5월', '6월', '9월'처럼 숫자 달이나 음력/양력 몇 월이라고 단정하지 마라.\n"
+        "- 예: 酉월은 '가을 한가운데 닭의 달, 서늘하고 정리되는 느낌'처럼 계절과 이미지로만 설명하고, '6월의 여름 기운'이라고 말하지 마라.\n"
+        "- 사용자가 먼저 '양력 6월인가요?' 같이 물어봐도, '사주에서 말하는 酉월은 6월과 정확히 1:1 대응하는 개념이 아니다'라고 설명하고, 계절·분위기 위주로만 답하라.\n"
+    )
     system_parts = [
         "당신은 한양사주의 AI 상담사입니다. 사주, 운세, 고민 상담 등에 대해 친절하고 쉽게 답변합니다.",
         "전문 용어(일간, 십성, 오행 등)는 가능한 한 쓰지 않고, 일상적인 말로 풀어서 설명해 주세요.",
         ten_gods_rule,
+        month_branch_rule,
         "【중요】 사용자의 만세력/사주를 물을 때:",
         "- 아래 [이 사용자의 만세력 / 사주 컨텍스트]가 있으면, **그 안의 데이터만** 사용해서 답하세요. 생년월일·사주팔자·생시 등은 컨텍스트에 적힌 그대로만 말하세요. 지어내지 마세요.",
         "- 컨텍스트가 없거나 비어 있으면, '저장된 사주가 없어요. 먼저 사주를 등록해 주시면 정확히 말씀드릴 수 있어요.'라고 안내하세요.",
@@ -447,11 +465,20 @@ class SajuRequest(BaseModel):
     year: int
     month: int
     day: int
-    hour: int = Field(ge=0, le=23)
-    minute: int = Field(ge=0, le=59)
+    hour: int | None = Field(
+        default=None, ge=0, le=23, description="0-23. None이면 출생시간 정보 없음으로 간주"
+    )
+    minute: int | None = Field(
+        default=None, ge=0, le=59, description="0-59. None이면 0분으로 처리"
+    )
     gender: str = Field(description="M 또는 F")
     is_leap_month: bool = Field(
-        default=False, description="calendar_type이 lunar일 때만 의미 있음")
+        default=False, description="calendar_type이 lunar일 때만 의미 있음"
+    )
+    time_unknown: bool = Field(
+        default=False,
+        description="출생시간을 모르는 경우 True. 이 경우 시주는 보조 정보로만 사용",
+    )
 
 
 class PillarsResponse(BaseModel):
@@ -620,10 +647,7 @@ def health():
 
 @app.get("/saju/day-pillar")
 def get_day_pillar(date_str: Optional[str] = None):
-    """특정 날짜의 일진(일주) 반환. date=YYYY-MM-DD (없으면 대한민국(KST) 기준 오늘).
-
-    주의: 내부 만세력 기준과의 오프셋 때문에, 실제 캘린더와 맞추기 위해 하루를 보정(+1일)한다.
-    """
+    """특정 날짜의 일진(일주) 반환. date=YYYY-MM-DD (없으면 대한민국(KST) 기준 오늘)."""
     try:
         # 1) 기준 날짜: 대한민국 시간(KST) 기준
         if not date_str:
@@ -635,11 +659,8 @@ def get_day_pillar(date_str: Optional[str] = None):
                 raise ValueError("date는 YYYY-MM-DD 형식이어야 합니다")
             today = date(int(parts[0]), int(parts[1]), int(parts[2]))
 
-        # 2) 내부 만세력 기준이 하루 앞서 있는 문제 보정: +1일
-        adjusted = today + timedelta(days=1)
-
-        # 3) KST 정오 기준으로 일진 계산
-        dt = datetime(adjusted.year, adjusted.month, adjusted.day, 12, 0)
+        # 2) 해당 날짜(KST 기준)의 일진 계산 (별도 +1일 보정 없이 그대로 사용)
+        dt = datetime(today.year, today.month, today.day, 12, 0)
         dj = test.calculate_day_pillar(dt)
         hanja_map = {
             "甲": "갑", "乙": "을", "丙": "병", "丁": "정", "戊": "무",
@@ -663,91 +684,42 @@ def get_day_pillar(date_str: Optional[str] = None):
 async def get_full_saju(req: SajuRequest):
     """✅ 전체 사주 분석 (프론트엔드에서 사용)"""
     try:
-        birth_dt, solar_dt_used = _to_datetime(req)
+        # feature flag를 통해 신규 엔진 사용 여부를 제어한다.
+        # 현재는 compute_full_saju 한 경로만 존재하지만, 향후 구엔진과 신엔진을 병행할 수 있도록 설계.
+        if not use_new_saju_engine():
+            data = compute_full_saju(
+                {
+                    "calendar_type": req.calendar_type,
+                    "year": req.year,
+                    "month": req.month,
+                    "day": req.day,
+                    "hour": req.hour if req.hour is not None else 12,
+                    "minute": req.minute if req.minute is not None else 0,
+                    "gender": req.gender,
+                    "is_leap_month": req.is_leap_month,
+                    "time_unknown": req.time_unknown,
+                },
+                DB,
+            )
+            data["engine_version"] = get_engine_version_label()
+            return data
 
-        yj = test.calculate_year_pillar(solar_dt_used, DB)
-        mj = test.calculate_month_pillar(solar_dt_used, yj, DB)
-        dj = test.calculate_day_pillar(solar_dt_used)
-        sj = test.calculate_hour_pillar(solar_dt_used, dj)
-
-        # 십이운성 계산 (일간 기준)
-        try:
-            hanja_map = {
-                "甲": "갑", "乙": "을", "丙": "병", "丁": "정", "戊": "무",
-                "己": "기", "庚": "경", "辛": "신", "壬": "임", "癸": "계",
-                "子": "자", "丑": "축", "寅": "인", "卯": "묘", "辰": "진",
-                "巳": "사", "午": "오", "未": "미", "申": "신", "酉": "유",
-                "戌": "술", "亥": "해"
-            }
-
-            # 일간(日干)
-            day_stem = hanja_map.get(dj[0], "")
-
-            # 각 지지
-            hour_branch = hanja_map.get(sj[1], "")
-            day_branch = hanja_map.get(dj[1], "")
-            month_branch = hanja_map.get(mj[1], "")
-            year_branch = hanja_map.get(yj[1], "")
-
-            twelve_states = {
-                "hour": get_twelve_state(day_stem, hour_branch),
-                "day": get_twelve_state(day_stem, day_branch),
-                "month": get_twelve_state(day_stem, month_branch),
-                "year": get_twelve_state(day_stem, year_branch)
-            }
-
-            print(f"✅ 십이운성 (일간: {day_stem}): {twelve_states}")
-        except Exception as e:
-            print(f"⚠️ 십이운성 계산 실패: {e}")
-            import traceback
-            traceback.print_exc()
-            twelve_states = {}
-
-        # 🔥 지장간 계산
-        try:
-            jijanggan_pillars = {
-                "hour": {"jiji": hanja_map.get(sj[1], "")},
-                "day": {"jiji": hanja_map.get(dj[1], "")},
-                "month": {"jiji": hanja_map.get(mj[1], "")},
-                "year": {"jiji": hanja_map.get(yj[1], "")}
-            }
-            jijanggan = calculate_jijanggan_for_pillars(jijanggan_pillars)
-            print(f"✅ 지장간: {jijanggan}")
-        except Exception as e:
-            print(f"⚠️ 지장간 계산 실패: {e}")
-            import traceback
-            traceback.print_exc()
-            jijanggan = {}
-
-        # 대운 계산 (기존 로직 사용)
-        daeun_start_age = None
-        daeun_direction = None
-        daeun_list = None
-        try:
-            gender = _parse_gender(req.gender)
-            d_num, d_list, d_dir = test.calculate_daeun(birth_dt, gender, yj, mj, DB)
-            daeun_start_age = d_num
-            daeun_direction = d_dir
-            daeun_list = d_list
-            print(f"✅ 대운: 시작 {d_num}세, {d_dir}, {len(d_list)}개")
-        except Exception as e:
-            print(f"⚠️ 대운 계산 실패: {e}")
-            import traceback
-            traceback.print_exc()
-
-        return {
-            "input_datetime": f"{req.year}-{req.month:02d}-{req.day:02d} {req.hour:02d}:{req.minute:02d}",
-            "solar_datetime_used": solar_dt_used.strftime("%Y-%m-%d %H:%M"),
-            "year_pillar": yj,
-            "month_pillar": mj,
-            "day_pillar": dj,
-            "hour_pillar": sj,
-            "twelve_states": twelve_states,
-            "jijanggan": jijanggan,
-            "daeun_start_age": daeun_start_age,
-            "daeun_direction": daeun_direction,
-            "daeun_list": daeun_list,
-        }
+        data = compute_full_saju(
+            {
+                "calendar_type": req.calendar_type,
+                "year": req.year,
+                "month": req.month,
+                "day": req.day,
+                "hour": req.hour,
+                "minute": req.minute,
+                "gender": req.gender,
+                "is_leap_month": req.is_leap_month,
+                "time_unknown": req.time_unknown,
+            },
+            DB,
+        )
+        data["engine_version"] = get_engine_version_label()
+        return data
     except Exception as e:
         print(f"❌ /saju/full 에러: {e}")
         import traceback

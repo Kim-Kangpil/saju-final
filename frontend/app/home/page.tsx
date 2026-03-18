@@ -4,7 +4,7 @@ import { use, useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { getSavedSajuList } from "@/lib/sajuStorage";
 import { useLang } from "@/contexts/LangContext";
-import { clearStoredToken, getAuthHeaders } from "@/lib/auth";
+import { clearStoredToken, getAuthHeaders, getStoredToken } from "@/lib/auth";
 import ko from "@/locales/ko";
 import en from "@/locales/en";
 
@@ -172,6 +172,13 @@ export default function HomePage({
         process.env.NEXT_PUBLIC_API_URL ||
         "https://saju-backend-eqd6.onrender.com";
       (async () => {
+        // 토큰도 없고, 아직 로그인 플래그도 없다면 굳이 서버 요청을 보내지 않는다.
+        const hasToken = !!getStoredToken();
+        const localFlag = localStorage.getItem("isLoggedIn");
+        if (!hasToken && localFlag !== "true") {
+          setIsLoggedIn(false);
+          return;
+        }
         try {
           const res = await fetch(`${backend}/api/saju/list`, {
             credentials: "include",
@@ -201,7 +208,7 @@ export default function HomePage({
   useEffect(() => {
     const id = setInterval(() => {
       setChatIdx(i => (i + 1) % CHAT_BUBBLES.length);
-    }, 3800);
+    }, 5800);
     return () => clearInterval(id);
   }, []);
 
@@ -868,9 +875,13 @@ export default function HomePage({
           border-radius: 12px;
           border-bottom-left-radius: 3px;
           font-size: 13px;
-          line-height: 1.7;
-          max-width: 85%;
+          line-height: 1.45;
+          max-width: 600px;
+          width: 100%;
           word-break: keep-all;
+          white-space: pre-line;
+          margin-bottom: 8px;
+          text-align: left;
           animation: fadeInUp .4s .15s ease both;
         }
 

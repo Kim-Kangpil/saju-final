@@ -40,15 +40,15 @@ const en = {
     bubbles: [
       {
         q: "When is a good time for me to change jobs?",
-        a: "The Gyeong Metal cycle is amplifying your Pyeon-gwan energy. Next year, when Sik-sin enters in Eulsa year, will be favorable for change.",
+        a: "In Saju, we look at the big 10‑year cycles and yearly flow together to find when “change energy” is naturally strong for you. I’ll help you see whether this is a time to move, or a time to build skills where you are first.",
       },
       {
         q: "How is my wealth luck this year?",
-        a: "The second half of the year looks favorable as your monthly Pyeon-jae forms a triple harmony with the annual cycle. Watch out for Gyeop-jae conflicts though.",
+        a: "Wealth luck isn’t just about a one‑time jackpot. It’s more about how you can earn and manage money in a way that feels stable for you. Based on this year’s flow, I’ll separate the times to avoid over‑risking from the periods that are better for calmly building your foundation.",
       },
       {
         q: "What type of person suits me best?",
-        a: "Based on your Gab-mok day stem, Gi-to Jeong-jae harmonizes well with you. You work best with grounded, practical people.",
+        a: "Saju looks at your temperament and the balance of the five elements to see what kind of people drain your energy and what kind of people feel comfortable to be around. Rather than saying “this personality is good,” I’ll help you find the pace and style of relationships that fit you naturally.",
       },
     ],
   },

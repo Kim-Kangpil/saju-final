@@ -23,46 +23,6 @@ export default function StartPage({
     process.env.NEXT_PUBLIC_BACKEND_URL ||
     "https://saju-backend-eqd6.onrender.com";
 
-  // 카카오/구글 등 외부 로그인 이후 이미 세션이 생겼다면
-  // 다시 로그인 폼을 보여주지 않고 바로 다음 화면으로 보낸다.
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const res = await fetch(`${backend}/api/saju/list`, {
-          credentials: "include",
-          headers: getAuthHeaders(),
-        });
-        if (!res.ok) {
-          // 세션/토큰이 유효하지 않으면 "가짜 로그인" 상태를 정리
-          if (typeof window !== "undefined") {
-            localStorage.setItem("isLoggedIn", "false");
-          }
-          clearStoredToken();
-          return;
-        }
-        if (typeof window !== "undefined") {
-          localStorage.setItem("isLoggedIn", "true");
-        }
-        const data = await res.json().catch(() => []);
-        if (cancelled) return;
-        const list = Array.isArray(data) ? data : [];
-        if (list.length > 0) {
-          router.replace("/saju-list");
-        } else {
-          router.replace("/saju-add");
-        }
-      } catch {
-        // 네트워크 이슈면 상태를 건드리지 않고 로그인 화면 유지
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [backend, router]);
-
   const goKakao = () => {
     if (typeof window !== "undefined") {
       window.location.href = `${backend}/auth/kakao/login`;

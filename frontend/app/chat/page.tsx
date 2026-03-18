@@ -10,7 +10,7 @@ import MarkdownMessage from "../../components/MarkdownMessage";
 import { useLang } from "@/contexts/LangContext";
 import { useChatSessions } from "@/hooks/useChatSessions";
 import type { Message as SessionMessage } from "@/lib/chatStorage";
-import { clearStoredToken, getAuthHeaders } from "@/lib/auth";
+import { clearStoredToken, getAuthHeaders, getStoredToken } from "@/lib/auth";
 
 /** 게스트 3회 제한 — 잠시 끄기: true면 3번 질문 후 로그인 유도 */
 const GUEST_LIMIT_ENABLED = false;
@@ -100,6 +100,12 @@ export default function ChatPage({
     // 서버 세션 기준으로 로그인 상태 동기화 (가짜 로그인 방지)
     (async () => {
       try {
+        const hasToken = !!getStoredToken();
+        const localFlag = localStorage.getItem("isLoggedIn");
+        if (!hasToken && localFlag !== "true") {
+          setIsLoggedIn(false);
+          return;
+        }
         const res = await fetch(`${backend}/api/saju/list`, {
           credentials: "include",
           headers: getAuthHeaders(),
@@ -992,15 +998,26 @@ function ChatContent({
     }
   }
 
-  // useChat 메시지를 세션 스토리지와 동기화
+  // useChat 메시지를 세션 스토리지와 동기화 (무한 루프 방지용 스냅샷)
+  const lastSnapshotRef = useRef<string>("");
   useEffect(() => {
     if (!sessionId) return;
-    const mapped: SessionMessage[] = messages.map((m) => ({
-      id: `${sessionId}-${m.id ?? Math.random().toString(36).slice(2)}`,
+    const mapped: SessionMessage[] = messages.map((m, idx) => ({
+      id: (m as any).id ?? `${sessionId}-${idx}`,
       role: m.role as "user" | "assistant",
       text: getMessageText(m as any),
       createdAt: Date.now(),
     }));
+
+    // role/text 기준으로만 스냅샷을 비교해 불필요한 업데이트 방지
+    const snapshot = JSON.stringify(
+      mapped.map((m) => ({
+        role: m.role,
+        text: m.text,
+      })),
+    );
+    if (snapshot === lastSnapshotRef.current) return;
+    lastSnapshotRef.current = snapshot;
     replaceMessages(sessionId, mapped);
   }, [messages, replaceMessages, sessionId]);
 

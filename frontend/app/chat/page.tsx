@@ -14,7 +14,7 @@ import { clearStoredToken, getAuthHeaders, getStoredToken } from "@/lib/auth";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 
 /** 게스트 3회 제한 — 잠시 끄기: true면 3번 질문 후 로그인 유도 */
-const GUEST_LIMIT_ENABLED = false;
+const GUEST_LIMIT_ENABLED = true;
 const GUEST_LIMIT = 3;
 
 /** 시간대별 인사 문구 (다국어) */
@@ -552,6 +552,58 @@ export default function ChatPage({
         .chat-login-btn.primary { border: none; background: #2C2A26; color: #F2EDE4; }
         .chat-login-btn.secondary { border: 1px solid var(--border2); background: transparent; color: var(--sub); }
         .chat-login-btn:hover { opacity: .9; }
+        .chat-login-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 90;
+          background: rgba(0, 0, 0, 0.38);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 16px;
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
+        }
+        .chat-login-modal {
+          width: 100%;
+          max-width: 360px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          box-shadow: 0 16px 40px rgba(0,0,0,0.22);
+          padding: 18px 16px 14px;
+          text-align: center;
+        }
+        @media (min-width: 768px) {
+          .chat-login-modal {
+            max-width: 420px;
+            padding: 22px 20px 18px;
+          }
+        }
+        .chat-login-modal h3 {
+          font-family: var(--serif);
+          font-size: 17px;
+          font-weight: 700;
+          color: var(--text);
+          margin-bottom: 10px;
+        }
+        .chat-login-modal p {
+          font-size: 13px;
+          color: var(--sub);
+          line-height: 1.65;
+          margin-bottom: 16px;
+        }
+        .chat-login-modal-close {
+          border: 1px solid var(--border2);
+          background: transparent;
+          color: var(--sub);
+          border-radius: 10px;
+          min-height: 42px;
+          padding: 0 14px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+        }
         .chat-error-banner {
           padding: 12px 16px;
           margin: 0 16px 12px;
@@ -929,6 +981,46 @@ type ChatContentProps = {
   savedSajuName: string | null;
 };
 
+function hasTwoFollowupQuestions(text: string): boolean {
+  const sectionSplit = text.split(/###\s*이어서 보면 좋은 질문/i);
+  const target = sectionSplit.length > 1 ? sectionSplit[sectionSplit.length - 1] : text;
+  const numbered = target.match(/^\s*(?:[-*]\s+)?\d+\.\s+.+$/gm) || [];
+  return numbered.length >= 2;
+}
+
+function buildDefaultFollowupQuestions(lastUserText: string, lang: "ko" | "en"): [string, string] {
+  if (lang === "en") {
+    return [
+      `Given what I asked${lastUserText ? ` ("${lastUserText.slice(0, 40)}...")` : ""}, what should I focus on first this week?`,
+      "What warning signs should I watch for so I can adjust earlier?",
+    ];
+  }
+  return [
+    `${lastUserText ? `"${lastUserText.slice(0, 20)}"` : "지금 고민"} 기준으로, 이번 주에 가장 먼저 바꾸면 좋은 행동은 뭐야?`,
+    "내가 같은 실수를 반복하지 않으려면 어떤 신호를 빨리 알아차려야 해?",
+  ];
+}
+
+function normalizeAssistantMessage(text: string, lastUserText: string, lang: "ko" | "en"): string {
+  const trimmed = (text || "").trim();
+  if (!trimmed) return text;
+
+  const hasCoreSection = /###\s*(핵심 해석|Core Interpretation)/i.test(trimmed);
+  let next = trimmed;
+  if (!hasCoreSection) {
+    next = lang === "en" ? `### Core Interpretation\n${next}` : `### 핵심 해석\n${next}`;
+  }
+
+  if (!hasTwoFollowupQuestions(next)) {
+    const [q1, q2] = buildDefaultFollowupQuestions(lastUserText, lang);
+    next +=
+      lang === "en"
+        ? `\n\n### Follow-up Questions\n1. ${q1}\n2. ${q2}`
+        : `\n\n### 이어서 보면 좋은 질문\n1. ${q1}\n2. ${q2}`;
+  }
+  return next;
+}
+
 function ChatContent({
   sessionId,
   initialSessionMessages,
@@ -1071,15 +1163,14 @@ function ChatContent({
     lastUserMessageRef.current = trimmed;
     handleRetryRef.current = (t: string) => sendMessage({ text: t });
 
-    if (GUEST_LIMIT_ENABLED) {
+    let shouldIncrementGuestCount = false;
+    if (GUEST_LIMIT_ENABLED && !isLoggedIn) {
       const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
-      if (!isLoggedIn && guestCount >= GUEST_LIMIT) {
+      if (guestCount >= GUEST_LIMIT) {
         setShowLoginCard(true);
         return;
       }
-      if (!isLoggedIn) {
-        localStorage.setItem("guest_chat_count", String(guestCount + 1));
-      }
+      shouldIncrementGuestCount = true;
     }
 
     // 첫 유저 메시지로 세션 제목 설정
@@ -1089,6 +1180,10 @@ function ChatContent({
 
     try {
       await sendMessage({ text: trimmed });
+      if (shouldIncrementGuestCount) {
+        const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
+        localStorage.setItem("guest_chat_count", String(guestCount + 1));
+      }
     } catch (e) {
       onError(e instanceof Error ? e.message : "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
     }
@@ -1139,6 +1234,10 @@ function ChatContent({
               {messages.map((m, i) => {
                 const text = getMessageText(m);
                 const isAI = m.role === "assistant";
+                const prevUserText = i > 0 ? getMessageText(messages[i - 1]) : "";
+                const normalizedText = isAI
+                  ? normalizeAssistantMessage(text, prevUserText, lang)
+                  : text;
                 const isLastUser = m.role === "user" && lastUserIndex === i;
                 return (
                   <div
@@ -1148,14 +1247,14 @@ function ChatContent({
                   >
                     <div className="chat-msg-bubble-wrap">
                       <div className="chat-msg-bubble">
-                        <MarkdownMessage text={text} isAI={isAI} />
+                        <MarkdownMessage text={normalizedText} isAI={isAI} />
                       </div>
                       <button
                         type="button"
                         className="chat-msg-copy"
                         aria-label="복사"
                         onClick={() => {
-                          navigator.clipboard?.writeText(text).catch(() => {});
+                          navigator.clipboard?.writeText(normalizedText).catch(() => {});
                         }}
                       >
                         <Icon icon="mdi:content-copy" width={14} />
@@ -1173,59 +1272,59 @@ function ChatContent({
                   </div>
                 </div>
               )}
-              {showLoginCard && (
-                <div className="chat-login-card">
-                  <h3>
-                    {lang === "en"
-                      ? "🔮 Want deeper, personalized analysis?"
-                      : "🔮 더 깊은 분석을 원하신다면"}
-                  </h3>
-                  <p>
-                    {lang === "en" ? "Save your birth data to get" : "생년월일을 등록하면"}
-                    <br />
-                    {lang === "en"
-                      ? "personalized Saju readings just for you."
-                      : "나만의 맞춤 사주 분석을"}
-                    <br />
-                    {lang === "en" ? "" : "받을 수 있어요."}
-                  </p>
-                  <div className="chat-login-btns">
-                    <button type="button" className="chat-login-btn primary" onClick={() => router.push("/start")}>
-                      {lang === "en" ? "Log in" : "로그인하기"}
-                    </button>
-                    <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
-                      {lang === "en" ? "Sign up" : "회원가입"}
-                    </button>
-                  </div>
-                </div>
-              )}
             </>
           )}
           <div ref={bottomRef} />
         </div>
       </div>
 
-      {!showLoginCard && (
-        <div className="chat-input-wrap">
-          {!hasUserMessage && (
-            <div className="chat-quick-chips">
-              {(lang === "en" ? QUICK_PROMPTS_EN : QUICK_PROMPTS_KO).map((q) => (
-                <button
-                  key={q.label}
-                  type="button"
-                  className="chat-quick-chip"
-                  onClick={() => handleSubmit(q.text)}
-                >
-                  {q.label}
-                </button>
-              ))}
+      <div className="chat-input-wrap">
+        {!hasUserMessage && !showLoginCard && (
+          <div className="chat-quick-chips">
+            {(lang === "en" ? QUICK_PROMPTS_EN : QUICK_PROMPTS_KO).map((q) => (
+              <button
+                key={q.label}
+                type="button"
+                className="chat-quick-chip"
+                onClick={() => handleSubmit(q.text)}
+              >
+                {q.label}
+              </button>
+            ))}
+          </div>
+        )}
+        <ChatInput
+          disabled={sending || showLoginCard}
+          onSubmit={handleSubmit}
+          placeholder={lang === "en" ? "Ask anything about your Saju" : "무엇이든 물어보세요"}
+        />
+      </div>
+
+      {showLoginCard && (
+        <div className="chat-login-modal-backdrop" onClick={() => setShowLoginCard(false)}>
+          <div className="chat-login-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>
+              {lang === "en"
+                ? "🔮 Want deeper, personalized analysis?"
+                : "🔮 더 깊은 분석을 원하신다면"}
+            </h3>
+            <p>
+              {lang === "en"
+                ? "After 3 guest chats, login is required. Save your birth data to get personalized Saju readings."
+                : "게스트 채팅은 3회까지 이용 가능해요.\n로그인 후 생년월일을 등록하면 더 정확한 맞춤 해석을 받을 수 있어요."}
+            </p>
+            <div className="chat-login-btns">
+              <button type="button" className="chat-login-btn primary" onClick={() => router.push("/start")}>
+                {lang === "en" ? "Log in" : "로그인하기"}
+              </button>
+              <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
+                {lang === "en" ? "Sign up" : "회원가입"}
+              </button>
+              <button type="button" className="chat-login-modal-close" onClick={() => setShowLoginCard(false)}>
+                {lang === "en" ? "Close" : "닫기"}
+              </button>
             </div>
-          )}
-          <ChatInput
-            disabled={sending}
-            onSubmit={handleSubmit}
-            placeholder={lang === "en" ? "Ask anything about your Saju" : "무엇이든 물어보세요"}
-          />
+          </div>
         </div>
       )}
 

@@ -1,5 +1,6 @@
 # ==================== 1. 환경변수 로드 (가장 먼저!) ====================
 import openai
+import hashlib
 from logic.twelve_states import calculate_twelve_states, get_twelve_state
 from logic import test
 from logic import lunar_converter
@@ -117,6 +118,14 @@ try:
 except Exception as e:
     print(f"⚠️ 사용자 DB 초기화: {e}")
 
+# 게스트 채팅 카운터 DB 초기화
+try:
+    from logic.guest_chat_db import init_guest_chat_db
+    init_guest_chat_db()
+    print("✅ 게스트 채팅 카운터 DB 초기화 완료")
+except Exception as e:
+    print(f"⚠️ 게스트 채팅 카운터 DB 초기화: {e}")
+
 # 사주 DB 초기화
 try:
     init_saju_db()
@@ -163,6 +172,51 @@ def root():
             "payment_create": "/payment/create"
         }
     }
+
+
+def _get_client_ip(request: Request) -> str:
+    """프록시/로드밸런서 환경에서도 비교적 안전하게 IP를 뽑아오는 헬퍼."""
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        # 예: "client, proxy1, proxy2"
+        return xff.split(",")[0].strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return ""
+
+
+@app.post("/api/guest-chat/consume")
+async def guest_chat_consume(request: Request):
+    """
+    게스트 채팅 사용 3회 제한(로그인 유도).
+    - 로그인(쿠키/토큰으로 user_id 확인)이면 무제한 허용
+    - 게스트면 guest_key 기준으로 카운트 후, 4번째부터 401 반환
+    """
+    user_id = get_user_id_from_request(request)
+    if user_id is not None:
+        return {"allowed": True, "loggedIn": True}
+
+    # 서버에서 강제하는 기본값 (프론트에서도 동일하게 3으로 두는 것을 권장)
+    limit = 3
+
+    client_ip = _get_client_ip(request)
+    user_agent = request.headers.get("user-agent", "")
+    raw_key = f"{client_ip}|{user_agent}"
+    guest_key = hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+
+    try:
+        from logic.guest_chat_db import consume_guest_chat
+
+        allowed, _count = consume_guest_chat(guest_key, limit)
+        if not allowed:
+            raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+        return {"allowed": True, "loggedIn": False}
+    except HTTPException:
+        raise
+    except Exception as e:
+        # 카운터 DB가 깨져 있으면 비용 폭탄을 막기 위해 기본 deny
+        print(f"❌ /api/guest-chat/consume 오류: {e}")
+        raise HTTPException(status_code=503, detail="게스트 사용량 체크 실패")
 
 
 @app.get("/api/saju/count")

@@ -1311,14 +1311,19 @@ function ChatContent({
             <p>
               {lang === "en"
                 ? "After 3 guest chats, login is required. Save your birth data to get personalized Saju readings."
-                : "게스트 채팅은 3회까지 이용 가능해요.\n로그인 후 생년월일을 등록하면 더 정확한 맞춤 해석을 받을 수 있어요."}
+                : (
+                  <>
+                    게스트 채팅은 3회까지 이용 가능해요.
+                    <br />
+                    로그인 후 생년월일을 등록하면
+                    <br />
+                    더 정확한 맞춤 해석을 받을 수 있어요.
+                  </>
+                )}
             </p>
             <div className="chat-login-btns">
               <button type="button" className="chat-login-btn primary" onClick={() => router.push("/start")}>
                 {lang === "en" ? "Log in" : "로그인하기"}
-              </button>
-              <button type="button" className="chat-login-btn secondary" onClick={() => router.push("/signup")}>
-                {lang === "en" ? "Sign up" : "회원가입"}
               </button>
               <button type="button" className="chat-login-modal-close" onClick={() => setShowLoginCard(false)}>
                 {lang === "en" ? "Close" : "닫기"}

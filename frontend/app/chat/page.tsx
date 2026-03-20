@@ -1021,6 +1021,27 @@ function normalizeAssistantMessage(text: string, lastUserText: string, lang: "ko
   return next;
 }
 
+function extractFollowupQuestions(text: string): { mainText: string; questions: [string, string] | null } {
+  const sectionSplit = text.split(/###\s*(이어서 보면 좋은 질문|Follow-up Questions)/i);
+  if (sectionSplit.length < 2) {
+    return { mainText: text, questions: null };
+  }
+
+  const mainText = sectionSplit[0].trim();
+  const tail = sectionSplit[sectionSplit.length - 1];
+  const numbered = tail.match(/^\s*(?:[-*]\s+)?\d+\.\s+(.+)$/gm) || [];
+  const questions = numbered
+    .map((line) => line.replace(/^\s*(?:[-*]\s+)?\d+\.\s+/, "").trim())
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (questions.length < 2) {
+    return { mainText: text, questions: null };
+  }
+
+  return { mainText, questions: [questions[0], questions[1]] };
+}
+
 function ChatContent({
   sessionId,
   initialSessionMessages,
@@ -1068,6 +1089,13 @@ function ChatContent({
   for (let j = messages.length - 1; j >= 0; j--) {
     if ((messages[j] as any).role === "user") {
       lastUserIndex = j;
+      break;
+    }
+  }
+  let lastAssistantIndex = -1;
+  for (let j = messages.length - 1; j >= 0; j--) {
+    if ((messages[j] as any).role === "assistant") {
+      lastAssistantIndex = j;
       break;
     }
   }
@@ -1238,7 +1266,9 @@ function ChatContent({
                 const normalizedText = isAI
                   ? normalizeAssistantMessage(text, prevUserText, lang)
                   : text;
+                const followup = isAI ? extractFollowupQuestions(normalizedText) : { mainText: normalizedText, questions: null };
                 const isLastUser = m.role === "user" && lastUserIndex === i;
+                const isLastAssistant = isAI && lastAssistantIndex === i;
                 return (
                   <div
                     key={i}
@@ -1247,14 +1277,46 @@ function ChatContent({
                   >
                     <div className="chat-msg-bubble-wrap">
                       <div className="chat-msg-bubble">
-                        <MarkdownMessage text={normalizedText} isAI={isAI} />
+                        <MarkdownMessage text={followup.mainText} isAI={isAI} />
+                        {isLastAssistant && followup.questions && (
+                          <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+                            <div style={{ fontSize: 11, color: "#6B5F4E" }}>
+                              이런 것도 궁금하지 않으세요?
+                            </div>
+                            {followup.questions.map((q) => (
+                              <button
+                                key={q}
+                                type="button"
+                                disabled={sending}
+                                onClick={() => handleSubmit(q)}
+                                style={{
+                                  width: "100%",
+                                  background: "#F5F1EA",
+                                  border: "1px solid #D4C9B8",
+                                  borderRadius: 10,
+                                  color: "#4A3F30",
+                                  fontSize: 13,
+                                  padding: "10px 12px",
+                                  textAlign: "left",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  cursor: sending ? "not-allowed" : "pointer",
+                                }}
+                              >
+                                <span aria-hidden>{"→"}</span>
+                                <span>{q}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <button
                         type="button"
                         className="chat-msg-copy"
                         aria-label="복사"
                         onClick={() => {
-                          navigator.clipboard?.writeText(normalizedText).catch(() => {});
+                          navigator.clipboard?.writeText(followup.mainText).catch(() => {});
                         }}
                       >
                         <Icon icon="mdi:content-copy" width={14} />

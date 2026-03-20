@@ -1243,8 +1243,23 @@ _CONCERN_SYSTEM = """당신은 한국 전통 사주를 현대적으로 해석하
   "root_cause": "고민의 근본 원인 (사주 기반, 2~3문장)",
   "reason_now": "지금 이 시기에 이 고민이 생긴 이유 (2~3문장)",
   "directions": ["방향 제시 1", "방향 제시 2", "방향 제시 3"],
-  "resolution_hint": "이 고민이 풀리는 시기 힌트 (2~4문장)"
+  "resolution_hint": "이 고민이 풀리는 시기 힌트 (2~4문장)",
+  "suggested_questions": [
+    "추천 질문 1",
+    "추천 질문 2"
+  ]
 }
+
+추천질문 생성 규칙:
+- 추천질문은 반드시 현재 답변 주제와 직접 연결되어야 한다.
+- 원인/시기/해결 중 하나를 더 깊게 묻는 형태여야 한다.
+- 바로 다음 턴에서 즉시 답변 가능한 구체적 질문이어야 한다.
+- 다른 주제로 갑자기 확장하지 마라.
+- 추천질문은 정확히 2개만 생성한다.
+- 첫 번째는 심화 질문 (원인 또는 시기).
+- 두 번째는 실전 질문 (해결 또는 행동 방향).
+- 질문 끝은 반드시 "~볼까요?" 또는 "~해볼까요?"로 끝낸다.
+- 의미 없는 포괄적 질문, 반복 질문, 다른 분야 점프 금지.
 
 총 분량은 2500자 내외로 작성하세요. 희망적이고 구체적으로 작성하세요."""
 
@@ -1309,6 +1324,32 @@ def _parse_concern_json(raw: str) -> Optional[dict]:
         return None
 
 
+def _normalize_suggested_questions(value: Any) -> list[str]:
+    """추천 질문을 정확히 2개로 보정."""
+    items: list[str] = []
+    if isinstance(value, list):
+        items = [str(v).strip() for v in value if str(v).strip()]
+    elif isinstance(value, str) and value.strip():
+        items = [value.strip()]
+
+    if len(items) < 2:
+        fallback = [
+            "이 고민이 반복되는 구조적 이유를 더 볼까요?",
+            "이 상황을 풀기 위해 이번 주에 바로 해볼 행동을 정해볼까요?",
+        ]
+        items.extend(fallback[len(items):])
+
+    items = items[:2]
+
+    def _with_valid_ending(q: str) -> str:
+        if q.endswith("볼까요?") or q.endswith("해볼까요?"):
+            return q
+        base = q.rstrip("?").strip()
+        return f"{base} 볼까요?" if base else "더 깊게 살펴볼까요?"
+
+    return [_with_valid_ending(items[0]), _with_valid_ending(items[1])]
+
+
 @app.post("/saju/concern-analysis-ping")
 async def concern_analysis_ping(req: ConcernAnalysisRequest):
     """고민 분석 경로 테스트용 — GPT 호출 없이 사주 분석만 수행 후 즉시 응답"""
@@ -1350,7 +1391,7 @@ def _call_gpt_concern(system: str, user_prompt: str) -> str:
 
 @app.post("/saju/concern-analysis")
 async def concern_analysis(req: ConcernAnalysisRequest):
-    """고민 분석: 사주 + 고민 텍스트 → GPT-4o로 4가지 포맷 결과 반환 (총 2500자 내외)"""
+    """고민 분석: 사주 + 고민 텍스트 → GPT-4o로 5가지 포맷 결과 반환 (총 2500자 내외)"""
     if not client:
         raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
 
@@ -1401,6 +1442,7 @@ async def concern_analysis(req: ConcernAnalysisRequest):
         directions = [directions] if isinstance(directions, str) else []
     directions = [str(d) for d in directions[:3]]
     resolution_hint = parsed.get("resolution_hint") or ""
+    suggested_questions = _normalize_suggested_questions(parsed.get("suggested_questions"))
 
     return {
         "success": True,
@@ -1408,6 +1450,7 @@ async def concern_analysis(req: ConcernAnalysisRequest):
         "reason_now": reason_now,
         "directions": directions,
         "resolution_hint": resolution_hint,
+        "suggested_questions": suggested_questions,
     }
 
 

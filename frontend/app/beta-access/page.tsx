@@ -1,16 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function BetaAccessPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const redirectTarget = useMemo(() => {
-    const raw = searchParams.get("redirect");
-    return raw && raw.startsWith("/") ? raw : "/";
-  }, [searchParams]);
+  const [redirectTarget, setRedirectTarget] = useState("/");
 
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -20,6 +15,17 @@ export default function BetaAccessPage() {
   useEffect(() => {
     setErr(null);
     setOk(false);
+
+    // Next.js에서 useSearchParams는 Suspense 경계가 필요할 수 있어,
+    // redirect 파라미터는 window 기반으로 안전하게 처리합니다.
+    try {
+      const qs = new URLSearchParams(window.location.search);
+      const raw = qs.get("redirect");
+      const next = raw && raw.startsWith("/") ? raw : "/";
+      setRedirectTarget(next);
+    } catch {
+      // ignore
+    }
   }, []);
 
   async function onVerify() {

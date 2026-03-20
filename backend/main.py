@@ -256,7 +256,7 @@ async def guest_chat_consume(request: Request):
 
 
 @app.post("/api/chat-logs/save")
-async def chat_logs_save(req: Request, body: ChatLogSaveRequest):
+async def chat_logs_save(req: Request, body: Any):
     """
     채팅 저장용 엔드포인트
 
@@ -265,15 +265,31 @@ async def chat_logs_save(req: Request, body: ChatLogSaveRequest):
     """
     from logic.chat_logs_db import save_chat_session
 
-    session_id = (body.sessionId or "").strip()
+    body_obj = body if isinstance(body, dict) else {}
+
+    session_id = (body_obj.get("sessionId") or "").strip()
     if not session_id:
         raise HTTPException(status_code=400, detail="sessionId가 필요합니다.")
 
-    messages = [
-        {"idx": m.idx, "role": m.role, "content": m.content}
-        for m in (body.messages or [])
-    ]
-    if not messages:
+    raw_messages = body_obj.get("messages") or []
+    normalized_messages: list[dict[str, Any]] = []
+    for m in raw_messages:
+        if not isinstance(m, dict):
+            continue
+        role = m.get("role")
+        content = m.get("content")
+        idx = m.get("idx")
+        if role not in ("user", "assistant"):
+            continue
+        if not isinstance(content, str) or not content.strip():
+            continue
+        try:
+            idx_int = int(idx)
+        except Exception:
+            continue
+        normalized_messages.append({"idx": idx_int, "role": role, "content": content})
+
+    if not normalized_messages:
         return {"success": True}
 
     user_id = get_user_id_from_request(req)
@@ -287,8 +303,8 @@ async def chat_logs_save(req: Request, body: ChatLogSaveRequest):
             session_id=session_id,
             user_id=user_id,
             guest_key=guest_key,
-            title=body.title,
-            messages=messages,
+            title=body_obj.get("title"),
+            messages=normalized_messages,
         )
         return {"success": True}
     except Exception as e:

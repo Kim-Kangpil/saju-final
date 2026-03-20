@@ -180,3 +180,36 @@ def deduct_seed(user_id: int, amount: int = 1) -> tuple[bool, int]:
         return False, current
     finally:
         conn.close()
+
+
+def list_users(limit: int = 50, offset: int = 0) -> list[dict]:
+    """관리자용: 유저 목록 반환(개인정보 포함)."""
+    limit = max(1, min(int(limit), 200))
+    offset = max(0, int(offset))
+
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            """
+            SELECT id, provider, provider_id, email, nickname, created_at, last_login
+            FROM users
+            ORDER BY id DESC
+            LIMIT ? OFFSET ?
+            """,
+            (limit, offset),
+        )
+        rows = cur.fetchall()
+        return [
+            {
+                "id": int(r[0]),
+                "provider": r[1] or "",
+                "providerId": r[2] or "",
+                "email": (r[3] or "").strip() or None,
+                "nickname": (r[4] or "").strip() or None,
+                "createdAt": r[5],
+                "lastLogin": r[6],
+            }
+            for r in rows
+        ]
+    finally:
+        conn.close()

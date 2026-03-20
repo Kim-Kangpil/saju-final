@@ -126,6 +126,14 @@ try:
 except Exception as e:
     print(f"⚠️ 게스트 채팅 카운터 DB 초기화: {e}")
 
+# 채팅 로그 DB 초기화
+try:
+    from logic.chat_logs_db import init_chat_logs_db
+    init_chat_logs_db()
+    print("✅ 채팅 로그 DB 초기화 완료")
+except Exception as e:
+    print(f"⚠️ 채팅 로그 DB 초기화: {e}")
+
 # 사주 DB 초기화
 try:
     init_saju_db()
@@ -185,6 +193,31 @@ def _get_client_ip(request: Request) -> str:
     return ""
 
 
+def _compute_guest_key(request: Request) -> str:
+    client_ip = _get_client_ip(request)
+    user_agent = request.headers.get("user-agent", "")
+    raw_key = f"{client_ip}|{user_agent}"
+    return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+
+
+def _is_chat_admin(request: Request) -> bool:
+    admin_user_id = (os.getenv("CHAT_LOGS_ADMIN_USER_ID") or "").strip()
+    if admin_user_id:
+        try:
+            uid = int(admin_user_id)
+            req_user_id = get_user_id_from_request(request)
+            if req_user_id is not None and req_user_id == uid:
+                return True
+        except ValueError:
+            pass
+
+    secret = (os.getenv("CHAT_LOGS_ADMIN_SECRET") or "").strip()
+    if not secret:
+        return False
+    provided = (request.headers.get("x-chat-admin-secret") or request.headers.get("X-CHAT-ADMIN-SECRET") or "").strip()
+    return bool(provided) and provided == secret
+
+
 @app.post("/api/guest-chat/consume")
 async def guest_chat_consume(request: Request):
     """
@@ -217,6 +250,163 @@ async def guest_chat_consume(request: Request):
         # 카운터 DB가 깨져 있으면 비용 폭탄을 막기 위해 기본 deny
         print(f"❌ /api/guest-chat/consume 오류: {e}")
         raise HTTPException(status_code=503, detail="게스트 사용량 체크 실패")
+
+
+# ==================== 채팅 로그 저장/조회 ====================
+
+
+@app.post("/api/chat-logs/save")
+async def chat_logs_save(req: Request, body: ChatLogSaveRequest):
+    """
+    채팅 저장용 엔드포인트
+
+    - 로그인 사용자: cookie 기반 user_id로 저장
+    - 게스트: client_ip + user-agent 기반 guest_key로 저장
+    """
+    from logic.chat_logs_db import save_chat_session
+
+    session_id = (body.sessionId or "").strip()
+    if not session_id:
+        raise HTTPException(status_code=400, detail="sessionId가 필요합니다.")
+
+    messages = [
+        {"idx": m.idx, "role": m.role, "content": m.content}
+        for m in (body.messages or [])
+    ]
+    if not messages:
+        return {"success": True}
+
+    user_id = get_user_id_from_request(req)
+    guest_key = None
+    if user_id is None:
+        guest_key = _compute_guest_key(req)
+
+    # 저장은 실패해도 채팅 UX가 깨지지 않도록 200을 유지(프론트는 best-effort로 처리)
+    try:
+        save_chat_session(
+            session_id=session_id,
+            user_id=user_id,
+            guest_key=guest_key,
+            title=body.title,
+            messages=messages,
+        )
+        return {"success": True}
+    except Exception as e:
+        print(f"⚠️ /api/chat-logs/save 저장 실패: {e}")
+        return {"success": False, "error": "save_failed"}
+
+
+@app.get("/api/chat-logs/sessions")
+async def chat_logs_list_sessions(request: Request, limit: int = 20, offset: int = 0):
+    """현재 요청자의 채팅 세션 목록 조회"""
+    from logic.chat_logs_db import get_sessions_for_owner
+
+    user_id = get_user_id_from_request(request)
+    guest_key = None
+    if user_id is None:
+        guest_key = _compute_guest_key(request)
+
+    sessions = get_sessions_for_owner(
+        user_id=user_id,
+        guest_key=guest_key,
+        limit=limit,
+        offset=offset,
+    )
+    return {"success": True, "sessions": sessions}
+
+
+@app.get("/api/chat-logs/session/{session_id}")
+async def chat_logs_get_session(session_id: str, request: Request):
+    """현재 요청자의 특정 세션 메시지 조회"""
+    from logic.chat_logs_db import get_messages_for_session
+
+    target = (session_id or "").strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="session_id가 필요합니다.")
+
+    user_id = get_user_id_from_request(request)
+    guest_key = None
+    if user_id is None:
+        guest_key = _compute_guest_key(request)
+
+    messages = get_messages_for_session(
+        session_id=target,
+        user_id=user_id,
+        guest_key=guest_key,
+    )
+    if messages is None:
+        raise HTTPException(status_code=404, detail="해당 세션을 찾을 수 없어요.")
+
+    return {"success": True, "sessionId": target, "messages": messages}
+
+
+@app.get("/api/admin/chat-logs/users/{target_user_id}/sessions")
+async def admin_chat_logs_list_sessions(
+    target_user_id: int,
+    request: Request,
+    limit: int = 20,
+    offset: int = 0,
+):
+    """관리자용: 특정 유저의 세션 목록 조회 (X-CHAT-ADMIN-SECRET 필요)"""
+    from logic.chat_logs_db import get_sessions_for_admin_user
+
+    if not _is_chat_admin(request):
+        raise HTTPException(status_code=403, detail="admin secret missing")
+
+    sessions = get_sessions_for_admin_user(
+        target_user_id=target_user_id,
+        limit=limit,
+        offset=offset,
+    )
+    return {"success": True, "sessions": sessions}
+
+
+@app.get("/api/admin/chat-logs/users/{target_user_id}/session/{session_id}")
+async def admin_chat_logs_get_session(
+    target_user_id: int,
+    session_id: str,
+    request: Request,
+):
+    """관리자용: 특정 유저의 특정 세션 메시지 조회 (X-CHAT-ADMIN-SECRET 필요)"""
+    from logic.chat_logs_db import get_messages_for_admin
+
+    if not _is_chat_admin(request):
+        raise HTTPException(status_code=403, detail="admin secret missing")
+
+    target = (session_id or "").strip()
+    if not target:
+        raise HTTPException(status_code=400, detail="session_id가 필요합니다.")
+
+    messages = get_messages_for_admin(session_id=target, target_user_id=target_user_id)
+    if messages is None:
+        raise HTTPException(status_code=404, detail="해당 세션을 찾을 수 없어요.")
+
+    return {"success": True, "sessionId": target, "messages": messages}
+
+
+@app.get("/api/admin/chat-logs/me")
+async def admin_chat_logs_me(request: Request):
+    """관리자 권한이 있는 요청자 자신의 user_id를 반환합니다."""
+    if not _is_chat_admin(request):
+        raise HTTPException(status_code=403, detail="admin secret missing")
+
+    user_id = get_user_id_from_request(request)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
+    return {"success": True, "userId": user_id}
+
+
+@app.get("/api/admin/users")
+async def admin_list_users(request: Request, limit: int = 50, offset: int = 0):
+    """관리자용 유저 목록 조회 (개인정보 포함 가능)."""
+    if not _is_chat_admin(request):
+        raise HTTPException(status_code=403, detail="admin secret missing")
+
+    from logic.user_db import list_users
+
+    users = list_users(limit=limit, offset=offset)
+    return {"success": True, "users": users}
 
 
 @app.get("/api/saju/count")
@@ -314,6 +504,18 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     messages: list[ChatMessage]
     saju: Optional[dict[str, Any]] = None  # 저장된 사주 컨텍스트 (천간지지, 십성 등)
+
+
+class ChatLogMessage(BaseModel):
+    idx: int
+    role: str  # user | assistant
+    content: str
+
+
+class ChatLogSaveRequest(BaseModel):
+    sessionId: str
+    title: Optional[str] = None
+    messages: list[ChatLogMessage]
 
 
 # TheoryRetriever 싱글톤 (이론 txt 한 번만 로드)

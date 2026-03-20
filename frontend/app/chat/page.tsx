@@ -41,6 +41,9 @@ const QUICK_PROMPTS_KO = [
   { label: "나와 맞는 방향", text: "제게 맞는 직업이나 방향이 궁금해요." },
 ];
 
+const BACKEND_API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
 const QUICK_PROMPTS_EN = [
   { label: "Ask about Saju", text: "I have a question about my Saju." },
   { label: "Today's luck", text: "Please tell me my luck for today." },
@@ -945,6 +948,7 @@ export default function ChatPage({
                 key={currentId || "chat-hydrated"}
                 sessionId={currentId}
                 initialSessionMessages={currentSession?.messages ?? []}
+                sessionTitle={currentSession?.title ?? ""}
                 transport={transport}
                 onError={setChatError}
                 isLoggedIn={isLoggedIn}
@@ -979,6 +983,7 @@ type ChatContentProps = {
   lastUserMessageRef: React.MutableRefObject<string | null>;
   handleRetryRef: React.MutableRefObject<((text: string) => void) | null>;
   savedSajuName: string | null;
+  sessionTitle: string;
 };
 
 function hasTwoFollowupQuestions(text: string): boolean {
@@ -1056,6 +1061,7 @@ function ChatContent({
   lastUserMessageRef,
   handleRetryRef,
   savedSajuName,
+  sessionTitle,
 }: ChatContentProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -1122,6 +1128,56 @@ function ChatContent({
     lastSnapshotRef.current = snapshot;
     replaceMessages(sessionId, mapped);
   }, [messages, replaceMessages, sessionId]);
+
+  // 서버(DB)에 채팅 로그 저장 (스트리밍 완료 후 best-effort)
+  const lastRemoteSnapshotRef = useRef<string>("");
+  const prevIsLoadingRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (!sessionId) return;
+
+    // streaming/submit 중에는 저장하지 않음(중간 토큰 저장 방지)
+    if (isLoading) {
+      prevIsLoadingRef.current = true;
+      return;
+    }
+
+    if (!prevIsLoadingRef.current) return; // 직전이 loading이 아니면(초기/idle 유지) 저장 스킵
+
+    const snapshot = JSON.stringify(
+      messages.map((m) => ({
+        role: m.role,
+        text: getMessageText(m as any),
+      })),
+    );
+
+    if (!snapshot || snapshot === lastRemoteSnapshotRef.current) {
+      prevIsLoadingRef.current = false;
+      return;
+    }
+    lastRemoteSnapshotRef.current = snapshot;
+    prevIsLoadingRef.current = false;
+
+    const payload = {
+      sessionId,
+      title: sessionTitle || "",
+      messages: messages
+        .map((m, idx) => ({
+          idx,
+          role: m.role,
+          content: getMessageText(m as any),
+        }))
+        .filter((m) => m.content && (m.role === "user" || m.role === "assistant")),
+    };
+
+    fetch(`${BACKEND_API_BASE}/api/chat-logs/save`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    }).catch(() => {
+      // 로그 저장은 UX에 영향을 주지 않게 best-effort로 처리
+    });
+  }, [isLoading, messages, sessionId, sessionTitle]);
 
   // 스크롤 이벤트 핸들러
   const handleScroll = () => {

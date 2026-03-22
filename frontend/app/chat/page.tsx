@@ -1905,7 +1905,7 @@ function ChatContent({
   // 스트리밍 중: 답변이 길어질 때 맨 아래로 즉시 따라가기 (토큰마다 smooth 금지)
   useEffect(() => {
     if (!isLoading || isUserScrollingRef.current) return;
-    if (Date.now() - lastUserSendAtRef.current < 200) return;
+    if (Date.now() - lastUserSendAtRef.current < 600) return;
     bottomRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
   }, [messages, isLoading]);
 

@@ -442,7 +442,8 @@ function formatTenGodsHarmonyClashTwelveBlock(saju: unknown): string {
     if (line) parts.push(`십이운성: ${line}`);
   }
 
-  const strength = (saju as any)?.strength;
+  // savedSajuToChatApiPayload wraps data as {result: ...} — check both paths
+  const strength = (saju as any)?.strength ?? (saju as any)?.result?.strength;
   if (strength?.strength) {
     parts.push(
       `신강약: ${strength.strength} (점수 ${strength.total_score}, 득령 ${strength.deukryeong ? "O" : "X"}, 득지 ${strength.deukji ? "O" : "X"}, 득세 ${strength.deukse ? "O" : "X"})`,
@@ -453,14 +454,69 @@ function formatTenGodsHarmonyClashTwelveBlock(saju: unknown): string {
   return parts.join("\n");
 }
 
+/** 최상위 또는 result.* 에서 단순 값 조회 */
+function getSajuTopOrResult(saju: unknown, key: string): unknown {
+  if (!saju || typeof saju !== "object") return undefined;
+  const o = saju as Record<string, unknown>;
+  if (key in o && o[key] !== undefined) return o[key];
+  const res = o.result;
+  if (res && typeof res === "object") {
+    const r = res as Record<string, unknown>;
+    if (key in r) return r[key];
+  }
+  return undefined;
+}
+
+/** 대운 목록 및 시작 나이 컨텍스트
+ *
+ * 백엔드 test.py calculate_daeun() 반환 형식:
+ *   daeun_list: string[]  — 예: ["5세 甲子(갑자)", "15세 乙丑(을축)", ...]
+ *   daeun_start_age: number
+ *   daeun_direction: "순행" | "역행"
+ */
+function formatDaeunBlock(saju: unknown): string {
+  const daeunList = getSajuTopOrResult(saju, "daeun_list");
+  const daeunStartAge = getSajuTopOrResult(saju, "daeun_start_age");
+  const daeunDirection = getSajuTopOrResult(saju, "daeun_direction");
+  if (!Array.isArray(daeunList) || daeunList.length === 0) return "";
+
+  const parts: string[] = [];
+  const dir = typeof daeunDirection === "string" ? daeunDirection.trim() : "";
+  if (daeunStartAge != null) {
+    parts.push(`대운 시작: 만 ${daeunStartAge}세${dir ? ` (${dir})` : ""}`);
+  }
+  // 각 항목은 문자열: "5세 甲子(갑자)"
+  const items = (daeunList as unknown[])
+    .map((d) => (typeof d === "string" ? d.trim() : null))
+    .filter(Boolean);
+  if (items.length > 0) parts.push(`대운 흐름: ${items.join(", ")}`);
+
+  return parts.length > 0
+    ? `[대운 정보 — 반드시 이 데이터 기준으로만 해석]\n${parts.join("\n")}`
+    : "";
+}
+
+/** 용신/조후 컨텍스트 */
+function formatYongshinBlock(saju: unknown): string {
+  const yongshin = getSajuTopOrResult(saju, "yongshin");
+  if (!yongshin || typeof yongshin !== "object") return "";
+  const y = yongshin as Record<string, unknown>;
+  const name = typeof y.name === "string" ? y.name.trim() : "";
+  const element = typeof y.element === "string" ? y.element.trim() : "";
+  const detail = typeof y.detail === "string" ? y.detail.trim() : "";
+  if (!name && !element) return "";
+  return `용신: ${name}${element ? `(${element})` : ""}${detail ? ` — ${detail}` : ""}`;
+}
+
 function buildSajuContext(saju: unknown): string {
-  console.log("🔍 saju payload:", JSON.stringify(saju, null, 2));
   if (!saju || typeof saju !== "object") return "";
   const payload = saju as SajuPayload;
 
   const derivedBlock = [
     formatSinsalContextBlock(saju),
     formatTenGodsHarmonyClashTwelveBlock(saju),
+    formatDaeunBlock(saju),
+    formatYongshinBlock(saju),
   ]
     .filter(Boolean)
     .join("\n");
@@ -505,8 +561,19 @@ function getKoreaDateString(): string {
 const PERSONA_GUEST = `당신은 한양사주 AI입니다. 국내 최고 수준의 사주명리학 지식을 갖춘 AI 상담사로, 사용자의 고민을 사주의 언어로 따뜻하고 정확하게 풀어줍니다.
 현재 사용자는 사주 데이터를 등록하지 않았습니다. 개인 분석 요청 시 생년월일(양력/음력)과 성별을 순서대로 물어본 뒤 계산해서 알려줘라. 답변은 충분히 길고 구체적으로 작성하며, 이유/예시/실행 팁을 함께 제시해라.`;
 
-const PERSONA_LOGGEDIN = `당신은 한양사주 AI입니다. 국내 최고 수준의 사주명리학 지식을 갖춘 AI 상담사로, 이 사용자의 사주 데이터를 바탕으로 맞춤형 해석과 고민 상담을 제공합니다.
-전문 용어는 일상어로 풀어서 설명하되, 필요할 때는 괄호로 간단히 부연해라.`;
+const PERSONA_LOGGEDIN = `당신은 한양사주 AI입니다. 국내 최고 수준의 사주명리학 지식을 갖춘 AI 상담사로, 아래 제공된 이 사용자의 사주 데이터를 바탕으로 맞춤형 해석과 고민 상담을 제공합니다.
+전문 용어는 일상어로 풀어서 설명하되, 필요할 때는 괄호로 간단히 부연해라.
+이 사용자의 사주 특성(일간·합충·십성·신강약·대운)을 실제로 활용해서 일반론이 아닌 이 사람만을 위한 해석을 해라.`;
+
+/** 할루시네이션 방지 절대 규칙 — 시스템 프롬프트 최상단에 삽입 */
+const ANTI_HALLUCINATION_RULE = `[절대 금지 규칙 — 위반 시 전체 해석이 틀림. 반드시 준수]
+1. 사주 팔자(년주·월주·일주·시주), 십성, 합충, 신강약, 대운은 반드시 아래 "[이 사용자의 사주 컨텍스트]" 블록 데이터만 사용. 자체 계산·추측 절대 금지.
+2. "[일간 기준 십성-오행 관계]" 블록이 있으면, 그 내용만 기준으로 십성-오행을 연결해라. 예: 癸 일간이면 재성=화(火), 관성=토(土), 인성=금(金) — 이 매핑을 절대 바꾸지 마라.
+3. 합충이 없는데 있다고 말하거나, 있는데 없다고 말하지 마라.
+4. 신강약 판정이 데이터에 있으면, 그 결과(신강/신약/중화)만 사용. 임의로 바꾸거나 재계산 금지.
+5. 대운 흐름은 "[대운 정보]" 블록의 데이터만 사용. 없는 대운 글자를 만들지 마라.
+6. 데이터에 없는 내용을 물어보면 "제 사주 데이터에는 해당 정보가 없어요"라고 솔직하게 말하고 추측하지 마라.
+7. 사주 팔자 글자를 임의로 바꾸거나 추가하지 마라. 제공된 글자 그대로만 인용해라.`;
 
 const MONTH_BRANCH_RULE = `[월지(寅·卯·辰·巳·午·未·申·酉) 표현 규칙 — 반드시 지킬 것]
 - 사용자가 "OO월"이라고 말하더라도, 사주에서의 월은 "월지(지지)"를 기준으로 해석한다.
@@ -563,8 +630,10 @@ export async function POST(req: Request) {
   const isGuest = body.isGuest === true;
   const saju = body.saju;
   const lang: "ko" | "en" = body.lang === "en" ? "en" : "ko";
-  const hasSaju = saju != null && typeof saju === "object" &&
-    (saju as Record<string, unknown>).result != null;
+  const hasSaju = saju != null && typeof saju === "object" && (
+    (saju as Record<string, unknown>).result != null ||
+    (saju as Record<string, unknown>).model != null
+  );
 
   // ── 마지막 사용자 메시지 추출 → intent 감지 ──
   const lastUserMessage = (() => {
@@ -623,14 +692,16 @@ export async function POST(req: Request) {
   // ── 최종 시스템 프롬프트 조립 ──
   const responseFormatBlock = lang === "en" ? RESPONSE_FORMAT_RULE_EN : RESPONSE_FORMAT_RULE;
 
+  // sajuContext를 persona 바로 뒤에 배치 — GPT가 데이터를 먼저 인식하도록
   const system = [
     currentTimeBlock,
     languageRule,
     enTerms,
     persona,
+    sajuContext,           // ← 사주 데이터를 페르소나 직후에 위치
+    hasSaju ? ANTI_HALLUCINATION_RULE : "",   // ← 데이터가 있을 때만 절대 규칙 삽입
     MONTH_BRANCH_RULE,
     responseFormatBlock,
-    sajuContext,
     theoryBlock,
     "\n\n[이번 질문에 필요한 사주 지식]",
     selectedKnowledge,
@@ -716,7 +787,7 @@ export async function POST(req: Request) {
     system,
     messages: modelMessages,
     maxOutputTokens: 2000,
-    temperature: 0.6,
+    temperature: 0.3,
     tools: { get_saju },
     stopWhen: stepCountIs(3),
     toolChoice: "auto",

@@ -271,7 +271,10 @@ export async function hydrateLocalSajuCacheFromServerRows(
     const fields = rowToBirthFields(row);
     const fullJson = await fetchFullForRow(row);
     if (!fullJson) continue;
-    const result = mapFullSajuJsonToResult(fullJson);
+    // mapFullSajuJsonToResult는 UI용 pillar 구조(cheongan/jiji)를 만든다.
+    // fullJson의 원본 필드(daeun_list, sinsal, ten_gods, strength 등)도 함께 보존해야
+    // route.ts buildSajuContext가 GPT에 전달할 수 있다.
+    const result = { ...fullJson, ...mapFullSajuJsonToResult(fullJson) };
     serverSaved.push({
       id: `srv-${row.id}`,
       name: row.name || "저장된 사주",

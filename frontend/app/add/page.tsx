@@ -859,7 +859,9 @@ export default function Page({
         gender,
         calendar,
         timeUnknown,
-        result,
+        // sajuJsonRaw: 백엔드 /saju/full 전체 응답 (daeun_list, sinsal, ten_gods, strength 포함)
+        // result: UI용 pillar 구조(cheongan/jiji). 두 개를 merge해서 모든 필드를 보존한다.
+        result: sajuJsonRaw ? { ...sajuJsonRaw, ...result } : result,
       });
 
       if (saveResult.success) {
@@ -919,7 +921,7 @@ export default function Page({
       gender,
       calendar,
       timeUnknown,
-      result,
+      result: sajuJsonRaw ? { ...sajuJsonRaw, ...result } : result,
     });
     if (!saveResult.success) {
       alert(saveResult.message);

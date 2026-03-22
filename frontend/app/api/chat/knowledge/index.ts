@@ -28,6 +28,7 @@ import { CAREER_BASE, CAREER_CHANGE } from "./career";
 import { MONEY_BASE, MONEY_INVEST } from "./money";
 import { HEALTH_BASE, HEALTH_SINSAL } from "./health";
 import { ILJU_INTRO, ILJU_60 } from "./ilju";
+import { CHEONEUL_GWIAIN_CORE, THEORY_FOLLOWUP_AND_TONE } from "./guiin";
 
 // ─────────────────────────────────────────────
 // 1단계 intent
@@ -40,6 +41,7 @@ export type Intent1 =
   | "fortune"
   | "daily"
   | "personality"
+  | "theory"
   | "general";
 
 // 2단계 sub-intent (연애 세분화)
@@ -55,6 +57,14 @@ export type LoveSub =
 // ─────────────────────────────────────────────
 export function detectIntent(text: string): Intent1 {
   const q = text;
+
+  // 개념·신살·십성 정의 질문 (연애 키워드보다 먼저 — "천을귀인이 뭐야" 등)
+  if (
+    /천을귀인|천을 귀인|천을귀|신살.*뭐|신살이 뭐|공망.*뭐|공망이 뭐|도화살.*뭐|도화가 뭐|역마살.*뭐|화개.*뭐|원진살.*뭐|백호살.*뭐|겁살|재살|월덕|천덕귀인|귀인이 뭐|십성.*뭐|비견.*뭐|겁재.*뭐|식신.*뭐|상관.*뭐|편재.*뭐|정재.*뭐|편관.*뭐|정관.*뭐|편인.*뭐|정인.*뭐|일간.*뭐|지지.*뭐|천간.*뭐|합충.*뭐|형파해|삼합|방합/.test(
+      q,
+    )
+  )
+    return "theory";
 
   if (/연애|사랑|썸|이별|재회|결혼|남친|여친|남자친구|여자친구|배우자|궁합|솔로|짝사랑|고백|헤어|이성/.test(q))
     return "love";
@@ -185,6 +195,18 @@ export function getKnowledgeBlocks(intent: Intent1, text: string): string[] {
         WUXING_KNOWLEDGE,
         TEN_GODS_FULL,
         SINSAL_FULL,
+      ];
+
+    // ── 개념·신살·십성 이론 ─────────────────────
+    case "theory":
+      return [
+        ...base,
+        THEORY_FOLLOWUP_AND_TONE,
+        CHEONEUL_GWIAIN_CORE,
+        TEN_GODS_INTRO,
+        HAPCHUNG_FULL,
+        SINSAL_FULL,
+        WUXING_KNOWLEDGE,
       ];
 
     // ── 일반·기타 ─────────────────────────────

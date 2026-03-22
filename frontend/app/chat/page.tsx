@@ -993,20 +993,122 @@ function hasTwoFollowupQuestions(text: string): boolean {
   return numbered.length >= 2;
 }
 
-function buildDefaultFollowupQuestions(lastUserText: string, lang: "ko" | "en"): [string, string] {
+/** 모델이 후속 질문을 빠뜨렸을 때만 쓰는 폴백. 사주·명리와 무관한 자기계발 문장 금지. */
+function buildSajuAwareFollowupQuestions(
+  lastUserText: string,
+  lang: "ko" | "en",
+  hasSajuProfile: boolean,
+): [string, string] {
+  const q = lastUserText.trim();
+
   if (lang === "en") {
-    return [
-      `Given what I asked${lastUserText ? ` ("${lastUserText.slice(0, 40)}...")` : ""}, what should I focus on first this week?`,
-      "What warning signs should I watch for so I can adjust earlier?",
-    ];
+    if (/천을|天乙|noble|gui.?ren/i.test(q)) {
+      return hasSajuProfile
+        ? [
+            "Can you check my chart for 天乙貴人 and which pillar (year/month/day/hour) it sits in?",
+            "If 天乙貴人 clashes or combines with another branch, how is that usually read?",
+          ]
+        : [
+            "What birth data do I need to tell you so you can see if I have 天乙貴人 in my pillars?",
+            "How does the pillar placement (year vs month vs day vs hour) change how 天乙貴人 shows up?",
+          ];
+    }
+    if (/empty|空亡|kong wang/i.test(q)) {
+      return hasSajuProfile
+        ? [
+            "Where is 空亡 in my chart and what does it tend to soften?",
+            "How do combinations or clashes involving the empty branch change the reading?",
+          ]
+        : [
+            "What do you need from me to locate 空亡 in a ba zi chart?",
+            "Is 空亡 always “bad,” or can it be useful in some structures?",
+          ];
+    }
+    return hasSajuProfile
+      ? [
+          "How does this topic connect to my day stem and month branch in my actual chart?",
+          "If I look at my luck pillars (da yun), where should I watch for the same pattern?",
+        ]
+      : [
+          "What birth info (date, solar/lunar, gender, time if known) should I give so you can tie this to my chart?",
+          "What is the next ba zi concept I should learn that builds on this answer?",
+        ];
   }
-  return [
-    `${lastUserText ? `"${lastUserText.slice(0, 20)}"` : "지금 고민"} 기준으로, 이번 주에 가장 먼저 바꾸면 좋은 행동은 뭐야?`,
-    "내가 같은 실수를 반복하지 않으려면 어떤 신호를 빨리 알아차려야 해?",
-  ];
+
+  // Korean
+  if (/천을귀인|천을 귀인|천을/.test(q)) {
+    return hasSajuProfile
+      ? [
+          "내 만세력에서 천을귀인이 있는지, 년·월·일·시 중 어디에 붙는지 봐줄 수 있어?",
+          "천을귀인이 다른 지지랑 합이나 충으로 이어지면 보통 어떻게 읽으면 돼?",
+        ]
+      : [
+          "천을귀인이 내 사주에 있는지 보려면 생년월일·양력음력·성별·출생시각을 어떻게 알려주면 돼?",
+          "천을귀인이 년·월·일·시 중 어디에 있을 때 체감이 달라지는 편이야?",
+        ];
+  }
+  if (/공망/.test(q)) {
+    return hasSajuProfile
+      ? [
+          "내 사주에서 공망이 어디에 걸리는지, 어떤 기운이 비어 보이기 쉬운지 짚어줄 수 있어?",
+          "공망이 있는 글자가 합·충과 만나면 해석이 어떻게 달라져?",
+        ]
+      : [
+          "공망을 보려면 일간 기준으로 어떤 정보가 필요해?",
+          "공망은 무조건 안 좋은 거야, 아니면 구조에 따라 다르기도 해?",
+        ];
+  }
+  if (/도화|역마|화개|원진|백호|겁살|재살|월덕|천덕/.test(q)) {
+    return hasSajuProfile
+      ? [
+          "같은 신살이 내 만세력 년·월·일·시 중 어디에 있을 때 달라 보여?",
+          "이 신살이 합충이나 다른 신살이랑 겹치면 어떤 점을 조심하면 돼?",
+        ]
+      : [
+          "이 신살을 내 사주에서 찾으려면 어떤 자료를 알려줘야 해?",
+          "이 신살이랑 자주 같이 이야기되는 다른 신살이 뭐야?",
+        ];
+  }
+  if (/십성|비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인/.test(q)) {
+    return hasSajuProfile
+      ? [
+          "내 일간 기준으로 이 십성이 년·월·일·시 중 어디에 많이 깔리면 체감이 커?",
+          "이 십성이 합이나 극으로 묶이면 성격이나 관계에서 어떻게 읽어?",
+        ]
+      : [
+          "십성을 내 사주에 대입하려면 일간(생일 그날의 첫 글자)을 어떻게 알 수 있어?",
+          "같은 십성이라도 월주랑 시주 중 어디에 있을 때 의미가 달라져?",
+        ];
+  }
+  if (/대운|세운|합충|형파해|삼합/.test(q)) {
+    return hasSajuProfile
+      ? [
+          "지금 말한 내용을 내 대운 흐름이랑 겹쳐 보면 어떤 점이 달라져?",
+          "같은 패턴이 세운(올해·내년)에 들어올 때는 어떻게 보면 돼?",
+        ]
+      : [
+          "대운을 보려면 성별이 왜 필요해?",
+          "세운이랑 대운을 같이 볼 때 가장 먼저 보는 건 뭐야?",
+        ];
+  }
+
+  return hasSajuProfile
+    ? [
+        "지금 이야기한 내용을 내 만세력이랑 직접 연결해서 보려면 어떤 기둥부터 보면 돼?",
+        "같은 주제로 대운이나 세운에서 비슷한 신호가 오면 어떻게 읽어?",
+      ]
+    : [
+        "이걸 내 사주랑 연결해서 보려면 생년월일·양력음력·성별·출생 시각을 어떻게 알려주면 돼?",
+        "지금 주제랑 이어서 배우기 좋은 사주 개념이 하나 더 있을까?",
+      ];
 }
 
-function normalizeAssistantMessage(text: string, lastUserText: string, lang: "ko" | "en"): string {
+function normalizeAssistantMessage(
+  text: string,
+  lastUserText: string,
+  lang: "ko" | "en",
+  hasSajuProfile: boolean,
+): string {
   const trimmed = (text || "").trim();
   if (!trimmed) return text;
 
@@ -1017,7 +1119,7 @@ function normalizeAssistantMessage(text: string, lastUserText: string, lang: "ko
   }
 
   if (!hasTwoFollowupQuestions(next)) {
-    const [q1, q2] = buildDefaultFollowupQuestions(lastUserText, lang);
+    const [q1, q2] = buildSajuAwareFollowupQuestions(lastUserText, lang, hasSajuProfile);
     next +=
       lang === "en"
         ? `\n\n### Follow-up Questions\n1. ${q1}\n2. ${q2}`
@@ -1320,7 +1422,7 @@ function ChatContent({
                 const isAI = m.role === "assistant";
                 const prevUserText = i > 0 ? getMessageText(messages[i - 1]) : "";
                 const normalizedText = isAI
-                  ? normalizeAssistantMessage(text, prevUserText, lang)
+                  ? normalizeAssistantMessage(text, prevUserText, lang, Boolean(savedSajuName?.trim()))
                   : text;
                 const followup = isAI ? extractFollowupQuestions(normalizedText) : { mainText: normalizedText, questions: null };
                 const isLastUser = m.role === "user" && lastUserIndex === i;

@@ -303,11 +303,22 @@ const RESPONSE_FORMAT_RULE = `[응답 형식 규칙 — 반드시 지킬 것]
   2) "### 이어서 보면 좋은 질문"
 - "핵심 해석"은 최소 6문장 이상, 가능하면 500자 이상으로 구체적으로 쓴다.
 - 전문용어를 남발하지 말고, 일상어로 쉽게 설명한다.
-- "이어서 보면 좋은 질문"에는 사용자의 현재 질문을 자연스럽게 확장하는 질문을 정확히 2개만 번호 목록으로 제시한다.
-  예시 형식:
-  1. ...
-  2. ...
+- 개념 질문(신살·십성·천을귀인 등 "뭐야?"류): 반드시 조견표·규칙(예: 일간별 어느 지지가 해당하는지)을 최소 한 문장 이상 넣고, 그다음 의미를 풀어라. 효능만 말하고 표 없이 끝내지 마라.
+- 년·월·일·시 기둥에 따른 차이, 합·충 등으로 힘이 달라질 수 있음을 경향으로 짧게 짚을 수 있으면 더 좋다.
+- "이어서 보면 좋은 질문"에는 정확히 2개만, 번호 목록(1. 2.)으로 제시한다.
+- 이 2개 질문은 반드시 (가) 방금 답한 주제와 직접 이어지는 사주·명리 질문일 것. (나) 아래는 금지: 이번 주 행동 바꾸기, 실수 반복·습관, 동기부여, 멘탈, 자기계발 코칭 등 사주와 무관한 문장.
+- 좋은 예: "내 만세력에서 천을귀인이 있는지 어떻게 보면 돼?", "천을귀인이 합이나 충에 걸리면 어떻게 읽어?", "월주랑 일주 중 어디에 있을 때 체감이 달라?"
 - 마지막은 반드시 질문 2개로 끝낸다.`;
+
+const RESPONSE_FORMAT_RULE_EN = `[Response format — required]
+- Always use two sections:
+  1) "### Core Interpretation"
+  2) "### Follow-up Questions"
+- Core: at least 6 sentences; explain in plain language.
+- For definitional questions (stars, ten gods, nobleman, etc.): include at least one sentence with the lookup rule (e.g. which branches for which day stem), not only generic "luck" wording.
+- Follow-up Questions: exactly two numbered items (1. 2.). Both must directly extend the SAME saju / Chinese-metaphysics topic just answered.
+- FORBIDDEN in follow-ups: generic life coaching ("what to change this week", "avoid repeating mistakes", habits, motivation) unrelated to ba zi.
+- End with those two questions only.`;
 
 // ─────────────────────────────────────────────
 // POST handler
@@ -385,13 +396,15 @@ export async function POST(req: Request) {
   const enTerms = lang === "en" ? `\n${SAJU_EN_TERMS_GUIDE}\n` : "";
 
   // ── 최종 시스템 프롬프트 조립 ──
+  const responseFormatBlock = lang === "en" ? RESPONSE_FORMAT_RULE_EN : RESPONSE_FORMAT_RULE;
+
   const system = [
     currentTimeBlock,
     languageRule,
     enTerms,
     persona,
     MONTH_BRANCH_RULE,
-    RESPONSE_FORMAT_RULE,
+    responseFormatBlock,
     sajuContext,
     "\n\n[이번 질문에 필요한 사주 지식]",
     selectedKnowledge,

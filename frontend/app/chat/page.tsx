@@ -61,7 +61,7 @@ function getMessageText(message: { parts?: Array<{ type: string; text?: string }
     .join("");
 }
 
-/** GPT 답변에 천을귀인이 언급될 때 버블 본문 바로 아래에 붙는 조견표 */
+/** GPT 답변에 천을귀인이 언급될 때, 답변 버블 위에 참고 카드로 붙는 조견표 */
 const CHEONEUL_TABLE = (
   <table>
     <thead>
@@ -686,6 +686,32 @@ export default function ChatPage({
         }
         .chat-error-retry { font-weight: 600; }
         .chat-msg-bubble-wrap { position: relative; }
+        .chat-msg.assistant .chat-msg-bubble-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+          max-width: 100%;
+        }
+        .chat-msg-bubble-row { position: relative; align-self: stretch; }
+        .chat-cheoneul-reference-card {
+          width: 100%;
+          border-radius: 14px;
+          border: 1px solid var(--border);
+          background: var(--surface);
+          box-shadow: 0 2px 10px rgba(0,0,0,.04);
+          padding: 10px 12px 12px;
+        }
+        .chat-cheoneul-reference-card-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--sub);
+          letter-spacing: 0.02em;
+          margin: 0 0 8px;
+        }
+        .chat-cheoneul-reference-card .chat-cheoneul-table {
+          margin-top: 0;
+        }
         .chat-msg-copy {
           position: absolute;
           top: 8px;
@@ -1493,60 +1519,63 @@ function ChatContent({
                     ref={isLastUser ? lastUserMsgRef : undefined}
                   >
                     <div className="chat-msg-bubble-wrap">
-                      <div className="chat-msg-bubble">
-                        <MarkdownMessage text={followup.mainText} isAI={isAI} />
-                        {isAI && /천을\s*귀인/.test(normalizedText) && (
-                          <div
-                            className="chat-cheoneul-table"
-                            role="region"
-                            aria-label="천을귀인 일간별 지지 조견"
-                          >
-                            {CHEONEUL_TABLE}
-                          </div>
-                        )}
-                        {isLastAssistant && followup.questions && (
-                          <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
-                            <div style={{ fontSize: 11, color: "#6B5F4E" }}>
-                              이런 것도 궁금하지 않으세요?
+                      {isAI && /천을\s*귀인/.test(normalizedText) && (
+                        <aside
+                          className="chat-cheoneul-reference-card"
+                          role="region"
+                          aria-label="천을귀인 일간별 지지 조견표"
+                        >
+                          <p className="chat-cheoneul-reference-card-label">천을귀인 · 일간별 지지 (참고)</p>
+                          <div className="chat-cheoneul-table">{CHEONEUL_TABLE}</div>
+                        </aside>
+                      )}
+                      <div className="chat-msg-bubble-row">
+                        <div className="chat-msg-bubble">
+                          <MarkdownMessage text={followup.mainText} isAI={isAI} />
+                          {isLastAssistant && followup.questions && (
+                            <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+                              <div style={{ fontSize: 11, color: "#6B5F4E" }}>
+                                이런 것도 궁금하지 않으세요?
+                              </div>
+                              {followup.questions.map((q) => (
+                                <button
+                                  key={q}
+                                  type="button"
+                                  disabled={sending}
+                                  onClick={() => handleSubmit(q)}
+                                  style={{
+                                    width: "100%",
+                                    background: "#F5F1EA",
+                                    border: "1px solid #D4C9B8",
+                                    borderRadius: 10,
+                                    color: "#4A3F30",
+                                    fontSize: 13,
+                                    padding: "10px 12px",
+                                    textAlign: "left",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    cursor: sending ? "not-allowed" : "pointer",
+                                  }}
+                                >
+                                  <span aria-hidden>{"→"}</span>
+                                  <span>{q}</span>
+                                </button>
+                              ))}
                             </div>
-                            {followup.questions.map((q) => (
-                              <button
-                                key={q}
-                                type="button"
-                                disabled={sending}
-                                onClick={() => handleSubmit(q)}
-                                style={{
-                                  width: "100%",
-                                  background: "#F5F1EA",
-                                  border: "1px solid #D4C9B8",
-                                  borderRadius: 10,
-                                  color: "#4A3F30",
-                                  fontSize: 13,
-                                  padding: "10px 12px",
-                                  textAlign: "left",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  cursor: sending ? "not-allowed" : "pointer",
-                                }}
-                              >
-                                <span aria-hidden>{"→"}</span>
-                                <span>{q}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="chat-msg-copy"
+                          aria-label="복사"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(followup.mainText).catch(() => {});
+                          }}
+                        >
+                          <Icon icon="mdi:content-copy" width={14} />
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className="chat-msg-copy"
-                        aria-label="복사"
-                        onClick={() => {
-                          navigator.clipboard?.writeText(followup.mainText).catch(() => {});
-                        }}
-                      >
-                        <Icon icon="mdi:content-copy" width={14} />
-                      </button>
                     </div>
                   </div>
                 );

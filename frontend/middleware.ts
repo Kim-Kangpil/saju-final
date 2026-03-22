@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 /** true: 베타 코드 필요 / false: 게이트 잠깐 해제(전체 통과) — 다시 막을 때 true로 변경 */
-const BETA_GATE_ENABLED = false;
+const BETA_GATE_ENABLED = true;
 
 /**
  * 베타 접근 제어

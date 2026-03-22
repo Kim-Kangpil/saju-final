@@ -84,7 +84,7 @@ export default function BetaAccessPage() {
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="예: HANYANG2025"
+            placeholder="예: hanyang2026"
             style={{
               padding: "12px 12px",
               borderRadius: 10,

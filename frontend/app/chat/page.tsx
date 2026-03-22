@@ -70,6 +70,12 @@ function stripSinsalTable(text: string): string {
       if (/[갑을병정무기경신임계][일]간\s*[:：]/.test(line)) return false;
       if (/甲|乙|丙|丁|戊|己|庚|辛|壬|癸/.test(line) && /丑|子|亥|巳|午|未|申|酉|寅|卯|辰|戌/.test(line))
         return false;
+      // 문장 안에 일간+지지 예시가 섞인 패턴 제거
+      if (
+        /[갑을병정무기경신임계](일간|일주|일).*[은는이가].*[자축인묘진사오미신유술해]/.test(line)
+      )
+        return false;
+      if (/(예를 들어|예컨대).*[갑을병정무기경신임계](일간|일주)/.test(line)) return false;
       return true;
     })
     .join("\n");

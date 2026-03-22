@@ -927,6 +927,17 @@ C) "합화가 된다" (제3의 기운으로 변환)
                     f"    → 해석: 겉으로 드러나는 기운과 실제 내면의 기운이 다를 수 있음"
                 )
 
+        if hc.get('cheongan_jaenghap'):
+            lines.append("\n◆ 천간쟁합 (두 천간이 하나를 동시에 합하려다 불성립)")
+            for item in hc['cheongan_jaenghap']:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(f"  • {item.get('description', '')}")
+                lines.append(f"    → {item.get('effect', '')}")
+                lines.append(
+                    f"    → 해석: 내면에서 두 가지 욕구가 서로 충돌하는 긴장 상태, 결단력이 약해지거나 반대로 과도한 집착 발생"
+                )
+
         if hc.get('cheongan_chung'):
             lines.append("\n◆ 천간충 (천간끼리 충돌 → 내적 갈등)")
             for item in hc['cheongan_chung']:

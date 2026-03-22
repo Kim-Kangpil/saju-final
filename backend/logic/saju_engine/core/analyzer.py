@@ -90,6 +90,7 @@ def analyze_full_saju(day_stem, pillars):
         'ten_gods_count': {},
         'harmony_clash_count': {
             'cheongan_hap': len(result['harmony_clash']['cheongan_hap']),
+            'cheongan_jaenghap': len(result['harmony_clash']['cheongan_jaenghap']),
             'cheongan_chung': len(result['harmony_clash']['cheongan_chung']),
             'jiji_yukhap': len(result['harmony_clash']['jiji_yukhap']),
             'jiji_samhap': len(result['harmony_clash']['jiji_samhap']),
@@ -162,6 +163,9 @@ def _extract_patterns(result):
 
     for item in hc['cheongan_hap']:
         patterns.append(f"천간합: {item['description']}")
+
+    for item in hc['cheongan_jaenghap']:
+        patterns.append(f"천간쟁합: {item['description']}")
 
     for item in hc['jiji_yukhap']:
         patterns.append(f"지지육합: {item['description']}")
@@ -265,6 +269,11 @@ def print_full_analysis(result):
         for item in hc['cheongan_hap']:
             print(f"  ✓ {item['description']}")
 
+    if hc.get('cheongan_jaenghap'):
+        print("\n천간쟁합:")
+        for item in hc['cheongan_jaenghap']:
+            print(f"  ✓ {item['description']}")
+
     if hc['jiji_yukhap']:
         print("\n지지육합:")
         for item in hc['jiji_yukhap']:
@@ -290,7 +299,7 @@ def print_full_analysis(result):
         for item in hc['jiji_chung']:
             print(f"  ✓ {item['description']}")
 
-    if not any([hc['cheongan_hap'], hc['jiji_yukhap'], hc['jiji_samhap'],
+    if not any([hc['cheongan_hap'], hc.get('cheongan_jaenghap', []), hc['jiji_yukhap'], hc['jiji_samhap'],
                 hc['jiji_banhap'], hc['cheongan_chung'], hc['jiji_chung']]):
         print("  (합충 없음)")
 

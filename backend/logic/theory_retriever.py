@@ -43,6 +43,9 @@ class TheoryRetriever:
             '십이운성': '사주이론(십이운성).txt',
             '통근투출': '사주이론(통근과투출).txt',
             '기본구성': '사주이론(기본사주 구성).txt',
+            '합충케이스': 'hapcheung_cases.txt',
+            '일주패턴': 'ilju_patterns.txt',
+            '대운케이스': 'daeun_cases.txt',
         }
 
         for key, filename in theory_files.items():
@@ -145,6 +148,31 @@ class TheoryRetriever:
             if self.theories.get('귀인신살'):
                 relevant.append(f"## 신살 이론\n\n{self.theories['귀인신살'][:3000]}")
 
+        # 5. 실전 케이스/패턴 (키워드 매칭 — 분석 결과 텍스트)
+        _blob_parts = [str(p) for p in patterns]
+        _bi = analysis.get('basic_info') or {}
+        if isinstance(_bi, dict):
+            _blob_parts.extend(str(v) for v in _bi.values() if v)
+        _search_text = ' '.join(_blob_parts)
+        # 일주/일간은 패턴 문자열에 없을 수 있어 일주가 있으면 매칭용 토큰 부가
+        if isinstance(_bi, dict) and _bi.get('day'):
+            _search_text = _search_text + ' 일간 일주'
+
+        _kw_hapcheung = ['합', '충', '삼합', '육합', '방합', '천간합', '천간충', '지지충']
+        if any(kw in _search_text for kw in _kw_hapcheung):
+            if self.theories.get('합충케이스'):
+                relevant.append(f"## 합충 실전 케이스\n\n{self.theories['합충케이스'][:4000]}")
+
+        _kw_ilju = ['일주', '일간', '성격', '직업', '건강', '관계']
+        if any(kw in _search_text for kw in _kw_ilju):
+            if self.theories.get('일주패턴'):
+                relevant.append(f"## 일주 패턴\n\n{self.theories['일주패턴'][:4000]}")
+
+        _kw_daeun = ['대운', '세운', '월운', '운세', '흐름']
+        if any(kw in _search_text for kw in _kw_daeun):
+            if self.theories.get('대운케이스'):
+                relevant.append(f"## 대운·세운 케이스\n\n{self.theories['대운케이스'][:4000]}")
+
         # 조합해서 반환
         if not relevant:
             return ""
@@ -183,14 +211,16 @@ class TheoryRetriever:
             "육친": ["오행십신"],
             "천간": ["천간", "천간합", "천간충"],
             "지지": ["지지", "지지합", "지지충"],
-            "천간합": ["천간합"],
-            "천간충": ["천간충"],
-            "지지합": ["지지합"],
-            "육합": ["지지합"],
-            "삼합": ["지지합"],
-            "방합": ["지지합"],
-            "지지충": ["지지충"],
-            "충": ["천간충", "지지충"],
+            "천간합": ["천간합", "합충케이스"],
+            "천간충": ["천간충", "합충케이스"],
+            "지지합": ["지지합", "합충케이스"],
+            # 실전 케이스 파일 우선 연동 (짧은 키워드는 합충케이스만 매핑)
+            "육합": ["합충케이스"],
+            "삼합": ["합충케이스"],
+            "방합": ["지지합", "합충케이스"],
+            "지지충": ["지지충", "합충케이스"],
+            "충": ["합충케이스"],
+            "합": ["합충케이스"],
             "귀인": ["귀인신살"],
             "신살": ["귀인신살"],
             "도화": ["귀인신살"],
@@ -204,8 +234,18 @@ class TheoryRetriever:
             "팔자": ["기본구성"],
             "년주": ["기본구성"],
             "월주": ["기본구성"],
-            "일주": ["기본구성"],
+            "일주": ["일주패턴"],
             "시주": ["기본구성"],
+            "일간": ["일주패턴"],
+            "성격": ["일주패턴"],
+            "직업": ["일주패턴"],
+            "건강": ["일주패턴"],
+            "관계": ["일주패턴"],
+            "대운": ["대운케이스"],
+            "세운": ["대운케이스"],
+            "월운": ["대운케이스"],
+            "운세": ["대운케이스"],
+            "흐름": ["대운케이스"],
         }
         # 한글 키워드도 검사 (query는 이미 전달됨)
         included_keys = set()
@@ -217,15 +257,38 @@ class TheoryRetriever:
         included_keys.add("오행십신")
         included_keys.add("신강약")
 
+        # max_chars 한도 내에서 뒤쪽 키가 잘리는 문제 방지:
+        # 질문으로 직접 매칭되는 케이스/패턴 파일을 먼저 붙인다.
+        priority_keys = ["합충케이스", "일주패턴", "대운케이스"]
+        rest_keys = [
+            "기본구성",
+            "신강약",
+            "오행십신",
+            "천간",
+            "지지",
+            "천간합",
+            "천간충",
+            "지지합",
+            "지지충",
+            "귀인신살",
+            "십이운성",
+            "통근투출",
+        ]
+        ordered_keys = [k for k in priority_keys if k in included_keys]
+        for k in rest_keys:
+            if k not in ordered_keys:
+                ordered_keys.append(k)
+
         relevant = []
-        for key in ["기본구성", "신강약", "오행십신", "천간", "지지", "천간합", "천간충", "지지합", "지지충", "귀인신살", "십이운성", "통근투출"]:
+        for key in ordered_keys:
             if key not in included_keys or not self.theories.get(key):
                 continue
             content = (self.theories[key] or "").strip()
             if not content:
                 continue
             cap = 4000 if key in ("오행십신", "신강약") else 2500
-            relevant.append(f"## {key}\n\n{content[:cap]}")
+            snippet = content[:cap]
+            relevant.append(f"## {key}\n\n{snippet}")
             if len("\n\n---\n\n".join(relevant)) >= max_chars:
                 break
 

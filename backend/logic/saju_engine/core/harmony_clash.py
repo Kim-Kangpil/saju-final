@@ -31,6 +31,91 @@ CHEONGAN_CHUNG = [
     ('丁', '癸'), ('癸', '丁')
 ]
 
+
+def _find_cheongan_hapcheung_with_jaenghap(stems, positions):
+    """
+    천간합 계산 + 쟁합 감지
+
+    합의 중심(乙 등)을 기준으로 쟁탈자가 2명 이상이면 쟁합으로 처리하고,
+    그 인덱스는 정상 천간합에서 제외한다.
+
+    Returns:
+        hap_list: 성립된 천간합 목록
+        jaenghap_list: 쟁합 목록 (합 불성립)
+    """
+    HAP_RULES = {
+        ('甲', '己'): '토', ('己', '甲'): '토',
+        ('乙', '庚'): '금', ('庚', '乙'): '금',
+        ('丙', '辛'): '수', ('辛', '丙'): '수',
+        ('丁', '壬'): '목', ('壬', '丁'): '목',
+        ('戊', '癸'): '화', ('癸', '戊'): '화'
+    }
+
+    # 1단계 — 모든 합 후보 쌍 수집
+    wants_hap = {}  # index → [(partner_index, element)]
+    for i in range(len(stems)):
+        for j in range(i + 1, len(stems)):
+            pair = (stems[i], stems[j])
+            if pair in HAP_RULES:
+                element = HAP_RULES[pair]
+                wants_hap.setdefault(i, []).append((j, element))
+                wants_hap.setdefault(j, []).append((i, element))
+
+    # 2단계 — 쟁합 대상: 한 천간을 둘 이상이 합하려는 경우
+    jaenghap_centers = set()
+    for idx, partners in wants_hap.items():
+        if len(partners) >= 2:
+            jaenghap_centers.add(idx)
+
+    # 3단계 — 쟁합 목록 생성
+    jaenghap_list = []
+    for idx in sorted(jaenghap_centers):
+        partners = wants_hap[idx]
+        partner_descs = [f"{positions[p[0]]}간 {stems[p[0]]}" for p in partners]
+        jaenghap_list.append({
+            'center': stems[idx],
+            'center_position': positions[idx],
+            'competitors': [stems[p[0]] for p in partners],
+            'competitor_positions': [positions[p[0]] for p in partners],
+            'element': partners[0][1],
+            'description': f"{positions[idx]}간 {stems[idx]}을(를) {', '.join(partner_descs)}이(가) 쟁탈 → 합 불성립",
+            'effect': '합이 성립되지 않아 오행 변환 없음, 오히려 긴장·갈등 에너지 발생'
+        })
+
+    # 4단계 — 쟁합에 연루된 인덱스는 정상 합에서 제외
+    jaenghap_involved = set()
+    for item in jaenghap_list:
+        for idx, partners in wants_hap.items():
+            if stems[idx] == item['center'] and positions[idx] == item['center_position']:
+                jaenghap_involved.add(idx)
+            for p_idx, _ in partners:
+                if stems[p_idx] in item['competitors'] and positions[p_idx] in item['competitor_positions']:
+                    jaenghap_involved.add(p_idx)
+
+    # 5단계 — 쟁합 미연루 천간끼리만 정상 합
+    hap_list = []
+    used = set()
+    for i in range(len(stems)):
+        if i in used or i in jaenghap_involved:
+            continue
+        if i not in wants_hap:
+            continue
+        for j, element in wants_hap[i]:
+            if j in used or j in jaenghap_involved:
+                continue
+            hap_list.append({
+                'position': f"{positions[i]}-{positions[j]}",
+                'chars': f"{stems[i]}{stems[j]}",
+                'element': element,
+                'description': f"{positions[i]}간 {stems[i]} + {positions[j]}간 {stems[j]} → {element}화"
+            })
+            used.add(i)
+            used.add(j)
+            break
+
+    return hap_list, jaenghap_list
+
+
 # =====================================================
 # 지지 합충 데이터
 # =====================================================
@@ -98,6 +183,7 @@ def analyze_harmony_clash(pillars):
     Returns:
         {
             'cheongan_hap': [...],
+            'cheongan_jaenghap': [...],
             'cheongan_chung': [...],
             'jiji_yukhap': [...],
             'jiji_samhap': [...],
@@ -125,25 +211,19 @@ def analyze_harmony_clash(pillars):
     
     result = {
         'cheongan_hap': [],
+        'cheongan_jaenghap': [],
         'cheongan_chung': [],
         'jiji_yukhap': [],
         'jiji_samhap': [],
         'jiji_banhap': [],
         'jiji_chung': []
     }
-    
-    # 1. 천간합
-    for i in range(len(stems)):
-        for j in range(i+1, len(stems)):
-            pair = (stems[i], stems[j])
-            if pair in CHEONGAN_HAP:
-                result['cheongan_hap'].append({
-                    'position': f"{positions[i]}-{positions[j]}",
-                    'chars': f"{stems[i]}{stems[j]}",
-                    'element': CHEONGAN_HAP[pair],
-                    'description': f"{positions[i]}간 {stems[i]} + {positions[j]}간 {stems[j]} → {CHEONGAN_HAP[pair]}화"
-                })
-    
+
+    # 1. 천간합 + 쟁합
+    hap_result, jaenghap_result = _find_cheongan_hapcheung_with_jaenghap(stems, positions)
+    result['cheongan_hap'] = hap_result
+    result['cheongan_jaenghap'] = jaenghap_result
+
     # 2. 천간충
     for i in range(len(stems)):
         for j in range(i+1, len(stems)):
@@ -231,6 +311,13 @@ def test_harmony_clash():
             print(f"  ✓ {item['description']}")
     else:
         print("  (없음)")
+
+    print("\n[천간쟁합]")
+    if result['cheongan_jaenghap']:
+        for item in result['cheongan_jaenghap']:
+            print(f"  ✓ {item['description']}")
+    else:
+        print("  (없음)")
     
     print("\n[천간충]")
     if result['cheongan_chung']:
@@ -271,6 +358,7 @@ def test_harmony_clash():
     print("요약")
     print("="*60)
     print(f"천간합: {len(result['cheongan_hap'])}건")
+    print(f"천간쟁합: {len(result['cheongan_jaenghap'])}건")
     print(f"천간충: {len(result['cheongan_chung'])}건")
     print(f"지지육합: {len(result['jiji_yukhap'])}건")
     print(f"지지삼합: {len(result['jiji_samhap'])}건")

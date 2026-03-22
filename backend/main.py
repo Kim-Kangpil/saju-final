@@ -707,6 +707,7 @@ def _attach_strength_to_payload(data: dict[str, Any]) -> None:
 
 _HARMONY_CLASH_EMPTY: dict[str, list] = {
     "cheongan_hap": [],
+    "cheongan_jaenghap": [],
     "cheongan_chung": [],
     "jiji_yukhap": [],
     "jiji_samhap": [],

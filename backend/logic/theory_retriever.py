@@ -46,6 +46,7 @@ class TheoryRetriever:
             '합충케이스': 'hapcheung_cases.txt',
             '일주패턴': 'ilju_patterns.txt',
             '대운케이스': 'daeun_cases.txt',
+            'sipsung_patterns': 'sipsung_patterns.txt',
         }
 
         for key, filename in theory_files.items():
@@ -238,7 +239,9 @@ class TheoryRetriever:
             "시주": ["기본구성"],
             "일간": ["일주패턴"],
             "성격": ["일주패턴"],
-            "직업": ["일주패턴"],
+            "직업": ["일주패턴", "sipsung_patterns"],
+            "재물": ["sipsung_patterns"],
+            "연애": ["sipsung_patterns"],
             "건강": ["일주패턴"],
             "관계": ["일주패턴"],
             "대운": ["대운케이스"],
@@ -257,9 +260,23 @@ class TheoryRetriever:
         included_keys.add("오행십신")
         included_keys.add("신강약")
 
+        # 십성 이름이 질문에 있으면 sipsung_patterns를 합충/일주보다 먼저.
+        # '직업'만 있는 경우에는 일주패턴을 sipsung_patterns보다 우선.
+        _sipsung_star_kws = (
+            "비견", "겁재", "식신", "상관", "편재", "정재", "편관", "정관", "편인", "정인", "십성",
+        )
+        _has_sipsung_star_in_query = any(
+            sk in query or sk in query_lower for sk in _sipsung_star_kws
+        )
+
         # max_chars 한도 내에서 뒤쪽 키가 잘리는 문제 방지:
         # 질문으로 직접 매칭되는 케이스/패턴 파일을 먼저 붙인다.
-        priority_keys = ["합충케이스", "일주패턴", "대운케이스"]
+        if "sipsung_patterns" in included_keys and _has_sipsung_star_in_query:
+            priority_keys = ["sipsung_patterns", "합충케이스", "일주패턴", "대운케이스"]
+        else:
+            priority_keys = ["합충케이스", "일주패턴", "대운케이스"]
+            if "sipsung_patterns" in included_keys:
+                priority_keys.append("sipsung_patterns")
         rest_keys = [
             "기본구성",
             "신강약",

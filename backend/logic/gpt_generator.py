@@ -5,7 +5,7 @@ GPT 기반 사주 해석 생성기
 """
 
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 from logic.theory_retriever import TheoryRetriever
 from logic.saju_engine.core.ten_gods import calculate_ten_god
 import openai
@@ -498,6 +498,8 @@ class GPTInterpretationGenerator:
 
         system_prompt = tone_prompts.get(tone, tone_prompts['empathy'])
 
+        hapcheung_section = self._build_hapcheung_prompt_section(analysis) if analysis else ""
+
         # 오행 정보 정리 (합화 적용 후)
         elements_info = f"""
 오행 분포 (합화 적용 후): 
@@ -508,6 +510,7 @@ class GPTInterpretationGenerator:
 - 水(수/물): {final_counts.get('water', 0)}개
 
 {harmony_info}
+{hapcheung_section}
 """
 
         # 사용자 프롬프트 구성
@@ -579,141 +582,6 @@ class GPTInterpretationGenerator:
         if not self.client:
             return self._fallback_comprehensive(analysis, tone)
 
-    # ============================================================
-    # 섹션: 월지 기반 삶의 핵심 가치관/지향점
-    # ============================================================
-
-    def _fallback_core_values(self, day_stem: str, month_branch: str) -> str:
-        """
-        GPT 미사용 시, 월지와 십신을 기반으로 한 간단한 가치관/지향점 설명 (약 400~500자 느낌의 단락)
-        """
-        branch_info = self._month_branch_archetypes.get(month_branch, None)
-        branch_name = branch_info['name'] if branch_info else month_branch or '월지'
-        branch_keywords = branch_info['keywords'] if branch_info else '자기만의 방식으로 삶의 방향을 만들어 가는 기질'
-
-        try:
-            ten_god = calculate_ten_god(day_stem, month_branch)
-        except Exception:
-            ten_god = "알 수 없음"
-
-        ten_god_meanings = {
-            '비견': '나와 비슷한 사람, 동료와 친구를 통해 자신을 확인하는 관계 중심형',
-            '겁재': '경쟁과 자극 속에서 성장하는 타입, 한 번 꽂히면 밀어붙이는 추진력',
-            '식신': '꾸준함과 생산성을 중시하고, 몸으로 실천하며 결과를 만들어내는 스타일',
-            '상관': '틀을 깨고 새로움을 시도하며, 재능과 표현력으로 길을 여는 혁신형',
-            '편재': '흐르는 기회와 인연, 돈과 정보의 흐름 속에서 기민하게 움직이는 실전형',
-            '정재': '안정적인 기반과 책임, 묵직한 현실 감각을 바탕으로 삶을 설계하는 계획형',
-            '편관': '도전과 압박을 통해 단단해지는 타입, 시험·경쟁·리더십 상황에서 성장',
-            '정관': '명예와 신뢰, 규칙과 기준을 중시하며, 깔끔한 이미지와 책임감을 추구',
-            '편인': '사고와 창의, 깊이 있는 이해와 통찰을 통해 자신만의 길을 찾는 연구자형',
-            '정인': '배움과 자격, 신뢰받는 역할을 통해 삶의 안정과 자부심을 쌓는 타입',
-        }
-
-        ten_god_text = ten_god_meanings.get(
-            ten_god,
-            '자신이 중요하게 여기는 사람·일·가치에 오래 애정을 두고, 그 안에서 정체성을 찾아가는 경향'
-        )
-
-        return (
-            f"당신의 삶의 엔진은 월지 {branch_name}에서 강하게 드러납니다. "
-            f"이 자리는 타고난 기질이 ‘무엇을 우선순위로 두고 살아가느냐’를 보여주는 자리예요. "
-            f"{branch_name}는(은) {branch_keywords} 쪽으로 자연스럽게 끌리게 만듭니다. "
-            f"일간 기준으로 월지는 '{ten_god}'에 해당하는 자리라, "
-            f"{ten_god_text}을(를) 삶의 핵심 가치로 두고 길을 선택하는 경향이 있습니다. "
-            f"그래서 결국 중요한 선택의 순간마다, 머리로 계산하기보다 "
-            f"이 가치가 지켜지는지, 나다운 마음이 살아있는지를 기준으로 방향을 정하는 사람이에요."
-        )
-
-    def generate_core_values(self, day_stem: str, month_branch: str, tone: str = 'empathy') -> str:
-        """
-        월지(지지) + 일간 기준 십신을 이용해
-        '삶의 핵심 가치관과 지향점'을 400~500자 정도로 설명하는 문단 생성.
-
-        Args:
-            day_stem: 일간 (천간, 예: '癸')
-            month_branch: 월지 (지지, 예: '酉')
-            tone: empathy | reality | fun (말투만 살짝 조정)
-        """
-        if not month_branch:
-            return "월지 정보가 명확하지 않아, 삶의 핵심 가치관을 정교하게 읽어내기는 어려운 구조입니다. 그래도 이 사람은 자신이 소중히 여기는 사람과 일에 오래 버티며 책임을 다하려는 성향이 강한 편이에요."
-
-        branch_info = self._month_branch_archetypes.get(month_branch, None)
-        branch_name = branch_info['name'] if branch_info else month_branch
-        branch_keywords = branch_info['keywords'] if branch_info else '자기만의 방식으로 삶의 방향을 만들어 가는 기질'
-
-        try:
-            ten_god = calculate_ten_god(day_stem, month_branch)
-        except Exception:
-            ten_god = "알 수 없음"
-
-        ten_god_meanings = {
-            '비견': '나와 닮은 사람, 동료·친구·동료성과 함께 설계하는 삶',
-            '겁재': '경쟁과 자극 속에서 자신의 한계를 조금씩 넘어서려는 태도',
-            '식신': '꾸준한 생산성과 성실함, 몸으로 쌓아 올린 결과에 대한 자부심',
-            '상관': '틀을 깨고 새로운 규칙을 만드는 창의성과 표현력',
-            '편재': '흐르는 기회와 사람·돈의 흐름을 읽으며 판을 키우는 감각',
-            '정재': '안정적인 기반, 책임과 꾸준함, 가족과 생활의 안전을 지키려는 가치',
-            '편관': '압박과 도전을 버티며 성장하려는 투지, 어려운 역할도 맡아보려는 용기',
-            '정관': '신뢰와 명예, 깔끔한 이미지, 사회적 역할을 지키려는 책임감',
-            '편인': '깊은 사고와 통찰, 남들이 보지 못한 면을 이해하려는 탐구심',
-            '정인': '배움과 자격, 인정받는 전문성, 조용하지만 단단한 자존감',
-        }
-
-        ten_god_text = ten_god_meanings.get(
-            ten_god,
-            '자신이 중요하게 여기는 사람·일·가치에 오래 애정을 두고, 그 안에서 정체성을 찾아가는 경향'
-        )
-
-        if not self.client:
-            return self._fallback_core_values(day_stem, month_branch)
-
-        tone_prompts = {
-            'empathy': "당신은 따뜻하고 공감적인 사주 상담가입니다. 결정론적으로 단정 짓지 말고, 가능성과 선택지를 열어두면서 사용자의 마음을 존중하세요.",
-            'reality': "당신은 현실 감각이 뛰어난 사주 전문가입니다. 사주 이론을 바탕으로 핵심만 짚되, 지나친 공포 마케팅이나 단정적인 표현은 피하세요.",
-            'fun': "당신은 친구 같은 말투의 사주 해석가입니다. 살짝 가벼운 농담을 섞되, 사용자의 자존감을 해치지 않도록 존중하는 태도를 유지하세요."
-        }
-        system_prompt = tone_prompts.get(tone, tone_prompts['empathy'])
-
-        user_prompt = f"""
-아래 정보를 바탕으로 이 사람의 "삶의 핵심 가치관과 지향점"을 설명해 주세요.
-
-[기본 정보]
-- 일간(자기 본체): {day_stem}
-- 월지(삶의 엔진 자리): {branch_name}
-- 월지 자의/기질 키워드: {branch_keywords}
-- 일간 기준 월지의 십신(육친): {ten_god}
-- 십신 의미 요약: {ten_god_text}
-
-[작성 가이드]
-1. 분량은 **400~500자 정도의 한 문단**으로 작성합니다. (너무 길게 쓰지 마세요)
-2. 이 사람이 무엇을 중요하게 여기며, 어떤 방향으로 살아가려 하는지
-   - 가치관(무엇을 지키려고 하는가)
-   - 지향점(어떤 쪽으로 자꾸 끌리는가)
-   두 가지를 중심으로 정리합니다.
-3. 사주 용어(월지, 십신, 비견, 편관 등)는 직접 언급하지 말고,
-   일반인이 이해하기 쉬운 심리·가치 언어로만 풀어서 설명합니다.
-4. 운명론적으로 "원래 그렇다"라고 단정 짓지 말고,
-   이 기질을 잘 썼을 때의 장점과 주의할 점을 함께 말해 주세요.
-5. 말투는 존댓말이고, 상담자가 사용자의 가능성을 응원하는 톤이면 좋습니다.
-"""
-
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.8,
-                max_tokens=900
-            )
-            content = response.choices[0].message.content
-            return content.strip()
-        except Exception as e:
-            print(f"❌ core_values GPT 호출 실패: {e}")
-            return self._fallback_core_values(day_stem, month_branch)
-
-        # 톤별 시스템 프롬프트
         tone_prompts = {
             'empathy': "당신은 따뜻하고 공감적인 사주 상담가입니다. 운명론적 결정론보다는 사람의 잠재력과 가능성에 집중하며, 격려와 지지의 메시지를 전달합니다.",
             'reality': "당신은 냉철하고 객관적인 사주 전문가입니다. 사주 이론을 정확하게 분석하고, 현실적이고 논리적인 해석을 제공합니다.",
@@ -722,13 +590,11 @@ class GPTInterpretationGenerator:
 
         system_prompt = tone_prompts.get(tone, tone_prompts['empathy'])
 
-        # 분석 결과 정리
         summary = analysis['summary']
         element_count = summary['element_count']
         ten_gods_count = summary['ten_gods_count']
         patterns = analysis.get('patterns', [])
 
-        # 합화 정보 추출
         harmony_transformations = self._extract_harmony_from_patterns(patterns)
         harmony_section = ""
         if harmony_transformations:
@@ -736,6 +602,8 @@ class GPTInterpretationGenerator:
             for h in harmony_transformations:
                 harmony_section += f"- {h}\n"
             harmony_section += "\n⚠️ 합화는 사주 해석에서 매우 중요한 요소입니다!"
+
+        hapcheung_full = self._build_hapcheung_prompt_section(analysis)
 
         analysis_info = f"""
 사주 기본 정보: 
@@ -764,6 +632,7 @@ class GPTInterpretationGenerator:
 {self._format_patterns(patterns)}
 
 {harmony_section}
+{hapcheung_full}
 """
 
         theory_section = f"\n\n참고 이론:\n{theories}" if theories else ""
@@ -825,6 +694,161 @@ C) "합화가 된다" (제3의 기운으로 변환)
             print(f"❌ GPT API 호출 실패: {e}")
             return self._fallback_comprehensive(analysis, tone)
 
+    # ============================================================
+    # 섹션: 월지 기반 삶의 핵심 가치관/지향점
+    # ============================================================
+
+    def _fallback_core_values(self, day_stem: str, month_branch: str) -> str:
+        """
+        GPT 미사용 시, 월지와 십신을 기반으로 한 간단한 가치관/지향점 설명 (약 400~500자 느낌의 단락)
+        """
+        branch_info = self._month_branch_archetypes.get(month_branch, None)
+        branch_name = branch_info['name'] if branch_info else month_branch or '월지'
+        branch_keywords = branch_info['keywords'] if branch_info else '자기만의 방식으로 삶의 방향을 만들어 가는 기질'
+
+        try:
+            ten_god = calculate_ten_god(day_stem, month_branch)
+        except Exception:
+            ten_god = "알 수 없음"
+
+        ten_god_meanings = {
+            '비견': '나와 비슷한 사람, 동료와 친구를 통해 자신을 확인하는 관계 중심형',
+            '겁재': '경쟁과 자극 속에서 성장하는 타입, 한 번 꽂히면 밀어붙이는 추진력',
+            '식신': '꾸준함과 생산성을 중시하고, 몸으로 실천하며 결과를 만들어내는 스타일',
+            '상관': '틀을 깨고 새로움을 시도하며, 재능과 표현력으로 길을 여는 혁신형',
+            '편재': '흐르는 기회와 인연, 돈과 정보의 흐름 속에서 기민하게 움직이는 실전형',
+            '정재': '안정적인 기반과 책임, 묵직한 현실 감각을 바탕으로 삶을 설계하는 계획형',
+            '편관': '도전과 압박을 통해 단단해지는 타입, 시험·경쟁·리더십 상황에서 성장',
+            '정관': '명예와 신뢰, 규칙과 기준을 중시하며, 깔끔한 이미지와 책임감을 추구',
+            '편인': '사고와 창의, 깊이 있는 이해와 통찰을 통해 자신만의 길을 찾는 연구자형',
+            '정인': '배움과 자격, 신뢰받는 역할을 통해 삶의 안정과 자부심을 쌓는 타입',
+        }
+
+        ten_god_text = ten_god_meanings.get(
+            ten_god,
+            '자신이 중요하게 여기는 사람·일·가치에 오래 애정을 두고, 그 안에서 정체성을 찾아가는 경향'
+        )
+
+        return (
+            f"당신의 삶의 엔진은 월지 {branch_name}에서 강하게 드러납니다. "
+            f"이 자리는 타고난 기질이 ‘무엇을 우선순위로 두고 살아가느냐’를 보여주는 자리예요. "
+            f"{branch_name}는(은) {branch_keywords} 쪽으로 자연스럽게 끌리게 만듭니다. "
+            f"일간 기준으로 월지는 '{ten_god}'에 해당하는 자리라, "
+            f"{ten_god_text}을(를) 삶의 핵심 가치로 두고 길을 선택하는 경향이 있습니다. "
+            f"그래서 결국 중요한 선택의 순간마다, 머리로 계산하기보다 "
+            f"이 가치가 지켜지는지, 나다운 마음이 살아있는지를 기준으로 방향을 정하는 사람이에요."
+        )
+
+    def generate_core_values(
+        self,
+        day_stem: str,
+        month_branch: str,
+        tone: str = 'empathy',
+        analysis: Optional[Dict] = None,
+    ) -> str:
+        """
+        월지(지지) + 일간 기준 십신을 이용해
+        '삶의 핵심 가치관과 지향점'을 400~500자 정도로 설명하는 문단 생성.
+
+        Args:
+            day_stem: 일간 (천간, 예: '癸')
+            month_branch: 월지 (지지, 예: '酉')
+            tone: empathy | reality | fun (말투만 살짝 조정)
+            analysis: analyze_full_saju() 결과 (월지 충 여부 등, 옵션)
+        """
+        if not month_branch:
+            return "월지 정보가 명확하지 않아, 삶의 핵심 가치관을 정교하게 읽어내기는 어려운 구조입니다. 그래도 이 사람은 자신이 소중히 여기는 사람과 일에 오래 버티며 책임을 다하려는 성향이 강한 편이에요."
+
+        branch_info = self._month_branch_archetypes.get(month_branch, None)
+        branch_name = branch_info['name'] if branch_info else month_branch
+        branch_keywords = branch_info['keywords'] if branch_info else '자기만의 방식으로 삶의 방향을 만들어 가는 기질'
+
+        try:
+            ten_god = calculate_ten_god(day_stem, month_branch)
+        except Exception:
+            ten_god = "알 수 없음"
+
+        ten_god_meanings = {
+            '비견': '나와 닮은 사람, 동료·친구·동료성과 함께 설계하는 삶',
+            '겁재': '경쟁과 자극 속에서 자신의 한계를 조금씩 넘어서려는 태도',
+            '식신': '꾸준한 생산성과 성실함, 몸으로 쌓아 올린 결과에 대한 자부심',
+            '상관': '틀을 깨고 새로운 규칙을 만드는 창의성과 표현력',
+            '편재': '흐르는 기회와 사람·돈의 흐름을 읽으며 판을 키우는 감각',
+            '정재': '안정적인 기반, 책임과 꾸준함, 가족과 생활의 안전을 지키려는 가치',
+            '편관': '압박과 도전을 버티며 성장하려는 투지, 어려운 역할도 맡아보려는 용기',
+            '정관': '신뢰와 명예, 깔끔한 이미지, 사회적 역할을 지키려는 책임감',
+            '편인': '깊은 사고와 통찰, 남들이 보지 못한 면을 이해하려는 탐구심',
+            '정인': '배움과 자격, 인정받는 전문성, 조용하지만 단단한 자존감',
+        }
+
+        ten_god_text = ten_god_meanings.get(
+            ten_god,
+            '자신이 중요하게 여기는 사람·일·가치에 오래 애정을 두고, 그 안에서 정체성을 찾아가는 경향'
+        )
+
+        if not self.client:
+            return self._fallback_core_values(day_stem, month_branch)
+
+        tone_prompts = {
+            'empathy': "당신은 따뜻하고 공감적인 사주 상담가입니다. 결정론적으로 단정 짓지 말고, 가능성과 선택지를 열어두면서 사용자의 마음을 존중하세요.",
+            'reality': "당신은 현실 감각이 뛰어난 사주 전문가입니다. 사주 이론을 바탕으로 핵심만 짚되, 지나친 공포 마케팅이나 단정적인 표현은 피하세요.",
+            'fun': "당신은 친구 같은 말투의 사주 해석가입니다. 살짝 가벼운 농담을 섞되, 사용자의 자존감을 해치지 않도록 존중하는 태도를 유지하세요."
+        }
+        system_prompt = tone_prompts.get(tone, tone_prompts['empathy'])
+
+        month_chung_note = ""
+        if analysis:
+            hc = analysis.get('harmony_clash', {})
+            for item in hc.get('jiji_chung', []):
+                if not isinstance(item, dict):
+                    continue
+                if '월' in item.get('position', ''):
+                    month_chung_note = (
+                        f"\n⚠️ 월지({month_branch})가 충을 받고 있음 — 삶의 엔진이 불안정한 구조. "
+                        f"이 점을 가치관 해석에 반영할 것."
+                    )
+                    break
+
+        user_prompt = f"""
+아래 정보를 바탕으로 이 사람의 "삶의 핵심 가치관과 지향점"을 설명해 주세요.
+
+[기본 정보]
+- 일간(자기 본체): {day_stem}
+- 월지(삶의 엔진 자리): {branch_name}
+- 월지 자의/기질 키워드: {branch_keywords}
+- 일간 기준 월지의 십신(육친): {ten_god}
+- 십신 의미 요약: {ten_god_text}
+{month_chung_note}
+
+[작성 가이드]
+1. 분량은 **400~500자 정도의 한 문단**으로 작성합니다. (너무 길게 쓰지 마세요)
+2. 이 사람이 무엇을 중요하게 여기며, 어떤 방향으로 살아가려 하는지
+   - 가치관(무엇을 지키려고 하는가)
+   - 지향점(어떤 쪽으로 자꾸 끌리는가)
+   두 가지를 중심으로 정리합니다.
+3. 사주 용어(월지, 십신, 비견, 편관 등)는 직접 언급하지 말고,
+   일반인이 이해하기 쉬운 심리·가치 언어로만 풀어서 설명합니다.
+4. 운명론적으로 "원래 그렇다"라고 단정 짓지 말고,
+   이 기질을 잘 썼을 때의 장점과 주의할 점을 함께 말해 주세요.
+5. 말투는 존댓말이고, 상담자가 사용자의 가능성을 응원하는 톤이면 좋습니다.
+"""
+
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.8,
+                max_tokens=900
+            )
+            content = response.choices[0].message.content
+            return content.strip()
+        except Exception as e:
+            print(f"❌ core_values GPT 호출 실패: {e}")
+            return self._fallback_core_values(day_stem, month_branch)
+
     def _format_ten_gods_detail(self, ten_gods):
         """십성 상세 포맷팅"""
         lines = []
@@ -878,6 +902,129 @@ C) "합화가 된다" (제3의 기운으로 변환)
                 result.append(f"• {group}: {', '.join(items)}")
 
         return "\n".join(result) if result else "특별한 패턴 없음"
+
+    def _build_hapcheung_prompt_section(self, analysis: Dict) -> str:
+        """
+        harmony_clash 데이터를 GPT 프롬프트용 텍스트로 변환.
+        합화(오행변환) + 충(파괴) 모두 포함.
+        """
+        hc = analysis.get('harmony_clash', {})
+        if not hc:
+            return ""
+
+        lines = ["[합충 분석 — 반드시 해석에 반영할 것]"]
+
+        if hc.get('cheongan_hap'):
+            lines.append("\n◆ 천간합 (천간끼리 결합 → 오행 변환)")
+            for item in hc['cheongan_hap']:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(f"  • {item.get('description', '')}")
+                lines.append(
+                    f"    → 두 천간이 합쳐져 원래 기운이 약해지고, {item.get('element', '')}의 성질로 변환됨"
+                )
+                lines.append(
+                    f"    → 해석: 겉으로 드러나는 기운과 실제 내면의 기운이 다를 수 있음"
+                )
+
+        if hc.get('cheongan_chung'):
+            lines.append("\n◆ 천간충 (천간끼리 충돌 → 내적 갈등)")
+            for item in hc['cheongan_chung']:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(f"  • {item.get('description', '')}")
+                lines.append(
+                    f"    → 두 기운이 충돌하여 내적 긴장감, 결단력 약화, 혹은 역설적 추진력 발생"
+                )
+                lines.append(
+                    f"    → 해석: 머리와 행동이 따로 노는 경향, 선택의 순간에 흔들림"
+                )
+
+        if hc.get('jiji_yukhap'):
+            lines.append("\n◆ 지지육합 (지지끼리 결합 → 안정적 결속)")
+            for item in hc['jiji_yukhap']:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(f"  • {item.get('description', '')}")
+                lines.append(
+                    f"    → 두 지지가 강하게 결속되어 안정적이고 지속적인 에너지 형성"
+                )
+                lines.append(
+                    f"    → 해석: 특정 관계/환경/직업에 오래 묶이는 경향, 안정 선호"
+                )
+
+        if hc.get('jiji_samhap'):
+            lines.append("\n◆ 지지삼합 (세 지지가 모여 강력한 오행 국 형성)")
+            for item in hc['jiji_samhap']:
+                if not isinstance(item, dict):
+                    continue
+                is_complete = item.get('complete', False)
+                lines.append(f"  • {item.get('description', '')}")
+                if is_complete:
+                    lines.append(
+                        f"    → 완전한 삼합 — 해당 오행이 극강해져 사주 전체를 지배하는 핵심 에너지"
+                    )
+                    lines.append(
+                        f"    → 해석: 이 오행의 특성이 직업/성격/관계 전반에 강하게 작용"
+                    )
+                else:
+                    lines.append(
+                        f"    → 반합 — 해당 오행의 기운이 부분적으로 강화됨"
+                    )
+                    lines.append(
+                        f"    → 해석: 대운/세운에서 나머지 글자가 오면 완전히 발동하는 잠재 에너지"
+                    )
+
+        if hc.get('jiji_chung'):
+            lines.append("\n◆ 지지충 (지지끼리 충돌 → 해당 오행 파괴·불안정)")
+            for item in hc['jiji_chung']:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(f"  • {item.get('description', '')}")
+                pos = item.get('position', '')
+                if '월' in pos:
+                    lines.append(
+                        f"    ⚠️  월지 충 — 삶의 근본 에너지(월지)가 충을 받아 불안정"
+                    )
+                    lines.append(
+                        f"    → 삶의 방향성이 자주 흔들리거나 직업/환경 변화가 많을 수 있음"
+                    )
+                    lines.append(
+                        f"    → 월지 본래 에너지가 약화되므로 보완이 필요한 구조"
+                    )
+                elif '일' in pos:
+                    lines.append(
+                        f"    ⚠️  일지 충 — 배우자궁/일상 환경이 불안정"
+                    )
+                    lines.append(
+                        f"    → 가까운 관계에서 충돌 가능성, 주거 변동 경향"
+                    )
+                else:
+                    lines.append(
+                        f"    → 해당 자리의 에너지가 약화되거나 갑작스러운 변화 발생 가능"
+                    )
+
+        if hc.get('jiji_banhap'):
+            lines.append("\n◆ 지지반합 (삼합의 부분 결합 → 잠재적 에너지)")
+            for item in hc['jiji_banhap']:
+                if not isinstance(item, dict):
+                    continue
+                lines.append(f"  • {item.get('description', '')}")
+                lines.append(
+                    f"    → 대운/세운에서 나머지 글자가 오면 삼합으로 완성되어 강하게 발동"
+                )
+
+        if len(lines) == 1:
+            return ""
+
+        lines.append("\n[합충 해석 지침 — GPT 필수 준수]")
+        lines.append("1. 위 합충 내용을 반드시 해석에 언급할 것")
+        lines.append("2. 충이 있는 경우: 해당 오행의 불안정성과 삶에서의 변화 패턴 설명")
+        lines.append("3. 합이 있는 경우: 결속된 에너지의 안정성 또는 오행 변환 효과 설명")
+        lines.append("4. 월지에 충이 있으면 조후/용신 관점에서 추가 해석 필수")
+        lines.append("5. 사주 용어(충, 합, 지지 등) 직접 언급 금지 — 일상 언어로만 설명")
+
+        return "\n".join(lines)
 
     def _fallback_comprehensive(self, analysis, tone):
         """폴백 종합 해석"""

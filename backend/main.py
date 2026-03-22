@@ -1317,6 +1317,11 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
 
         analysis = analyze_full_saju(req.day_stem, pillars_dict)
 
+        if 'harmony_clash' not in analysis or not isinstance(
+            analysis.get('harmony_clash'), dict
+        ):
+            analysis['harmony_clash'] = analyze_harmony_clash(pillars_dict)
+
         # ✅ pillars 정보 보강 (합화 계산용)
         if 'pillars' not in analysis or not analysis['pillars']:
             print("⚠️  pillars 없음, 생성 중...")
@@ -1391,7 +1396,8 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
             core_values = generator.generate_core_values(
                 day_stem=req.day_stem,
                 month_branch=month_branch,
-                tone=req.tone
+                tone=req.tone,
+                analysis=analysis,
             )
 
             print(f"✅ GPT 해석 생성 완료: {len(content)}자")

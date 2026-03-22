@@ -127,7 +127,8 @@ type SajuResult = {
     year?: Array<{ hanja: string; hangul: string; element: string }>;
   };
 };
-type CharKey = "empathy" | "reality" | "fun";
+
+type CharKey = "empathy";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 declare global {
@@ -410,122 +411,6 @@ const CHARACTERS = {
         "당신이 걸어온 길이\n결코 헛되지 않았다는 걸 알게 될 거예요.",
         "힘들 때도 있었죠?\n이제 당신을 응원하는 우주의 메시지를 전할게요.",
         "당신은 이미 충분히 잘하고 있어요.\n사주가 그렇게 말하고 있답니다.",
-      ];
-      return greetings[Math.floor(Math.random() * greetings.length)];
-    },
-  },
-  reality: {
-    id: "reality",
-    name: "분석형",
-    img: "/images/ham_cold.png",
-    oneLine: "기분은 몰라도, 방향은 정확히 알려주는",
-    desc: "감정 빼고 사실만! 군더더기 없이 말해드립니다.",
-    progressMessages: {
-      stage1: [
-        "60갑자 데이터베이스 로딩 중...\n정확도 99.8%로 연산합니다.",
-        "오행 배치 분석 시작.\n오차 범위 ±0.1% 이내로 계산 중.",
-        "사주 원국 구조 파싱 완료.\n십성 배치 검증 중입니다.",
-        "천간지지 매트릭스 구축.\n상호작용 분석 진행 중.",
-        "생년월일시 데이터 검증.\n천문력 대조 작업 수행 중.",
-        "음양오행 배치 연산.\n통계 모델 적용 중입니다.",
-        "사주명리학 알고리즘 가동.\n데이터 정합성 99.9% 확보.",
-        "천간 상생상극 매트릭스 분석.\n패턴 인식 진행 중.",
-        "지지 육합삼합 구조 파싱.\n시스템 검증 단계.",
-        "십성 분포도 작성.\n강약 분석 알고리즘 실행 중.",
-      ],
-      stage2: [
-        "신강약 점수 산출 완료.\n대운 흐름 분석 진행 중입니다.",
-        "통계 기반 예측 모델 적용 중...\n정확도 검증 단계입니다.",
-        "월령 왕쇠 데이터 매칭.\n계절별 오행 강도 측정 중.",
-        "십성 가중치 계산 완료.\n최종 점수 산출 중입니다.",
-        "대운 세운 타임라인 구축.\n향후 10년 흐름 예측 중.",
-        "합충형해파 관계 분석.\n사주 내 상호작용 검증 중.",
-        "특수신살 배치 확인.\n도화살, 역마살, 화개살 체크 중.",
-        "재물운 알고리즘 실행.\n수익 구조 분석 진행 중.",
-        "인간관계 패턴 분석.\n육친 배치 검증 단계.",
-        "종합 점수 산출 중.\n최종 리포트 생성 준비.",
-      ],
-      stage3: [
-        "최종 검증 단계 진입.\n결과 출력 준비 완료.",
-        "분석 리포트 생성 중...\n팩트만 담았습니다. 💻",
-        "데이터 정합성 체크 완료.\n오류율 0.01% 미만 확인.",
-        "통계 신뢰도 99.7%.\n결과 출력 대기 중입니다.",
-        "사주명리 DB 대조 완료.\n역사적 데이터와 매칭 중.",
-        "AI 분석 모델 검증 완료.\n최종 보고서 생성 중.",
-        "3중 교차 검증 통과.\n결과 신뢰도 최상급.",
-        "알고리즘 연산 종료.\n출력 포맷 최적화 중.",
-        "최종 리포트 암호화 완료.\n전송 준비 완료.",
-        "분석 완료. 오차 범위 허용치 내.\n결과 출력 시작합니다.",
-      ],
-    },
-    getGreeting: (_timeStr: string) => {
-      const greetings = [
-        "당신의 생년월일이 가리키는 픽셀 데이터,\n오차 없이 분석합니다.",
-        "근거 없는 위로는 사절입니다.\n철저히 수치로만 증명할게요.",
-        "사주명리학 데이터베이스 준비 완료.\n정확한 분석만 제공합니다.",
-        "통계와 확률로 말합니다.\n감정은 배제하고 팩트만 전달합니다.",
-        "당신의 사주팔자,\n과학적 방법론으로 해석합니다.",
-        "수천 년 축적된 데이터와 대조.\n객관적 분석 결과를 제시합니다.",
-        "60갑자 조합 3,600가지 중\n당신의 위치를 정확히 파악합니다.",
-        "오행 에너지 분포 분석.\n강약 점수 정밀 측정 예정.",
-      ];
-      return greetings[Math.floor(Math.random() * greetings.length)];
-    },
-  },
-  fun: {
-    id: "fun",
-    name: "친구형",
-    img: "/images/ham_friend.png",
-    oneLine: "친구가 커피 마시면서 해주는 사주 이야기",
-    desc: "반말 섞인 친근한 말투!",
-    progressMessages: {
-      stage1: [
-        "잠깐만! 너 사주 좀 복잡하다?\n천천히 봐줄게.",
-        "어? 이거 뭐야... 오 대박?\n좀만 기다려봐!",
-        "야 이거 진짜... 재밌는데?\n계속 볼게 잠깐만.",
-        "오케이 일단 기본 정보부터 체크.\n금방 끝나.",
-        "너 사주 보는데 시간 좀 걸릴듯.\n근데 볼 만해서 괜찮아.",
-        "음... 흥미롭네? 이거\n좀 더 파봐야겠어.",
-        "야 너 이거 알아?\n지금 진짜 신기한 거 발견 중.",
-        "오... 생각보다 재밌는데?\n조금만 기다려.",
-        "이거 제대로 보려면 시간 필요해.\n근데 기대해도 좋아.",
-        "너 사주 보면서 놀란 거 처음이야.\n진짜임.",
-      ],
-      stage2: [
-        "오... 이거 생각보다 괜찮은데?\n너 운 좀 있어!",
-        "와 진짜... 너 이거 보고\n놀랄 준비 해 🔥",
-        "잠깐, 이거 확인 좀 해봐야겠어.\n뭔가 특이한 게 보여.",
-        "야 이거 진짜 신기하다.\n너 이런 거 알고 있었어?",
-        "오케이 이제 좀 보이네.\n너 생각보다 특이해.",
-        "음... 이 부분이 핵심인데,\n제대로 설명해줄게.",
-        "너 진짜 재밌는 사람이구나.\n사주가 증명하고 있어.",
-        "이거 보면서 배우는 것도 있네.\n너 사주 독특해.",
-        "야 너 이거 진짜 알아야 해.\n중요한 거 발견했어.",
-        "오... 이 조합 처음 보는데?\n대박이야 진짜.",
-      ],
-      stage3: [
-        "다 봤다! 야 이거 진짜...\n직접 봐야 믿을걸? 💥",
-        "준비됐어? 너 인생 바뀔 수도 있어.\n각오해.",
-        "오케이 정리 완료!\n너한테 할 말 많아.",
-        "야 이거 진짜 재밌어.\n바로 알려줄게.",
-        "다 확인했어.\n생각보다 훨씬 좋은데?",
-        "마지막 점검 중.\n근데 진짜 기대해도 돼.",
-        "야 너 이거 보면\n진짜 놀랄 거야. 각오해.",
-        "오케이 완성!\n제대로 된 거 보여줄게.",
-        "준비 끝! 지금부터\n진짜 시작이야.",
-        "다 봤어. 솔직히 말하면,\n너 생각보다 쩔어.",
-      ],
-    },
-    getGreeting: (_timeStr: string) => {
-      const greetings = [
-        "팩트 폭격기 가동한다.\n유리 멘탈이면 애초에 오지 마.",
-        "너 지금 누를까 말까 고민하는 거\n다 보여. 그냥 빨리 눌러!",
-        "야, 사주 보러 왔으면\n각오는 하고 온 거지?",
-        "솔직하게 말해줄게.\n듣기 싫으면 지금 나가도 돼.",
-        "친구 사이니까 진짜 얘기해주는 거야.\n준비됐어?",
-        "너 운명 궁금하지?\n그럼 제대로 알려줄게.",
-        "사주 보는 건 좋은데,\n현실 직시할 준비는 됐어?",
-        "오늘 너한테 필요한 건\n위로가 아니라 팩트야.",
       ];
       return greetings[Math.floor(Math.random() * greetings.length)];
     },
@@ -1067,7 +952,6 @@ export default function Page({
   const CHANNEL_PUBLIC_ID = "_Ribbn";
 
   const [kakaoTokenOk, setKakaoTokenOk] = useState(false);
-  const [selectedTone, setSelectedTone] = useState<CharKey>("empathy");
 
   useEffect(() => {
     if (!kakaoReady) return;
@@ -1103,7 +987,7 @@ export default function Page({
 
   const [sajuJsonRaw, setSajuJsonRaw] = useState<any>(null);
   const [interpLoading, setInterpLoading] = useState(false);
-  const [selectedChar, setSelectedChar] = useState<CharKey>("empathy");
+  const selectedChar: CharKey = "empathy";
 
   useEffect(() => {
     const v = localStorage.getItem("isChannelAdded") === "true";
@@ -1165,11 +1049,11 @@ export default function Page({
 
         const dayPillar = result.day.cheongan.hanja + result.day.jiji.hanja;
         const charmText = CHARM_BY_PILLAR[dayPillar];
-        if (charmText) setCharmAnalysis(charmText[selectedChar]);
+        if (charmText) setCharmAnalysis(charmText.empathy);
 
         const dayStemTenGod = tenGod(dayStem, dayStem);
         const talentText = TALENT_BY_TEN_GOD[dayStemTenGod];
-        if (talentText) setTalentAnalysis(talentText[selectedChar]);
+        if (talentText) setTalentAnalysis(talentText.empathy);
 
         const strengthResult = analyzeStrength(
           dayStem,
@@ -1534,15 +1418,15 @@ export default function Page({
         console.error("대운세운 분석 오류:", error);
       }
     }
-  }, [result, birthYmd, gender, selectedChar]);
+  }, [result, birthYmd, gender]);
 
   const getDayPillarAnimalText = useMemo(() => {
     if (!result) return null;
     const dayPillarKey = result.day.cheongan.hangul + result.day.jiji.hangul;
     const texts = dayPillarTexts[dayPillarKey];
     if (!texts) return null;
-    return texts[selectedTone];
-  }, [result, selectedTone]);
+    return texts.empathy;
+  }, [result]);
 
   // 첫 문장에 포함된 색깔(예: 하늘빛, 초록빛)로 첫 문장만 해당 색상 적용
   const DAY_PILLAR_COLOR_MAP: Record<string, string> = {
@@ -1802,9 +1686,9 @@ export default function Page({
       );
     }
 
-    if (specialStarsAnalysis?.[selectedChar]) {
+    if (specialStarsAnalysis?.empathy) {
       base.insight.unshift(
-        asContent("stars_text", "특수신살/신살", specialStarsAnalysis[selectedChar], "⭐", "local")
+        asContent("stars_text", "특수신살/신살", specialStarsAnalysis.empathy, "⭐", "local")
       );
     }
     if (gongmangAnalysis) {
@@ -1813,12 +1697,7 @@ export default function Page({
       );
     }
     if (emotionalWeakness) {
-      const emotionTitle =
-        selectedChar === "empathy"
-          ? "마음 약점"
-          : selectedChar === "reality"
-          ? "스트레스 포인트"
-          : "멘탈 약점";
+      const emotionTitle = "마음 약점";
       base.insight.unshift(
         asContent("insight_emotion", emotionTitle, emotionalWeakness, "🧘", "local")
       );
@@ -1853,7 +1732,6 @@ export default function Page({
     todayFortune,
     natureAnalysis,
     maskVsNatureAnalysis,  // 🔥 추가
-    selectedChar,
     getDayPillarAnimalText,
     result,
     gender,
@@ -1869,12 +1747,12 @@ export default function Page({
       tenGod,
       selectedChar
     );
-  }, [result, selectedChar]);
+  }, [result]);
 
   const strengthWeakVisualData = useMemo(() => {
     if (!result) return null;
     return getStrengthWeaknessVisualData(result, selectedChar);
-  }, [result, selectedChar]);
+  }, [result]);
 
   const aptitudeSpectrumData = useMemo(() => {
     if (!result) return null;
@@ -1884,32 +1762,32 @@ export default function Page({
   const elementDistributionVisualData = useMemo(() => {
     if (!result) return null;
     return getElementDistributionVisualData(result, selectedChar);
-  }, [result, selectedChar]);
+  }, [result]);
 
   const tenGodAbilityCardsData = useMemo(() => {
     if (!result) return null;
     return getTenGodAbilityCardsData(result, selectedChar);
-  }, [result, selectedChar]);
+  }, [result]);
 
   const relationshipVisualData = useMemo(() => {
     if (!result) return null;
     return getRelationshipStyleVisualData(result, selectedChar);
-  }, [result, selectedChar]);
+  }, [result]);
 
   const ancestorVisualData = useMemo(() => {
     if (!result) return null;
     return getAncestorParentVisualData(result, gender, selectedChar);
-  }, [result, gender, selectedChar]);
+  }, [result, gender]);
 
   const charismaVisualData = useMemo(() => {
     if (!result) return null;
     return getCharismaVisualData(result, selectedChar);
-  }, [result, selectedChar]);
+  }, [result]);
 
   const charmVisualData = useMemo(() => {
     if (!result) return null;
     return getCharmVisualData(result, selectedChar);
-  }, [result, selectedChar]);
+  }, [result]);
 
   async function requestInterpretation() {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true" || kakaoTokenOk;
@@ -1927,7 +1805,7 @@ export default function Page({
     setLoadingProgress(0);
     setLoadingMessage("사주 해석을 준비하는 중이에요...");
 
-    const char = CHARACTERS[selectedChar];
+    const char = CHARACTERS.empathy;
     const stages = char.progressMessages;
     let progress = 0;
     let stageIndex = 0;
@@ -1991,7 +1869,7 @@ export default function Page({
     } catch (e) {
       console.error(e);
       setNewInterpretation({
-        title: ELEMENT_ANALYSIS[selectedChar].title,
+        title: ELEMENT_ANALYSIS.empathy.title,
         content: "해석을 불러오는 중 오류가 발생했습니다.",
         metadata: { harmony: null },
         interpretations: [],
@@ -2217,7 +2095,7 @@ export default function Page({
                   <div style={{ position: "fixed", left: 0, top: 0, width: "100vw", height: "100dvh", background: "rgba(245,241,234,0.96)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", zIndex: 2147483647, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, touchAction: "none" }}>
                     <div style={{ background: "#fff", border: `1px solid ${S.beige}`, borderRadius: 16, padding: "36px 28px", width: "88vw", maxWidth: 400, textAlign: "center", boxShadow: "0 8px 40px rgba(44,36,23,0.10)" }}>
                       <motion.div initial={{ scale: 0.6, y: 30, opacity: 0 }} animate={{ scale: [0.6, 1.15, 1], y: [30, -10, 0], opacity: 1 }} transition={{ duration: 0.7, times: [0, 0.6, 1], ease: "easeOut" }} style={{ marginBottom: 20 }}>
-                        <img src={CHARACTERS[selectedChar].img} alt="" style={{ width: 100, height: 100, objectFit: "contain", margin: "0 auto", display: "block" }} />
+                        <img src={CHARACTERS.empathy.img} alt="" style={{ width: 100, height: 100, objectFit: "contain", margin: "0 auto", display: "block" }} />
                       </motion.div>
                       <motion.p key={loadingMessage} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="saju-serif" style={{ color: S.ink, fontSize: 14, fontWeight: 500, lineHeight: 1.8, whiteSpace: "pre-wrap", marginBottom: 24, minHeight: 48 }}>
                         {loadingMessage}

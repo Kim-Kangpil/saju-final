@@ -424,6 +424,66 @@ export function formatBirthDate(ymd: string): string {
 }
 
 /**
+ * 로컬에 저장된 사주 중 daeun_list 등 필수 필드가 없는 항목을
+ * 백엔드에서 다시 받아 갱신합니다. (구버전 데이터 마이그레이션)
+ *
+ * 업데이트된 항목 수를 반환합니다.
+ */
+export async function refreshLocalSajuIfMissingFields(): Promise<number> {
+  if (typeof window === "undefined") return 0;
+
+  const list = getSavedSajuList();
+  if (!list.length) return 0;
+
+  let updated = 0;
+  const next = [...list];
+
+  for (let i = 0; i < next.length; i++) {
+    const s = next[i];
+    const ymd = String(s.birthYmd || "").replace(/\D/g, "");
+    if (ymd.length < 8) continue;
+
+    const result = s.result as Record<string, unknown> | null | undefined;
+    // daeun_list가 이미 있으면 스킵
+    if (Array.isArray(result?.daeun_list) && result.daeun_list.length > 0) continue;
+
+    const hm = String(s.birthHm ?? "1200").padStart(4, "0");
+    try {
+      const res = await fetch(`${API_BASE}/saju/full`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          calendar_type: s.calendar === "lunar" ? "lunar" : "solar",
+          year: parseInt(ymd.slice(0, 4), 10),
+          month: parseInt(ymd.slice(4, 6), 10),
+          day: parseInt(ymd.slice(6, 8), 10),
+          hour: s.timeUnknown ? null : parseInt(hm.slice(0, 2), 10),
+          minute: s.timeUnknown ? null : parseInt(hm.slice(2, 4), 10),
+          gender: s.gender,
+          time_unknown: Boolean(s.timeUnknown),
+          is_leap_month: false,
+        }),
+      });
+      if (!res.ok) continue;
+      const fullJson = (await res.json()) as Record<string, unknown>;
+      // 기존 result(UI 구조)와 새 fullJson(원본 전체)을 merge
+      next[i] = {
+        ...s,
+        result: { ...(result ?? {}), ...fullJson },
+      };
+      updated++;
+    } catch {
+      // 실패 시 조용히 다음 항목으로
+    }
+  }
+
+  if (updated > 0) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
+  return updated;
+}
+
+/**
  * 시간 포맷팅 (HHMM → HH시 MM분)
  */
 export function formatBirthTime(hm: string): string {

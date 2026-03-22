@@ -11,6 +11,7 @@ import {
   pickSavedSajuForChat,
   savedSajuToChatApiPayload,
   syncSavedSajuListWithServer,
+  refreshLocalSajuIfMissingFields,
   type SavedSaju,
 } from "@/lib/sajuStorage";
 import MarkdownMessage from "../../components/MarkdownMessage";
@@ -281,41 +282,10 @@ function ChatPageInner({
   const [sajuBadgeTick, setSajuBadgeTick] = useState(0);
 
   const refreshSajuIfStale = useCallback(async () => {
-    const saved = getSavedSajuList();
-    const first = saved?.[0];
-    const nameOk = Boolean(first?.name?.trim());
-    if (!first || !nameOk || first.result?.strength) return;
-
-    const ymd = String(first.birthYmd || "").replace(/\D/g, "");
-    if (ymd.length < 8) return;
-
-    try {
-      const hm = String(first.birthHm ?? "1200");
-      const res = await fetch(`${BACKEND_API_BASE}/saju/full`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          calendar_type: first.calendar === "lunar" ? "lunar" : "solar",
-          year: parseInt(ymd.slice(0, 4), 10),
-          month: parseInt(ymd.slice(4, 6), 10),
-          day: parseInt(ymd.slice(6, 8), 10),
-          hour: first.timeUnknown ? null : parseInt(hm.slice(0, 2), 10),
-          minute: first.timeUnknown ? null : parseInt(hm.slice(2, 4) || "0", 10),
-          gender: first.gender,
-          time_unknown: Boolean(first.timeUnknown),
-          is_leap_month: false,
-        }),
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      const updated = { ...first, result: { ...(first.result && typeof first.result === "object" ? first.result : {}), ...data } };
-      const newList = [updated, ...saved.slice(1)];
-      localStorage.setItem("saved_saju_list", JSON.stringify(newList));
-      setSajuBadgeTick((t) => t + 1);
-    } catch {
-      /* 실패 시 조용히 넘어감 */
-    }
-  }, [isLoggedIn]);
+    // daeun_list 등 필수 필드가 없는 항목만 백엔드에서 재요청해 갱신
+    const updated = await refreshLocalSajuIfMissingFields();
+    if (updated > 0) setSajuBadgeTick((t) => t + 1);
+  }, []);
 
   const [savedSajuName, setSavedSajuName] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);

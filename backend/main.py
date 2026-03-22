@@ -6,6 +6,7 @@ from logic import test
 from logic import lunar_converter
 from logic.jijanggan import calculate_jijanggan_for_pillars
 from logic.saju_core import compute_full_saju
+from logic.saju_engine.core.sinsal import analyze_sinsal
 from logic.feature_flags import use_new_saju_engine, get_engine_version_label
 from logic.theory_retriever import TheoryRetriever
 from auth_kakao import router as kakao_router
@@ -545,6 +546,54 @@ def get_theory_retriever() -> TheoryRetriever:
     return _theory_retriever
 
 
+def _attach_sinsal_to_saju_full_payload(data: dict[str, Any]) -> None:
+    """
+    /saju/full 응답(dict)에 analyze_sinsal 결과를 sinsal 키로 붙인다.
+    시주가 없으면(time_unknown 등 hour_pillar 없음) 만세력에 사용한 solar_datetime_used 시각으로
+    시주를 한 번 더 계산해 신살 판정에만 사용한다(본 응답의 hour_pillar는 그대로 None).
+    """
+    empty: dict[str, list] = {
+        "cheonul_gwiin": [],
+        "dohwa": [],
+        "yeokma": [],
+        "hwagae": [],
+        "wolgong": [],
+        "munchang_gwiin": [],
+    }
+    try:
+        yp = (data.get("year_pillar") or "").strip()
+        mp = (data.get("month_pillar") or "").strip()
+        dp = (data.get("day_pillar") or "").strip()
+        hp = data.get("hour_pillar")
+        if len(yp) < 2 or len(mp) < 2 or len(dp) < 2:
+            data["sinsal"] = empty
+            return
+        day_stem = dp[0]
+
+        if isinstance(hp, str) and len(hp.strip()) >= 2:
+            hour_str = hp.strip()[:2]
+        else:
+            solar_str = (data.get("solar_datetime_used") or "").strip()
+            solar_dt = datetime.strptime(solar_str, "%Y-%m-%d %H:%M")
+            hour_str = test.calculate_hour_pillar(
+                solar_dt, dp[:2], apply_korea_dst=True
+            )
+
+        if len(hour_str) < 2:
+            data["sinsal"] = empty
+            return
+
+        pillars = {
+            "year": yp[:2],
+            "month": mp[:2],
+            "day": dp[:2],
+            "hour": hour_str[:2],
+        }
+        data["sinsal"] = analyze_sinsal(day_stem, pillars)
+    except Exception:
+        data["sinsal"] = empty
+
+
 def _safe_hanja(obj: Any, prefix: str) -> str:
     """result 내 hour/day/month/year 객체에서 한자 문자열 추출 (천간+지지)"""
     if not obj or not isinstance(obj, dict):
@@ -964,26 +1013,20 @@ async def get_full_saju(req: SajuRequest):
         # feature flag를 통해 신규 엔진 사용 여부를 제어한다.
         # 현재는 compute_full_saju 한 경로만 존재하지만, 향후 구엔진과 신엔진을 병행할 수 있도록 설계.
         if not use_new_saju_engine():
-            data = compute_full_saju(
-                {
-                    "calendar_type": req.calendar_type,
-                    "year": req.year,
-                    "month": req.month,
-                    "day": req.day,
-                    "hour": req.hour if req.hour is not None else 12,
-                    "minute": req.minute if req.minute is not None else 0,
-                    "gender": req.gender,
-                    "is_leap_month": req.is_leap_month,
-                    "time_unknown": req.time_unknown,
-                    "iana_timezone": req.iana_timezone,
-                },
-                DB,
-            )
-            data["engine_version"] = get_engine_version_label()
-            return data
-
-        data = compute_full_saju(
-            {
+            payload: dict[str, Any] = {
+                "calendar_type": req.calendar_type,
+                "year": req.year,
+                "month": req.month,
+                "day": req.day,
+                "hour": req.hour if req.hour is not None else 12,
+                "minute": req.minute if req.minute is not None else 0,
+                "gender": req.gender,
+                "is_leap_month": req.is_leap_month,
+                "time_unknown": req.time_unknown,
+                "iana_timezone": req.iana_timezone,
+            }
+        else:
+            payload = {
                 "calendar_type": req.calendar_type,
                 "year": req.year,
                 "month": req.month,
@@ -994,10 +1037,11 @@ async def get_full_saju(req: SajuRequest):
                 "is_leap_month": req.is_leap_month,
                 "time_unknown": req.time_unknown,
                 "iana_timezone": req.iana_timezone,
-            },
-            DB,
-        )
+            }
+
+        data = compute_full_saju(payload, DB)
         data["engine_version"] = get_engine_version_label()
+        _attach_sinsal_to_saju_full_payload(data)
         return data
     except Exception as e:
         print(f"❌ /saju/full 에러: {e}")

@@ -248,15 +248,58 @@ function buildSajuContextLegacy(payload: SajuPayload): string | null {
   return parts.join("\n");
 }
 
+/** 백엔드 /saju/full 의 sinsal 또는 저장 객체의 result.sinsal */
+function getSinsalFromSajuPayload(saju: unknown): Record<string, unknown> | null {
+  if (!saju || typeof saju !== "object") return null;
+  const o = saju as Record<string, unknown>;
+  const top = o.sinsal;
+  if (top && typeof top === "object") return top as Record<string, unknown>;
+  const res = o.result;
+  if (res && typeof res === "object" && "sinsal" in res) {
+    const inner = (res as Record<string, unknown>).sinsal;
+    if (inner && typeof inner === "object") return inner as Record<string, unknown>;
+  }
+  return null;
+}
+
+function formatSinsalContextBlock(saju: unknown): string {
+  const sinsal = getSinsalFromSajuPayload(saju);
+  if (!sinsal) return "";
+
+  const parts: string[] = [];
+  const guiin = (sinsal.cheonul_gwiin as { description?: string }[] | undefined) ?? [];
+  if (guiin.length > 0) {
+    parts.push(`천을귀인: ${guiin.map((g) => g.description).join(", ")}`);
+  } else {
+    parts.push("천을귀인: 없음");
+  }
+  const dohwa = (sinsal.dohwa as { description?: string }[] | undefined) ?? [];
+  parts.push(
+    dohwa.length > 0 ? `도화살: ${dohwa.map((g) => g.description).join(", ")}` : "도화살: 없음",
+  );
+  const yeokma = (sinsal.yeokma as { description?: string }[] | undefined) ?? [];
+  parts.push(
+    yeokma.length > 0 ? `역마살: ${yeokma.map((g) => g.description).join(", ")}` : "역마살: 없음",
+  );
+  return parts.join("\n");
+}
+
 function buildSajuContext(saju: unknown): string {
   if (!saju || typeof saju !== "object") return "";
   const payload = saju as SajuPayload;
 
+  const sinsalBlock = formatSinsalContextBlock(saju);
+
   const fromModel = buildSajuContextFromModel(payload);
-  if (fromModel) return fromModel;
+  if (fromModel) {
+    return sinsalBlock ? `${fromModel}\n${sinsalBlock}` : fromModel;
+  }
 
   const legacy = buildSajuContextLegacy(payload);
-  return legacy ?? "";
+  if (legacy) {
+    return sinsalBlock ? `${legacy}\n${sinsalBlock}` : legacy;
+  }
+  return sinsalBlock;
 }
 
 // ─────────────────────────────────────────────

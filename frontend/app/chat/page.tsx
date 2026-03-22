@@ -1,12 +1,18 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { use, useRef, useEffect, useMemo, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, use, useRef, useEffect, useMemo, useState, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { getSavedSajuList } from "@/lib/sajuStorage";
+import {
+  getSavedSajuList,
+  pickSavedSajuForChat,
+  savedSajuToChatApiPayload,
+  syncSavedSajuListWithServer,
+  type SavedSaju,
+} from "@/lib/sajuStorage";
 import MarkdownMessage from "../../components/MarkdownMessage";
 import { useLang } from "@/contexts/LangContext";
 import { useChatSessions } from "@/hooks/useChatSessions";
@@ -86,11 +92,10 @@ const HANJA_TO_KR: Record<string, string> = {
   亥: "해",
 };
 
-function getFirstSavedDayPillarHangul(): string {
-  if (typeof window === "undefined") return "";
+function getDayPillarHangulFromSaved(first: SavedSaju | null | undefined): string {
+  if (typeof window === "undefined" || !first) return "";
   try {
-    const first = getSavedSajuList()?.[0];
-    const r = first?.result as
+    const r = first.result as
       | {
           day_pillar?: string;
           day?: { cheongan?: { hanja?: string }; jiji?: { hanja?: string } };
@@ -181,12 +186,14 @@ const CHEONEUL_TABLE = (
   </table>
 );
 
-export default function ChatPage({
+function ChatPageInner({
   params,
 }: {
   params?: Promise<Record<string, string | string[]>>;
 }) {
   use(params ?? Promise.resolve({}));
+  const searchParams = useSearchParams();
+  const urlSajuId = searchParams.get("saju_id");
   const router = useRouter();
   const { lang } = useLang();
   const { isLoggedIn, refresh: refreshAuth } = useAuthStatus();
@@ -222,7 +229,18 @@ export default function ChatPage({
     return () => document.removeEventListener("visibilitychange", onVis);
   }, [refreshSessionsFromStorage]);
 
-  const bodyRef = useRef<{ isGuest: boolean; saju?: unknown }>({ isGuest: true, saju: undefined });
+  const isLoggedInRef = useRef(isLoggedIn);
+  const langRef = useRef(lang);
+  const urlSajuIdRef = useRef<string | null>(urlSajuId);
+  useEffect(() => {
+    isLoggedInRef.current = isLoggedIn;
+  }, [isLoggedIn]);
+  useEffect(() => {
+    langRef.current = lang;
+  }, [lang]);
+  useEffect(() => {
+    urlSajuIdRef.current = urlSajuId;
+  }, [urlSajuId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -259,21 +277,6 @@ export default function ChatPage({
     }
   };
 
-  const getSajuBody = () => {
-    const saved = getSavedSajuList();
-    const first = saved?.[0];
-    if (!first) return undefined;
-    return {
-      name: first.name,
-      birthYmd: first.birthYmd,
-      birthHm: first.birthHm,
-      gender: first.gender,
-      calendar: first.calendar,
-      timeUnknown: first.timeUnknown,
-      result: first.result,
-    };
-  };
-
   /** 로컬 result 갱신 후 일주 배지 문구 재계산용 */
   const [sajuBadgeTick, setSajuBadgeTick] = useState(0);
 
@@ -308,10 +311,6 @@ export default function ChatPage({
       const updated = { ...first, result: { ...(first.result && typeof first.result === "object" ? first.result : {}), ...data } };
       const newList = [updated, ...saved.slice(1)];
       localStorage.setItem("saved_saju_list", JSON.stringify(newList));
-      bodyRef.current = {
-        isGuest: !isLoggedIn,
-        saju: getSajuBody(),
-      };
       setSajuBadgeTick((t) => t + 1);
     } catch {
       /* 실패 시 조용히 넘어감 */
@@ -328,15 +327,10 @@ export default function ChatPage({
 
   const sajuBadgeDayKr = useMemo(() => {
     if (!hydrated || typeof window === "undefined") return "";
-    return getFirstSavedDayPillarHangul();
-  }, [savedSajuName, hydrated, hasLocalRegisteredSaju, sajuBadgeTick]);
-
-  useEffect(() => {
-    bodyRef.current = {
-      isGuest: !isLoggedIn,
-      saju: getSajuBody(),
-    };
-  }, [isLoggedIn, savedSajuName, hasLocalRegisteredSaju]);
+    const list = getSavedSajuList();
+    const picked = pickSavedSajuForChat(list, urlSajuId);
+    return getDayPillarHangulFromSaved(picked ?? list[0]);
+  }, [savedSajuName, hydrated, hasLocalRegisteredSaju, sajuBadgeTick, urlSajuId]);
 
   const transport = useMemo(
     () =>
@@ -345,45 +339,88 @@ export default function ChatPage({
         // 백엔드 인증은 쿠키(hsaju_session) 또는 Bearer(hsaju_token) — Next /api/chat이 그대로 백엔드로 전달함
         credentials: "include",
         prepareSendMessagesRequest: ({ messages }) => {
-          console.log("💬 chat body:", JSON.stringify(bodyRef.current, null, 2));
+          const list =
+            typeof window !== "undefined" ? getSavedSajuList() : [];
+          const picked = pickSavedSajuForChat(
+            list,
+            urlSajuIdRef.current,
+          );
+          const saju = savedSajuToChatApiPayload(picked);
+          const body = {
+            messages,
+            isGuest: !isLoggedInRef.current,
+            saju,
+            lang: langRef.current,
+          };
+          console.log(
+            "💬 chat body:",
+            JSON.stringify(
+              { ...body, messages: `[${messages.length} messages]` },
+              null,
+              2,
+            ),
+          );
           return {
-            body: {
-              messages,
-              ...bodyRef.current,
-              lang,
-            },
+            body,
             headers: { ...getAuthHeaders() },
             credentials: "include",
           };
         },
       }),
-    [lang],
+    [],
   );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      const first = getSavedSajuList()?.[0];
-      setSavedSajuName(first?.name?.trim() ? first.name.trim() : null);
+      const list = getSavedSajuList();
+      const picked = pickSavedSajuForChat(list, urlSajuId);
+      const nm = (picked?.name || list[0]?.name || "").trim();
+      setSavedSajuName(nm || null);
       setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
     } catch {
       // ignore
     }
     setHydrated(true);
     void refreshSajuIfStale();
-  }, [refreshSajuIfStale]);
+  }, [refreshSajuIfStale, urlSajuId]);
 
   // 로그인/로그아웃 전환 시 로컬 사주 스냅샷 다시 읽기
   useEffect(() => {
     if (typeof window === "undefined" || !hydrated) return;
     try {
-      const first = getSavedSajuList()?.[0];
-      setSavedSajuName(first?.name?.trim() ? first.name.trim() : null);
+      const list = getSavedSajuList();
+      const picked = pickSavedSajuForChat(list, urlSajuId);
+      const nm = (picked?.name || list[0]?.name || "").trim();
+      setSavedSajuName(nm || null);
       setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
     } catch {
       // ignore
     }
-  }, [isLoggedIn, hydrated]);
+  }, [isLoggedIn, hydrated, urlSajuId]);
+
+  // 로그인 시 서버 목록으로 로컬 캐시 동기화 → 채팅 body.saju 에 result 포함되도록
+  useEffect(() => {
+    if (typeof window === "undefined" || !hydrated || !isLoggedIn) return;
+    let cancelled = false;
+    (async () => {
+      await syncSavedSajuListWithServer();
+      if (cancelled) return;
+      try {
+        const list = getSavedSajuList();
+        const picked = pickSavedSajuForChat(list, urlSajuId);
+        const nm = (picked?.name || list[0]?.name || "").trim();
+        setSavedSajuName(nm || null);
+        setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
+        setSajuBadgeTick((t) => t + 1);
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, isLoggedIn, urlSajuId]);
 
   // 로그인: 서버에 등록된 만세력이 있으면 로컬이 비어 있어도 등록 유도 화면을 띄우지 않음
   useEffect(() => {
@@ -433,8 +470,10 @@ export default function ChatPage({
     const refreshLocalSaju = () => {
       if (document.visibilityState && document.visibilityState !== "visible") return;
       try {
-        const first = getSavedSajuList()?.[0];
-        setSavedSajuName(first?.name?.trim() ? first.name.trim() : null);
+        const list = getSavedSajuList();
+        const picked = pickSavedSajuForChat(list, urlSajuId);
+        const nm = (picked?.name || list[0]?.name || "").trim();
+        setSavedSajuName(nm || null);
         setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
         setSajuBadgeTick((t) => t + 1);
       } catch {
@@ -447,7 +486,7 @@ export default function ChatPage({
       window.removeEventListener("focus", refreshLocalSaju);
       document.removeEventListener("visibilitychange", refreshLocalSaju);
     };
-  }, [isLoggedIn]);
+  }, [isLoggedIn, urlSajuId]);
 
   const showNoSajuScreen =
     hydrated &&
@@ -1471,6 +1510,31 @@ export default function ChatPage({
   );
 }
 
+const SCROLL_LAST_MSG_MARGIN = 80;
+
+/** PC: 메시지 스크롤 컨테이너(.chat-list) / 모바일: 컨테이너가 안 켜지면 window 스크롤 */
+function scrollLastUserMessageIntoView(
+  msgEl: HTMLElement | null,
+  containerEl: HTMLElement | null,
+  marginTop = SCROLL_LAST_MSG_MARGIN,
+) {
+  if (!msgEl) return;
+  if (containerEl && containerEl.scrollHeight > containerEl.clientHeight + 1) {
+    const cRect = containerEl.getBoundingClientRect();
+    const mRect = msgEl.getBoundingClientRect();
+    const relativeTop =
+      mRect.top - cRect.top + containerEl.scrollTop - marginTop;
+    containerEl.scrollTo({
+      top: Math.max(0, relativeTop),
+      behavior: "smooth",
+    });
+    return;
+  }
+  const rect = msgEl.getBoundingClientRect();
+  const offset = rect.top + window.scrollY - marginTop;
+  window.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+}
+
 type ChatContentProps = {
   sessionId: string | null;
   initialSessionMessages: SessionMessage[];
@@ -1829,11 +1893,10 @@ function ChatContent({
     if (last?.role !== "user") return;
     const tid = window.setTimeout(() => {
       requestAnimationFrame(() => {
-        lastUserMsgRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-          inline: "nearest",
-        });
+        scrollLastUserMessageIntoView(
+          lastUserMsgRef.current,
+          listRef.current,
+        );
       });
     }, 50);
     return () => clearTimeout(tid);
@@ -1883,11 +1946,10 @@ function ChatContent({
     try {
       await sendMessage({ text: trimmed });
       window.setTimeout(() => {
-        lastUserMsgRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-          inline: "nearest",
-        });
+        scrollLastUserMessageIntoView(
+          lastUserMsgRef.current,
+          listRef.current,
+        );
       }, 50);
       if (shouldIncrementGuestCount) {
         const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
@@ -2184,5 +2246,33 @@ function ChatInput({
         <Icon icon="mdi:send" width={20} />
       </button>
     </div>
+  );
+}
+
+export default function ChatPage({
+  params,
+}: {
+  params?: Promise<Record<string, string | string[]>>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: "100dvh",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#F2EDE4",
+            color: "#7A776F",
+            fontFamily: "system-ui, sans-serif",
+          }}
+        >
+          불러오는 중...
+        </div>
+      }
+    >
+      <ChatPageInner params={params} />
+    </Suspense>
   );
 }

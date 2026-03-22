@@ -601,6 +601,8 @@ export default function Page({
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveDialogInputFocused, setSaveDialogInputFocused] = useState(false);
   const [savingToServer, setSavingToServer] = useState(false);
+  /** 서버 저장 성공 시 DB id — AI 채팅 URL(saju_id)에 사용 */
+  const [lastServerSajuId, setLastServerSajuId] = useState<number | null>(null);
   const [sajuName, setSajuName] = useState('');
   const [birthYmd, setBirthYmd] = useState("");
   const [birthHm, setBirthHm] = useState("");
@@ -848,6 +850,7 @@ export default function Page({
           : typeof data?.saju_id === "string" && /^\d+$/.test(data.saju_id)
             ? Number(data.saju_id)
             : null;
+      if (serverRowId != null) setLastServerSajuId(serverRowId);
       const saveResult = saveSaju({
         ...(serverRowId != null ? { id: `srv-${serverRowId}` } : {}),
         name: sajuName.trim(),
@@ -881,6 +884,48 @@ export default function Page({
     } finally {
       setSavingToServer(false);
     }
+  }
+
+  function openChatWithCurrentSaju() {
+    if (!result) {
+      alert("먼저 사주를 조회해 주세요.");
+      return;
+    }
+    const list = getSavedSajuList();
+    if (lastServerSajuId != null) {
+      router.push(`/chat?saju_id=${encodeURIComponent(String(lastServerSajuId))}`);
+      return;
+    }
+    const match = list.find(
+      (s) =>
+        s.birthYmd === birthYmd &&
+        s.gender === gender &&
+        s.calendar === calendar &&
+        s.result != null,
+    );
+    if (match) {
+      const idForUrl = String(match.id).startsWith("srv-")
+        ? String(match.id).slice(4)
+        : String(match.id);
+      router.push(`/chat?saju_id=${encodeURIComponent(idForUrl)}`);
+      return;
+    }
+    const tempId = `chat-draft-${Date.now()}`;
+    const saveResult = saveSaju({
+      id: tempId,
+      name: (sajuName.trim() || "현재 사주").slice(0, 20),
+      birthYmd,
+      birthHm: timeUnknown ? "1200" : birthHm,
+      gender,
+      calendar,
+      timeUnknown,
+      result,
+    });
+    if (!saveResult.success) {
+      alert(saveResult.message);
+      return;
+    }
+    router.push(`/chat?saju_id=${encodeURIComponent(tempId)}`);
   }
 
   // 🔥 새로 추가: 공유 함수들
@@ -2544,6 +2589,30 @@ export default function Page({
                             공유하기
                           </button>
                         </div>
+                        <button
+                          type="button"
+                          onClick={openChatWithCurrentSaju}
+                          style={{
+                            width: "100%",
+                            padding: "12px 14px",
+                            marginBottom: 10,
+                            background: S.cream2,
+                            border: `1.5px solid ${S.gold}`,
+                            color: S.ink,
+                            borderRadius: 10,
+                            fontWeight: 700,
+                            fontSize: 13,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 8,
+                            cursor: "pointer",
+                            fontFamily: S.fontBody,
+                          }}
+                        >
+                          <Icon icon="mdi:chat-processing-outline" width={18} />
+                          AI 사주 상담 (채팅)
+                        </button>
                         <button
                           type="button"
                           onClick={() => {

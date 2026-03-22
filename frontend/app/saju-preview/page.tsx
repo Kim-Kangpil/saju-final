@@ -613,9 +613,32 @@ function SajuPreviewContent() {
             <Icon icon="mdi:chevron-left" width={24} />
           </button>
           <span style={{ fontSize: 17, fontWeight: 700, color: PREVIEW_TEXT, letterSpacing: "0.02em" }}>한양사주 AI</span>
-          <button type="button" className="preview-tap" aria-label="메뉴" onClick={() => router.push("/saju-mypage")} style={{ padding: 8, border: "none", background: "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", color: PREVIEW_TEXT }}>
-            <Icon icon="mdi:menu" width={24} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            {sajuId && !isTestMode && (
+              <button
+                type="button"
+                className="preview-tap"
+                aria-label="AI 사주 상담"
+                onClick={() =>
+                  router.push(`/chat?saju_id=${encodeURIComponent(sajuId)}`)
+                }
+                style={{
+                  padding: 8,
+                  border: "none",
+                  background: "transparent",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: PREVIEW_TEXT,
+                }}
+              >
+                <Icon icon="mdi:chat-processing-outline" width={22} />
+              </button>
+            )}
+            <button type="button" className="preview-tap" aria-label="메뉴" onClick={() => router.push("/saju-mypage")} style={{ padding: 8, border: "none", background: "transparent", display: "inline-flex", alignItems: "center", justifyContent: "center", color: PREVIEW_TEXT }}>
+              <Icon icon="mdi:menu" width={24} />
+            </button>
+          </div>
         </header>
 
         <section style={{ marginBottom: 20 }}>

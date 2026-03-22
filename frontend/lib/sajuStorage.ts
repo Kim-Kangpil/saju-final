@@ -141,6 +141,57 @@ export function getSavedSajuList(): SavedSaju[] {
 }
 
 /**
+ * 채팅 등: URL `saju_id`(서버 숫자 id 또는 로컬 id 문자열)로 목록에서 한 건 선택.
+ * 없거나 매칭 실패 시 목록의 첫 번째(최신) 반환.
+ */
+export function pickSavedSajuForChat(
+  list: SavedSaju[],
+  sajuIdFromUrl: string | null | undefined
+): SavedSaju | null {
+  if (!list.length) return null;
+  const raw = (sajuIdFromUrl || "").trim();
+  if (raw) {
+    const found = list.find((s) => {
+      if (String(s.id) === raw) return true;
+      if (String(s.id) === `srv-${raw}`) return true;
+      if (String(s.id).startsWith("srv-") && String(s.id).slice(4) === raw)
+        return true;
+      return false;
+    });
+    if (found) return found;
+  }
+  return list[0] ?? null;
+}
+
+/**
+ * /api/chat 의 body.saju — route.ts 에서 result 가 있어야 등록 사주로 인식됨.
+ */
+export function savedSajuToChatApiPayload(
+  s: SavedSaju | null | undefined
+):
+  | {
+      name: string;
+      birthYmd: string;
+      birthHm: string;
+      gender: "M" | "F";
+      calendar: "solar" | "lunar";
+      timeUnknown: boolean;
+      result: unknown;
+    }
+  | undefined {
+  if (!s || s.result == null) return undefined;
+  return {
+    name: s.name,
+    birthYmd: s.birthYmd,
+    birthHm: s.birthHm,
+    gender: s.gender,
+    calendar: s.calendar,
+    timeUnknown: s.timeUnknown,
+    result: s.result,
+  };
+}
+
+/**
  * 새 사주 저장하기
  * - id를 넘기면 해당 id 사용(서버 저장 직후 `srv-{saju_id}` 로 맞춤)
  * - createdAt을 넘기면 그대로 사용

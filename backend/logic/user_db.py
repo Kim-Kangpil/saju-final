@@ -2,7 +2,7 @@
 """사용자 저장용 SQLite (카카오/구글/이메일 로그인)."""
 import sqlite3
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DB_DIR = Path(__file__).resolve().parent
 USERS_DB = DB_DIR / "users.db"
@@ -37,6 +37,16 @@ def init_user_db():
             conn.commit()
         except sqlite3.OperationalError:
             pass  # column already exists
+        for col_sql in (
+            "ALTER TABLE users ADD COLUMN is_member INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN membership_started_at TEXT",
+            "ALTER TABLE users ADD COLUMN membership_expires_at TEXT",
+        ):
+            try:
+                conn.execute(col_sql)
+                conn.commit()
+            except sqlite3.OperationalError:
+                pass
     finally:
         conn.close()
 
@@ -178,6 +188,102 @@ def deduct_seed(user_id: int, amount: int = 1) -> tuple[bool, int]:
         return True, current - amount
     except sqlite3.OperationalError:
         return False, current
+    finally:
+        conn.close()
+
+
+def _parse_iso_dt(value: str | None) -> datetime | None:
+    if not value or not str(value).strip():
+        return None
+    s = str(value).strip()
+    try:
+        if s.endswith("Z"):
+            s = s[:-1] + "+00:00"
+        return datetime.fromisoformat(s)
+    except ValueError:
+        return None
+
+
+def refresh_and_get_membership_status(user_id: int) -> dict:
+    """
+    SQLite users 행 기준 멤버십 상태.
+    membership_expires_at이 현재(UTC)보다 이전이면 is_member=0으로 갱신 후 반환.
+    """
+    if not user_id:
+        return {"is_member": False, "membership_started_at": None, "membership_expires_at": None}
+    conn = get_conn()
+    try:
+        cur = conn.execute(
+            """
+            SELECT is_member, membership_started_at, membership_expires_at
+            FROM users WHERE id = ?
+            """,
+            (user_id,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return {"is_member": False, "membership_started_at": None, "membership_expires_at": None}
+        raw_im = row[0]
+        if raw_im is None:
+            is_m = False
+        else:
+            try:
+                is_m = bool(int(raw_im))
+            except (TypeError, ValueError):
+                is_m = bool(raw_im)
+        started = row[1]
+        expires = row[2]
+        exp_dt = _parse_iso_dt(expires)
+        now = datetime.utcnow()
+        if exp_dt is not None and exp_dt < now and is_m:
+            conn.execute("UPDATE users SET is_member = 0 WHERE id = ?", (user_id,))
+            conn.commit()
+            is_m = False
+        return {
+            "is_member": is_m,
+            "membership_started_at": started,
+            "membership_expires_at": expires,
+        }
+    except sqlite3.OperationalError:
+        return {"is_member": False, "membership_started_at": None, "membership_expires_at": None}
+    finally:
+        conn.close()
+
+
+def activate_membership(user_id: int, months: int) -> dict:
+    """
+    is_member=1, membership_started_at=지금(UTC), membership_expires_at=지금+months×30일(근사).
+    """
+    if not user_id or months < 1:
+        raise ValueError("user_id와 months(>=1)가 필요합니다.")
+    months = min(int(months), 120)
+    now = datetime.utcnow()
+    expires = now + timedelta(days=30 * months)
+    iso_now = now.isoformat()
+    iso_exp = expires.isoformat()
+    conn = get_conn()
+    try:
+        cur = conn.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+        if not cur.fetchone():
+            raise LookupError("user not found")
+        conn.execute(
+            """
+            UPDATE users SET
+                is_member = 1,
+                membership_started_at = ?,
+                membership_expires_at = ?
+            WHERE id = ?
+            """,
+            (iso_now, iso_exp, user_id),
+        )
+        conn.commit()
+        return {
+            "ok": True,
+            "user_id": user_id,
+            "is_member": True,
+            "membership_started_at": iso_now,
+            "membership_expires_at": iso_exp,
+        }
     finally:
         conn.close()
 

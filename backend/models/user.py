@@ -17,3 +17,6 @@ class User(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.utcnow())
     last_login: datetime = Field(default_factory=lambda: datetime.utcnow())
     seed_balance: int = Field(default=0)
+    is_member: bool = Field(default=False)
+    membership_started_at: Optional[datetime] = Field(default=None)
+    membership_expires_at: Optional[datetime] = Field(default=None)

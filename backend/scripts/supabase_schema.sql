@@ -15,6 +15,11 @@ CREATE TABLE IF NOT EXISTS users (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_users_provider_provider_id ON users(provider, provider_id);
 
+-- 멤버십 (기존 DB에 한 번 실행)
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_member BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_started_at TIMESTAMPTZ;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_expires_at TIMESTAMPTZ;
+
 -- saju
 CREATE TABLE IF NOT EXISTS saju (
     id SERIAL PRIMARY KEY,

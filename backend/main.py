@@ -7,6 +7,8 @@ from logic import lunar_converter
 from logic.jijanggan import calculate_jijanggan_for_pillars
 from logic.saju_core import compute_full_saju
 from logic.saju_engine.core.sinsal import analyze_sinsal
+from logic.saju_engine.core.ten_gods import calculate_ten_god
+from logic.saju_engine.core.harmony_clash import analyze_harmony_clash
 from logic.feature_flags import use_new_saju_engine, get_engine_version_label
 from logic.theory_retriever import TheoryRetriever
 from auth_kakao import router as kakao_router
@@ -87,7 +89,14 @@ from logic.saju_db import (
     get_saju_list_for_user,
     save_saju_for_user,
 )
-from logic.user_db import get_user_id_from_session, get_user_by_id, get_seed_balance, deduct_seed
+from logic.user_db import (
+    get_user_id_from_session,
+    get_user_by_id,
+    get_seed_balance,
+    deduct_seed,
+    refresh_and_get_membership_status,
+    activate_membership,
+)
 from logic.session_token import verify_session_token
 
 
@@ -251,6 +260,56 @@ async def guest_chat_consume(request: Request):
         # 카운터 DB가 깨져 있으면 비용 폭탄을 막기 위해 기본 deny
         print(f"❌ /api/guest-chat/consume 오류: {e}")
         raise HTTPException(status_code=503, detail="게스트 사용량 체크 실패")
+
+
+class MembershipActivateRequest(BaseModel):
+    user_id: int
+    months: int = 1
+
+
+def _can_activate_membership(request: Request, target_user_id: int) -> bool:
+    """결제 웹훅용 시크릿 또는 본인 로그인일 때만 허용."""
+    secret = (os.getenv("MEMBERSHIP_ACTIVATE_SECRET") or "").strip()
+    if secret:
+        hdr = (request.headers.get("x-membership-activate-secret") or "").strip()
+        if hdr == secret:
+            return True
+    sess_uid = get_user_id_from_request(request)
+    return sess_uid is not None and sess_uid == target_user_id
+
+
+@app.get("/api/membership/status")
+async def membership_status(request: Request):
+    """로그인 유저 멤버십 상태. 만료 시 DB에서 is_member=False로 갱신."""
+    user_id = get_user_id_from_request(request)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    st = refresh_and_get_membership_status(user_id)
+    return {
+        "is_member": bool(st.get("is_member")),
+        "membership_started_at": st.get("membership_started_at"),
+        "membership_expires_at": st.get("membership_expires_at"),
+    }
+
+
+@app.post("/api/membership/activate")
+async def membership_activate(request: Request, body: MembershipActivateRequest):
+    """
+    결제 완료 후 멤버십 활성화.
+    - 환경변수 MEMBERSHIP_ACTIVATE_SECRET 이 설정된 경우: 헤더 x-membership-activate-secret 일치 필요
+    - 또는 로그인한 사용자가 body.user_id 와 동일할 때 허용
+    """
+    if not _can_activate_membership(request, body.user_id):
+        raise HTTPException(status_code=403, detail="권한이 없습니다.")
+    months = body.months if body.months is not None else 1
+    months = max(1, min(int(months), 120))
+    try:
+        result = activate_membership(body.user_id, months)
+        return result
+    except LookupError:
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # ==================== 채팅 로그 저장/조회 ====================
@@ -594,6 +653,73 @@ def _attach_sinsal_to_saju_full_payload(data: dict[str, Any]) -> None:
         data["sinsal"] = empty
 
 
+def _attach_ten_gods_to_payload(data: dict[str, Any]) -> None:
+    try:
+        dp = (data.get("day_pillar") or "").strip()
+        yp = (data.get("year_pillar") or "").strip()
+        mp = (data.get("month_pillar") or "").strip()
+        if len(dp) < 2 or len(yp) < 2 or len(mp) < 2:
+            data["ten_gods"] = {}
+            return
+        day_stem = dp[0]
+        targets: dict[str, str] = {
+            "year_stem": yp[0],
+            "year_branch": yp[1],
+            "month_stem": mp[0],
+            "month_branch": mp[1],
+            "day_branch": dp[1],
+        }
+        hp = data.get("hour_pillar")
+        if isinstance(hp, str) and len(hp.strip()) >= 2:
+            hs = hp.strip()[:2]
+            targets["hour_stem"] = hs[0]
+            targets["hour_branch"] = hs[1]
+        data["ten_gods"] = {k: calculate_ten_god(day_stem, v) for k, v in targets.items()}
+    except Exception:
+        data["ten_gods"] = {}
+
+
+_HARMONY_CLASH_EMPTY: dict[str, list] = {
+    "cheongan_hap": [],
+    "cheongan_chung": [],
+    "jiji_yukhap": [],
+    "jiji_samhap": [],
+    "jiji_banhap": [],
+    "jiji_chung": [],
+}
+
+
+def _attach_harmony_clash_to_payload(data: dict[str, Any]) -> None:
+    try:
+        yp = (data.get("year_pillar") or "").strip()
+        mp = (data.get("month_pillar") or "").strip()
+        dp = (data.get("day_pillar") or "").strip()
+        if len(yp) < 2 or len(mp) < 2 or len(dp) < 2:
+            data["harmony_clash"] = dict(_HARMONY_CLASH_EMPTY)
+            return
+        hp = data.get("hour_pillar")
+        if isinstance(hp, str) and len(hp.strip()) >= 2:
+            hour_str = hp.strip()[:2]
+        else:
+            solar_str = (data.get("solar_datetime_used") or "").strip()
+            solar_dt = datetime.strptime(solar_str, "%Y-%m-%d %H:%M")
+            hour_str = test.calculate_hour_pillar(
+                solar_dt, dp[:2], apply_korea_dst=True
+            )
+        if len(hour_str) < 2:
+            data["harmony_clash"] = dict(_HARMONY_CLASH_EMPTY)
+            return
+        pillars = {
+            "year": yp[:2],
+            "month": mp[:2],
+            "day": dp[:2],
+            "hour": hour_str[:2],
+        }
+        data["harmony_clash"] = analyze_harmony_clash(pillars)
+    except Exception:
+        data["harmony_clash"] = dict(_HARMONY_CLASH_EMPTY)
+
+
 def _safe_hanja(obj: Any, prefix: str) -> str:
     """result 내 hour/day/month/year 객체에서 한자 문자열 추출 (천간+지지)"""
     if not obj or not isinstance(obj, dict):
@@ -681,6 +807,12 @@ async def api_chat(req: ChatRequest, request: Request):
         raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
     if not req.messages or not any(m.role == "user" and (m.content or "").strip() for m in req.messages):
         raise HTTPException(status_code=400, detail="사용자 메시지가 필요합니다.")
+
+    chat_uid = get_user_id_from_request(request)
+    if chat_uid is not None:
+        _mst = refresh_and_get_membership_status(chat_uid)
+        if not _mst.get("is_member"):
+            raise HTTPException(status_code=403, detail="멤버십이 필요합니다.")
 
     last_user_message = ""
     for m in reversed(req.messages):
@@ -1042,6 +1174,8 @@ async def get_full_saju(req: SajuRequest):
         data = compute_full_saju(payload, DB)
         data["engine_version"] = get_engine_version_label()
         _attach_sinsal_to_saju_full_payload(data)
+        _attach_ten_gods_to_payload(data)
+        _attach_harmony_clash_to_payload(data)
         return data
     except Exception as e:
         print(f"❌ /saju/full 에러: {e}")

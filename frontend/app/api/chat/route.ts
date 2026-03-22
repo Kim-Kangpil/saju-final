@@ -248,18 +248,27 @@ function buildSajuContextLegacy(payload: SajuPayload): string | null {
   return parts.join("\n");
 }
 
-/** 백엔드 /saju/full 의 sinsal 또는 저장 객체의 result.sinsal */
-function getSinsalFromSajuPayload(saju: unknown): Record<string, unknown> | null {
+/** 최상위 또는 result.* 에서 객체 필드 조회 (/saju/full 저장 형태 호환) */
+function getSajuNestedRecord(saju: unknown, key: string): Record<string, unknown> | null {
   if (!saju || typeof saju !== "object") return null;
   const o = saju as Record<string, unknown>;
-  const top = o.sinsal;
-  if (top && typeof top === "object") return top as Record<string, unknown>;
+  const top = o[key];
+  if (top && typeof top === "object" && !Array.isArray(top)) {
+    return top as Record<string, unknown>;
+  }
   const res = o.result;
-  if (res && typeof res === "object" && "sinsal" in res) {
-    const inner = (res as Record<string, unknown>).sinsal;
-    if (inner && typeof inner === "object") return inner as Record<string, unknown>;
+  if (res && typeof res === "object") {
+    const inner = (res as Record<string, unknown>)[key];
+    if (inner && typeof inner === "object" && !Array.isArray(inner)) {
+      return inner as Record<string, unknown>;
+    }
   }
   return null;
+}
+
+/** 백엔드 /saju/full 의 sinsal 또는 저장 객체의 result.sinsal */
+function getSinsalFromSajuPayload(saju: unknown): Record<string, unknown> | null {
+  return getSajuNestedRecord(saju, "sinsal");
 }
 
 function formatSinsalContextBlock(saju: unknown): string {
@@ -284,22 +293,87 @@ function formatSinsalContextBlock(saju: unknown): string {
   return parts.join("\n");
 }
 
+/** sinsal 아래에 붙는 ten_gods · harmony_clash · twelve_states 컨텍스트 */
+function formatTenGodsHarmonyClashTwelveBlock(saju: unknown): string {
+  const parts: string[] = [];
+
+  const tenGods = getSajuNestedRecord(saju, "ten_gods");
+  if (tenGods && Object.keys(tenGods).length > 0) {
+    const labels: Record<string, string> = {
+      year_stem: "년간",
+      year_branch: "년지",
+      month_stem: "월간",
+      month_branch: "월지",
+      day_branch: "일지",
+      hour_stem: "시간",
+      hour_branch: "시지",
+    };
+    const line = Object.entries(tenGods)
+      .map(([k, v]) => `${labels[k] ?? k}(${String(v)})`)
+      .join(", ");
+    parts.push(`십성: ${line}`);
+  }
+
+  const hc = getSajuNestedRecord(saju, "harmony_clash");
+  if (hc) {
+    const items: string[] = [];
+    const mapDesc = (arr: unknown) =>
+      (Array.isArray(arr) ? arr : [])
+        .map((x: { description?: string }) => x.description)
+        .filter(Boolean)
+        .join(" / ");
+    if (hc.cheongan_hap && Array.isArray(hc.cheongan_hap) && hc.cheongan_hap.length) {
+      items.push(`천간합: ${mapDesc(hc.cheongan_hap)}`);
+    }
+    if (hc.cheongan_chung && Array.isArray(hc.cheongan_chung) && hc.cheongan_chung.length) {
+      items.push(`천간충: ${mapDesc(hc.cheongan_chung)}`);
+    }
+    if (hc.jiji_yukhap && Array.isArray(hc.jiji_yukhap) && hc.jiji_yukhap.length) {
+      items.push(`지지육합: ${mapDesc(hc.jiji_yukhap)}`);
+    }
+    if (hc.jiji_samhap && Array.isArray(hc.jiji_samhap) && hc.jiji_samhap.length) {
+      items.push(`삼합: ${mapDesc(hc.jiji_samhap)}`);
+    }
+    if (hc.jiji_chung && Array.isArray(hc.jiji_chung) && hc.jiji_chung.length) {
+      items.push(`지지충: ${mapDesc(hc.jiji_chung)}`);
+    }
+    if (items.length) parts.push(items.join("\n"));
+  }
+
+  const twelve = getSajuNestedRecord(saju, "twelve_states");
+  if (twelve && typeof twelve === "object") {
+    const tzLabels: Record<string, string> = { year: "년주", month: "월주", day: "일주", hour: "시주" };
+    const line = Object.entries(twelve)
+      .filter(([, v]) => v != null && String(v).trim() !== "")
+      .map(([k, v]) => `${tzLabels[k] ?? k}: ${String(v)}`)
+      .join(", ");
+    if (line) parts.push(`십이운성: ${line}`);
+  }
+
+  return parts.join("\n");
+}
+
 function buildSajuContext(saju: unknown): string {
   if (!saju || typeof saju !== "object") return "";
   const payload = saju as SajuPayload;
 
-  const sinsalBlock = formatSinsalContextBlock(saju);
+  const derivedBlock = [
+    formatSinsalContextBlock(saju),
+    formatTenGodsHarmonyClashTwelveBlock(saju),
+  ]
+    .filter(Boolean)
+    .join("\n");
 
   const fromModel = buildSajuContextFromModel(payload);
   if (fromModel) {
-    return sinsalBlock ? `${fromModel}\n${sinsalBlock}` : fromModel;
+    return derivedBlock ? `${fromModel}\n${derivedBlock}` : fromModel;
   }
 
   const legacy = buildSajuContextLegacy(payload);
   if (legacy) {
-    return sinsalBlock ? `${legacy}\n${sinsalBlock}` : legacy;
+    return derivedBlock ? `${legacy}\n${derivedBlock}` : legacy;
   }
-  return sinsalBlock;
+  return derivedBlock;
 }
 
 // ─────────────────────────────────────────────
@@ -347,6 +421,7 @@ const RESPONSE_FORMAT_RULE = `[응답 형식 규칙 — 반드시 지킬 것]
 - "핵심 해석"은 최소 6문장 이상, 가능하면 500자 이상으로 구체적으로 쓴다.
 - 전문용어를 남발하지 말고, 일상어로 쉽게 설명한다.
 - 개념 질문(신살·십성·천을귀인 등 "뭐야?"류): 반드시 조견표·규칙(예: 일간별 어느 지지가 해당하는지)을 최소 한 문장 이상 넣고, 그다음 의미를 풀어라. 효능만 말하고 표 없이 끝내지 마라.
+- 십성·합충·십이운성 해석 시 반드시 시스템 컨텍스트에 있는 계산값을 기준으로 말하고, 직접 계산하거나 추측하지 마라.
 - 년·월·일·시 기둥에 따른 차이, 합·충 등으로 힘이 달라질 수 있음을 경향으로 짧게 짚을 수 있으면 더 좋다.
 - "이어서 보면 좋은 질문"에는 정확히 2개만, 번호 목록(1. 2.)으로 제시한다.
 - 이 2개 질문은 반드시 (가) 방금 답한 주제와 직접 이어지는 사주·명리 질문일 것. (나) 아래는 금지: 이번 주 행동 바꾸기, 실수 반복·습관, 동기부여, 멘탈, 자기계발 코칭 등 사주와 무관한 문장.
@@ -479,6 +554,46 @@ export async function POST(req: Request) {
         errJson?.detail || errJson?.error || (quotaRes.status === 401 ? "로그인이 필요합니다." : "요청을 처리할 수 없어요.");
       return new Response(JSON.stringify({ error: detail }), {
         status: quotaRes.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }
+
+  // ── 로그인 유저: 멤버십 필요 ───────────────────────────────────────
+  if (!isGuest) {
+    const cookieHeader = req.headers.get("cookie") || "";
+    const authHeader = req.headers.get("authorization") || "";
+    const memRes = await fetch(`${API_BASE}/api/membership/status`, {
+      method: "GET",
+      headers: {
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+    }).catch(() => null);
+
+    if (!memRes) {
+      return new Response(JSON.stringify({ error: "멤버십 확인에 실패했어요. 잠시 후 다시 시도해주세요." }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (!memRes.ok) {
+      const errJson = await memRes.json().catch(() => null);
+      const detail =
+        errJson?.detail ||
+        errJson?.error ||
+        (memRes.status === 401 ? "로그인이 필요합니다." : "요청을 처리할 수 없어요.");
+      return new Response(JSON.stringify({ error: detail }), {
+        status: memRes.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const mem = (await memRes.json().catch(() => null)) as { is_member?: boolean } | null;
+    if (!mem?.is_member) {
+      return new Response(JSON.stringify({ error: "멤버십이 필요합니다." }), {
+        status: 403,
         headers: { "Content-Type": "application/json" },
       });
     }

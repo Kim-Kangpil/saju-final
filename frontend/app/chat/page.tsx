@@ -61,6 +61,40 @@ function getMessageText(message: { parts?: Array<{ type: string; text?: string }
     .join("");
 }
 
+/** GPT 답변에 천을귀인이 언급될 때 버블 본문 바로 아래에 붙는 조견표 */
+const CHEONEUL_TABLE = (
+  <table>
+    <thead>
+      <tr>
+        <th>일간</th>
+        <th>천을귀인 지지</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>甲·戊·庚 (갑·무·경)</td>
+        <td>丑·未 (축·미)</td>
+      </tr>
+      <tr>
+        <td>乙·己 (을·기)</td>
+        <td>子·申 (자·신)</td>
+      </tr>
+      <tr>
+        <td>丙·丁 (병·정)</td>
+        <td>亥·酉 (해·유)</td>
+      </tr>
+      <tr>
+        <td>壬·癸 (임·계)</td>
+        <td>巳·卯 (사·묘)</td>
+      </tr>
+      <tr>
+        <td>辛 (신)</td>
+        <td>午·寅 (오·인)</td>
+      </tr>
+    </tbody>
+  </table>
+);
+
 export default function ChatPage({
   params,
 }: {
@@ -471,6 +505,31 @@ export default function ChatPage({
           color: var(--text);
           border-bottom-left-radius: 6px;
         }
+        .chat-cheoneul-table {
+          margin-top: 12px;
+          font-size: 13px;
+          line-height: 1.45;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          border-radius: 10px;
+          border: 1px solid var(--border);
+          background: var(--surface2);
+        }
+        .chat-cheoneul-table table { width: 100%; border-collapse: collapse; min-width: 260px; }
+        .chat-cheoneul-table th,
+        .chat-cheoneul-table td {
+          padding: 8px 10px;
+          text-align: left;
+          border-bottom: 1px solid var(--border);
+          vertical-align: top;
+        }
+        .chat-cheoneul-table th {
+          background: var(--surface);
+          font-weight: 700;
+          color: var(--text);
+          font-size: 12px;
+        }
+        .chat-cheoneul-table tr:last-child td { border-bottom: none; }
         .chat-msg.user .chat-msg-bubble {
           background: #2C2A26;
           color: #F2EDE4;
@@ -1436,6 +1495,15 @@ function ChatContent({
                     <div className="chat-msg-bubble-wrap">
                       <div className="chat-msg-bubble">
                         <MarkdownMessage text={followup.mainText} isAI={isAI} />
+                        {isAI && /천을\s*귀인/.test(normalizedText) && (
+                          <div
+                            className="chat-cheoneul-table"
+                            role="region"
+                            aria-label="천을귀인 일간별 지지 조견"
+                          >
+                            {CHEONEUL_TABLE}
+                          </div>
+                        )}
                         {isLastAssistant && followup.questions && (
                           <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
                             <div style={{ fontSize: 11, color: "#6B5F4E" }}>

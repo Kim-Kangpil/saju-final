@@ -1,4 +1,32 @@
 import type { SummaryPromptData } from "./summaryAnalysis";
+import type { HarmonyClashPayload } from "../types/saju";
+
+const HAP_CLASH_KEYS: (keyof HarmonyClashPayload)[] = [
+  "cheongan_hap",
+  "cheongan_jaenghap",
+  "jiji_yukhap",
+  "jiji_samhap",
+  "jiji_banhap",
+];
+const CHUNG_CLASH_KEYS: (keyof HarmonyClashPayload)[] = ["cheongan_chung", "jiji_chung"];
+
+function collectHarmonyDescriptions(
+  hc: HarmonyClashPayload,
+  keys: (keyof HarmonyClashPayload)[]
+): string[] {
+  const out: string[] = [];
+  for (const k of keys) {
+    const arr = hc[k];
+    if (!Array.isArray(arr)) continue;
+    for (const item of arr) {
+      if (item && typeof item === "object" && "description" in item) {
+        const d = (item as { description?: string }).description;
+        if (typeof d === "string" && d.trim()) out.push(d.trim());
+      }
+    }
+  }
+  return out;
+}
 
 export const SUMMARY_SYSTEM_PROMPT = `
 당신은 한국 전통 명리학을 현대적 언어로 해석하는 사주 분석가입니다.
@@ -33,7 +61,7 @@ export const SUMMARY_SYSTEM_PROMPT = `
 `.trim();
 
 export function buildSummaryUserPrompt(data: SummaryPromptData): string {
-  return `
+  const base = `
 일간 기질: ${data.dayStemDesc}
 강한 기운: ${data.strongDesc}
 주요 재능: ${data.talentDesc}
@@ -45,5 +73,22 @@ export function buildSummaryUserPrompt(data: SummaryPromptData): string {
 
 위 데이터를 바탕으로 5단 구조 종합 요약을 작성해주세요.
 `.trim();
+
+  const hc = data.harmony_clash;
+  if (!hc || typeof hc !== "object") {
+    return base;
+  }
+
+  const hapList = collectHarmonyDescriptions(hc, HAP_CLASH_KEYS);
+  const chungList = collectHarmonyDescriptions(hc, CHUNG_CLASH_KEYS);
+  const hapText = hapList.length ? hapList.join(" / ") : "없음";
+  const chungText = chungList.length ? chungList.join(" / ") : "없음";
+
+  return `${base}
+
+[이 사람의 합충 구조 - 반드시 종합 요약에 반영할 것]
+- 발생한 합: ${hapText}
+- 발생한 충: ${chungText}
+- 합충이 삶에 미치는 영향을 종합 요약의 각 파트에 자연스럽게 녹여낼 것`.trim();
 }
 

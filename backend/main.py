@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from typing import Optional, Any
+from typing import Optional, Any, Dict
 import json
 from datetime import datetime, date, timezone, timedelta
 import asyncio
@@ -1014,6 +1014,7 @@ class SummaryGPTRequest(BaseModel):
     """종합 요약 GPT 요청 (프론트에서 system + user 프롬프트 전달)"""
     system: str
     user: str
+    harmony_clash: Optional[Dict[str, Any]] = None
 
 
 class ConcernAnalysisRequest(BaseModel):
@@ -1661,10 +1662,22 @@ async def summary_gpt(req: SummaryGPTRequest):
         if not client:
             print("⚠️ OPENAI_API_KEY 없음 — summary-gpt 스킵")
             return {"summary": None, "error": "OPENAI_API_KEY not configured"}
+        system_prompt = req.system
+        hc = req.harmony_clash
+        if hc and isinstance(hc, dict):
+            try:
+                from logic.gpt_generator import GPTInterpretationGenerator
+
+                gen = GPTInterpretationGenerator()
+                hapcheung_section = gen._build_hapcheung_prompt_section({"harmony_clash": hc})
+                if hapcheung_section:
+                    system_prompt = f"{system_prompt}\n\n{hapcheung_section}"
+            except Exception as e:
+                print(f"⚠️ summary-gpt 합충 섹션 생성 실패: {e}")
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": req.system},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": req.user},
             ],
             max_tokens=1500,

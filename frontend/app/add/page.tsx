@@ -74,6 +74,7 @@ import { SajuSummaryCard } from "../../components/SummarySwipeCards";
 import { Icon } from "@iconify/react";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
+import type { HarmonyClashPayload } from "../../types/saju";
 
 // =====================================================
 // 정통 한양사주 디자인 토큰
@@ -126,6 +127,7 @@ type SajuResult = {
     month?: Array<{ hanja: string; hangul: string; element: string }>;
     year?: Array<{ hanja: string; hangul: string; element: string }>;
   };
+  harmony_clash?: HarmonyClashPayload | null;
 };
 
 type CharKey = "empathy";
@@ -1377,7 +1379,10 @@ export default function Page({
           };
 
           const promptData = buildSummaryPromptData(summaryInput);
-          const userPrompt = buildSummaryUserPrompt(promptData);
+          const userPrompt = buildSummaryUserPrompt({
+            ...promptData,
+            harmony_clash: result.harmony_clash ?? null,
+          });
 
           // UI가 "곧 업데이트 예정"으로 떨어지지 않도록, 먼저 로컬 요약을 즉시 채워두고
           // GPT 응답이 오면 그 내용으로 덮어쓴다.
@@ -1389,6 +1394,7 @@ export default function Page({
             body: JSON.stringify({
               system: SUMMARY_SYSTEM_PROMPT,
               user: userPrompt,
+              harmony_clash: result.harmony_clash ?? null,
             }),
           })
             .then((res) => {
@@ -1943,6 +1949,7 @@ export default function Page({
         year: yearBlock,
         twelve_states: sajuJson.twelve_states,
         jijanggan: sajuJson.jijanggan,
+        harmony_clash: sajuJson.harmony_clash ?? null,
       });
     } catch (e: any) {
       setErr(e?.message ?? "네트워크 오류");

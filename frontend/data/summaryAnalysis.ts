@@ -1,3 +1,4 @@
+import type { HarmonyClashPayload } from "../types/saju";
 import {
   CHUNG_PATTERN,
   DAYSTEM_DESC,
@@ -38,6 +39,8 @@ export interface SummaryPromptData {
   directionDesc: string;
   keywords: string;
   shingang: string;
+  /** 있으면 user 프롬프트 끝에 합충 요약을 붙임 (종합 요약 GPT용) */
+  harmony_clash?: HarmonyClashPayload | null;
 }
 
 function getStrongElements(elements: Record<ElementKo, number>): ElementKo[] {

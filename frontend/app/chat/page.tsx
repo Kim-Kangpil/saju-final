@@ -209,7 +209,17 @@ export default function ChatPage({
     search,
     replaceMessages,
     ensureTitleFromFirstMessage,
+    refreshSessionsFromStorage,
   } = useChatSessions();
+
+  // 다른 탭·스토리지 갱신 후 돌아왔을 때 사이드바 목록 동기화
+  useEffect(() => {
+    const onVis = () => {
+      if (document.visibilityState === "visible") refreshSessionsFromStorage();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [refreshSessionsFromStorage]);
 
   const bodyRef = useRef<{ isGuest: boolean; saju?: unknown }>({ isGuest: true, saju: undefined });
 
@@ -485,7 +495,12 @@ export default function ChatPage({
           }
         }
         @media (min-width: 1024px) {
-          .chat-wrap { max-width: 1024px; margin: 24px auto; min-height: calc(100vh - 48px); }
+          .chat-wrap {
+            max-width: 1024px;
+            margin: 24px auto;
+            min-height: calc(100dvh - 48px);
+            min-height: calc(100vh - 48px);
+          }
         }
         .chat-header {
           flex-shrink: 0;
@@ -1616,6 +1631,8 @@ function ChatContent({
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const isUserScrollingRef = useRef(false);
+  /** 유저 전송 직후 잠깐: 스트리밍 자동 스크롤이 말풍선 상단 정렬을 덮어쓰지 않도록 */
+  const lastUserSendAtRef = useRef(0);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const { lang } = useLang();
 
@@ -1747,51 +1764,57 @@ function ChatContent({
     }
   };
 
-  // 맨 아래로 스크롤
+  // 맨 아래로 스크롤 (최신 메시지로 버튼 등)
   const scrollToBottom = (behavior: "smooth" | "instant" | "auto" = "smooth") => {
     bottomRef.current?.scrollIntoView({ behavior: behavior as ScrollBehavior, block: "end" });
   };
 
-  // 세션 불러온 직후: 애니메이션 없이 즉시 맨 아래로
+  // 세션 전환 시: 대화 하단으로 (컴포넌트 key로 리마운트될 때 포함)
   useEffect(() => {
-    if (messages.length === 0) return;
-    scrollToBottom("instant" as ScrollBehavior);
-  }, []);
+    isUserScrollingRef.current = false;
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (messages.length === 0) return;
+        bottomRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+      });
+    });
+    return () => cancelAnimationFrame(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 세션 바뀔 때만 맞춤
+  }, [sessionId]);
 
-  // 메시지 추가될 때:
-  // - 마지막이 user면: 그 user 메시지가 화면 상단 근처로 오도록 스크롤 (Claude 스타일)
-  // - 마지막이 assistant면: 유저가 스크롤 안 건드렸으면 자동으로 따라가기
+  // 마지막 메시지가 user일 때(전송 직후): 말풍선이 보이도록 상단 근처로 (모바일 ChatGPT 느낌)
   useEffect(() => {
     if (messages.length === 0) return;
     const last = messages[messages.length - 1];
-    if (last?.role === "user") {
-      lastUserMsgRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      return;
-    }
-    if (!isUserScrollingRef.current) {
-      scrollToBottom("smooth");
-    }
+    if (last?.role !== "user") return;
+    const tid = window.setTimeout(() => {
+      requestAnimationFrame(() => {
+        lastUserMsgRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      });
+    }, 50);
+    return () => clearTimeout(tid);
   }, [messages]);
 
-  // 스트리밍 중 자동 스크롤 / 완료 후 동작
+  // 스트리밍 중: 답변이 길어질 때 맨 아래로 즉시 따라가기 (토큰마다 smooth 금지)
   useEffect(() => {
+    if (!isLoading || isUserScrollingRef.current) return;
+    if (Date.now() - lastUserSendAtRef.current < 200) return;
+    bottomRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+  }, [messages, isLoading]);
+
+  // 스트리밍 종료 직후: 하단 근처에 있으면 한 번 정리 스크롤
+  useEffect(() => {
+    if (isLoading) return;
     const el = listRef.current;
-    if (!el) return;
-
-    if (!isLoading) {
-      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
-      if (dist < 300) {
-        scrollToBottom("smooth");
-      }
-      return;
+    if (!el || isUserScrollingRef.current) return;
+    const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (dist < 320) {
+      scrollToBottom("smooth");
     }
-
-    const id = setInterval(() => {
-      if (!isUserScrollingRef.current) {
-        scrollToBottom("smooth");
-      }
-    }, 120);
-    return () => clearInterval(id);
   }, [isLoading]);
 
   const handleSubmit = async (text: string) => {
@@ -1800,6 +1823,7 @@ function ChatContent({
     const trimmed = text.trim();
     lastUserMessageRef.current = trimmed;
     handleRetryRef.current = (t: string) => sendMessage({ text: t });
+    lastUserSendAtRef.current = Date.now();
 
     let shouldIncrementGuestCount = false;
     if (GUEST_LIMIT_ENABLED && !isLoggedIn) {
@@ -1818,6 +1842,13 @@ function ChatContent({
 
     try {
       await sendMessage({ text: trimmed });
+      window.setTimeout(() => {
+        lastUserMsgRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest",
+        });
+      }, 50);
       if (shouldIncrementGuestCount) {
         const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
         localStorage.setItem("guest_chat_count", String(guestCount + 1));
@@ -1879,9 +1910,11 @@ function ChatContent({
                 const followup = isAI ? extractFollowupQuestions(normalizedText) : { mainText: normalizedText, questions: null };
                 const isLastUser = m.role === "user" && lastUserIndex === i;
                 const isLastAssistant = isAI && lastAssistantIndex === i;
+                const stableKey =
+                  (m as { id?: string }).id ?? `${sessionId ?? "s"}-${i}-${m.role}`;
                 return (
                   <div
-                    key={i}
+                    key={stableKey}
                     className={`chat-msg ${m.role}`}
                     ref={isLastUser ? lastUserMsgRef : undefined}
                   >

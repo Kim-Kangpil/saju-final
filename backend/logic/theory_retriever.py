@@ -47,6 +47,7 @@ class TheoryRetriever:
             '일주패턴': 'ilju_patterns.txt',
             '대운케이스': 'daeun_cases.txt',
             'sipsung_patterns': 'sipsung_patterns.txt',
+            'wolji_yongshin': 'wolji_yongshin.txt',
         }
 
         for key, filename in theory_files.items():
@@ -249,6 +250,13 @@ class TheoryRetriever:
             "월운": ["대운케이스"],
             "운세": ["대운케이스"],
             "흐름": ["대운케이스"],
+            "용신": ["wolji_yongshin"],
+            "조후": ["wolji_yongshin"],
+            "억부": ["wolji_yongshin"],
+            "월지용신": ["wolji_yongshin"],
+            "취용": ["wolji_yongshin"],
+            "희신": ["wolji_yongshin"],
+            "기신": ["wolji_yongshin"],
         }
         # 한글 키워드도 검사 (query는 이미 전달됨)
         included_keys = set()
@@ -269,6 +277,10 @@ class TheoryRetriever:
             sk in query or sk in query_lower for sk in _sipsung_star_kws
         )
 
+        _has_yongsin_johu_in_query = ("용신" in query or "용신" in query_lower) or (
+            "조후" in query or "조후" in query_lower
+        )
+
         # max_chars 한도 내에서 뒤쪽 키가 잘리는 문제 방지:
         # 질문으로 직접 매칭되는 케이스/패턴 파일을 먼저 붙인다.
         if "sipsung_patterns" in included_keys and _has_sipsung_star_in_query:
@@ -277,6 +289,14 @@ class TheoryRetriever:
             priority_keys = ["합충케이스", "일주패턴", "대운케이스"]
             if "sipsung_patterns" in included_keys:
                 priority_keys.append("sipsung_patterns")
+
+        if "wolji_yongshin" in included_keys:
+            if _has_yongsin_johu_in_query:
+                priority_keys = ["wolji_yongshin"] + [
+                    k for k in priority_keys if k != "wolji_yongshin"
+                ]
+            else:
+                priority_keys = priority_keys + ["wolji_yongshin"]
         rest_keys = [
             "기본구성",
             "신강약",

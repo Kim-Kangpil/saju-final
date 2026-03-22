@@ -18,28 +18,30 @@ export function useChatSessions() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<ChatSession[]>([]);
 
-  const initializedRef = useRef(false);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // 초기화 (마운트 시 1회)
-  useEffect(() => {
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-
+  /** localStorage에서 세션 목록 다시 읽기 (페이지 진입·포커스 등) */
+  const refreshSessionsFromStorage = useCallback(() => {
     try {
-      const all = getChatSessions();
-      if (all.length > 0) {
-        setSessions(all);
-        setCurrentId(all[0].id);
-      } else {
+      let all = getChatSessions();
+      if (all.length === 0) {
         const s = createChatSession();
-        setSessions([s]);
-        setCurrentId(s.id);
+        all = [s];
       }
+      setSessions(all);
+      setCurrentId((prev) => {
+        if (prev && all.some((x) => x.id === prev)) return prev;
+        return all[0]?.id ?? null;
+      });
     } catch {
       // ignore
     }
   }, []);
+
+  // 마운트 시·채팅 페이지 재진입 시 목록 동기화 (React Strict Mode에서도 storage 기준으로 일관됨)
+  useEffect(() => {
+    refreshSessionsFromStorage();
+  }, [refreshSessionsFromStorage]);
 
   // 새 채팅 시작
   const startNewChat = (): ChatSession => {
@@ -195,6 +197,7 @@ export function useChatSessions() {
     setSearchQuery,
     replaceMessages,
     ensureTitleFromFirstMessage,
+    refreshSessionsFromStorage,
   };
 }
 

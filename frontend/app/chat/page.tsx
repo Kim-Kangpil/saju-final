@@ -214,15 +214,18 @@ export default function ChatPage({
         api: "/api/chat",
         // 백엔드 인증은 쿠키(hsaju_session) 또는 Bearer(hsaju_token) — Next /api/chat이 그대로 백엔드로 전달함
         credentials: "include",
-        prepareSendMessagesRequest: ({ messages }) => ({
-          body: {
-            messages,
-            ...bodyRef.current,
-            lang,
-          },
-          headers: { ...getAuthHeaders() },
-          credentials: "include",
-        }),
+        prepareSendMessagesRequest: ({ messages }) => {
+          console.log("💬 chat body:", JSON.stringify(bodyRef.current, null, 2));
+          return {
+            body: {
+              messages,
+              ...bodyRef.current,
+              lang,
+            },
+            headers: { ...getAuthHeaders() },
+            credentials: "include",
+          };
+        },
       }),
     [lang],
   );

@@ -365,6 +365,7 @@ function formatTenGodsHarmonyClashTwelveBlock(saju: unknown): string {
 }
 
 function buildSajuContext(saju: unknown): string {
+  console.log("🔍 saju payload:", JSON.stringify(saju, null, 2));
   if (!saju || typeof saju !== "object") return "";
   const payload = saju as SajuPayload;
 

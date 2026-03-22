@@ -22,6 +22,14 @@ type MenuItem =
 
 const MENU_ITEMS: MenuItem[] = [
   { key: "saju-list", icon: "mdi:format-list-bulleted", label: "내 사주 목록", desc: "저장한 사주 보기", color: "var(--text-secondary)", path: "/saju-list" },
+  {
+    key: "ai-chat",
+    icon: "mdi:chat-processing-outline",
+    label: "AI 사주 상담",
+    desc: "한양사주 AI와 대화하기",
+    color: "#4A6741",
+    path: "/chat",
+  },
   { key: "seed-charge", icon: "mdi:ticket-confirmation-outline", label: "분석권 충전", desc: "분석에 사용하는 분석권", color: "var(--text-secondary)", path: "/seed-charge" },
   { key: "membership", icon: "mdi:crown", label: "한양사주 Pro", desc: "매달 분석권 + 전용 혜택", color: "#c9a227", path: "/membership" },
   { key: "usage", icon: "mdi:receipt-text-outline", label: "사용 내역", desc: "분석권 사용 기록", color: "var(--text-secondary)", action: "usage" },

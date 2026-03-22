@@ -181,6 +181,69 @@ function safePillarLabel(p: PillarModel | undefined | null): string {
   return s || "-";
 }
 
+/**
+ * 백엔드에서 내려준 일간(천간 한자)을 기준으로, 십성 분류별 "해당 오행"을 고정 표로 안내한다.
+ * (프론트에서 십성을 새로 계산하지 않음 — 명리 규칙상 일간-십성-오행 대응만 텍스트로 고정)
+ */
+const ILGAN_SIPSUNG_TO_ELEMENT: Record<string, Record<string, string>> = {
+  甲: { 비겁: "목", 식상: "화", 재성: "토", 관성: "금", 인성: "수" },
+  乙: { 비겁: "목", 식상: "화", 재성: "토", 관성: "금", 인성: "수" },
+  丙: { 비겁: "화", 식상: "토", 재성: "금", 관성: "수", 인성: "목" },
+  丁: { 비겁: "화", 식상: "토", 재성: "금", 관성: "수", 인성: "목" },
+  戊: { 비겁: "토", 식상: "금", 재성: "수", 관성: "목", 인성: "화" },
+  己: { 비겁: "토", 식상: "금", 재성: "수", 관성: "목", 인성: "화" },
+  庚: { 비겁: "금", 식상: "수", 재성: "목", 관성: "화", 인성: "토" },
+  辛: { 비겁: "금", 식상: "수", 재성: "목", 관성: "화", 인성: "토" },
+  壬: { 비겁: "수", 식상: "목", 재성: "화", 관성: "토", 인성: "금" },
+  癸: { 비겁: "수", 식상: "목", 재성: "화", 관성: "토", 인성: "금" },
+};
+
+function elementHanToLabel(e: string): string {
+  switch (e) {
+    case "목":
+      return "목(나무)";
+    case "화":
+      return "화(불)";
+    case "토":
+      return "토(흙)";
+    case "금":
+      return "금(쇠)";
+    case "수":
+      return "수(물)";
+    default:
+      return e;
+  }
+}
+
+/** 일간 천간 한자(또는 첫 글자만 한자인 문자열)가 있을 때만 블록 추가 */
+function appendDayStemSipsungElementGuide(parts: string[], dayStemHanja: string) {
+  const raw = (dayStemHanja || "").trim();
+  if (!raw) return;
+  const ilgan = raw[0];
+  const elementMap = ILGAN_SIPSUNG_TO_ELEMENT[ilgan];
+  if (!elementMap) return;
+
+  parts.push(`[${ilgan} 일간 기준 십성-오행 관계 — 반드시 이 기준으로만 해석]`);
+  parts.push(
+    `재성(편재·정재, 재물·아버지 등): ${elementHanToLabel(elementMap.재성)} 오행`,
+  );
+  parts.push(
+    `관성(편관·정관, 직업·명예·규범 등): ${elementHanToLabel(elementMap.관성)} 오행`,
+  );
+  parts.push(
+    `인성(편인·정인, 학문·어머니·보호 등): ${elementHanToLabel(elementMap.인성)} 오행`,
+  );
+  parts.push(
+    `식상(식신·상관, 표현·재능·출력 등): ${elementHanToLabel(elementMap.식상)} 오행`,
+  );
+  parts.push(
+    `비겁(비견·겁재, 형제·동료·자아 등): ${elementHanToLabel(elementMap.비겁)} 오행`,
+  );
+  parts.push(
+    `※ 이 기준을 절대로 벗어나지 말 것. ${ilgan} 일간일 때 재성은 ${elementHanToLabel(elementMap.재성)}에 해당한다. 시스템에 적힌 십성(편재/정재 등) 이름과 결합해 해석할 것. 일간 없이 임의로 오행을 바꾸거나 자체 계산·추측 금지.`,
+  );
+}
+
 function buildSajuContextFromModel(payload: SajuPayload): string | null {
   const model = payload.model as SajuModel | undefined;
   if (!model || !model.year || !model.month || !model.day) return null;
@@ -195,6 +258,9 @@ function buildSajuContextFromModel(payload: SajuPayload): string | null {
       model.month,
     )}  일주 ${safePillarLabel(model.day)}  시주 ${safePillarLabel(model.hour ?? null)}`,
   );
+
+  const dayStemHanja = (model.day.cheongan?.hanja ?? "").trim();
+  appendDayStemSipsungElementGuide(parts, dayStemHanja);
 
   const summary = model.summary;
   const strength = summary?.strength ?? null;
@@ -256,6 +322,11 @@ function buildSajuContextLegacy(payload: SajuPayload): string | null {
       hr,
     ) || "-"}`,
   );
+
+  const dCheongan = dy?.cheongan as Record<string, unknown> | undefined;
+  const dayStemHanja =
+    dCheongan && typeof dCheongan.hanja === "string" ? dCheongan.hanja.trim() : "";
+  appendDayStemSipsungElementGuide(parts, dayStemHanja);
 
   const season = result.season as Record<string, unknown> | undefined;
   if (season && typeof season === "object") {

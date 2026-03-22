@@ -5,6 +5,9 @@
  */
 const TOKEN_KEY = "hsaju_token";
 
+/** 같은 탭 세션에서 사주 로컬 캐시를 이미 서버와 맞췄는지 (중복 /saju/full 방지) */
+export const SAJU_CACHE_HYDRATED_KEY = "saju_cache_hydrated_session";
+
 export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
   return sessionStorage.getItem(TOKEN_KEY);
@@ -18,6 +21,7 @@ export function setStoredToken(token: string): void {
 export function clearStoredToken(): void {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(SAJU_CACHE_HYDRATED_KEY);
 }
 
 /** API 요청 시 사용할 헤더. 쿠키만 쓰는 경우 빈 객체, 토큰이 있으면 Authorization 추가. */

@@ -2,7 +2,13 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getAuthHeaders, setStoredToken } from "@/lib/auth";
+import {
+  getAuthHeaders,
+  SAJU_CACHE_HYDRATED_KEY,
+  setStoredToken,
+} from "@/lib/auth";
+import { hydrateLocalSajuCacheFromServerRows } from "@/lib/sajuStorage";
+import type { ServerSajuRow } from "@/lib/sajuStorage";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -45,6 +51,14 @@ export default function LoginSuccessPage() {
         }
         const data = await res.json().catch(() => []);
         const list = Array.isArray(data) ? data : [];
+
+        // 서버 사주 → 로컬 캐시(마이페이지·채팅 등). 재로그인 시 목록이 비는 문제 방지
+        if (typeof window !== "undefined") {
+          sessionStorage.removeItem(SAJU_CACHE_HYDRATED_KEY);
+          await hydrateLocalSajuCacheFromServerRows(list as ServerSajuRow[]);
+          sessionStorage.setItem(SAJU_CACHE_HYDRATED_KEY, "1");
+          window.localStorage.setItem("isLoggedIn", "true");
+        }
 
         if (list.length > 0) {
           router.replace("/saju-list");

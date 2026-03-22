@@ -841,8 +841,15 @@ export default function Page({
         return;
       }
 
-      // 2) 로컬에도 저장 (마이페이지 등에서 바로 반영)
+      // 2) 로컬에도 저장 (마이페이지 등에서 바로 반영). 서버 id와 맞춰 재로그인 시 중복 방지
+      const serverRowId =
+        typeof data?.saju_id === "number"
+          ? data.saju_id
+          : typeof data?.saju_id === "string" && /^\d+$/.test(data.saju_id)
+            ? Number(data.saju_id)
+            : null;
       const saveResult = saveSaju({
+        ...(serverRowId != null ? { id: `srv-${serverRowId}` } : {}),
         name: sajuName.trim(),
         birthYmd,
         birthHm: timeUnknown ? "1200" : birthHm,

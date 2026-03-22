@@ -7,6 +7,7 @@ import {
   getSavedSajuList,
   deleteSaju,
   SavedSaju,
+  syncSavedSajuListWithServer,
   updateLastViewed,
 } from "@/lib/sajuStorage";
 import { clearStoredToken, getAuthHeaders } from "@/lib/auth";
@@ -38,15 +39,24 @@ function MyPageContent({
       return;
     }
 
-    const list = getSavedSajuList();
-    setSajuList(list);
-    setIsLoading(false);
+    let cancelled = false;
+    (async () => {
+      // DB가 우선: 서버 목록으로 로컬 캐시 갱신 후 표시
+      await syncSavedSajuListWithServer();
+      if (cancelled) return;
+      setSajuList(getSavedSajuList());
+      setIsLoading(false);
+    })();
 
     // 분석권 충전 완료 토스트
     if (searchParams?.get("seed_charged") === "1") {
       setSeedCharged(true);
       setTimeout(() => setSeedCharged(false), 3000);
     }
+
+    return () => {
+      cancelled = true;
+    };
   }, [router, searchParams]);
 
   useEffect(() => {

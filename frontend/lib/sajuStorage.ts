@@ -1,3 +1,6 @@
+import { getAuthHeaders } from "./auth";
+import { mapFullSajuJsonToResult } from "./mapFullSajuJsonToResult";
+
 // 사주 데이터 타입 정의
 export interface SavedSaju {
   id: string;
@@ -14,6 +17,112 @@ export interface SavedSaju {
 
 const STORAGE_KEY = 'saved_saju_list';
 const MAX_SAJU_COUNT = 5;
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://saju-backend-eqd6.onrender.com";
+
+/** 백엔드 /api/saju/list 한 행 */
+export type ServerSajuRow = {
+  id: number;
+  name: string;
+  relation: string | null;
+  birthdate: string;
+  birth_time: string | null;
+  calendar_type: string;
+  gender: string;
+  created_at: string;
+  iana_timezone?: string | null;
+};
+
+function rowToBirthFields(row: ServerSajuRow): {
+  birthYmd: string;
+  birthHm: string;
+  timeUnknown: boolean;
+  calendar: "solar" | "lunar";
+  gender: "M" | "F";
+} {
+  const parts = (row.birthdate || "").split("-").map(Number);
+  const y = parts[0];
+  const m = parts[1];
+  const d = parts[2];
+  const birthYmd =
+    y && m && d
+      ? `${String(y)}${String(m).padStart(2, "0")}${String(d).padStart(2, "0")}`
+      : "";
+
+  const timePart = (row.birth_time || "").trim();
+  let birthHm = "1200";
+  let timeUnknown = true;
+  if (timePart && /^\d{1,2}:\d{1,2}$/.test(timePart)) {
+    const [h, mi] = timePart.split(":").map(Number);
+    if (!Number.isNaN(h) && !Number.isNaN(mi)) {
+      birthHm = `${String(h).padStart(2, "0")}${String(mi).padStart(2, "0")}`;
+      timeUnknown = false;
+    }
+  }
+
+  const calendar = row.calendar_type === "음력" ? "lunar" : "solar";
+  const gender = row.gender === "남자" ? "M" : "F";
+
+  return { birthYmd, birthHm, timeUnknown, calendar, gender };
+}
+
+function sameBirthIdentity(
+  a: { birthYmd: string; birthHm: string; gender: string; calendar: string },
+  b: { birthYmd: string; birthHm: string; gender: string; calendar: string }
+): boolean {
+  return (
+    a.birthYmd === b.birthYmd &&
+    a.birthHm === b.birthHm &&
+    a.gender === b.gender &&
+    a.calendar === b.calendar
+  );
+}
+
+async function fetchFullForRow(
+  row: ServerSajuRow
+): Promise<Record<string, unknown> | null> {
+  const { birthYmd, birthHm, timeUnknown, calendar, gender } =
+    rowToBirthFields(row);
+  if (birthYmd.length !== 8) return null;
+
+  const y = Number(birthYmd.slice(0, 4));
+  const m = Number(birthYmd.slice(4, 6));
+  const d = Number(birthYmd.slice(6, 8));
+  const hour = timeUnknown ? null : Number(birthHm.slice(0, 2));
+  const minute = timeUnknown ? null : Number(birthHm.slice(2, 4));
+
+  const body: Record<string, unknown> = {
+    calendar_type: calendar,
+    year: y,
+    month: m,
+    day: d,
+    hour,
+    minute,
+    gender,
+    is_leap_month: false,
+    time_unknown: timeUnknown,
+  };
+  const tz = (row.iana_timezone || "").trim();
+  if (tz) body.iana_timezone = tz;
+
+  try {
+    const res = await fetch(`${API_BASE}/saju/full`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const json = (await res.json().catch(() => null)) as Record<
+      string,
+      unknown
+    > | null;
+    if (!res.ok || !json) return null;
+    return json;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * 저장된 사주 목록 가져오기
@@ -33,41 +142,137 @@ export function getSavedSajuList(): SavedSaju[] {
 
 /**
  * 새 사주 저장하기
+ * - id를 넘기면 해당 id 사용(서버 저장 직후 `srv-{saju_id}` 로 맞춤)
+ * - createdAt을 넘기면 그대로 사용
  */
-export function saveSaju(saju: Omit<SavedSaju, 'id' | 'createdAt'>): { success: boolean; message: string } {
+export function saveSaju(
+  saju: Omit<SavedSaju, "id" | "createdAt"> & {
+    id?: string;
+    createdAt?: string;
+  }
+): { success: boolean; message: string } {
   try {
     const list = getSavedSajuList();
-    
-    // 최대 개수 체크
-    if (list.length >= MAX_SAJU_COUNT) {
+
+    const newId = saju.id?.trim() || Date.now().toString();
+    const existingIdx = list.findIndex((s) => s.id === newId);
+    const isNewSlot = existingIdx === -1;
+
+    // 신규 행만 개수 제한 (같은 id 갱신은 허용)
+    if (isNewSlot && list.length >= MAX_SAJU_COUNT) {
       return {
         success: false,
-        message: `최대 ${MAX_SAJU_COUNT}개까지만 저장할 수 있습니다. 기존 사주를 삭제해주세요.`
+        message: `최대 ${MAX_SAJU_COUNT}개까지만 저장할 수 있습니다. 기존 사주를 삭제해주세요.`,
       };
     }
-    
-    // 새 사주 생성
+
     const newSaju: SavedSaju = {
-      ...saju,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
+      name: saju.name,
+      birthYmd: saju.birthYmd,
+      birthHm: saju.birthHm,
+      gender: saju.gender,
+      calendar: saju.calendar,
+      timeUnknown: saju.timeUnknown,
+      result: saju.result,
+      lastViewed: saju.lastViewed,
+      id: newId,
+      createdAt: saju.createdAt || new Date().toISOString(),
     };
-    
-    // 목록에 추가 (최신순)
-    list.unshift(newSaju);
-    
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+
+    let next: SavedSaju[];
+    if (existingIdx >= 0) {
+      next = [...list];
+      next[existingIdx] = { ...next[existingIdx], ...newSaju };
+    } else {
+      next = [newSaju, ...list];
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     
     return {
       success: true,
-      message: '사주가 저장되었습니다.'
+      message: "사주가 저장되었습니다.",
     };
   } catch (error) {
-    console.error('사주 저장 실패:', error);
+    console.error("사주 저장 실패:", error);
     return {
       success: false,
-      message: '저장 중 오류가 발생했습니다.'
+      message: "저장 중 오류가 발생했습니다.",
     };
+  }
+}
+
+/**
+ * 서버에서 받은 사주 목록으로 로컬 캐시를 갱신합니다.
+ * - DB 행은 id `srv-{id}` 로 저장되어 재로그인 후에도 동일 건으로 인식됩니다.
+ * - 서버에 없는 로컬 전용 항목(id가 srv- 로 시작하지 않음)은, 생년월일·시간·성별·달력이
+ *   서버 행과 겹치지 않는 경우만 유지합니다 (DB 우선).
+ */
+export async function hydrateLocalSajuCacheFromServerRows(
+  rows: ServerSajuRow[]
+): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  const serverRows = Array.isArray(rows) ? rows : [];
+  const serverSaved: SavedSaju[] = [];
+
+  for (const row of serverRows.slice(0, MAX_SAJU_COUNT)) {
+    const fields = rowToBirthFields(row);
+    const fullJson = await fetchFullForRow(row);
+    if (!fullJson) continue;
+    const result = mapFullSajuJsonToResult(fullJson);
+    serverSaved.push({
+      id: `srv-${row.id}`,
+      name: row.name || "저장된 사주",
+      birthYmd: fields.birthYmd,
+      birthHm: fields.birthHm,
+      gender: fields.gender,
+      calendar: fields.calendar,
+      timeUnknown: fields.timeUnknown,
+      result,
+      createdAt: row.created_at || new Date().toISOString(),
+    });
+  }
+
+  const prev = getSavedSajuList();
+  const localOnly = prev.filter((s) => !String(s.id).startsWith("srv-"));
+  const filteredLocal = localOnly.filter((s) => {
+    const ident = {
+      birthYmd: s.birthYmd,
+      birthHm: s.birthHm,
+      gender: s.gender,
+      calendar: s.calendar,
+    };
+    return !serverSaved.some((srv) => sameBirthIdentity(ident, srv));
+  });
+
+  const merged = [...serverSaved, ...filteredLocal].slice(0, MAX_SAJU_COUNT);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+}
+
+/**
+ * 로그인 세션으로 서버 사주 목록을 가져와 로컬 캐시와 맞춥니다.
+ */
+export async function syncSavedSajuListWithServer(): Promise<{
+  ok: boolean;
+  count: number;
+}> {
+  if (typeof window === "undefined") return { ok: false, count: 0 };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/saju/list`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) return { ok: false, count: 0 };
+
+    const data = (await res.json().catch(() => [])) as unknown;
+    const rows = Array.isArray(data) ? (data as ServerSajuRow[]) : [];
+    await hydrateLocalSajuCacheFromServerRows(rows);
+    return { ok: true, count: rows.length };
+  } catch (e) {
+    console.warn("syncSavedSajuListWithServer:", e);
+    return { ok: false, count: 0 };
   }
 }
 

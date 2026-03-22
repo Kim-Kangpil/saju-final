@@ -809,7 +809,12 @@ async def api_chat(req: ChatRequest, request: Request):
         raise HTTPException(status_code=400, detail="사용자 메시지가 필요합니다.")
 
     chat_uid = get_user_id_from_request(request)
-    if chat_uid is not None:
+    _chat_mem_required = (os.getenv("CHAT_MEMBERSHIP_REQUIRED") or "").strip().lower() in (
+        "1",
+        "true",
+        "yes",
+    )
+    if chat_uid is not None and _chat_mem_required:
         _mst = refresh_and_get_membership_status(chat_uid)
         if not _mst.get("is_member"):
             raise HTTPException(status_code=403, detail="멤버십이 필요합니다.")

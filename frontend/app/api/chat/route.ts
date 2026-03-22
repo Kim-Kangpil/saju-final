@@ -9,6 +9,9 @@ import { TIME_RULES } from "./knowledge/time";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 
+/** `true`일 때만 로그인 유저 채팅에 멤버십 검사. 기본 꺼둠(나중에 도입 시 .env에 true). */
+const CHAT_MEMBERSHIP_REQUIRED = process.env.CHAT_MEMBERSHIP_REQUIRED === "true";
+
 // ─────────────────────────────────────────────
 // get_saju 도구 정의
 // ─────────────────────────────────────────────
@@ -559,8 +562,8 @@ export async function POST(req: Request) {
     }
   }
 
-  // ── 로그인 유저: 멤버십 필요 ───────────────────────────────────────
-  if (!isGuest) {
+  // ── 로그인 유저: 멤버십 (CHAT_MEMBERSHIP_REQUIRED=true 일 때만 검사) ──
+  if (!isGuest && CHAT_MEMBERSHIP_REQUIRED) {
     const cookieHeader = req.headers.get("cookie") || "";
     const authHeader = req.headers.get("authorization") || "";
     const memRes = await fetch(`${API_BASE}/api/membership/status`, {

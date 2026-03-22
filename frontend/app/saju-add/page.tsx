@@ -22,11 +22,12 @@ export default function SajuAddPage({
   const [timeRaw, setTimeRaw] = useState(""); // 4자리 숫자만
   const [calendarType, setCalendarType] = useState<"solar" | "lunar" | null>(null);
   const [gender, setGender] = useState<"male" | "female" | null>(null);
-  const [city, setCity] = useState("");
+  const [city, setCity] = useState("서울");
   const [longitude, setLongitude] = useState("");
   const [useLongitudeCorrection, setUseLongitudeCorrection] = useState(false);
   const [useEquationOfTime, setUseEquationOfTime] = useState(false);
   const [timeAccuracy, setTimeAccuracy] = useState<"exact" | "approx" | "unknown">("unknown");
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [errors, setErrors] = useState({
     name: false,
     birth: false,
@@ -588,7 +589,104 @@ export default function SajuAddPage({
               )}
             </div>
 
-            {/* 4. 이름 (기능 유지) */}
+            {/* 4. 고급 옵션 (기본 닫힘) */}
+            <div>
+              <button
+                type="button"
+                className="tap sans"
+                onClick={() => setShowAdvancedOptions((v) => !v)}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  borderRadius: radius,
+                  border: `1.5px solid ${borderField}`,
+                  background: inputBg,
+                  color: textDark,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <span>고급 옵션</span>
+                <Icon icon={showAdvancedOptions ? "mdi:chevron-up" : "mdi:chevron-down"} width={18} />
+              </button>
+
+              {showAdvancedOptions && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: "12px",
+                    borderRadius: radius,
+                    border: `1.5px solid ${borderField}`,
+                    background: "#fff",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 12,
+                  }}
+                >
+                  <div>
+                    <label style={{ fontSize: 13, color: textDark, marginBottom: 6, display: "block", fontWeight: 600 }}>
+                      출생지 선택
+                    </label>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="saju-add-input"
+                      style={{
+                        width: "100%",
+                        padding: "12px 14px",
+                        borderRadius: 10,
+                        border: `1.5px solid ${borderField}`,
+                        fontSize: 14,
+                        outline: "none",
+                        background: inputBg,
+                        color: textDark,
+                      }}
+                    >
+                      <option value="서울">서울</option>
+                      <option value="부산">부산</option>
+                      <option value="대구">대구</option>
+                      <option value="해외">해외</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <label style={{ fontSize: 13, color: textDark, fontWeight: 600 }}>정밀 시간 보정 적용</label>
+                      <button
+                        type="button"
+                        className="tap sans"
+                        onClick={() => {
+                          const next = !(useLongitudeCorrection && useEquationOfTime);
+                          setUseLongitudeCorrection(next);
+                          setUseEquationOfTime(next);
+                        }}
+                        style={{
+                          minWidth: 64,
+                          padding: "7px 10px",
+                          borderRadius: 999,
+                          border: `1.5px solid ${useLongitudeCorrection && useEquationOfTime ? borderSelected : borderField}`,
+                          background: useLongitudeCorrection && useEquationOfTime ? "#333333" : inputBg,
+                          color: useLongitudeCorrection && useEquationOfTime ? "#fff" : textDark,
+                          fontSize: 12,
+                          fontWeight: 800,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {useLongitudeCorrection && useEquationOfTime ? "ON" : "OFF"}
+                      </button>
+                    </div>
+                    <p style={{ marginTop: 6, fontSize: 12, color: "var(--text-secondary)" }}>
+                      태양 기준 시간으로 계산하여 더 정확한 시주를 제공합니다
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 5. 이름 (기능 유지) */}
             <div>
               <label style={{ fontSize: 14, color: textDark, marginBottom: 8, display: "block", fontWeight: 600 }}>
                 이름 <span style={{ color: "#e11d48" }}>*</span>
@@ -745,6 +843,18 @@ export default function SajuAddPage({
                 <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>
                   <Icon icon="mdi:calendar" width={20} />
                   {birthdateDisplay} {timeDisplay !== "모름" ? `(${timeDisplay})` : ""}
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>출생지</label>
+                <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>
+                  {city || "서울"}
+                </div>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>정밀 시간 보정</label>
+                <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>
+                  {useLongitudeCorrection && useEquationOfTime ? "ON" : "OFF"}
                 </div>
               </div>
               {name && (

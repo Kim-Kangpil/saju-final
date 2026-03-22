@@ -1,12 +1,17 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+/** true: 베타 코드 필요 / false: 게이트 잠깐 해제(전체 통과) — 다시 막을 때 true로 변경 */
+const BETA_GATE_ENABLED = false;
+
 /**
  * 베타 접근 제어
  * - cookie `beta_access=1`이 있어야 사이트 전체 진입 가능
  * - 없으면 `/beta-access`로 리다이렉트
  */
 export function middleware(req: NextRequest) {
+  if (!BETA_GATE_ENABLED) return NextResponse.next();
+
   const cookie = req.cookies.get("beta_access")?.value;
   const isAuthorized = cookie === "1";
   if (isAuthorized) return NextResponse.next();

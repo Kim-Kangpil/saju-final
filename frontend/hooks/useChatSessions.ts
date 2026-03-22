@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ChatSession,
   Message,
@@ -127,7 +127,8 @@ export function useChatSessions() {
     sessions.find((s) => s.id === currentId) ?? null;
 
   // 세션 전체 메시지 교체 (useChat와 동기화용)
-  const replaceMessages = (sessionId: string, msgs: Message[]): void => {
+  // 참조를 고정해야 ChatContent의 동기화 effect가 매 부모 리렌더마다 재실행되지 않음 (#185 방지)
+  const replaceMessages = useCallback((sessionId: string, msgs: Message[]): void => {
     setSessionMessages(sessionId, msgs);
     setSessions((prev) => {
       const next = prev.map((s) =>
@@ -135,7 +136,7 @@ export function useChatSessions() {
       );
       return [...next].sort((a, b) => b.updatedAt - a.updatedAt);
     });
-  };
+  }, []);
 
   // 첫 유저 메시지로 제목 자동 설정 (오타 그대로 쓰지 않고 안전한 카테고리형 제목 사용)
   const ensureTitleFromFirstMessage = (sessionId: string, firstUserText: string): void => {

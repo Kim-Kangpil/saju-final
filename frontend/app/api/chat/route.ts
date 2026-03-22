@@ -353,6 +353,14 @@ function formatTenGodsHarmonyClashTwelveBlock(saju: unknown): string {
     if (line) parts.push(`십이운성: ${line}`);
   }
 
+  const strength = (saju as any)?.strength;
+  if (strength?.strength) {
+    parts.push(
+      `신강약: ${strength.strength} (점수 ${strength.total_score}, 득령 ${strength.deukryeong ? "O" : "X"}, 득지 ${strength.deukji ? "O" : "X"}, 득세 ${strength.deukse ? "O" : "X"})`,
+    );
+    parts.push(`신강약 조합 판단: ${strength.combination ?? "판단 불가"}`);
+  }
+
   return parts.join("\n");
 }
 

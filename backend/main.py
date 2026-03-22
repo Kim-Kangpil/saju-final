@@ -9,6 +9,7 @@ from logic.saju_core import compute_full_saju
 from logic.saju_engine.core.sinsal import analyze_sinsal
 from logic.saju_engine.core.ten_gods import calculate_ten_god
 from logic.saju_engine.core.harmony_clash import analyze_harmony_clash
+from logic.saju_engine.core.strength import calculate_strength_score, analyze_strength_combination
 from logic.feature_flags import use_new_saju_engine, get_engine_version_label
 from logic.theory_retriever import TheoryRetriever
 from auth_kakao import router as kakao_router
@@ -679,6 +680,31 @@ def _attach_ten_gods_to_payload(data: dict[str, Any]) -> None:
         data["ten_gods"] = {}
 
 
+def _attach_strength_to_payload(data: dict[str, Any]) -> None:
+    try:
+        day_stem = data["day_pillar"][0]
+        pillars = {
+            "year": data["year_pillar"],
+            "month": data["month_pillar"],
+            "day": data["day_pillar"],
+            "hour": data.get("hour_pillar") or data.get("_hour_pillar_for_sinsal", ""),
+        }
+        result = calculate_strength_score(day_stem, pillars)
+        result["combination"] = analyze_strength_combination(
+            result["deukryeong"], result["deukji"], result["deukse"]
+        )
+        data["strength"] = result
+    except Exception:
+        data["strength"] = {
+            "strength": "알 수 없음",
+            "total_score": 0,
+            "deukryeong": False,
+            "deukji": False,
+            "deukse": False,
+            "combination": "판단 불가",
+        }
+
+
 _HARMONY_CLASH_EMPTY: dict[str, list] = {
     "cheongan_hap": [],
     "cheongan_chung": [],
@@ -1181,6 +1207,7 @@ async def get_full_saju(req: SajuRequest):
         _attach_sinsal_to_saju_full_payload(data)
         _attach_ten_gods_to_payload(data)
         _attach_harmony_clash_to_payload(data)
+        _attach_strength_to_payload(data)
         return data
     except Exception as e:
         print(f"❌ /saju/full 에러: {e}")

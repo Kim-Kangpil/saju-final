@@ -198,12 +198,15 @@ export default function ChatPage({
     };
   };
 
+  const [savedSajuName, setSavedSajuName] = useState<string | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+
   useEffect(() => {
     bodyRef.current = {
       isGuest: !isLoggedIn,
       saju: getSajuBody(),
     };
-  }, [isLoggedIn]);
+  }, [isLoggedIn, savedSajuName]);
 
   const transport = useMemo(
     () =>
@@ -224,8 +227,6 @@ export default function ChatPage({
     [lang],
   );
 
-  const [savedSajuName, setSavedSajuName] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -236,6 +237,28 @@ export default function ChatPage({
     }
     setHydrated(true);
   }, []);
+
+  // /add 등에서 돌아왔을 때 로컬 저장 사주 반영
+  useEffect(() => {
+    if (typeof window === "undefined" || !isLoggedIn) return;
+    const refreshSavedSajuName = () => {
+      if (document.visibilityState && document.visibilityState !== "visible") return;
+      try {
+        const first = getSavedSajuList()?.[0];
+        setSavedSajuName(first?.name?.trim() ?? null);
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("focus", refreshSavedSajuName);
+    document.addEventListener("visibilitychange", refreshSavedSajuName);
+    return () => {
+      window.removeEventListener("focus", refreshSavedSajuName);
+      document.removeEventListener("visibilitychange", refreshSavedSajuName);
+    };
+  }, [isLoggedIn]);
+
+  const showNoSajuScreen = hydrated && isLoggedIn && !savedSajuName;
 
   return (
     <>
@@ -690,6 +713,76 @@ export default function ChatPage({
           font-weight: 600;
           cursor: pointer;
         }
+        .chat-main-shell--no-saju {
+          align-items: center;
+          justify-content: center;
+          padding: 24px 16px;
+          min-height: 0;
+        }
+        .chat-no-saju-screen {
+          width: 100%;
+          max-width: 400px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 28px 20px 24px;
+          text-align: center;
+          box-shadow: 0 4px 12px rgba(0,0,0,.06);
+        }
+        @media (min-width: 768px) {
+          .chat-main-shell--no-saju {
+            padding: 32px 24px;
+          }
+          .chat-no-saju-screen {
+            max-width: 420px;
+            padding: 32px 28px 28px;
+            border-radius: 18px;
+            box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+          }
+        }
+        .chat-no-saju-title {
+          font-family: var(--serif);
+          font-size: 17px;
+          font-weight: 700;
+          color: var(--text);
+          margin: 0 0 10px;
+          line-height: 1.35;
+        }
+        @media (min-width: 768px) {
+          .chat-no-saju-title { font-size: 18px; margin-bottom: 12px; }
+        }
+        .chat-no-saju-desc {
+          font-size: 13px;
+          color: var(--sub);
+          line-height: 1.65;
+          margin: 0 0 22px;
+        }
+        @media (min-width: 768px) {
+          .chat-no-saju-desc { font-size: 14px; margin-bottom: 24px; }
+        }
+        .chat-no-saju-btn {
+          width: 100%;
+          max-width: 280px;
+          padding: 14px 20px;
+          min-height: 48px;
+          border: none;
+          border-radius: 12px;
+          background: #2C2A26;
+          color: #F2EDE4;
+          font-family: var(--sans);
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: opacity .15s;
+        }
+        @media (min-width: 768px) {
+          .chat-no-saju-btn {
+            min-height: 52px;
+            font-size: 15px;
+            padding: 14px 24px;
+          }
+        }
+        .chat-no-saju-btn:hover { opacity: .92; }
         .chat-error-banner {
           padding: 12px 16px;
           margin: 0 16px 12px;
@@ -1052,24 +1145,42 @@ export default function ChatPage({
             </aside>
 
             {/* 우측 채팅 영역 */}
-            <main className="chat-main-shell">
-              <ChatContent
-                key={currentId || "chat-hydrated"}
-                sessionId={currentId}
-                initialSessionMessages={currentSession?.messages ?? []}
-                sessionTitle={currentSession?.title ?? ""}
-                transport={transport}
-                onError={setChatError}
-                isLoggedIn={isLoggedIn}
-                showLoginCard={showLoginCard}
-                setShowLoginCard={setShowLoginCard}
-                router={router}
-                lastUserMessageRef={lastUserMessageRef}
-                handleRetryRef={handleRetryRef}
-                savedSajuName={savedSajuName}
-                replaceMessages={replaceMessages}
-                ensureTitleFromFirstMessage={ensureTitleFromFirstMessage}
-              />
+            <main
+              className={`chat-main-shell${showNoSajuScreen ? " chat-main-shell--no-saju" : ""}`}
+            >
+              {showNoSajuScreen ? (
+                <div className="chat-no-saju-screen">
+                  <p className="chat-no-saju-title">만세력을 먼저 등록해주세요</p>
+                  <p className="chat-no-saju-desc">
+                    내 사주를 등록하면 AI가 맞춤형으로 분석해드려요
+                  </p>
+                  <button
+                    type="button"
+                    className="chat-no-saju-btn"
+                    onClick={() => router.push("/add")}
+                  >
+                    만세력 등록하러 가기
+                  </button>
+                </div>
+              ) : (
+                <ChatContent
+                  key={currentId || "chat-hydrated"}
+                  sessionId={currentId}
+                  initialSessionMessages={currentSession?.messages ?? []}
+                  sessionTitle={currentSession?.title ?? ""}
+                  transport={transport}
+                  onError={setChatError}
+                  isLoggedIn={isLoggedIn}
+                  showLoginCard={showLoginCard}
+                  setShowLoginCard={setShowLoginCard}
+                  router={router}
+                  lastUserMessageRef={lastUserMessageRef}
+                  handleRetryRef={handleRetryRef}
+                  savedSajuName={savedSajuName}
+                  replaceMessages={replaceMessages}
+                  ensureTitleFromFirstMessage={ensureTitleFromFirstMessage}
+                />
+              )}
             </main>
           </div>
         )}
@@ -1319,6 +1430,11 @@ function ChatContent({
 
   // useChat 메시지를 세션 스토리지와 동기화 (무한 루프 방지용 스냅샷)
   const lastSnapshotRef = useRef<string>("");
+  // 세션 전환 시 이전 대화 스냅샷이 남아 잘못 스킵되거나 연쇄 업데이트가 나지 않도록 초기화
+  useEffect(() => {
+    lastSnapshotRef.current = "";
+  }, [sessionId]);
+
   useEffect(() => {
     if (!sessionId) return;
     const mapped: SessionMessage[] = messages.map((m, idx) => ({

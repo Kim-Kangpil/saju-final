@@ -9,6 +9,24 @@ import { TIME_RULES } from "./knowledge/time";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 
+async function fetchTheoryFromBackend(
+  query: string,
+  intent: string
+): Promise<string> {
+  try {
+    const res = await fetch(`${API_BASE}/api/theory/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, intent }),
+    });
+    if (!res.ok) return "";
+    const data = await res.json();
+    return data.theory || "";
+  } catch {
+    return "";
+  }
+}
+
 /** `true`일 때만 로그인 유저 채팅에 멤버십 검사. 기본 꺼둠(나중에 도입 시 .env에 true). */
 const CHAT_MEMBERSHIP_REQUIRED = process.env.CHAT_MEMBERSHIP_REQUIRED === "true";
 
@@ -515,6 +533,12 @@ export async function POST(req: Request) {
   // ── 동적 지식 블록 조립 ──
   const selectedKnowledge = assembleKnowledge(intent, lastUserMessage);
 
+  // 백엔드 동적 이론 (실패해도 채팅은 계속)
+  const backendTheory = await fetchTheoryFromBackend(lastUserMessage, intent);
+  const theoryBlock = backendTheory
+    ? `\n\n[사주 이론 참고 자료 — 해석 시 반드시 참고]\n${backendTheory}`
+    : "";
+
   // ── 페르소나 + 사주 컨텍스트 ──
   const persona = isGuest || !hasSaju ? PERSONA_GUEST : PERSONA_LOGGEDIN;
   const sajuContext = hasSaju ? `\n\n${buildSajuContext(saju)}` : "";
@@ -536,6 +560,7 @@ export async function POST(req: Request) {
     MONTH_BRANCH_RULE,
     responseFormatBlock,
     sajuContext,
+    theoryBlock,
     "\n\n[이번 질문에 필요한 사주 지식]",
     selectedKnowledge,
   ].join("\n");

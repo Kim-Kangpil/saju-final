@@ -921,6 +921,42 @@ async def api_chat(req: ChatRequest, request: Request):
     )
 
 
+@app.post("/api/theory/search")
+async def search_theory(request: Request):
+    """
+    채팅 AI용 이론 검색 엔드포인트
+    의도(intent)와 질문(query)을 받아
+    관련 이론 텍스트를 반환
+    """
+    try:
+        body = await request.json()
+        query = body.get("query", "")
+        intent = body.get("intent", "")
+
+        if not query and not intent:
+            return {"theory": "", "ok": True}
+
+        retriever = TheoryRetriever()
+
+        # 의도 기반 검색
+        search_query = query or intent
+        theory_text = retriever.get_theories_by_query(search_query)
+
+        # 최대 8000자로 제한 (토큰 절약)
+        if len(theory_text) > 8000:
+            theory_text = theory_text[:8000] + "\n...(이하 생략)"
+
+        return {
+            "theory": theory_text,
+            "ok": True,
+            "query": search_query,
+            "length": len(theory_text),
+        }
+    except Exception as e:
+        print(f"❌ theory search error: {e}")
+        return {"theory": "", "ok": False, "error": str(e)}
+
+
 @app.post("/api/contact")
 def post_contact(req: ContactRequest):
     """

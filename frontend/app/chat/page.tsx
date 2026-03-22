@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { use, useRef, useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
@@ -652,22 +653,37 @@ export default function ChatPage({
         }
         /* 모바일용 세션 선택 바 */
         /* 모바일용 세션 드로어 */
+        /* 포털로 body에 붙임 — PageTransition(transform) 안에 두면 fixed가 깨져 빈 패널처럼 보일 수 있음 */
         .chat-mobile-drawer-backdrop {
           position: fixed;
           inset: 0;
           background: rgba(0,0,0,0.35);
-          z-index: 40;
+          z-index: 10000;
         }
         .chat-mobile-drawer {
           position: fixed;
           inset: 0 auto 0 0;
+          top: 0;
+          bottom: 0;
+          left: 0;
           width: min(80vw, 320px);
+          max-height: 100dvh;
+          max-height: 100vh;
           background: #f8f5ef;
           border-right: 1px solid var(--border);
           display: flex;
           flex-direction: column;
-          z-index: 50;
+          min-height: 0;
+          z-index: 10001;
           box-shadow: 4px 0 18px rgba(0,0,0,0.15);
+          padding-top: env(safe-area-inset-top);
+          padding-left: env(safe-area-inset-left);
+        }
+        .chat-mobile-drawer .chat-sidebar-list {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
         }
         @media (min-width: 768px) {
           .chat-mobile-drawer,
@@ -1156,7 +1172,10 @@ export default function ChatPage({
               type="button"
               className="chat-back"
               aria-label="대화 목록"
-              onClick={() => setShowMobileSidebar(true)}
+              onClick={() => {
+                refreshSessionsFromStorage();
+                setShowMobileSidebar(true);
+              }}
               style={{ display: "inline-flex" }}
             >
               <Icon icon="mdi:chat-outline" width={20} />
@@ -1239,78 +1258,99 @@ export default function ChatPage({
               </div>
             )}
 
-            {/* 모바일 세션 드로어 */}
-            {showMobileSidebar && (
-              <>
-                <div
-                  className="chat-mobile-drawer-backdrop"
-                  onClick={() => setShowMobileSidebar(false)}
-                />
-                <aside className="chat-mobile-drawer">
-                  <div className="chat-sidebar-header">
-                    <span className="chat-sidebar-title">최근 대화</span>
-                    <button
-                      type="button"
-                      className="chat-sidebar-new"
-                      onClick={() => {
-                        setChatError(null);
-                        startNewChat();
-                      }}
-                    >
-                      + 새 대화
-                    </button>
-                  </div>
-                  <div className="chat-sidebar-search">
-                    <input
-                      placeholder="대화 검색"
-                      value={searchQuery}
-                      onChange={(e) => search(e.target.value)}
-                    />
-                  </div>
-                  <div className="chat-sidebar-list">
-                    {(searchQuery ? searchResults : sessions).map((s) => {
-                      const isActive = s.id === currentId;
-                      const title =
-                        s.title ||
-                        (s.messages[0]?.text
-                          ? s.messages[0].text.slice(0, 20)
-                          : "새 대화");
-                      const lastText = s.messages[s.messages.length - 1]?.text ?? "";
-                      return (
+            {/* 모바일 세션 드로어 — body 포털(PageTransition transform 고정 위치 버그 회피) */}
+            {showMobileSidebar &&
+              typeof document !== "undefined" &&
+              createPortal(
+                <>
+                  <div
+                    className="chat-mobile-drawer-backdrop"
+                    onClick={() => setShowMobileSidebar(false)}
+                    role="presentation"
+                  />
+                  <aside className="chat-mobile-drawer" aria-label="최근 대화 목록">
+                    <div className="chat-sidebar-header">
+                      <span className="chat-sidebar-title">최근 대화</span>
+                      <button
+                        type="button"
+                        className="chat-sidebar-new"
+                        onClick={() => {
+                          setChatError(null);
+                          startNewChat();
+                          setShowMobileSidebar(false);
+                        }}
+                      >
+                        + 새 대화
+                      </button>
+                    </div>
+                    <div className="chat-sidebar-search">
+                      <input
+                        placeholder="대화 검색"
+                        value={searchQuery}
+                        onChange={(e) => search(e.target.value)}
+                        autoComplete="off"
+                      />
+                    </div>
+                    <div className="chat-sidebar-list">
+                      {(searchQuery.trim() ? searchResults : sessions).length === 0 ? (
                         <div
-                          key={s.id}
-                          className={`chat-sidebar-item ${isActive ? "active" : ""}`}
-                          onClick={() => {
-                            selectSession(s.id);
-                            setShowMobileSidebar(false);
+                          style={{
+                            padding: "16px 12px",
+                            fontSize: 13,
+                            color: "var(--sub)",
+                            lineHeight: 1.5,
                           }}
                         >
-                          <div className="chat-sidebar-item-main">
-                            <div className="chat-sidebar-item-title">{title}</div>
-                            {lastText && (
-                              <div className="chat-sidebar-item-sub">
-                                {lastText.slice(0, 26)}
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            type="button"
-                            className="chat-sidebar-item-delete"
-                            aria-label="대화 삭제"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPendingDeleteId(s.id);
-                            }}
-                          >
-                            <Icon icon="mdi:trash-can-outline" width={14} />
-                          </button>
+                          {searchQuery.trim()
+                            ? "검색 결과가 없어요."
+                            : "저장된 대화가 없어요. 아래에서 새 대화를 시작해 보세요."}
                         </div>
-                      );
-                    })}
-                  </div>
-                </aside>
-              </>
-            )}
+                      ) : (
+                        (searchQuery.trim() ? searchResults : sessions).map((s) => {
+                          const isActive = s.id === currentId;
+                          const title =
+                            s.title ||
+                            (s.messages[0]?.text
+                              ? s.messages[0].text.slice(0, 20)
+                              : "새 대화");
+                          const lastText = s.messages[s.messages.length - 1]?.text ?? "";
+                          return (
+                            <div
+                              key={s.id}
+                              className={`chat-sidebar-item ${isActive ? "active" : ""}`}
+                              onClick={() => {
+                                selectSession(s.id);
+                                setShowMobileSidebar(false);
+                              }}
+                            >
+                              <div className="chat-sidebar-item-main">
+                                <div className="chat-sidebar-item-title">{title}</div>
+                                {lastText && (
+                                  <div className="chat-sidebar-item-sub">
+                                    {lastText.slice(0, 26)}
+                                  </div>
+                                )}
+                              </div>
+                              <button
+                                type="button"
+                                className="chat-sidebar-item-delete"
+                                aria-label="대화 삭제"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPendingDeleteId(s.id);
+                                }}
+                              >
+                                <Icon icon="mdi:trash-can-outline" width={14} />
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </aside>
+                </>,
+                document.body,
+              )}
 
             {/* 좌측 세션 리스트 (태블릿 이상) */}
             <aside className="chat-sidebar">

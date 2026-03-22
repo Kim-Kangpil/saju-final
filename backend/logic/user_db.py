@@ -1,52 +1,48 @@
 # backend/logic/user_db.py
-"""사용자 저장용 SQLite (카카오/구글/이메일 로그인)."""
-import sqlite3
-from pathlib import Path
+"""사용자 저장용 DB (PostgreSQL)."""
+import psycopg2
+import psycopg2.extras
 from datetime import datetime, timedelta
 
-DB_DIR = Path(__file__).resolve().parent
-USERS_DB = DB_DIR / "users.db"
+from config import DATABASE_URL
 
 
 def get_conn():
-    return sqlite3.connect(USERS_DB)
+    return psycopg2.connect(DATABASE_URL)
 
 
 def init_user_db():
     conn = get_conn()
     try:
-        conn.execute("""
+        cur = conn.cursor()
+        cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                id BIGSERIAL PRIMARY KEY,
                 provider TEXT NOT NULL,
                 provider_id TEXT NOT NULL,
                 email TEXT,
                 nickname TEXT,
                 created_at TEXT NOT NULL,
                 last_login TEXT NOT NULL,
+                seed_balance INTEGER DEFAULT 0,
+                is_member INTEGER DEFAULT 0,
+                membership_started_at TEXT,
+                membership_expires_at TEXT,
                 UNIQUE(provider, provider_id)
             )
         """)
-        conn.execute(
+        cur.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_provider_provider_id ON users(provider, provider_id)"
         )
-        conn.commit()
-        # 씨앗 잔액 컬럼 (기존 DB에 없으면 추가)
-        try:
-            conn.execute("ALTER TABLE users ADD COLUMN seed_balance INTEGER DEFAULT 0")
-            conn.commit()
-        except sqlite3.OperationalError:
-            pass  # column already exists
+        # 기존 테이블에 컬럼 없으면 추가 (PostgreSQL IF NOT EXISTS 지원)
         for col_sql in (
-            "ALTER TABLE users ADD COLUMN is_member INTEGER DEFAULT 0",
-            "ALTER TABLE users ADD COLUMN membership_started_at TEXT",
-            "ALTER TABLE users ADD COLUMN membership_expires_at TEXT",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS seed_balance INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_member INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_started_at TEXT",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_expires_at TEXT",
         ):
-            try:
-                conn.execute(col_sql)
-                conn.commit()
-            except sqlite3.OperationalError:
-                pass
+            cur.execute(col_sql)
+        conn.commit()
     finally:
         conn.close()
 
@@ -57,48 +53,39 @@ def get_or_create_user(
     email: str | None = None,
     nickname: str | None = None,
 ) -> int:
-    """
-    provider + provider_id로 유저 조회.
-    없으면 INSERT, 있으면 last_login만 UPDATE 후 id 반환.
-    """
     now = datetime.utcnow().isoformat()
     conn = get_conn()
     try:
-        cur = conn.execute(
-            "SELECT id FROM users WHERE provider = ? AND provider_id = ?",
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id FROM users WHERE provider = %s AND provider_id = %s",
             (provider, provider_id),
         )
         row = cur.fetchone()
         if row:
             user_id = row[0]
-            conn.execute(
-                "UPDATE users SET last_login = ? WHERE id = ?",
+            cur.execute(
+                "UPDATE users SET last_login = %s WHERE id = %s",
                 (now, user_id),
             )
             conn.commit()
             return user_id
-        conn.execute(
-            "INSERT INTO users (provider, provider_id, email, nickname, created_at, last_login) VALUES (?, ?, ?, ?, ?, ?)",
+        cur.execute(
+            "INSERT INTO users (provider, provider_id, email, nickname, created_at, last_login) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
             (provider, provider_id, email or "", nickname or "", now, now),
         )
+        new_id = cur.fetchone()[0]
         conn.commit()
-        cur = conn.execute("SELECT last_insert_rowid()")
-        return cur.fetchone()[0]
+        return new_id
     finally:
         conn.close()
 
 
 def get_user_id_from_session(session_value: str) -> int | None:
-    """
-    hsaju_session 쿠키 값을 파싱해 user_id(DB id)를 반환합니다.
-    - 숫자만 있으면 해당 값을 user_id로 사용
-    - "kakao:123" 형태면 users 테이블에서 provider+provider_id로 조회 후 id 반환
-    """
     if not session_value or not session_value.strip():
         return None
     s = session_value.strip()
 
-    # 숫자만 있으면 user_id로 사용 (auth_kakao에서 설정한 DB id)
     try:
         uid = int(s)
         if uid > 0:
@@ -106,14 +93,14 @@ def get_user_id_from_session(session_value: str) -> int | None:
     except (ValueError, TypeError):
         pass
 
-    # "kakao:123" 형태
     if s.startswith("kakao:"):
         provider_id = s[6:].strip()
         if provider_id:
             conn = get_conn()
             try:
-                cur = conn.execute(
-                    "SELECT id FROM users WHERE provider = 'kakao' AND provider_id = ?",
+                cur = conn.cursor()
+                cur.execute(
+                    "SELECT id FROM users WHERE provider = 'kakao' AND provider_id = %s",
                     (provider_id,),
                 )
                 row = cur.fetchone()
@@ -124,13 +111,13 @@ def get_user_id_from_session(session_value: str) -> int | None:
 
 
 def get_user_by_id(user_id: int) -> dict | None:
-    """user_id로 사용자 정보(provider, email, nickname) 반환."""
     if not user_id:
         return None
     conn = get_conn()
     try:
-        cur = conn.execute(
-            "SELECT provider, email, nickname FROM users WHERE id = ?",
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT provider, email, nickname FROM users WHERE id = %s",
             (user_id,),
         )
         row = cur.fetchone()
@@ -146,13 +133,13 @@ def get_user_by_id(user_id: int) -> dict | None:
 
 
 def get_seed_balance(user_id: int) -> int:
-    """user_id의 씨앗 잔액 반환. 컬럼 없으면 0."""
     if not user_id:
         return 0
     conn = get_conn()
     try:
-        cur = conn.execute(
-            "SELECT seed_balance FROM users WHERE id = ?",
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT seed_balance FROM users WHERE id = %s",
             (user_id,),
         )
         row = cur.fetchone()
@@ -162,17 +149,13 @@ def get_seed_balance(user_id: int) -> int:
             return int(row[0]) if row[0] is not None else 0
         except (TypeError, ValueError):
             return 0
-    except sqlite3.OperationalError:
-        return 0  # seed_balance column missing
+    except Exception:
+        return 0
     finally:
         conn.close()
 
 
 def deduct_seed(user_id: int, amount: int = 1) -> tuple[bool, int]:
-    """
-    user_id의 씨앗을 amount만큼 차감합니다.
-    Returns: (success, remaining_balance)
-    """
     if not user_id or amount < 1:
         return False, get_seed_balance(user_id or 0)
     current = get_seed_balance(user_id)
@@ -180,13 +163,15 @@ def deduct_seed(user_id: int, amount: int = 1) -> tuple[bool, int]:
         return False, current
     conn = get_conn()
     try:
-        conn.execute(
-            "UPDATE users SET seed_balance = seed_balance - ? WHERE id = ?",
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE users SET seed_balance = seed_balance - %s WHERE id = %s",
             (amount, user_id),
         )
         conn.commit()
         return True, current - amount
-    except sqlite3.OperationalError:
+    except Exception:
+        conn.rollback()
         return False, current
     finally:
         conn.close()
@@ -205,18 +190,15 @@ def _parse_iso_dt(value: str | None) -> datetime | None:
 
 
 def refresh_and_get_membership_status(user_id: int) -> dict:
-    """
-    SQLite users 행 기준 멤버십 상태.
-    membership_expires_at이 현재(UTC)보다 이전이면 is_member=0으로 갱신 후 반환.
-    """
     if not user_id:
         return {"is_member": False, "membership_started_at": None, "membership_expires_at": None}
     conn = get_conn()
     try:
-        cur = conn.execute(
+        cur = conn.cursor()
+        cur.execute(
             """
             SELECT is_member, membership_started_at, membership_expires_at
-            FROM users WHERE id = ?
+            FROM users WHERE id = %s
             """,
             (user_id,),
         )
@@ -236,7 +218,7 @@ def refresh_and_get_membership_status(user_id: int) -> dict:
         exp_dt = _parse_iso_dt(expires)
         now = datetime.utcnow()
         if exp_dt is not None and exp_dt < now and is_m:
-            conn.execute("UPDATE users SET is_member = 0 WHERE id = ?", (user_id,))
+            cur.execute("UPDATE users SET is_member = 0 WHERE id = %s", (user_id,))
             conn.commit()
             is_m = False
         return {
@@ -244,16 +226,13 @@ def refresh_and_get_membership_status(user_id: int) -> dict:
             "membership_started_at": started,
             "membership_expires_at": expires,
         }
-    except sqlite3.OperationalError:
+    except Exception:
         return {"is_member": False, "membership_started_at": None, "membership_expires_at": None}
     finally:
         conn.close()
 
 
 def activate_membership(user_id: int, months: int) -> dict:
-    """
-    is_member=1, membership_started_at=지금(UTC), membership_expires_at=지금+months×30일(근사).
-    """
     if not user_id or months < 1:
         raise ValueError("user_id와 months(>=1)가 필요합니다.")
     months = min(int(months), 120)
@@ -263,16 +242,17 @@ def activate_membership(user_id: int, months: int) -> dict:
     iso_exp = expires.isoformat()
     conn = get_conn()
     try:
-        cur = conn.execute("SELECT id FROM users WHERE id = ?", (user_id,))
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM users WHERE id = %s", (user_id,))
         if not cur.fetchone():
             raise LookupError("user not found")
-        conn.execute(
+        cur.execute(
             """
             UPDATE users SET
                 is_member = 1,
-                membership_started_at = ?,
-                membership_expires_at = ?
-            WHERE id = ?
+                membership_started_at = %s,
+                membership_expires_at = %s
+            WHERE id = %s
             """,
             (iso_now, iso_exp, user_id),
         )
@@ -289,18 +269,17 @@ def activate_membership(user_id: int, months: int) -> dict:
 
 
 def list_users(limit: int = 50, offset: int = 0) -> list[dict]:
-    """관리자용: 유저 목록 반환(개인정보 포함)."""
     limit = max(1, min(int(limit), 200))
     offset = max(0, int(offset))
-
     conn = get_conn()
     try:
-        cur = conn.execute(
+        cur = conn.cursor()
+        cur.execute(
             """
             SELECT id, provider, provider_id, email, nickname, created_at, last_login
             FROM users
             ORDER BY id DESC
-            LIMIT ? OFFSET ?
+            LIMIT %s OFFSET %s
             """,
             (limit, offset),
         )

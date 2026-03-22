@@ -11,19 +11,23 @@ const API_BASE =
 
 async function fetchTheoryFromBackend(
   query: string,
-  intent: string
-): Promise<string> {
+  intent: string,
+  sajuData?: unknown
+): Promise<{ theory: string; interpretation: Record<string, unknown> | null }> {
   try {
     const res = await fetch(`${API_BASE}/api/theory/search`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, intent }),
+      body: JSON.stringify({ query, intent, saju_data: sajuData ?? null }),
     });
-    if (!res.ok) return "";
+    if (!res.ok) return { theory: "", interpretation: null };
     const data = await res.json();
-    return data.theory || "";
+    return {
+      theory: data.theory || "",
+      interpretation: data.interpretation || null,
+    };
   } catch {
-    return "";
+    return { theory: "", interpretation: null };
   }
 }
 
@@ -655,7 +659,8 @@ const ANTI_HALLUCINATION_RULE = `[절대 금지 규칙 — 위반 시 전체 해
 4. 신강약 판정이 데이터에 있으면, 그 결과(신강/신약/중화)만 사용. 임의로 바꾸거나 재계산 금지.
 5. 대운 흐름은 "[대운 정보]" 블록의 데이터만 사용. 없는 대운 글자를 만들지 마라.
 6. 데이터에 없는 내용을 물어보면 "제 사주 데이터에는 해당 정보가 없어요"라고 솔직하게 말하고 추측하지 마라.
-7. 사주 팔자 글자를 임의로 바꾸거나 추가하지 마라. 제공된 글자 그대로만 인용해라.`;
+7. 사주 팔자 글자를 임의로 바꾸거나 추가하지 마라. 제공된 글자 그대로만 인용해라.
+8. 사주 컨텍스트 블록이 존재하면 생년월일·성별·출생시각을 절대 다시 묻지 마라. 이미 데이터가 있다.`;
 
 /** 해석 품질 가이드 — 사주 컨텍스트 바로 다음에 삽입 */
 const INTERPRETATION_GUIDE = `
@@ -767,11 +772,36 @@ export async function POST(req: Request) {
   // ── 동적 지식 블록 조립 ──
   const selectedKnowledge = assembleKnowledge(intent, lastUserMessage);
 
-  // 백엔드 동적 이론 (실패해도 채팅은 계속)
-  const backendTheory = await fetchTheoryFromBackend(lastUserMessage, intent);
+  // 백엔드 동적 이론 + 규칙 기반 해석 (실패해도 채팅은 계속)
+  const { theory: backendTheory, interpretation } =
+    await fetchTheoryFromBackend(lastUserMessage, intent, hasSaju ? saju : undefined);
+
   const theoryBlock = backendTheory
     ? `\n\n[사주 이론 참고 자료 — 해석 시 반드시 참고]\n${backendTheory}`
     : "";
+
+  // 의도에 맞는 규칙 기반 해석 포인트 추출
+  let interpretationBlock = "";
+  if (hasSaju && interpretation) {
+    const summary = (interpretation as any)?.summary_for_gpt ?? {};
+    const fmt = (v: unknown): string =>
+      Array.isArray(v) ? v.filter(Boolean).join("\n") : String(v ?? "");
+
+    if (intent.includes("money") || /재물|돈|수입|재산|저축|투자/.test(lastUserMessage)) {
+      interpretationBlock = `\n[이 사람의 재물 패턴 — 규칙 기반 분석, 반드시 이 내용 기반으로 답변]\n${fmt(summary.money_points)}`;
+    } else if (intent.includes("love") || /연애|결혼|이성|남자친구|여자친구|남편|아내|파트너/.test(lastUserMessage)) {
+      interpretationBlock = `\n[이 사람의 연애 패턴 — 규칙 기반 분석, 반드시 이 내용 기반으로 답변]\n${fmt(summary.love_points)}`;
+    } else if (intent.includes("career") || /직업|직장|일|사업|취업|커리어|진로/.test(lastUserMessage)) {
+      interpretationBlock = `\n[이 사람의 직업 패턴 — 규칙 기반 분석, 반드시 이 내용 기반으로 답변]\n${fmt(summary.career_points)}`;
+    } else {
+      // 일반 질문 → 성격 + 현재 시기 요약
+      const personality = fmt(summary.personality_points);
+      const period = fmt(summary.period_points);
+      if (personality || period) {
+        interpretationBlock = `\n[이 사람의 사주 핵심 패턴 — 규칙 기반 분석]\n${personality}\n${period}`.trimEnd();
+      }
+    }
+  }
 
   // ── 페르소나 + 사주 컨텍스트 ──
   const persona = isGuest || !hasSaju ? PERSONA_GUEST : PERSONA_LOGGEDIN;
@@ -796,6 +826,7 @@ export async function POST(req: Request) {
     sajuContext,           // ← 사주 데이터를 페르소나 직후에 위치
     hasSaju ? INTERPRETATION_GUIDE : "",      // ← 해석 품질 가이드 (사주 컨텍스트 바로 다음)
     hasSaju ? ANTI_HALLUCINATION_RULE : "",   // ← 데이터가 있을 때만 절대 규칙 삽입
+    interpretationBlock,                       // ← 규칙 기반 해석 포인트 (질문 의도별)
     MONTH_BRANCH_RULE,
     responseFormatBlock,
     theoryBlock,

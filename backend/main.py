@@ -926,32 +926,35 @@ async def search_theory(request: Request):
     """
     채팅 AI용 이론 검색 엔드포인트
     의도(intent)와 질문(query)을 받아
-    관련 이론 텍스트를 반환
+    관련 이론 텍스트 + 규칙 기반 해석 결과를 반환
     """
     try:
         body = await request.json()
         query = body.get("query", "")
         intent = body.get("intent", "")
+        saju_data = body.get("saju_data", None)
 
-        if not query and not intent:
-            return {"theory": "", "ok": True}
+        result: dict[str, Any] = {"theory": "", "ok": True, "interpretation": None}
 
-        retriever = TheoryRetriever()
+        if query or intent:
+            retriever = get_theory_retriever()
+            search_query = query or intent
+            theory_text = retriever.get_theories_by_query(search_query)
+            if len(theory_text) > 8000:
+                theory_text = theory_text[:8000] + "\n...(이하 생략)"
+            result["theory"] = theory_text
+            result["query"] = search_query
+            result["length"] = len(theory_text)
 
-        # 의도 기반 검색
-        search_query = query or intent
-        theory_text = retriever.get_theories_by_query(search_query)
+        # 사주 데이터가 있으면 규칙 기반 해석 엔진 실행
+        if saju_data and isinstance(saju_data, dict):
+            try:
+                from logic.saju_engine.core.saju_interpreter import interpret_all
+                result["interpretation"] = interpret_all(saju_data)
+            except Exception as e:
+                print(f"⚠️ saju_interpreter error: {e}")
 
-        # 최대 8000자로 제한 (토큰 절약)
-        if len(theory_text) > 8000:
-            theory_text = theory_text[:8000] + "\n...(이하 생략)"
-
-        return {
-            "theory": theory_text,
-            "ok": True,
-            "query": search_query,
-            "length": len(theory_text),
-        }
+        return result
     except Exception as e:
         print(f"❌ theory search error: {e}")
         return {"theory": "", "ok": False, "error": str(e)}
@@ -1700,16 +1703,50 @@ async def summary_gpt(req: SummaryGPTRequest):
             return {"summary": None, "error": "OPENAI_API_KEY not configured"}
         system_prompt = req.system
         hc = req.harmony_clash
+
+        # 합충 섹션 추가 (기존)
         if hc and isinstance(hc, dict):
             try:
                 from logic.gpt_generator import GPTInterpretationGenerator
-
                 gen = GPTInterpretationGenerator()
                 hapcheung_section = gen._build_hapcheung_prompt_section({"harmony_clash": hc})
                 if hapcheung_section:
                     system_prompt = f"{system_prompt}\n\n{hapcheung_section}"
             except Exception as e:
                 print(f"⚠️ summary-gpt 합충 섹션 생성 실패: {e}")
+
+        # 규칙 기반 해석 결과 주입
+        try:
+            from logic.saju_engine.core.saju_interpreter import interpret_all
+            saju_data: dict[str, Any] = {}
+            if hc:
+                saju_data["harmony_clash"] = hc
+            # SummaryGPTRequest에서 꺼낼 수 있는 필드 수집
+            for field in ("year_pillar", "month_pillar", "day_pillar", "hour_pillar",
+                          "ten_gods", "strength", "sinsal", "daeun_list",
+                          "daeun_direction", "daeun_start_age", "gender", "birthdate"):
+                val = getattr(req, field, None)
+                if val is not None:
+                    saju_data[field] = val
+            if saju_data:
+                interp = interpret_all(saju_data)
+                s = interp.get("summary_for_gpt", {})
+                def _fmt(v: Any) -> str:
+                    if isinstance(v, list):
+                        return " / ".join(str(x) for x in v if x)
+                    return str(v) if v else ""
+                interp_block = (
+                    "\n[규칙 기반 사주 해석 결과 — 반드시 반영]\n"
+                    f"성격: {_fmt(s.get('personality_points'))}\n"
+                    f"재물: {_fmt(s.get('money_points'))}\n"
+                    f"연애: {_fmt(s.get('love_points'))}\n"
+                    f"직업: {_fmt(s.get('career_points'))}\n"
+                    f"현재시기: {_fmt(s.get('period_points'))}\n"
+                )
+                system_prompt = interp_block + "\n" + system_prompt
+        except Exception as e:
+            print(f"⚠️ summary-gpt interpreter 실패: {e}")
+
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[

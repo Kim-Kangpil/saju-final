@@ -31,6 +31,15 @@ export default function Footer() {
                         <span className="font-semibold">주소:</span> 경기도 안산시 상록구 학사4길 9-1,<br />302호(사동, 쁘띠메종)
                     </p>
                     <p className="leading-relaxed">
+                        <span className="font-semibold">전화:</span>{" "}
+                        <a
+                            href="tel:01024359790"
+                            className="text-blue-600 hover:text-blue-800 underline"
+                        >
+                            010-2435-9790
+                        </a>
+                    </p>
+                    <p className="leading-relaxed">
                         <span className="font-semibold">이메일:</span>{" "}
                         <a
                             href="mailto:ksh00922@gmail.com"

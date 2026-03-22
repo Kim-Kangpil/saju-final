@@ -1872,11 +1872,23 @@ function ChatContent({
     return () => clearTimeout(tid);
   }, [messages]);
 
-  // 스트리밍 중: 답변이 길어질 때 맨 아래로 즉시 따라가기 (토큰마다 smooth 금지)
+  // 스트리밍 중: 하단에 충분히 가까울 때만 따라가기 (말풍선이 위로 날아가는 문제 방지)
   useEffect(() => {
     if (!isLoading || isUserScrollingRef.current) return;
-    if (Date.now() - lastUserSendAtRef.current < 600) return;
-    bottomRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+    const el = listRef.current;
+    if (el) {
+      // PC: 스크롤 컨테이너 기준 — 하단 400px 이내일 때만 자동 스크롤
+      const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+      if (dist < 400) {
+        bottomRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+      }
+    } else {
+      // 모바일: window 기준
+      const dist = document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+      if (dist < 400) {
+        bottomRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+      }
+    }
   }, [messages, isLoading]);
 
   // 스트리밍 종료 직후: 하단 근처에 있으면 한 번 정리 스크롤

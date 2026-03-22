@@ -1,29 +1,23 @@
 """
-채팅 로그 저장용 DB(SQLite)
-
-- 목적: /api/chat-logs/* 로 사용자(또는 게스트)의 채팅 기록을 저장/조회할 수 있게 함
-- 구현: SQLite 테이블 2개 (sessions, messages)
+채팅 로그 저장용 DB (PostgreSQL)
 """
 
-import json
-import sqlite3
+import psycopg2
 from datetime import datetime
-from pathlib import Path
 from typing import Optional, Any
 
-
-DB_DIR = Path(__file__).resolve().parent
-CHAT_LOGS_DB = DB_DIR / "chat_logs.db"
+from config import DATABASE_URL
 
 
-def get_conn() -> sqlite3.Connection:
-    return sqlite3.connect(CHAT_LOGS_DB)
+def get_conn():
+    return psycopg2.connect(DATABASE_URL)
 
 
 def init_chat_logs_db() -> None:
     conn = get_conn()
     try:
-        conn.execute(
+        cur = conn.cursor()
+        cur.execute(
             """
             CREATE TABLE IF NOT EXISTS chat_sessions (
               session_id TEXT PRIMARY KEY,
@@ -35,10 +29,10 @@ def init_chat_logs_db() -> None:
             )
             """
         )
-        conn.execute(
+        cur.execute(
             """
             CREATE TABLE IF NOT EXISTS chat_messages (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              id BIGSERIAL PRIMARY KEY,
               session_id TEXT NOT NULL,
               idx INTEGER NOT NULL,
               role TEXT NOT NULL,
@@ -48,7 +42,7 @@ def init_chat_logs_db() -> None:
             )
             """
         )
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_session_idx ON chat_messages(session_id, idx)")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_session_idx ON chat_messages(session_id, idx)")
         conn.commit()
     finally:
         conn.close()
@@ -66,18 +60,11 @@ def save_chat_session(
     title: Optional[str],
     messages: list[dict[str, Any]],
 ) -> None:
-    """
-    messages: [{idx, role, content}, ...]
-
-    - 세션 저장 시 해당 session_id의 기존 메시지를 모두 지우고 재삽입
-    - 프론트가 “대화가 끝난 시점”에 전체 messages를 보내는 방식으로 안정성을 우선
-    """
     if not session_id:
         return
 
     now = _now_iso()
 
-    # 메시지 정규화(최소 유효성 체크)
     normalized: list[dict[str, Any]] = []
     for m in messages or []:
         role = (m.get("role") or "").strip()
@@ -98,32 +85,35 @@ def save_chat_session(
 
     conn = get_conn()
     try:
-        conn.execute("BEGIN IMMEDIATE")
-        conn.execute(
+        cur = conn.cursor()
+        cur.execute(
             """
             INSERT INTO chat_sessions (session_id, user_id, guest_key, title, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (%s, %s, %s, %s, %s, %s)
             ON CONFLICT(session_id) DO UPDATE SET
-              user_id = excluded.user_id,
-              guest_key = excluded.guest_key,
-              title = COALESCE(excluded.title, chat_sessions.title),
-              updated_at = excluded.updated_at
+              user_id = EXCLUDED.user_id,
+              guest_key = EXCLUDED.guest_key,
+              title = COALESCE(EXCLUDED.title, chat_sessions.title),
+              updated_at = EXCLUDED.updated_at
             """,
             (session_id, user_id, guest_key, title or "", now, now),
         )
 
-        conn.execute("DELETE FROM chat_messages WHERE session_id = ?", (session_id,))
+        cur.execute("DELETE FROM chat_messages WHERE session_id = %s", (session_id,))
 
         for m in normalized:
-            conn.execute(
+            cur.execute(
                 """
                 INSERT INTO chat_messages (session_id, idx, role, content, created_at)
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s)
                 """,
                 (session_id, int(m["idx"]), m["role"], m["content"], now),
             )
 
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 
@@ -137,19 +127,18 @@ def get_sessions_for_owner(
 ) -> list[dict[str, Any]]:
     conn = get_conn()
     try:
-        where = ""
-        params: list[Any] = []
+        cur = conn.cursor()
         if user_id is not None:
-            where = "user_id = ?"
-            params.append(user_id)
+            where = "user_id = %s"
+            params: list[Any] = [user_id]
         else:
-            where = "guest_key = ?"
-            params.append(guest_key or "")
+            where = "guest_key = %s"
+            params = [guest_key or ""]
 
         limit = max(1, min(int(limit), 50))
         offset = max(0, int(offset))
 
-        cur = conn.execute(
+        cur.execute(
             f"""
             SELECT
               s.session_id,
@@ -170,25 +159,22 @@ def get_sessions_for_owner(
             FROM chat_sessions s
             WHERE {where}
             ORDER BY s.updated_at DESC
-            LIMIT ? OFFSET ?
+            LIMIT %s OFFSET %s
             """,
             (*params, limit, offset),
         )
 
         rows = cur.fetchall()
-        result: list[dict[str, Any]] = []
-        for r in rows:
-            session_id, title, updated_at, message_count, last_message = r
-            result.append(
-                {
-                    "sessionId": session_id,
-                    "title": title or "",
-                    "updatedAt": updated_at,
-                    "messageCount": int(message_count or 0),
-                    "lastMessagePreview": (last_message or "")[:80],
-                }
-            )
-        return result
+        return [
+            {
+                "sessionId": r[0],
+                "title": r[1] or "",
+                "updatedAt": r[2],
+                "messageCount": int(r[3] or 0),
+                "lastMessagePreview": (r[4] or "")[:80],
+            }
+            for r in rows
+        ]
     finally:
         conn.close()
 
@@ -201,37 +187,31 @@ def get_messages_for_session(
 ) -> Optional[list[dict[str, Any]]]:
     conn = get_conn()
     try:
-        # 권한 확인: 해당 세션이 요청자에게 속하는지 확인
+        cur = conn.cursor()
         if user_id is not None:
-            cur = conn.execute(
-                """
-                SELECT 1 FROM chat_sessions
-                WHERE session_id = ? AND user_id = ?
-                """,
+            cur.execute(
+                "SELECT 1 FROM chat_sessions WHERE session_id = %s AND user_id = %s",
                 (session_id, user_id),
             )
         else:
-            cur = conn.execute(
-                """
-                SELECT 1 FROM chat_sessions
-                WHERE session_id = ? AND guest_key = ?
-                """,
+            cur.execute(
+                "SELECT 1 FROM chat_sessions WHERE session_id = %s AND guest_key = %s",
                 (session_id, guest_key or ""),
             )
 
         if cur.fetchone() is None:
             return None
 
-        cur2 = conn.execute(
+        cur.execute(
             """
             SELECT role, content, idx, created_at
             FROM chat_messages
-            WHERE session_id = ?
+            WHERE session_id = %s
             ORDER BY idx ASC
             """,
             (session_id,),
         )
-        rows = cur2.fetchall()
+        rows = cur.fetchall()
         return [
             {"idx": int(idx), "role": str(role), "content": str(content), "createdAt": created_at}
             for (role, content, idx, created_at) in rows
@@ -245,29 +225,26 @@ def get_messages_for_admin(
     session_id: str,
     target_user_id: int,
 ) -> Optional[list[dict[str, Any]]]:
-    # admin은 user_id 기준으로 세션 소유권을 확인한 뒤 메시지를 반환
     conn = get_conn()
     try:
-        cur = conn.execute(
-            """
-            SELECT 1 FROM chat_sessions
-            WHERE session_id = ? AND user_id = ?
-            """,
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT 1 FROM chat_sessions WHERE session_id = %s AND user_id = %s",
             (session_id, target_user_id),
         )
         if cur.fetchone() is None:
             return None
 
-        cur2 = conn.execute(
+        cur.execute(
             """
             SELECT role, content, idx, created_at
             FROM chat_messages
-            WHERE session_id = ?
+            WHERE session_id = %s
             ORDER BY idx ASC
             """,
             (session_id,),
         )
-        rows = cur2.fetchall()
+        rows = cur.fetchall()
         return [
             {"idx": int(idx), "role": str(role), "content": str(content), "createdAt": created_at}
             for (role, content, idx, created_at) in rows
@@ -283,4 +260,3 @@ def get_sessions_for_admin_user(
     offset: int = 0,
 ) -> list[dict[str, Any]]:
     return get_sessions_for_owner(user_id=target_user_id, limit=limit, offset=offset)
-

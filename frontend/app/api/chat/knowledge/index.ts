@@ -197,17 +197,31 @@ export function getKnowledgeBlocks(intent: Intent1, text: string): string[] {
         SINSAL_FULL,
       ];
 
-    // ── 개념·신살·십성 이론 ─────────────────────
-    case "theory":
-      return [
-        ...base,
-        THEORY_FOLLOWUP_AND_TONE,
-        CHEONEUL_GWIAIN_CORE,
-        TEN_GODS_INTRO,
-        HAPCHUNG_FULL,
-        SINSAL_FULL,
-        WUXING_KNOWLEDGE,
-      ];
+    // ── 개념·신살·십성 이론 — 질문 키워드에 맞는 블록만 추가 ─────
+    case "theory": {
+      const blocks = [...base, THEORY_FOLLOWUP_AND_TONE];
+      if (/천을귀인|귀인/.test(text)) blocks.push(CHEONEUL_GWIAIN_CORE);
+      if (
+        /십성|식신|상관|편재|정재|편관|정관|편인|정인|비겁|겁재|비견/.test(text)
+      )
+        blocks.push(TEN_GODS_INTRO);
+      if (/합충|합|충|형|파|해/.test(text)) blocks.push(HAPCHUNG_FULL);
+      if (/신살|도화|역마|공망|화개|백호|양인/.test(text))
+        blocks.push(SINSAL_FULL);
+      if (/오행|목화토금수|상생|상극/.test(text)) blocks.push(WUXING_KNOWLEDGE);
+      if (/대운|세운|운세|흐름/.test(text)) blocks.push(DAEUN_KNOWLEDGE);
+      if (
+        /일주|갑자|갑인|갑오|갑신|갑술|갑진/.test(text)
+      ) {
+        blocks.push(ILJU_INTRO);
+        blocks.push(ILJU_60);
+      }
+      // base(2) + 말투(1)만이면 토픽 미매칭 → 핵심 이론 기본 세트
+      if (blocks.length === 3) {
+        blocks.push(CHEONEUL_GWIAIN_CORE, TEN_GODS_INTRO, HAPCHUNG_FULL);
+      }
+      return blocks;
+    }
 
     // ── 일반·기타 ─────────────────────────────
     default:

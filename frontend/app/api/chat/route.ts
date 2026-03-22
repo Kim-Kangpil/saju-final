@@ -446,7 +446,7 @@ export async function POST(req: Request) {
   const openai = createOpenAI({ apiKey: apiKey! });
 
   const result = streamText({
-    model: openai("gpt-4o-mini"),
+    model: openai("gpt-4o"),
     system,
     messages: modelMessages,
     maxOutputTokens: 2000,

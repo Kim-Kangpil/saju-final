@@ -1026,12 +1026,12 @@ function buildSajuAwareFollowupQuestions(
     }
     return hasSajuProfile
       ? [
-          "How does this topic connect to my day stem and month branch in my actual chart?",
-          "If I look at my luck pillars (da yun), where should I watch for the same pattern?",
+          "Which element or ten-god pattern stands out strongest in my four pillars?",
+          "How should I read this year's annual luck (liu nian) together with my da yun timing?",
         ]
       : [
-          "What birth info (date, solar/lunar, gender, time if known) should I give so you can tie this to my chart?",
-          "What is the next ba zi concept I should learn that builds on this answer?",
+          "What birth details (date, solar/lunar, gender, time if known) do you need to cast my four pillars?",
+          "If I'm new to ba zi, which pillar—year, month, day, or hour—should I understand first?",
         ];
   }
 
@@ -1062,22 +1062,22 @@ function buildSajuAwareFollowupQuestions(
     return hasSajuProfile
       ? [
           "같은 신살이 내 만세력 년·월·일·시 중 어디에 있을 때 달라 보여?",
-          "이 신살이 합충이나 다른 신살이랑 겹치면 어떤 점을 조심하면 돼?",
+          "이 신살이 합·충이나 다른 신살과 겹치면 만세력에서 어떻게 읽으면 돼?",
         ]
       : [
-          "이 신살을 내 사주에서 찾으려면 어떤 자료를 알려줘야 해?",
-          "이 신살이랑 자주 같이 이야기되는 다른 신살이 뭐야?",
+          "이 신살을 내 사주에서 찾으려면 생년월일·양력음력·성별·시간을 어떻게 알려줘야 해?",
+          "이 신살이랑 자주 같이 보는 다른 신살·십성 조합이 뭐야?",
         ];
   }
   if (/십성|비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인/.test(q)) {
     return hasSajuProfile
       ? [
-          "내 일간 기준으로 이 십성이 년·월·일·시 중 어디에 많이 깔리면 체감이 커?",
-          "이 십성이 합이나 극으로 묶이면 성격이나 관계에서 어떻게 읽어?",
+          "내 일간 기준으로 이 십성이 년·월·일·시 중 어디에 많이 깔리면 만세력에서 체감이 커?",
+          "이 십성이 다른 천간·지지랑 합이나 극으로 묶이면 사주에서 어떻게 읽어?",
         ]
       : [
-          "십성을 내 사주에 대입하려면 일간(생일 그날의 첫 글자)을 어떻게 알 수 있어?",
-          "같은 십성이라도 월주랑 시주 중 어디에 있을 때 의미가 달라져?",
+          "십성을 내 사주에 대입하려면 일간(일주의 윗글자)을 알아야 하는데, 어떤 정보가 필요해?",
+          "같은 십성이라도 월주와 시주 중 어디에 있을 때 만세력 해석이 달라져?",
         ];
   }
   if (/대운|세운|합충|형파해|삼합/.test(q)) {
@@ -1094,12 +1094,12 @@ function buildSajuAwareFollowupQuestions(
 
   return hasSajuProfile
     ? [
-        "지금 이야기한 내용을 내 만세력이랑 직접 연결해서 보려면 어떤 기둥부터 보면 돼?",
-        "같은 주제로 대운이나 세운에서 비슷한 신호가 오면 어떻게 읽어?",
+        "내 사주에서 가장 강한 기운은 뭐야?",
+        "올해 대운이나 세운 흐름이 어떻게 되는지, 내 만세력이랑 같이 알려줄 수 있어?",
       ]
     : [
-        "이걸 내 사주랑 연결해서 보려면 생년월일·양력음력·성별·출생 시각을 어떻게 알려주면 돼?",
-        "지금 주제랑 이어서 배우기 좋은 사주 개념이 하나 더 있을까?",
+        "내 사주를 보려면 생년월일·양력음력·성별·출생 시각을 어떻게 알려주면 돼?",
+        "만세력에서 년주·월주·일주·시주 중 어디부터 보면 이해하기 쉬워?",
       ];
 }
 

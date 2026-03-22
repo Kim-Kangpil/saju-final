@@ -59,6 +59,56 @@ function readHasLocalRegisteredSaju(): boolean {
   }
 }
 
+/** 채팅 상단 배지용: 일주 한자 → 한글 (한양사주 클래식 톤과 동일 테이블) */
+const HANJA_TO_KR: Record<string, string> = {
+  甲: "갑",
+  乙: "을",
+  丙: "병",
+  丁: "정",
+  戊: "무",
+  己: "기",
+  庚: "경",
+  辛: "신",
+  壬: "임",
+  癸: "계",
+  子: "자",
+  丑: "축",
+  寅: "인",
+  卯: "묘",
+  辰: "진",
+  巳: "사",
+  午: "오",
+  未: "미",
+  申: "신",
+  酉: "유",
+  戌: "술",
+  亥: "해",
+};
+
+function getFirstSavedDayPillarHangul(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const first = getSavedSajuList()?.[0];
+    const r = first?.result as
+      | {
+          day_pillar?: string;
+          day?: { cheongan?: { hanja?: string }; jiji?: { hanja?: string } };
+        }
+      | undefined
+      | null;
+    if (!r || typeof r !== "object") return "";
+    const fromPillar = typeof r.day_pillar === "string" ? r.day_pillar : "";
+    const cg = r.day?.cheongan?.hanja ?? "";
+    const jj = r.day?.jiji?.hanja ?? "";
+    const fromNested = cg && jj ? `${cg}${jj}` : "";
+    const dayHanja = fromPillar || fromNested;
+    if (!dayHanja) return "";
+    return dayHanja.split("").map((c) => HANJA_TO_KR[c] ?? c).join("");
+  } catch {
+    return "";
+  }
+}
+
 const QUICK_PROMPTS_EN = [
   { label: "Ask about Saju", text: "I have a question about my Saju." },
   { label: "Today's luck", text: "Please tell me my luck for today." },
@@ -213,6 +263,9 @@ export default function ChatPage({
     };
   };
 
+  /** 로컬 result 갱신 후 일주 배지 문구 재계산용 */
+  const [sajuBadgeTick, setSajuBadgeTick] = useState(0);
+
   const refreshSajuIfStale = useCallback(async () => {
     const saved = getSavedSajuList();
     const first = saved?.[0];
@@ -248,6 +301,7 @@ export default function ChatPage({
         isGuest: !isLoggedIn,
         saju: getSajuBody(),
       };
+      setSajuBadgeTick((t) => t + 1);
     } catch {
       /* 실패 시 조용히 넘어감 */
     }
@@ -260,6 +314,11 @@ export default function ChatPage({
   /** 로그인 시 서버에 저장된 사주 개수 조회 완료 여부 */
   const [serverSajuChecked, setServerSajuChecked] = useState(false);
   const [serverSajuCount, setServerSajuCount] = useState(0);
+
+  const sajuBadgeDayKr = useMemo(() => {
+    if (!hydrated || typeof window === "undefined") return "";
+    return getFirstSavedDayPillarHangul();
+  }, [savedSajuName, hydrated, hasLocalRegisteredSaju, sajuBadgeTick]);
 
   useEffect(() => {
     bodyRef.current = {
@@ -366,6 +425,7 @@ export default function ChatPage({
         const first = getSavedSajuList()?.[0];
         setSavedSajuName(first?.name?.trim() ? first.name.trim() : null);
         setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
+        setSajuBadgeTick((t) => t + 1);
       } catch {
         // ignore
       }
@@ -398,6 +458,7 @@ export default function ChatPage({
           --sub:       #7A776F;
           --muted:     #B0ACA4;
           --accent:    #4A6741;
+          --gold-muted: #9a8b78;
           --serif:     'Gmarket Sans', -apple-system, sans-serif;
           --sans:      'Gmarket Sans', -apple-system, sans-serif;
         }
@@ -603,6 +664,35 @@ export default function ChatPage({
           flex: 1;
           display: flex;
           flex-direction: column;
+        }
+        .chat-saju-badge {
+          flex-shrink: 0;
+          text-align: center;
+          font-size: 11px;
+          font-weight: 500;
+          letter-spacing: 0.03em;
+          line-height: 1.45;
+          color: var(--sub);
+          opacity: 0.92;
+          padding: 6px 14px 8px;
+          padding-left: max(14px, env(safe-area-inset-left));
+          padding-right: max(14px, env(safe-area-inset-right));
+          border-bottom: 1px solid var(--border);
+          background: var(--surface);
+          font-family: var(--sans);
+        }
+        .chat-saju-badge .chat-saju-badge-star {
+          color: var(--gold-muted);
+          margin-right: 3px;
+          opacity: 0.95;
+        }
+        @media (min-width: 768px) {
+          .chat-saju-badge {
+            font-size: 12px;
+            padding: 8px 20px 10px;
+            padding-left: max(20px, env(safe-area-inset-left));
+            padding-right: max(20px, env(safe-area-inset-right));
+          }
         }
         .chat-list {
           flex: 1;
@@ -1288,23 +1378,35 @@ export default function ChatPage({
                   </button>
                 </div>
               ) : (
-                <ChatContent
-                  key={currentId || "chat-hydrated"}
-                  sessionId={currentId}
-                  initialSessionMessages={currentSession?.messages ?? []}
-                  sessionTitle={currentSession?.title ?? ""}
-                  transport={transport}
-                  onError={setChatError}
-                  isLoggedIn={isLoggedIn}
-                  showLoginCard={showLoginCard}
-                  setShowLoginCard={setShowLoginCard}
-                  router={router}
-                  lastUserMessageRef={lastUserMessageRef}
-                  handleRetryRef={handleRetryRef}
-                  savedSajuName={savedSajuName}
-                  replaceMessages={replaceMessages}
-                  ensureTitleFromFirstMessage={ensureTitleFromFirstMessage}
-                />
+                <>
+                  {isLoggedIn && savedSajuName?.trim() && (
+                    <div className="chat-saju-badge" role="status" aria-live="polite">
+                      <span className="chat-saju-badge-star" aria-hidden>
+                        ✦
+                      </span>
+                      {sajuBadgeDayKr
+                        ? `${savedSajuName}님 (${sajuBadgeDayKr}일주)의 사주로 대화 중`
+                        : `${savedSajuName}님의 사주로 대화 중`}
+                    </div>
+                  )}
+                  <ChatContent
+                    key={currentId || "chat-hydrated"}
+                    sessionId={currentId}
+                    initialSessionMessages={currentSession?.messages ?? []}
+                    sessionTitle={currentSession?.title ?? ""}
+                    transport={transport}
+                    onError={setChatError}
+                    isLoggedIn={isLoggedIn}
+                    showLoginCard={showLoginCard}
+                    setShowLoginCard={setShowLoginCard}
+                    router={router}
+                    lastUserMessageRef={lastUserMessageRef}
+                    handleRetryRef={handleRetryRef}
+                    savedSajuName={savedSajuName}
+                    replaceMessages={replaceMessages}
+                    ensureTitleFromFirstMessage={ensureTitleFromFirstMessage}
+                  />
+                </>
               )}
             </main>
           </div>

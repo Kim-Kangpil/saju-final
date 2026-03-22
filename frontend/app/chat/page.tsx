@@ -1991,7 +1991,7 @@ function ChatContent({
                     ref={isLastUser ? lastUserMsgRef : undefined}
                   >
                     <div className="chat-msg-bubble-wrap">
-                      {isAI && /천을\s*귀인/.test(normalizedText) && (
+                      {isAI && /천을\s*귀인.*일간별|일간별.*천을\s*귀인|천을귀인.*조견표|조견표.*천을귀인/.test(normalizedText) && (
                         <aside
                           className="chat-cheoneul-reference-card"
                           role="region"

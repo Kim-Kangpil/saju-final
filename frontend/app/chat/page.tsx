@@ -61,6 +61,20 @@ function getMessageText(message: { parts?: Array<{ type: string; text?: string }
     .join("");
 }
 
+/** GPT 답변에서 일간·지지 나열형 조견 줄 제거 (UI 표와 중복 방지) */
+function stripSinsalTable(text: string): string {
+  return text
+    .split("\n")
+    .filter((line) => {
+      // 일간별 지지 나열 패턴 제거
+      if (/[갑을병정무기경신임계][일]간\s*[:：]/.test(line)) return false;
+      if (/甲|乙|丙|丁|戊|己|庚|辛|壬|癸/.test(line) && /丑|子|亥|巳|午|未|申|酉|寅|卯|辰|戌/.test(line))
+        return false;
+      return true;
+    })
+    .join("\n");
+}
+
 /** GPT 답변에 천을귀인이 언급될 때, 답변 버블 위에 참고 카드로 붙는 조견표 */
 const CHEONEUL_TABLE = (
   <table>
@@ -1531,7 +1545,10 @@ function ChatContent({
                       )}
                       <div className="chat-msg-bubble-row">
                         <div className="chat-msg-bubble">
-                          <MarkdownMessage text={followup.mainText} isAI={isAI} />
+                          <MarkdownMessage
+                            text={isAI ? stripSinsalTable(followup.mainText) : followup.mainText}
+                            isAI={isAI}
+                          />
                           {isLastAssistant && followup.questions && (
                             <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
                               <div style={{ fontSize: 11, color: "#6B5F4E" }}>

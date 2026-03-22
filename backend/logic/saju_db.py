@@ -12,6 +12,13 @@ def get_conn():
     return sqlite3.connect(SAJU_DB)
 
 
+def _migrate_saju_schema(conn: sqlite3.Connection) -> None:
+    cur = conn.execute("PRAGMA table_info(saju)")
+    cols = {row[1] for row in cur.fetchall()}
+    if "iana_timezone" not in cols:
+        conn.execute("ALTER TABLE saju ADD COLUMN iana_timezone TEXT")
+
+
 def init_saju_db():
     """saju 테이블 초기화."""
     conn = get_conn()
@@ -27,10 +34,12 @@ def init_saju_db():
                 birth_time TEXT,
                 calendar_type TEXT NOT NULL,
                 gender TEXT NOT NULL,
-                created_at TEXT NOT NULL
+                created_at TEXT NOT NULL,
+                iana_timezone TEXT
             )
             """
         )
+        _migrate_saju_schema(conn)
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_saju_user_id ON saju(user_id)"
         )
@@ -58,7 +67,7 @@ def get_saju_by_id(saju_id: int, user_id: int) -> Optional[dict]:
     conn = get_conn()
     try:
         cur = conn.execute(
-            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at FROM saju WHERE id = ? AND user_id = ?",
+            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at, iana_timezone FROM saju WHERE id = ? AND user_id = ?",
             (saju_id, user_id),
         )
         row = cur.fetchone()
@@ -74,6 +83,7 @@ def get_saju_by_id(saju_id: int, user_id: int) -> Optional[dict]:
             "calendar_type": row[6],
             "gender": row[7],
             "created_at": row[8],
+            "iana_timezone": row[9] if len(row) > 9 else None,
         }
     finally:
         conn.close()
@@ -84,7 +94,7 @@ def get_saju_list_for_user(user_id: int) -> List[dict]:
     conn = get_conn()
     try:
         cur = conn.execute(
-            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at "
+            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at, iana_timezone "
             "FROM saju WHERE user_id = ? ORDER BY created_at DESC",
             (user_id,),
         )
@@ -102,6 +112,7 @@ def get_saju_list_for_user(user_id: int) -> List[dict]:
                     "calendar_type": row[6],
                     "gender": row[7],
                     "created_at": row[8],
+                    "iana_timezone": row[9] if len(row) > 9 else None,
                 }
             )
         return result
@@ -117,6 +128,7 @@ def save_saju_for_user(
     birth_time: Optional[str],
     calendar_type: str,
     gender: str,
+    iana_timezone: Optional[str] = None,
 ) -> int:
     """새 사주 한 건 저장 후 row id 반환."""
     now = datetime.utcnow().isoformat()
@@ -128,9 +140,9 @@ def save_saju_for_user(
                 user_id, name, relation,
                 birthdate, birth_time,
                 calendar_type, gender,
-                created_at
+                created_at, iana_timezone
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 user_id,
@@ -141,6 +153,7 @@ def save_saju_for_user(
                 calendar_type,
                 gender,
                 now,
+                iana_timezone,
             ),
         )
         conn.commit()
@@ -149,4 +162,3 @@ def save_saju_for_user(
         return int(row[0]) if row and row[0] is not None else 0
     finally:
         conn.close()
-

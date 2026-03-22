@@ -751,6 +751,10 @@ class SajuRequest(BaseModel):
         default=False,
         description="출생시간을 모르는 경우 True. 이 경우 시주는 보조 정보로만 사용",
     )
+    iana_timezone: Optional[str] = Field(
+        default=None,
+        description="IANA(예: Asia/Seoul, America/New_York). 해외 출생 시 서머타임 해제",
+    )
 
 
 class PillarsResponse(BaseModel):
@@ -830,6 +834,7 @@ class SajuSaveRequest(BaseModel):
     birth_time: Optional[str] = None  # HH:MM 또는 None
     calendar_type: str  # 양력 / 음력
     gender: str  # 남자 / 여자
+    iana_timezone: Optional[str] = None  # 출생지 IANA (서머타임·미리보기 연동)
 
 
 # ==================== 헬퍼 함수 ====================
@@ -970,6 +975,7 @@ async def get_full_saju(req: SajuRequest):
                     "gender": req.gender,
                     "is_leap_month": req.is_leap_month,
                     "time_unknown": req.time_unknown,
+                    "iana_timezone": req.iana_timezone,
                 },
                 DB,
             )
@@ -987,6 +993,7 @@ async def get_full_saju(req: SajuRequest):
                 "gender": req.gender,
                 "is_leap_month": req.is_leap_month,
                 "time_unknown": req.time_unknown,
+                "iana_timezone": req.iana_timezone,
             },
             DB,
         )
@@ -1383,6 +1390,8 @@ async def save_saju(request: Request, body: SajuSaveRequest):
             f"calendar_type={calendar_type!r}, gender={gender!r}"
         )
 
+        iana_tz = (body.iana_timezone or "").strip() or None
+
         saju_id = save_saju_for_user(
             user_id=user_id,
             name=name,
@@ -1391,6 +1400,7 @@ async def save_saju(request: Request, body: SajuSaveRequest):
             birth_time=birth_time,
             calendar_type=calendar_type,
             gender=gender,
+            iana_timezone=iana_tz,
         )
         print(f"✅ /api/saju/save INSERT 성공: saju_id={saju_id}")
         return {"success": True, "saju_id": saju_id}
@@ -1423,6 +1433,7 @@ def get_saju(saju_id: int, request: Request):
         "birth_time": row["birth_time"],
         "calendar_type": row["calendar_type"],
         "gender": row["gender"],
+        "iana_timezone": row.get("iana_timezone"),
     }
 
 

@@ -81,13 +81,14 @@ def calculate_day_pillar(birth_dt):
     return GANJI_60[diff % 60]
 
 
-def calculate_hour_pillar(birth_dt, day_ganji):
-    # DST & 30분 보정
+def calculate_hour_pillar(birth_dt, day_ganji, apply_korea_dst: bool = True):
+    # DST & 30분 보정 (한국 역사 구간). 해외 출생은 apply_korea_dst=False 로 호출.
     kst_dt = birth_dt
-    for s, e in KST_DST_PERIODS:
-        if s <= birth_dt < e:
-            kst_dt -= timedelta(hours=1)
-            break
+    if apply_korea_dst:
+        for s, e in KST_DST_PERIODS:
+            if s <= birth_dt < e:
+                kst_dt -= timedelta(hours=1)
+                break
     corrected_dt = kst_dt - timedelta(minutes=30)
     h_idx = ((corrected_dt.hour + 1) % 24) // 2
     start_gan_idx = GANS.index(HOUR_PILLAR_START_GAN[day_ganji[0]])

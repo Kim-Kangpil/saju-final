@@ -1,10 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { use, useState } from "react";
-import { HamIcon } from "@/components/HamIcon";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
+import {
+  DEFAULT_BIRTH_LOCATION_ID,
+  describeEquationOfTimeMinutes,
+  describeLongitudeCorrectionMinutes,
+  equationOfTimeMinutesForDate,
+  filterBirthLocations,
+  findBirthLocationById,
+  longitudeCorrectionMinutes,
+  type BirthLocation,
+} from "@/lib/birthLocations";
+import { ianaForBirthLocationId } from "@/lib/birthLocationTimeZones";
+import {
+  describeSummerTimeForUi,
+  getSummerTimeInfo,
+} from "@/lib/dstAdjustment";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -23,7 +37,11 @@ export default function SajuAddPage({
   const [calendarType, setCalendarType] = useState<"solar" | "lunar" | null>(null);
   const [gender, setGender] = useState<"male" | "female" | null>(null);
   const [city, setCity] = useState("서울");
-  const [longitude, setLongitude] = useState("");
+  const [longitude, setLongitude] = useState("126.978");
+  const [selectedLocationId, setSelectedLocationId] = useState(DEFAULT_BIRTH_LOCATION_ID);
+  const [locationSearch, setLocationSearch] = useState("");
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const locationPickerRef = useRef<HTMLDivElement>(null);
   const [useLongitudeCorrection, setUseLongitudeCorrection] = useState(false);
   const [useEquationOfTime, setUseEquationOfTime] = useState(false);
   const [timeAccuracy, setTimeAccuracy] = useState<"exact" | "approx" | "unknown">("unknown");
@@ -37,6 +55,95 @@ export default function SajuAddPage({
     global: false,
   });
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  useEffect(() => {
+    function onDocMouseDown(e: MouseEvent) {
+      if (!locationPickerOpen) return;
+      const el = locationPickerRef.current;
+      if (el && !el.contains(e.target as Node)) setLocationPickerOpen(false);
+    }
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [locationPickerOpen]);
+
+  const parsedBirthYmd = useMemo(() => {
+    if (birthRaw.length !== 8) return null;
+    const y = parseInt(birthRaw.slice(0, 4), 10);
+    const m = parseInt(birthRaw.slice(4, 6), 10);
+    const d = parseInt(birthRaw.slice(6, 8), 10);
+    if (y < 1800 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+    const dt = new Date(y, m - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+    return { y, m, d };
+  }, [birthRaw]);
+
+  const effectiveLongitude = useMemo(() => {
+    const loc = findBirthLocationById(selectedLocationId);
+    if (loc?.id === "custom") {
+      const n = parseFloat(longitude.replace(",", ".").trim());
+      return Number.isFinite(n) ? n : NaN;
+    }
+    if (loc) return loc.lon;
+    return NaN;
+  }, [selectedLocationId, longitude]);
+
+  const lonCorrectionMin = useMemo(() => {
+    if (!Number.isFinite(effectiveLongitude)) return null;
+    return longitudeCorrectionMinutes(effectiveLongitude);
+  }, [effectiveLongitude]);
+
+  const eotMinutes = useMemo(() => {
+    if (!parsedBirthYmd) return null;
+    return equationOfTimeMinutesForDate(parsedBirthYmd.y, parsedBirthYmd.m, parsedBirthYmd.d);
+  }, [parsedBirthYmd]);
+
+  const filteredLocations = useMemo(
+    () => filterBirthLocations(locationSearch, 14),
+    [locationSearch]
+  );
+
+  const selectedIana = useMemo(
+    () => ianaForBirthLocationId(selectedLocationId),
+    [selectedLocationId]
+  );
+
+  const parsedBirthHm = useMemo(() => {
+    if (knowTime !== "yes" || timeRaw.length !== 4) return null;
+    const h = parseInt(timeRaw.slice(0, 2), 10);
+    const mi = parseInt(timeRaw.slice(2, 4), 10);
+    if (!Number.isFinite(h) || !Number.isFinite(mi) || h > 23 || mi > 59) return null;
+    return { h, mi };
+  }, [knowTime, timeRaw]);
+
+  const summerTimeInfo = useMemo(() => {
+    if (!parsedBirthYmd || !selectedIana || !parsedBirthHm) return null;
+    return getSummerTimeInfo(
+      selectedIana,
+      parsedBirthYmd.y,
+      parsedBirthYmd.m,
+      parsedBirthYmd.d,
+      parsedBirthHm.h,
+      parsedBirthHm.mi
+    );
+  }, [parsedBirthYmd, selectedIana, parsedBirthHm]);
+
+  const hasBirthTimeForDst = knowTime === "yes" && timeRaw.length === 4;
+
+  function pickLocation(loc: BirthLocation) {
+    if (loc.id === "custom") {
+      setSelectedLocationId("custom");
+      setCity("직접 입력");
+      setLocationSearch("");
+      setLocationPickerOpen(false);
+      return;
+    }
+    setSelectedLocationId(loc.id);
+    const display = loc.detail ? `${loc.name} (${loc.detail})` : loc.name;
+    setCity(display);
+    setLongitude(loc.lon.toFixed(4));
+    setLocationSearch("");
+    setLocationPickerOpen(false);
+  }
 
   const formatBirth = (value: string) => {
     let raw = value.replace(/\D/g, "").slice(0, 8);
@@ -110,6 +217,17 @@ export default function SajuAddPage({
         : null;
     const calendar_type = calendarType === "solar" ? "양력" : "음력";
     const genderText = gender === "male" ? "남자" : "여자";
+    const loc = findBirthLocationById(selectedLocationId);
+    let payloadLongitude: string | null = null;
+    if (loc?.id === "custom") {
+      const t = longitude.trim().replace(",", ".");
+      payloadLongitude = t || null;
+    } else if (loc) {
+      payloadLongitude = String(loc.lon);
+    } else {
+      const t = longitude.trim().replace(",", ".");
+      payloadLongitude = t || null;
+    }
     return {
       name,
       relation,
@@ -118,10 +236,11 @@ export default function SajuAddPage({
       calendar_type,
       gender: genderText,
       city: city.trim() || null,
-      longitude: longitude.trim() || null,
+      longitude: payloadLongitude,
       use_longitude_correction: useLongitudeCorrection,
       use_equation_of_time: useEquationOfTime,
       time_accuracy: timeAccuracy,
+      iana_timezone: selectedIana,
     };
   };
 
@@ -150,6 +269,14 @@ export default function SajuAddPage({
     if (hasError) {
       return;
     }
+    if (
+      selectedLocationId === "custom" &&
+      (!longitude.trim() || !Number.isFinite(effectiveLongitude))
+    ) {
+      setShowAdvancedOptions(true);
+      alert("출생지를 ‘경도 직접 입력’으로 두었을 때는, 아래에 숫자 경도를 입력해 주세요.");
+      return;
+    }
     setShowConfirmModal(true);
   };
 
@@ -166,6 +293,7 @@ export default function SajuAddPage({
       use_longitude_correction,
       use_equation_of_time,
       time_accuracy,
+      iana_timezone,
     } = getPayload();
     try {
       const res = await fetch(`${API_BASE}/api/saju/save`, {
@@ -187,6 +315,7 @@ export default function SajuAddPage({
           use_longitude_correction,
           use_equation_of_time,
           time_accuracy,
+          iana_timezone,
         }),
       });
       const body = await res.json().catch(() => ({}));
@@ -626,14 +755,27 @@ export default function SajuAddPage({
                     gap: 12,
                   }}
                 >
-                  <div>
+                  <div ref={locationPickerRef}>
                     <label style={{ fontSize: 13, color: textDark, marginBottom: 6, display: "block", fontWeight: 600 }}>
-                      출생지 선택
+                      출생지 검색·선택
                     </label>
-                    <select
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
+                    <p style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 8, lineHeight: 1.45 }}>
+                      도시 이름이나 나라를 입력해 찾을 수 있어요. (예: 부산, 수원, 제주, 도쿄, 뉴욕)
+                    </p>
+                    <p style={{ fontSize: 12, color: textDark, marginBottom: 6, fontWeight: 600 }}>
+                      지금 선택: {city}
+                    </p>
+                    <input
+                      type="text"
+                      value={locationSearch}
+                      onChange={(e) => {
+                        setLocationSearch(e.target.value);
+                        setLocationPickerOpen(true);
+                      }}
+                      onFocus={() => setLocationPickerOpen(true)}
+                      placeholder="지역 검색…"
                       className="saju-add-input"
+                      autoComplete="off"
                       style={{
                         width: "100%",
                         padding: "12px 14px",
@@ -644,12 +786,178 @@ export default function SajuAddPage({
                         background: inputBg,
                         color: textDark,
                       }}
-                    >
-                      <option value="서울">서울</option>
-                      <option value="부산">부산</option>
-                      <option value="대구">대구</option>
-                      <option value="해외">해외</option>
-                    </select>
+                    />
+                    {locationPickerOpen && (
+                      <div
+                        style={{
+                          marginTop: 6,
+                          maxHeight: 220,
+                          overflowY: "auto",
+                          borderRadius: 10,
+                          border: `1.5px solid ${borderField}`,
+                          background: "#fff",
+                          boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
+                        }}
+                      >
+                        {filteredLocations.map((loc) => (
+                          <button
+                            key={loc.id}
+                            type="button"
+                            className="tap sans"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => pickLocation(loc)}
+                            style={{
+                              width: "100%",
+                              textAlign: "left",
+                              padding: "10px 12px",
+                              border: "none",
+                              borderBottom: `1px solid ${borderField}`,
+                              background: "transparent",
+                              cursor: "pointer",
+                              fontSize: 13,
+                              color: textDark,
+                            }}
+                          >
+                            <span style={{ fontWeight: 700 }}>{loc.name}</span>
+                            {loc.detail ? (
+                              <span style={{ color: "var(--text-secondary)", fontWeight: 500 }}> · {loc.detail}</span>
+                            ) : null}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          className="tap sans"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => {
+                            const c = findBirthLocationById("custom");
+                            if (c) pickLocation(c);
+                          }}
+                          style={{
+                            width: "100%",
+                            textAlign: "left",
+                            padding: "10px 12px",
+                            border: "none",
+                            background: "#faf8f5",
+                            cursor: "pointer",
+                            fontSize: 13,
+                            fontWeight: 700,
+                            color: textDark,
+                          }}
+                        >
+                          목록에 없음 · 경도 숫자로 직접 입력
+                        </button>
+                      </div>
+                    )}
+
+                    {selectedLocationId === "custom" && (
+                      <div style={{ marginTop: 10 }}>
+                        <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4, display: "block" }}>
+                          동쪽은 양수, 서쪽은 음수 (예: 서울 약 127, LA 약 −118)
+                        </label>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          value={longitude}
+                          onChange={(e) => setLongitude(e.target.value)}
+                          placeholder="예: 127.0 또는 -118.24"
+                          className="saju-add-input"
+                          style={{
+                            width: "100%",
+                            padding: "12px 14px",
+                            borderRadius: 10,
+                            border: `1.5px solid ${
+                              selectedLocationId === "custom" &&
+                              longitude.trim() &&
+                              !Number.isFinite(effectiveLongitude)
+                                ? "#e11d48"
+                                : borderField
+                            }`,
+                            fontSize: 14,
+                            outline: "none",
+                            background: inputBg,
+                            color: textDark,
+                          }}
+                        />
+                        {selectedLocationId === "custom" &&
+                          longitude.trim() &&
+                          !Number.isFinite(effectiveLongitude) && (
+                            <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>
+                              숫자 형식을 확인해 주세요.
+                            </p>
+                          )}
+                      </div>
+                    )}
+
+                    {lonCorrectionMin !== null && Number.isFinite(effectiveLongitude) && (
+                      <div
+                        style={{
+                          marginTop: 12,
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          background: "#faf8f5",
+                          border: `1px solid ${borderField}`,
+                        }}
+                      >
+                        <p style={{ fontSize: 12, fontWeight: 800, color: textDark, marginBottom: 8 }}>
+                          시간 맞춤 안내 (한국 표준시 기준선 기준)
+                        </p>
+                        <p style={{ fontSize: 13, color: textDark, marginBottom: 4, lineHeight: 1.5 }}>
+                          · 위치 차이만 반영: 약{" "}
+                          <strong style={{ fontWeight: 800 }}>{Math.abs(lonCorrectionMin)}분</strong>
+                          {lonCorrectionMin < 0 ? " 늦춤" : lonCorrectionMin > 0 ? " 당김" : ""}
+                        </p>
+                        <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.45, marginBottom: 8 }}>
+                          {describeLongitudeCorrectionMinutes(lonCorrectionMin)}
+                        </p>
+                        {eotMinutes !== null ? (
+                          <>
+                            <p style={{ fontSize: 13, color: textDark, marginBottom: 4, lineHeight: 1.5 }}>
+                              · 생일 기준 하루 단위 미세 보정: 약{" "}
+                              <strong style={{ fontWeight: 800 }}>{Math.abs(eotMinutes)}분</strong>
+                              {eotMinutes < 0 ? " 늦춤" : eotMinutes > 0 ? " 당김" : ""}
+                            </p>
+                            <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.45 }}>
+                              {describeEquationOfTimeMinutes(eotMinutes)}
+                            </p>
+                          </>
+                        ) : (
+                          <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.45 }}>
+                            생년월일 8자리를 입력하면, 그날만의 미세 보정(대략 몇 분)도 같이 보여 드려요.
+                          </p>
+                        )}
+                        {useLongitudeCorrection && useEquationOfTime && (
+                          <p style={{ fontSize: 11, color: textDark, marginTop: 8, lineHeight: 1.45, fontWeight: 600 }}>
+                            정밀 보정을 켜면 위 두 가지를 함께 반영해 시주를 맞춥니다.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {selectedIana ? (
+                      <div
+                        style={{
+                          marginTop: 10,
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          background: "#eef6ff",
+                          border: `1px solid ${borderField}`,
+                        }}
+                      >
+                        <p style={{ fontSize: 12, fontWeight: 800, color: textDark, marginBottom: 4 }}>
+                          서머타임(여름 시간)
+                        </p>
+                        <p style={{ fontSize: 10, color: "var(--text-secondary)", marginBottom: 6 }}>
+                          기준 시계: {selectedIana}
+                        </p>
+                        <p style={{ fontSize: 12, color: textDark, lineHeight: 1.5 }}>
+                          {describeSummerTimeForUi(selectedIana, summerTimeInfo, hasBirthTimeForDst)}
+                        </p>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.45 }}>
+                        도시를 목록에서 고르면 그 나라 서머타임을 자동으로 확인해요. (경도만 직접 넣은 경우는 제외)
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -680,6 +988,9 @@ export default function SajuAddPage({
                     </div>
                     <p style={{ marginTop: 6, fontSize: 12, color: "var(--text-secondary)" }}>
                       태양 기준 시간으로 계산하여 더 정확한 시주를 제공합니다
+                    </p>
+                    <p style={{ marginTop: 8, fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.45 }}>
+                      서머타임은 출생 도시(또는 한국) 기준으로 시주 계산에 자동 반영됩니다.
                     </p>
                   </div>
                 </div>
@@ -849,8 +1160,49 @@ export default function SajuAddPage({
                 <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>출생지</label>
                 <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>
                   {city || "서울"}
+                  {selectedLocationId === "custom" && longitude.trim() ? (
+                    <span style={{ display: "block", fontSize: 12, color: "var(--text-secondary)", marginTop: 4 }}>
+                      경도 {longitude.trim()}°
+                    </span>
+                  ) : null}
                 </div>
               </div>
+              {lonCorrectionMin !== null && (
+                <div>
+                  <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>
+                    시간 맞춤(참고)
+                  </label>
+                  <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 13, border: `1.5px solid ${borderField}`, lineHeight: 1.5 }}>
+                    <div>
+                      위치 차이: 약 {Math.abs(lonCorrectionMin)}분{" "}
+                      {lonCorrectionMin < 0 ? "늦춤" : lonCorrectionMin > 0 ? "당김" : ""}
+                    </div>
+                    {eotMinutes !== null && (
+                      <div style={{ marginTop: 6 }}>
+                        생일 미세 보정: 약 {Math.abs(eotMinutes)}분{" "}
+                        {eotMinutes < 0 ? "늦춤" : eotMinutes > 0 ? "당김" : ""}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {(selectedIana || selectedLocationId === "custom") && (
+                <div>
+                  <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>
+                    서머타임
+                  </label>
+                  <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 13, border: `1.5px solid ${borderField}`, lineHeight: 1.5 }}>
+                    {selectedIana ? (
+                      <>
+                        <div style={{ fontSize: 11, color: "var(--text-secondary)", marginBottom: 4 }}>{selectedIana}</div>
+                        {describeSummerTimeForUi(selectedIana, summerTimeInfo, hasBirthTimeForDst)}
+                      </>
+                    ) : (
+                      "목록 도시를 선택하면 서머타임을 자동 확인해요."
+                    )}
+                  </div>
+                </div>
+              )}
               <div>
                 <label style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 6, display: "block" }}>정밀 시간 보정</label>
                 <div style={{ padding: "12px 14px", borderRadius: radius, background: inputBg, color: textDark, fontSize: 14, border: `1.5px solid ${borderField}` }}>

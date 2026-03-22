@@ -72,12 +72,25 @@ def compute_full_saju(payload: Dict[str, Any], db: Any) -> Dict[str, Any]:
       calendar_type, year, month, day, hour, minute, is_leap_month
   )
 
+  iana_tz = payload.get("iana_timezone")
+  iana_str = (iana_tz or "").strip() if isinstance(iana_tz, str) else ""
+  hour_calc_dt = solar_dt_used
+  if hour is not None and iana_str and iana_str != "Asia/Seoul":
+      from logic.time_dst import unwind_dst_wall_clock_naive
+
+      hour_calc_dt = unwind_dst_wall_clock_naive(solar_dt_used, iana_str)
+  apply_korea_dst = hour is None or (not iana_str or iana_str == "Asia/Seoul")
+
   # 사주 기둥 계산
   yj = test.calculate_year_pillar(solar_dt_used, db)
   mj = test.calculate_month_pillar(solar_dt_used, yj, db)
   dj = test.calculate_day_pillar(solar_dt_used)
   # 출생시간 정보가 없으면 시주는 참고용으로만 계산하고, 응답에는 포함하지 않는다.
-  sj = test.calculate_hour_pillar(solar_dt_used, dj) if hour is not None else None
+  sj = (
+      test.calculate_hour_pillar(hour_calc_dt, dj, apply_korea_dst=apply_korea_dst)
+      if hour is not None
+      else None
+  )
 
   # 월지 기준 계절 정보 (봄/여름/가을/겨울 + 초/중/말 정도의 뉘앙스)
   season_info: Dict[str, str] = {}

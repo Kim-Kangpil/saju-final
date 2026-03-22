@@ -186,6 +186,7 @@ interface SajuRow {
   birth_time: string | null;
   calendar_type: string;
   gender: string;
+  iana_timezone?: string | null;
 }
 
 /** 로컬 테스트용 샘플 사주 (?test=1 사용 시) */
@@ -351,6 +352,7 @@ function SajuPreviewContent() {
         const calendar = data.calendar_type === "음력" ? "lunar" : "solar";
         const gender = data.gender === "남자" ? "M" : "F";
 
+        const tz = (data as SajuRow).iana_timezone?.trim() || undefined;
         const fullRes = await fetch(`${API_BASE}/saju/full`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -362,6 +364,7 @@ function SajuPreviewContent() {
             hour,
             minute,
             gender,
+            ...(tz ? { iana_timezone: tz } : {}),
           }),
         });
         if (!fullRes.ok) {

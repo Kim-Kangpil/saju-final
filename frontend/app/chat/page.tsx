@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useRef, useEffect, useMemo, useState } from "react";
+import { use, useRef, useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { useChat } from "@ai-sdk/react";
@@ -43,6 +43,21 @@ const QUICK_PROMPTS_KO = [
 
 const BACKEND_API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
+/** 로컬 첫 사주가 만세력 등록으로 인정될 만한지 (이름만으로는 부족한 케이스 대비) */
+function readHasLocalRegisteredSaju(): boolean {
+  try {
+    const f = getSavedSajuList()?.[0];
+    if (!f) return false;
+    const birth = String(f.birthYmd || "").replace(/\D/g, "");
+    if (birth.length >= 8) return true;
+    if (f.result != null && typeof f.result === "object") return true;
+    if (typeof f.name === "string" && f.name.trim().length > 0) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 const QUICK_PROMPTS_EN = [
   { label: "Ask about Saju", text: "I have a question about my Saju." },
@@ -198,15 +213,60 @@ export default function ChatPage({
     };
   };
 
+  const refreshSajuIfStale = useCallback(async () => {
+    const saved = getSavedSajuList();
+    const first = saved?.[0];
+    const nameOk = Boolean(first?.name?.trim());
+    if (!first || !nameOk || first.result?.strength) return;
+
+    const ymd = String(first.birthYmd || "").replace(/\D/g, "");
+    if (ymd.length < 8) return;
+
+    try {
+      const hm = String(first.birthHm ?? "1200");
+      const res = await fetch(`${BACKEND_API_BASE}/saju/full`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          calendar_type: first.calendar === "lunar" ? "lunar" : "solar",
+          year: parseInt(ymd.slice(0, 4), 10),
+          month: parseInt(ymd.slice(4, 6), 10),
+          day: parseInt(ymd.slice(6, 8), 10),
+          hour: first.timeUnknown ? null : parseInt(hm.slice(0, 2), 10),
+          minute: first.timeUnknown ? null : parseInt(hm.slice(2, 4) || "0", 10),
+          gender: first.gender,
+          time_unknown: Boolean(first.timeUnknown),
+          is_leap_month: false,
+        }),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const updated = { ...first, result: { ...(first.result && typeof first.result === "object" ? first.result : {}), ...data } };
+      const newList = [updated, ...saved.slice(1)];
+      localStorage.setItem("saved_saju_list", JSON.stringify(newList));
+      bodyRef.current = {
+        isGuest: !isLoggedIn,
+        saju: getSajuBody(),
+      };
+    } catch {
+      /* 실패 시 조용히 넘어감 */
+    }
+  }, [isLoggedIn]);
+
   const [savedSajuName, setSavedSajuName] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  /** 로컬 스토리지 기준 등록 여부 (이름 외 생년·result 포함) */
+  const [hasLocalRegisteredSaju, setHasLocalRegisteredSaju] = useState(false);
+  /** 로그인 시 서버에 저장된 사주 개수 조회 완료 여부 */
+  const [serverSajuChecked, setServerSajuChecked] = useState(false);
+  const [serverSajuCount, setServerSajuCount] = useState(0);
 
   useEffect(() => {
     bodyRef.current = {
       isGuest: !isLoggedIn,
       saju: getSajuBody(),
     };
-  }, [isLoggedIn, savedSajuName]);
+  }, [isLoggedIn, savedSajuName, hasLocalRegisteredSaju]);
 
   const transport = useMemo(
     () =>
@@ -234,34 +294,96 @@ export default function ChatPage({
     if (typeof window === "undefined") return;
     try {
       const first = getSavedSajuList()?.[0];
-      setSavedSajuName(first?.name?.trim() ?? null);
+      setSavedSajuName(first?.name?.trim() ? first.name.trim() : null);
+      setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
     } catch {
       // ignore
     }
     setHydrated(true);
-  }, []);
+    void refreshSajuIfStale();
+  }, [refreshSajuIfStale]);
+
+  // 로그인/로그아웃 전환 시 로컬 사주 스냅샷 다시 읽기
+  useEffect(() => {
+    if (typeof window === "undefined" || !hydrated) return;
+    try {
+      const first = getSavedSajuList()?.[0];
+      setSavedSajuName(first?.name?.trim() ? first.name.trim() : null);
+      setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
+    } catch {
+      // ignore
+    }
+  }, [isLoggedIn, hydrated]);
+
+  // 로그인: 서버에 등록된 만세력이 있으면 로컬이 비어 있어도 등록 유도 화면을 띄우지 않음
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (!isLoggedIn) {
+      setServerSajuChecked(true);
+      setServerSajuCount(0);
+      return;
+    }
+
+    let cancelled = false;
+    setServerSajuChecked(false);
+
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_API_BASE}/api/saju/list`, {
+          credentials: "include",
+          headers: { ...getAuthHeaders() },
+        });
+        const data = await res.json().catch(() => []);
+        if (cancelled) return;
+        const arr = Array.isArray(data) ? data : [];
+        setServerSajuCount(arr.length);
+        if (arr.length > 0) {
+          const nm = String(arr[0]?.name ?? "").trim();
+          if (nm) {
+            setSavedSajuName((prev) => (prev?.trim() ? prev : nm));
+          }
+        }
+      } catch {
+        if (!cancelled) setServerSajuCount(0);
+      } finally {
+        if (!cancelled) setServerSajuChecked(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isLoggedIn]);
 
   // /add 등에서 돌아왔을 때 로컬 저장 사주 반영
   useEffect(() => {
     if (typeof window === "undefined" || !isLoggedIn) return;
-    const refreshSavedSajuName = () => {
+    const refreshLocalSaju = () => {
       if (document.visibilityState && document.visibilityState !== "visible") return;
       try {
         const first = getSavedSajuList()?.[0];
-        setSavedSajuName(first?.name?.trim() ?? null);
+        setSavedSajuName(first?.name?.trim() ? first.name.trim() : null);
+        setHasLocalRegisteredSaju(readHasLocalRegisteredSaju());
       } catch {
         // ignore
       }
     };
-    window.addEventListener("focus", refreshSavedSajuName);
-    document.addEventListener("visibilitychange", refreshSavedSajuName);
+    window.addEventListener("focus", refreshLocalSaju);
+    document.addEventListener("visibilitychange", refreshLocalSaju);
     return () => {
-      window.removeEventListener("focus", refreshSavedSajuName);
-      document.removeEventListener("visibilitychange", refreshSavedSajuName);
+      window.removeEventListener("focus", refreshLocalSaju);
+      document.removeEventListener("visibilitychange", refreshLocalSaju);
     };
   }, [isLoggedIn]);
 
-  const showNoSajuScreen = hydrated && isLoggedIn && !savedSajuName;
+  const showNoSajuScreen =
+    hydrated &&
+    isLoggedIn &&
+    serverSajuChecked &&
+    !hasLocalRegisteredSaju &&
+    serverSajuCount === 0;
 
   return (
     <>

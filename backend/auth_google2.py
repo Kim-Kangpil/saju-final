@@ -21,16 +21,16 @@ GOOGLE_REDIRECT_URI = (os.getenv("GOOGLE_REDIRECT_URI") or "").strip()
 FRONTEND_URL = (os.getenv("FRONTEND_URL", "https://hsaju.com") or "https://hsaju.com").strip().rstrip("/")
 
 if not GOOGLE_CLIENT_ID:
-    print("⚠️ GOOGLE_CLIENT_ID가 .env에 없습니다. 구글 로그인은 비활성됩니다.")
+    print("[WARNING] GOOGLE_CLIENT_ID가 .env에 없습니다. 구글 로그인은 비활성됩니다.")
 else:
-    print(f"✅ GOOGLE_CLIENT_ID 로드됨: {GOOGLE_CLIENT_ID[:10]}...")
+    print(f"[INFO] GOOGLE_CLIENT_ID 로드됨: {GOOGLE_CLIENT_ID[:10]}...")
 if not GOOGLE_CLIENT_SECRET:
-    print("⚠️ GOOGLE_CLIENT_SECRET가 .env에 없습니다. 구글 토큰 교환이 실패할 수 있습니다.")
+    print("[WARNING] GOOGLE_CLIENT_SECRET가 .env에 없습니다. 구글 토큰 교환이 실패할 수 있습니다.")
 if not GOOGLE_REDIRECT_URI:
-    print("⚠️ GOOGLE_REDIRECT_URI가 .env에 없습니다. 구글 콘솔에 등록한 백엔드 콜백 URL을 넣어주세요.")
+    print("[WARNING] GOOGLE_REDIRECT_URI가 .env에 없습니다. 구글 콘솔에 등록한 백엔드 콜백 URL을 넣어주세요.")
 else:
-    print(f"✅ GOOGLE_REDIRECT_URI: {GOOGLE_REDIRECT_URI}")
-print(f"✅ FRONTEND_URL: {FRONTEND_URL}")
+    print(f"[INFO] GOOGLE_REDIRECT_URI: {GOOGLE_REDIRECT_URI}")
+print(f"[INFO] FRONTEND_URL: {FRONTEND_URL}")
 
 
 def google_exchange_token(code: str) -> dict:
@@ -113,7 +113,7 @@ def google_callback(request: Request):
     try:
         token = google_exchange_token(code)
     except Exception as e:
-        print(f"⚠️ 구글 토큰 교환 실패: {e}")
+        print(f"[WARNING] 구글 토큰 교환 실패: {e}")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
 
     access_token = token.get("access_token")
@@ -123,7 +123,7 @@ def google_callback(request: Request):
     try:
         info = google_userinfo(access_token)
     except Exception as e:
-        print(f"⚠️ 구글 사용자 정보 조회 실패: {e}")
+        print(f"[WARNING] 구글 사용자 정보 조회 실패: {e}")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
 
     google_id = info.get("sub")
@@ -141,7 +141,7 @@ def google_callback(request: Request):
             nickname=nickname,
         )
     except Exception as e:
-        print(f"⚠️ 구글 유저 DB 저장 실패: {e}")
+        print(f"[WARNING] 구글 유저 DB 저장 실패: {e}")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=db_error", status_code=302)
 
     # 로그인 성공 → 프론트로 리다이렉트 + 쿠키 + URL fragment에 토큰 (모바일 크로스 도메인 대응)

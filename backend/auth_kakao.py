@@ -22,14 +22,14 @@ KAKAO_REDIRECT_URI = os.getenv("KAKAO_REDIRECT_URI", "").strip()
 FRONTEND_URL = (os.getenv("FRONTEND_URL", "https://hsaju.com") or "https://hsaju.com").strip().rstrip("/")
 
 if not KAKAO_REST_KEY:
-    print("⚠️ KAKAO_REST_KEY가 .env에 없습니다. 카카오 로그인은 비활성됩니다.")
+    print("[WARNING] KAKAO_REST_KEY가 .env에 없습니다. 카카오 로그인은 비활성됩니다.")
 else:
-    print(f"✅ KAKAO_REST_KEY 로드됨: {KAKAO_REST_KEY[:10]}...")
+    print(f"[INFO] KAKAO_REST_KEY 로드됨: {KAKAO_REST_KEY[:10]}...")
 if not KAKAO_REDIRECT_URI:
-    print("⚠️ KAKAO_REDIRECT_URI가 .env에 없습니다. 카카오 개발자 콘솔에 등록한 백엔드 콜백 URL을 넣어주세요.")
+    print("[WARNING] KAKAO_REDIRECT_URI가 .env에 없습니다. 카카오 개발자 콘솔에 등록한 백엔드 콜백 URL을 넣어주세요.")
 else:
-    print(f"✅ KAKAO_REDIRECT_URI: {KAKAO_REDIRECT_URI}")
-print(f"✅ FRONTEND_URL: {FRONTEND_URL}")
+    print(f"[INFO] KAKAO_REDIRECT_URI: {KAKAO_REDIRECT_URI}")
+print(f"[INFO] FRONTEND_URL: {FRONTEND_URL}")
 
 
 def exchange_token(code: str) -> dict:
@@ -105,7 +105,7 @@ def kakao_callback(request: Request):
     try:
         token = exchange_token(code)
     except Exception as e:
-        print(f"⚠️ 카카오 토큰 교환 실패: {e}")
+        print(f"[WARNING] 카카오 토큰 교환 실패: {e}")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
     access_token = token.get("access_token")
     if not access_token:
@@ -114,7 +114,7 @@ def kakao_callback(request: Request):
     try:
         me = kakao_me(access_token)
     except Exception as e:
-        print(f"⚠️ 카카오 사용자 정보 조회 실패: {e}")
+        print(f"[WARNING] 카카오 사용자 정보 조회 실패: {e}")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=no_access_token", status_code=302)
     kakao_id = me.get("id")
     if not kakao_id:
@@ -135,7 +135,7 @@ def kakao_callback(request: Request):
             nickname=nickname,
         )
     except Exception as e:
-        print(f"⚠️ 유저 DB 저장 실패: {e}")
+        print(f"[WARNING] 유저 DB 저장 실패: {e}")
         return RedirectResponse(f"{FRONTEND_URL}/login?error=db_error", status_code=302)
 
     # 3) 로그인 성공 → 프론트로 리다이렉트 + 쿠키 + URL fragment에 토큰 (모바일 크로스 도메인 대응)

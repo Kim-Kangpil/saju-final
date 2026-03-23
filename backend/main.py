@@ -1,4 +1,10 @@
 # ==================== 1. 환경변수 로드 (가장 먼저!) ====================
+import io
+import sys
+
+if getattr(sys.stdout, "buffer", None):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+
 import openai
 import hashlib
 from logic.twelve_states import calculate_twelve_states, get_twelve_state

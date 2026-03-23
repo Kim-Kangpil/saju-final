@@ -306,7 +306,8 @@ def interpret_money(saju_data: dict) -> dict:
     elif daeun_tg in ("편관", "정관"):
         language_points.append(f"지금은 조직·직업 안에서 재물이 움직이는 시기예요.")
 
-    # 패턴 없으면 기본값
+    # 빈 문자열 제거 + 최소 1개 보장
+    language_points = [p for p in language_points if p]
     if not language_points:
         language_points.append("재물 흐름이 특별히 강하거나 약하지 않은 균형 구조예요.")
 
@@ -427,6 +428,11 @@ def interpret_love(saju_data: dict) -> dict:
     elif daeun_tg in ("식신", "상관"):
         language_points.append("지금은 새로운 만남보다 본인의 매력을 키우는 시기예요.")
 
+    # 빈 문자열 제거 + 최소 1개 보장
+    language_points = [p for p in language_points if p]
+    if not language_points:
+        language_points.append("인연 패턴이 뚜렷하게 두드러지지 않는 균형 구조예요. 관계에서 자기 페이스를 유지하는 편이에요.")
+
     return {
         "patterns": patterns,
         "language_points": language_points,
@@ -528,6 +534,11 @@ def interpret_career(saju_data: dict) -> dict:
     elif daeun_tg in ("편재", "정재"):
         language_points.append("지금은 직접 수익 만드는 활동이 잘 풀리는 시기예요.")
 
+    # 빈 문자열 제거 + 최소 1개 보장
+    language_points = [p for p in language_points if p]
+    if not language_points:
+        language_points.append("직업 적성이 고르게 분포된 사주예요. 특정 분야에 치우치지 않고 다양한 방면에서 역량을 발휘할 수 있어요.")
+
     return {
         "patterns": patterns,
         "language_points": language_points,
@@ -565,7 +576,8 @@ def interpret_personality(saju_data: dict) -> dict:
 
     # ── 일간 기본 성향 ──
     patterns.append(f"일간 {ilgan} → {ilgan_nature['keyword']}")
-    language_points.append(ilgan_nature["core"])
+    if ilgan_nature["core"]:
+        language_points.append(ilgan_nature["core"])
 
     # ── 월지 에너지 ──
     if wolji_season:
@@ -605,6 +617,12 @@ def interpret_personality(saju_data: dict) -> dict:
     elif strength == "신약":
         patterns.append("신약 → 감수성 예민·환경 영향 큼")
         language_points.append("주변 분위기를 잘 읽어요. 좋은 환경에선 빛나고 나쁜 환경엔 쉽게 영향 받아요.")
+
+    # 빈 문자열 제거 + 최소 1개 보장
+    language_points = [p for p in language_points if p]
+    if not language_points:
+        keyword = ilgan_nature.get("keyword") or "다양한 기질"
+        language_points.append(f"{keyword} 기질을 가진 사주예요. 일간과 월지의 조합이 독특한 성격을 만들어요.")
 
     return {
         "patterns": patterns,
@@ -671,6 +689,11 @@ def interpret_current_period(saju_data: dict) -> dict:
         # 생년 정보 없어도 대운 목록은 전달
         language_points.append("생년 정보로 현재 대운을 정확히 특정하기 어렵지만, 대운 흐름은 아래와 같아요.")
         patterns.append(f"전체 대운 흐름 ({daeun_direction}): {', '.join(daeun_list[:5])}")
+
+    # 빈 문자열 제거
+    language_points = [p for p in language_points if p]
+    if not language_points:
+        language_points.append("현재 시기는 꾸준히 자기 자리를 지키며 흐름을 타는 구간이에요.")
 
     return {
         "patterns": patterns,

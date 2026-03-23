@@ -2354,13 +2354,29 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
     )
     cached_main = get_report_cache(cache_key, "v2_comprehensive")
     cached_cv   = get_report_cache(cache_key, "v2_core_values")
+    cached_sections = get_report_cache(cache_key, "v2_sections")
     if cached_main and cached_cv:
+        parsed_sections: dict[str, str] = {}
+        if cached_sections:
+            try:
+                obj = json.loads(cached_sections)
+                if isinstance(obj, dict):
+                    parsed_sections = {k: str(v) for k, v in obj.items() if isinstance(v, str)}
+            except Exception:
+                parsed_sections = {}
         print(f"✅ v2 캐시 히트: {cache_key}")
         return {
             "success": True,
             "cached": True,
             "comprehensive": cached_main,
             "core_values": cached_cv,
+            "section_personality": parsed_sections.get("section_personality", ""),
+            "section_strength": parsed_sections.get("section_strength", ""),
+            "section_problem": parsed_sections.get("section_problem", ""),
+            "section_money": parsed_sections.get("section_money", ""),
+            "section_career": parsed_sections.get("section_career", ""),
+            "section_relationship": parsed_sections.get("section_relationship", ""),
+            "section_current": parsed_sections.get("section_current", ""),
             "rule_summary": interpretation.get("summary_for_gpt", {}),
         }
 
@@ -2385,6 +2401,59 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
             tone=req.tone,
             analysis=analysis,
         )
+
+        # 섹션형 응답 생성(JSON)
+        summary_for_gpt = interpretation.get("summary_for_gpt", {}) if isinstance(interpretation, dict) else {}
+        section_prompt = f"""
+아래 규칙 엔진 결과를 기반으로, 반드시 JSON 객체 하나만 반환하세요.
+키는 정확히 다음 7개만 사용:
+section_personality, section_strength, section_problem, section_money, section_career, section_relationship, section_current
+
+[규칙]
+- 사주 전문 용어 직접 사용 금지
+- 일상적이고 공감되는 표현
+- 짧은 문장 위주 (모바일 가독성)
+- 각 항목은 1~3개의 짧은 단락
+- 데이터에 없는 내용 추측 금지
+
+[데이터]
+성격: {summary_for_gpt.get("personality_points", [])}
+재물: {summary_for_gpt.get("money_points", [])}
+연애: {summary_for_gpt.get("love_points", [])}
+직업: {summary_for_gpt.get("career_points", [])}
+현재시기: {summary_for_gpt.get("period_points", [])}
+신강약: {summary_for_gpt.get("strength", "")}
+종합참고: {comprehensive}
+"""
+
+        sections = {
+            "section_personality": "",
+            "section_strength": "",
+            "section_problem": "",
+            "section_money": "",
+            "section_career": "",
+            "section_relationship": "",
+            "section_current": "",
+        }
+        try:
+            sec_resp = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "당신은 한국어 리포트 편집기입니다. JSON 객체만 출력하세요."},
+                    {"role": "user", "content": section_prompt},
+                ],
+                temperature=0.3,
+                max_tokens=2200,
+                response_format={"type": "json_object"},
+            )
+            sec_raw = (sec_resp.choices[0].message.content or "").strip()
+            sec_obj = json.loads(sec_raw) if sec_raw else {}
+            if isinstance(sec_obj, dict):
+                for k in sections.keys():
+                    v = sec_obj.get(k, "")
+                    sections[k] = str(v).strip() if v is not None else ""
+        except Exception as se:
+            print(f"⚠️ v2 섹션 생성 실패: {se}")
     except Exception as e:
         print(f"❌ GPT 생성 실패: {e}")
         raise HTTPException(status_code=502, detail=f"GPT 생성 오류: {e}")
@@ -2393,6 +2462,7 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
     try:
         save_report_cache(cache_key, "v2_comprehensive", comprehensive)
         save_report_cache(cache_key, "v2_core_values",   core_values)
+        save_report_cache(cache_key, "v2_sections", json.dumps(sections, ensure_ascii=False))
         print(f"✅ v2 캐시 저장: {cache_key}")
     except Exception as e:
         print(f"⚠️ v2 캐시 저장 실패: {e}")
@@ -2402,6 +2472,13 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
         "cached": False,
         "comprehensive": comprehensive,
         "core_values": core_values,
+        "section_personality": sections.get("section_personality", ""),
+        "section_strength": sections.get("section_strength", ""),
+        "section_problem": sections.get("section_problem", ""),
+        "section_money": sections.get("section_money", ""),
+        "section_career": sections.get("section_career", ""),
+        "section_relationship": sections.get("section_relationship", ""),
+        "section_current": sections.get("section_current", ""),
         "rule_summary": interpretation.get("summary_for_gpt", {}),
     }
 

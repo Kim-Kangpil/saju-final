@@ -74,6 +74,11 @@ import { SajuSummaryCard } from "../../components/SummarySwipeCards";
 import { PersonalityRadarCard } from "../../components/PersonalityRadarCard";
 import { ProblemLoopCard } from "../../components/ProblemLoopCard";
 import { MoneyFlowCard } from "../../components/MoneyFlowCard";
+import { StrengthBadgeCard } from "../../components/StrengthBadgeCard";
+import { CareerMatrixCard } from "../../components/CareerMatrixCard";
+import { RelationshipFlowCard } from "../../components/RelationshipFlowCard";
+import { TimelineCard } from "../../components/TimelineCard";
+import { ChecklistCard } from "../../components/ChecklistCard";
 import { Icon } from "@iconify/react";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
@@ -1110,6 +1115,13 @@ export default function Page({
   const [v2Result, setV2Result] = useState<{
     comprehensive: string;
     core_values: string;
+    section_personality: string;
+    section_strength: string;
+    section_problem: string;
+    section_money: string;
+    section_career: string;
+    section_relationship: string;
+    section_current: string;
     rule_summary: Record<string, any>;
   } | null>(null);
   const [showV2Modal, setShowV2Modal] = useState(false);
@@ -2218,6 +2230,13 @@ export default function Page({
       setV2Result({
         comprehensive: data.comprehensive,
         core_values:   data.core_values,
+        section_personality: data.section_personality ?? "",
+        section_strength: data.section_strength ?? "",
+        section_problem: data.section_problem ?? "",
+        section_money: data.section_money ?? "",
+        section_career: data.section_career ?? "",
+        section_relationship: data.section_relationship ?? "",
+        section_current: data.section_current ?? "",
         rule_summary:  data.rule_summary ?? {},
       });
     } catch (e: any) {
@@ -2522,63 +2541,91 @@ export default function Page({
                                   </div>
                                 )}
 
-                                {v2Result && (
-                                  <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                {v2Result && (() => {
+                                  const hasText = (v?: string) => !!(v && v.trim());
+                                  const secPersonality = v2Result.section_personality || v2Result.comprehensive || "";
+                                  const secStrength = v2Result.section_strength || "";
+                                  const secProblem = v2Result.section_problem || "";
+                                  const secMoney = v2Result.section_money || "";
+                                  const secCareer = v2Result.section_career || "";
+                                  const secRelationship = v2Result.section_relationship || "";
+                                  const secCurrent = v2Result.section_current || "";
+                                  return (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                      {hasText(secPersonality) && (
+                                        <>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secPersonality.replace(/\n/g, "<br />") }} />
+                                          <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
+                                        </>
+                                      )}
 
-                                    {/* 종합 해석 텍스트 */}
-                                    <div
-                                      style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }}
-                                      dangerouslySetInnerHTML={{
-                                        __html: v2Result.comprehensive.replace(/\n/g, "<br />"),
-                                      }}
-                                    />
+                                      {hasText(secStrength) && (
+                                        <>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secStrength.replace(/\n/g, "<br />") }} />
+                                          <StrengthBadgeCard ruleSummary={v2Result.rule_summary} />
+                                        </>
+                                      )}
 
-                                    <div style={{ height: 1, background: "#D4C9B8" }} />
+                                      {hasText(secProblem) && (
+                                        <>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secProblem.replace(/\n/g, "<br />") }} />
+                                          <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
+                                        </>
+                                      )}
 
-                                    {/* 시각화 3개 */}
-                                    <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
-                                    <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
-                                    <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+                                      {hasText(secMoney) && (
+                                        <>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secMoney.replace(/\n/g, "<br />") }} />
+                                          <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+                                        </>
+                                      )}
 
-                                    <div style={{ height: 1, background: "#D4C9B8" }} />
+                                      {hasText(secCareer) && (
+                                        <>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCareer.replace(/\n/g, "<br />") }} />
+                                          <CareerMatrixCard ruleSummary={v2Result.rule_summary} />
+                                        </>
+                                      )}
 
-                                    {/* 가치관 */}
-                                    <div>
-                                      <p style={{
-                                        fontSize: 12, fontWeight: 700, color: "#8B7355",
-                                        letterSpacing: "0.06em", marginBottom: 12,
-                                      }}>
-                                        🧭 삶의 핵심 가치관
-                                      </p>
-                                      <div
-                                        style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }}
-                                        dangerouslySetInnerHTML={{
-                                          __html: v2Result.core_values.replace(/\n/g, "<br />"),
-                                        }}
-                                      />
+                                      {hasText(secRelationship) && (
+                                        <>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secRelationship.replace(/\n/g, "<br />") }} />
+                                          <RelationshipFlowCard ruleSummary={v2Result.rule_summary} />
+                                        </>
+                                      )}
+
+                                      {hasText(secCurrent) && (
+                                        <>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCurrent.replace(/\n/g, "<br />") }} />
+                                          <TimelineCard />
+                                        </>
+                                      )}
+
+                                      {hasText(v2Result.core_values) && (
+                                        <div>
+                                          <p style={{ fontSize: 12, fontWeight: 700, color: "#8B7355", letterSpacing: "0.06em", marginBottom: 12 }}>🧭 삶의 핵심 가치관</p>
+                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: v2Result.core_values.replace(/\n/g, "<br />") }} />
+                                        </div>
+                                      )}
+
+                                      <ChecklistCard ruleSummary={v2Result.rule_summary} />
+
+                                      {Object.keys(v2Result.rule_summary).length > 0 && (
+                                        <>
+                                          <div style={{ height: 1, background: "#D4C9B8" }} />
+                                          <details>
+                                            <summary style={{ fontSize: 11, color: "#6B5F4E", cursor: "pointer" }}>
+                                              🔧 규칙엔진 계산값 (개발 확인용)
+                                            </summary>
+                                            <pre style={{ marginTop: 10, fontSize: 10, color: "#6B5F4E", background: "#EDE7DB", borderRadius: 8, padding: 12, overflowX: "auto", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                                              {JSON.stringify(v2Result.rule_summary, null, 2)}
+                                            </pre>
+                                          </details>
+                                        </>
+                                      )}
                                     </div>
-
-                                    {/* 디버그 */}
-                                    {Object.keys(v2Result.rule_summary).length > 0 && (
-                                      <>
-                                        <div style={{ height: 1, background: "#D4C9B8" }} />
-                                        <details>
-                                          <summary style={{ fontSize: 11, color: "#6B5F4E", cursor: "pointer" }}>
-                                            🔧 규칙엔진 계산값 (개발 확인용)
-                                          </summary>
-                                          <pre style={{
-                                            marginTop: 10, fontSize: 10, color: "#6B5F4E",
-                                            background: "#EDE7DB", borderRadius: 8,
-                                            padding: 12, overflowX: "auto",
-                                            lineHeight: 1.6, whiteSpace: "pre-wrap",
-                                          }}>
-                                            {JSON.stringify(v2Result.rule_summary, null, 2)}
-                                          </pre>
-                                        </details>
-                                      </>
-                                    )}
-                                  </div>
-                                )}
+                                  );
+                                })()}
                               </div>
                             </div>
                           </div>,

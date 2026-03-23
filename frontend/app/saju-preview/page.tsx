@@ -319,6 +319,14 @@ function SajuPreviewContent() {
     }
   }
 
+  function goSpecialReport(path: string) {
+    if (!sajuId) {
+      alert("사주 정보를 찾지 못했어요. 목록에서 다시 들어와 주세요.");
+      return;
+    }
+    router.push(`${path}?saju_id=${encodeURIComponent(sajuId)}`);
+  }
+
   useEffect(() => {
     if (!sajuId && !isTestMode) {
       setError("사주 정보가 없습니다. 로컬 테스트: 주소에 ?test=1 을 붙여 보세요.");
@@ -1096,6 +1104,87 @@ function SajuPreviewContent() {
           >
             {deducting ? "확인 중..." : "사주 분석 시작하기 (분석권 1개)"}
           </button>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: 10,
+            }}
+          >
+            <button
+              type="button"
+              className="preview-tap"
+              onClick={() => goSpecialReport("/report/money")}
+              style={{
+                borderRadius: 14,
+                border: `1.5px solid ${PREVIEW_BORDER}`,
+                background: "#EFE6D8",
+                padding: "12px 10px",
+                color: PREVIEW_TEXT,
+                fontFamily: "'Gmarket Sans', sans-serif",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700 }}>💰 재물운 리포트</div>
+              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>5,900원</div>
+            </button>
+
+            <button
+              type="button"
+              className="preview-tap"
+              onClick={() => goSpecialReport("/report/love")}
+              style={{
+                borderRadius: 14,
+                border: `1.5px solid ${PREVIEW_BORDER}`,
+                background: "#F3E4DF",
+                padding: "12px 10px",
+                color: PREVIEW_TEXT,
+                fontFamily: "'Gmarket Sans', sans-serif",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700 }}>❤️ 연애운 리포트</div>
+              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>5,900원</div>
+            </button>
+
+            <button
+              type="button"
+              className="preview-tap"
+              onClick={() => goSpecialReport("/report/career")}
+              style={{
+                borderRadius: 14,
+                border: `1.5px solid ${PREVIEW_BORDER}`,
+                background: "#E8E3D9",
+                padding: "12px 10px",
+                color: PREVIEW_TEXT,
+                fontFamily: "'Gmarket Sans', sans-serif",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700 }}>💼 직업운 리포트</div>
+              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>5,900원</div>
+            </button>
+
+            <button
+              type="button"
+              className="preview-tap"
+              onClick={() => goSpecialReport("/add-v2")}
+              style={{
+                borderRadius: 14,
+                border: `1.5px solid #C9A66B`,
+                background: "#F5E9CF",
+                padding: "12px 10px",
+                color: PREVIEW_TEXT,
+                fontFamily: "'Gmarket Sans', sans-serif",
+                textAlign: "left",
+              }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 700 }}>🔮 심화 분석 리포트</div>
+              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>9,900원</div>
+            </button>
+          </div>
+
           <button
             type="button"
             className="preview-tap"

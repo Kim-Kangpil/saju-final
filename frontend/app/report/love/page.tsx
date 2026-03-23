@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
@@ -19,7 +19,7 @@ type LoveAnalysis = {
   language_points?: string[];
 };
 
-export default function LoveReportPage() {
+function LoveReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("saju_id") || "";
@@ -100,6 +100,31 @@ export default function LoveReportPage() {
         <ReportSection title="6. 인연이 오는 시기" loading={loading} error={error} content={analysis.timing} />
       </div>
     </main>
+  );
+}
+
+function LoveReportFallback() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#F5F1EA",
+        fontFamily: "'Gmarket Sans', sans-serif",
+        color: "#2C2417",
+      }}
+    >
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 16px" }}>
+        <ReportSection title="❤️ 연애운 분석" loading content="" />
+      </div>
+    </main>
+  );
+}
+
+export default function LoveReportPage() {
+  return (
+    <Suspense fallback={<LoveReportFallback />}>
+      <LoveReportContent />
+    </Suspense>
   );
 }
 

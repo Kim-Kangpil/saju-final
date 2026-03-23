@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
@@ -19,7 +19,7 @@ type MoneyAnalysis = {
   language_points?: string[];
 };
 
-export default function MoneyReportPage() {
+function MoneyReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("saju_id") || "";
@@ -103,6 +103,31 @@ export default function MoneyReportPage() {
         <ReportSection title="6. 재물 늘리는 방법" loading={loading} error={error} content={analysis.advice} />
       </div>
     </main>
+  );
+}
+
+function MoneyReportFallback() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#F5F1EA",
+        fontFamily: "'Gmarket Sans', sans-serif",
+        color: "#2C2417",
+      }}
+    >
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 16px" }}>
+        <ReportSection title="💰 재물운 분석" loading content="" />
+      </div>
+    </main>
+  );
+}
+
+export default function MoneyReportPage() {
+  return (
+    <Suspense fallback={<MoneyReportFallback />}>
+      <MoneyReportContent />
+    </Suspense>
   );
 }
 

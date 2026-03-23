@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
@@ -19,7 +19,7 @@ type CareerAnalysis = {
   language_points?: string[];
 };
 
-export default function CareerReportPage() {
+function CareerReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("saju_id") || "";
@@ -100,6 +100,31 @@ export default function CareerReportPage() {
         <ReportSection title="6. 올해 직업운" loading={loading} error={error} content={analysis.seun_career} />
       </div>
     </main>
+  );
+}
+
+function CareerReportFallback() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#F5F1EA",
+        fontFamily: "'Gmarket Sans', sans-serif",
+        color: "#2C2417",
+      }}
+    >
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 16px" }}>
+        <ReportSection title="💼 직업운 분석" loading content="" />
+      </div>
+    </main>
+  );
+}
+
+export default function CareerReportPage() {
+  return (
+    <Suspense fallback={<CareerReportFallback />}>
+      <CareerReportContent />
+    </Suspense>
   );
 }
 

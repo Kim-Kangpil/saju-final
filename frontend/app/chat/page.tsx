@@ -98,9 +98,9 @@ function getDayPillarHangulFromSaved(first: SavedSaju | null | undefined): strin
   try {
     const r = first.result as
       | {
-          day_pillar?: string;
-          day?: { cheongan?: { hanja?: string }; jiji?: { hanja?: string } };
-        }
+        day_pillar?: string;
+        day?: { cheongan?: { hanja?: string }; jiji?: { hanja?: string } };
+      }
       | undefined
       | null;
     if (!r || typeof r !== "object") return "";
@@ -330,7 +330,7 @@ function ChatPageInner({
                 const ck = `${yp}_${mp}_${dp}_${hp}`;
                 reportSummary = localStorage.getItem(`hsaju_report_summary_${ck}`);
               }
-            } catch {}
+            } catch { }
           }
 
           const body = {
@@ -1548,102 +1548,102 @@ function buildSajuAwareFollowupQuestions(
     if (/천을|天乙|noble|gui.?ren/i.test(q)) {
       return hasSajuProfile
         ? [
-            "Can you check my chart for 天乙貴人 and which pillar (year/month/day/hour) it sits in?",
-            "If 天乙貴人 clashes or combines with another branch, how is that usually read?",
-          ]
+          "Can you check my chart for 天乙貴人 and which pillar (year/month/day/hour) it sits in?",
+          "If 天乙貴人 clashes or combines with another branch, how is that usually read?",
+        ]
         : [
-            "What birth data do I need to tell you so you can see if I have 天乙貴人 in my pillars?",
-            "How does the pillar placement (year vs month vs day vs hour) change how 天乙貴人 shows up?",
-          ];
+          "What birth data do I need to tell you so you can see if I have 天乙貴人 in my pillars?",
+          "How does the pillar placement (year vs month vs day vs hour) change how 天乙貴人 shows up?",
+        ];
     }
     if (/empty|空亡|kong wang/i.test(q)) {
       return hasSajuProfile
         ? [
-            "Where is 空亡 in my chart and what does it tend to soften?",
-            "How do combinations or clashes involving the empty branch change the reading?",
-          ]
+          "Where is 空亡 in my chart and what does it tend to soften?",
+          "How do combinations or clashes involving the empty branch change the reading?",
+        ]
         : [
-            "What do you need from me to locate 空亡 in a ba zi chart?",
-            "Is 空亡 always “bad,” or can it be useful in some structures?",
-          ];
+          "What do you need from me to locate 空亡 in a ba zi chart?",
+          "Is 空亡 always “bad,” or can it be useful in some structures?",
+        ];
     }
     return hasSajuProfile
       ? [
-          "Which element or ten-god pattern stands out strongest in my four pillars?",
-          "How should I read this year's annual luck (liu nian) together with my da yun timing?",
-        ]
+        "Which element or ten-god pattern stands out strongest in my four pillars?",
+        "How should I read this year's annual luck (liu nian) together with my da yun timing?",
+      ]
       : [
-          "What birth details (date, solar/lunar, gender, time if known) do you need to cast my four pillars?",
-          "If I'm new to ba zi, which pillar—year, month, day, or hour—should I understand first?",
-        ];
+        "What birth details (date, solar/lunar, gender, time if known) do you need to cast my four pillars?",
+        "If I'm new to ba zi, which pillar—year, month, day, or hour—should I understand first?",
+      ];
   }
 
   // Korean
   if (/천을귀인|천을 귀인|천을/.test(q)) {
     return hasSajuProfile
       ? [
-          "내 만세력에서 천을귀인이 있는지, 년·월·일·시 중 어디에 붙는지 봐줄 수 있어?",
-          "천을귀인이 다른 지지랑 합이나 충으로 이어지면 보통 어떻게 읽으면 돼?",
-        ]
+        "내 만세력에서 천을귀인이 있는지, 년·월·일·시 중 어디에 붙는지 봐줄 수 있어?",
+        "천을귀인이 다른 지지랑 합이나 충으로 이어지면 보통 어떻게 읽으면 돼?",
+      ]
       : [
-          "천을귀인이 내 사주에 있는지 보려면 생년월일·양력음력·성별·출생시각을 어떻게 알려주면 돼?",
-          "천을귀인이 년·월·일·시 중 어디에 있을 때 체감이 달라지는 편이야?",
-        ];
+        "천을귀인이 내 사주에 있는지 보려면 생년월일·양력음력·성별·출생시각을 어떻게 알려주면 돼?",
+        "천을귀인이 년·월·일·시 중 어디에 있을 때 체감이 달라지는 편이야?",
+      ];
   }
   if (/공망/.test(q)) {
     return hasSajuProfile
       ? [
-          "내 사주에서 공망이 어디에 걸리는지, 어떤 기운이 비어 보이기 쉬운지 짚어줄 수 있어?",
-          "공망이 있는 글자가 합·충과 만나면 해석이 어떻게 달라져?",
-        ]
+        "내 사주에서 공망이 어디에 걸리는지, 어떤 기운이 비어 보이기 쉬운지 짚어줄 수 있어?",
+        "공망이 있는 글자가 합·충과 만나면 해석이 어떻게 달라져?",
+      ]
       : [
-          "공망을 보려면 일간 기준으로 어떤 정보가 필요해?",
-          "공망은 무조건 안 좋은 거야, 아니면 구조에 따라 다르기도 해?",
-        ];
+        "공망을 보려면 일간 기준으로 어떤 정보가 필요해?",
+        "공망은 무조건 안 좋은 거야, 아니면 구조에 따라 다르기도 해?",
+      ];
   }
   if (/도화|역마|화개|원진|백호|겁살|재살|월덕|천덕/.test(q)) {
     return hasSajuProfile
       ? [
-          "같은 신살이 내 만세력 년·월·일·시 중 어디에 있을 때 달라 보여?",
-          "이 신살이 합·충이나 다른 신살과 겹치면 만세력에서 어떻게 읽으면 돼?",
-        ]
+        "같은 신살이 내 만세력 년·월·일·시 중 어디에 있을 때 달라 보여?",
+        "이 신살이 합·충이나 다른 신살과 겹치면 만세력에서 어떻게 읽으면 돼?",
+      ]
       : [
-          "이 신살을 내 사주에서 찾으려면 생년월일·양력음력·성별·시간을 어떻게 알려줘야 해?",
-          "이 신살이랑 자주 같이 보는 다른 신살·십성 조합이 뭐야?",
-        ];
+        "이 신살을 내 사주에서 찾으려면 생년월일·양력음력·성별·시간을 어떻게 알려줘야 해?",
+        "이 신살이랑 자주 같이 보는 다른 신살·십성 조합이 뭐야?",
+      ];
   }
   if (/십성|비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인/.test(q)) {
     return hasSajuProfile
       ? [
-          "내 일간 기준으로 이 십성이 년·월·일·시 중 어디에 많이 깔리면 만세력에서 체감이 커?",
-          "이 십성이 다른 천간·지지랑 합이나 극으로 묶이면 사주에서 어떻게 읽어?",
-        ]
+        "내 일간 기준으로 이 십성이 년·월·일·시 중 어디에 많이 깔리면 만세력에서 체감이 커?",
+        "이 십성이 다른 천간·지지랑 합이나 극으로 묶이면 사주에서 어떻게 읽어?",
+      ]
       : [
-          "십성을 내 사주에 대입하려면 일간(일주의 윗글자)을 알아야 하는데, 어떤 정보가 필요해?",
-          "같은 십성이라도 월주와 시주 중 어디에 있을 때 만세력 해석이 달라져?",
-        ];
+        "십성을 내 사주에 대입하려면 일간(일주의 윗글자)을 알아야 하는데, 어떤 정보가 필요해?",
+        "같은 십성이라도 월주와 시주 중 어디에 있을 때 만세력 해석이 달라져?",
+      ];
   }
   if (/대운|세운|합충|형파해|삼합/.test(q)) {
     return hasSajuProfile
       ? [
-          "지금 말한 내용을 내 대운 흐름이랑 겹쳐 보면 어떤 점이 달라져?",
-          "같은 패턴이 세운(올해·내년)에 들어올 때는 어떻게 보면 돼?",
-        ]
+        "지금 말한 내용을 내 대운 흐름이랑 겹쳐 보면 어떤 점이 달라져?",
+        "같은 패턴이 세운(올해·내년)에 들어올 때는 어떻게 보면 돼?",
+      ]
       : [
-          "대운을 보려면 성별이 왜 필요해?",
-          "세운이랑 대운을 같이 볼 때 가장 먼저 보는 건 뭐야?",
-        ];
+        "대운을 보려면 성별이 왜 필요해?",
+        "세운이랑 대운을 같이 볼 때 가장 먼저 보는 건 뭐야?",
+      ];
   }
 
   return hasSajuProfile
     ? [
-        "내 사주에서 가장 강한 기운은 뭐야?",
-        "올해 대운이나 세운 흐름이 어떻게 되는지, 내 만세력이랑 같이 알려줄 수 있어?",
-      ]
+      "내 사주에서 가장 강한 기운은 뭐야?",
+      "올해 대운이나 세운 흐름이 어떻게 되는지, 내 만세력이랑 같이 알려줄 수 있어?",
+    ]
     : [
-        "내 사주를 보려면 생년월일·양력음력·성별·출생 시각을 어떻게 알려주면 돼?",
-        "만세력에서 년주·월주·일주·시주 중 어디부터 보면 이해하기 쉬워?",
-      ];
+      "내 사주를 보려면 생년월일·양력음력·성별·출생 시각을 어떻게 알려주면 돼?",
+      "만세력에서 년주·월주·일주·시주 중 어디부터 보면 이해하기 쉬워?",
+    ];
 }
 
 function normalizeAssistantMessage(
@@ -1870,9 +1870,11 @@ function ChatContent({
     if (last?.role !== "user") return;
     const tid = window.setTimeout(() => {
       requestAnimationFrame(() => {
-        scrollLastUserMsg(lastUserMsgRef.current);
+        requestAnimationFrame(() => {
+          scrollLastUserMsg(lastUserMsgRef.current);
+        });
       });
-    }, 50);
+    }, 150);
     return () => clearTimeout(tid);
   }, [messages]);
 
@@ -1932,8 +1934,12 @@ function ChatContent({
     try {
       await sendMessage({ text: trimmed });
       window.setTimeout(() => {
-        scrollLastUserMsg(lastUserMsgRef.current);
-      }, 50);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            scrollLastUserMsg(lastUserMsgRef.current);
+          });
+        });
+      }, 100);
       if (shouldIncrementGuestCount) {
         const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
         localStorage.setItem("guest_chat_count", String(guestCount + 1));
@@ -2058,7 +2064,7 @@ function ChatContent({
                           className="chat-msg-copy"
                           aria-label="복사"
                           onClick={() => {
-                            navigator.clipboard?.writeText(followup.mainText).catch(() => {});
+                            navigator.clipboard?.writeText(followup.mainText).catch(() => { });
                           }}
                         >
                           <Icon icon="mdi:content-copy" width={14} />

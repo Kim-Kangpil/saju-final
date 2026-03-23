@@ -722,6 +722,23 @@ def interpret_all(saju_data: dict) -> dict:
     personality = interpret_personality(saju_data)
     period      = interpret_current_period(saju_data)
 
+    from logic.saju_engine.core.tonggeun import calculate_tonggeun, format_tonggeun_for_prompt
+    from logic.saju_engine.core.geunmyo import analyze_geunmyo, format_geunmyo_for_prompt
+    from logic.saju_engine.core.hyeong_haehae import analyze_hyeong_haehae, format_hyeong_for_prompt
+    from logic.saju_engine.core.seun import analyze_seun, format_seun_for_prompt
+
+    try:
+        tonggeun = calculate_tonggeun(saju_data)
+        geunmyo = analyze_geunmyo(saju_data)
+        hyeong = analyze_hyeong_haehae(saju_data)
+        seun = analyze_seun(saju_data)
+    except Exception as e:
+        print(f"추가 엔진 오류: {e}")
+        tonggeun = {}
+        geunmyo = {}
+        hyeong = {}
+        seun = {}
+
     # GPT에게 넘길 요약 블록
     summary_for_gpt = {
         "ilgan": _get_ilgan(saju_data),
@@ -732,6 +749,11 @@ def interpret_all(saju_data: dict) -> dict:
         "career_points":      career["language_points"],
         "personality_points": personality["language_points"],
         "period_points":      period["language_points"],
+        "current_period_points": period["language_points"],
+        "tonggeun_points": format_tonggeun_for_prompt(tonggeun),
+        "geunmyo_points": format_geunmyo_for_prompt(geunmyo),
+        "hyeong_points": format_hyeong_for_prompt(hyeong),
+        "seun_points": format_seun_for_prompt(seun),
         "all_patterns": (
             money["patterns"]
             + love["patterns"]
@@ -747,5 +769,9 @@ def interpret_all(saju_data: dict) -> dict:
         "career":       career,
         "personality":  personality,
         "current_period": period,
+        "tonggeun": tonggeun,
+        "geunmyo": geunmyo,
+        "hyeong_haehae": hyeong,
+        "seun_2026": seun,
         "summary_for_gpt": summary_for_gpt,
     }

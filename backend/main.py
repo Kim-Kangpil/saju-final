@@ -1412,6 +1412,7 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
 
         # ✅ 3-5. 규칙 기반 사주 해석 (interpret_all)
         interpretation = None
+        interpretation_block = ""
         try:
             from logic.saju_engine.core.saju_interpreter import interpret_all
             saju_data_for_interp = {
@@ -1426,6 +1427,19 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
                 "gender": getattr(req, "gender", None),
             }
             interpretation = interpret_all(saju_data_for_interp)
+            summary = interpretation.get("summary_for_gpt", {}) if isinstance(interpretation, dict) else {}
+            interpretation_block = f"""
+[규칙 기반 사주 해석 결과 — 반드시 이 내용 기반으로만 답변]
+성격: {summary.get('personality_points', '')}
+재물: {summary.get('money_points', '')}
+연애: {summary.get('love_points', '')}
+직업: {summary.get('career_points', '')}
+현재시기: {summary.get('current_period_points', summary.get('period_points', ''))}
+통근투출: {summary.get('tonggeun_points', '')}
+기둥별구조: {summary.get('geunmyo_points', '')}
+형파해원진: {summary.get('hyeong_points', '')}
+올해세운: {summary.get('seun_points', '')}
+"""
             print(f"✅ interpret_all 완료: {list(interpretation.keys())}")
         except Exception as e:
             print(f"⚠️ interpret_all 실패: {e}")
@@ -1502,11 +1516,14 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
             }
 
         try:
+            theories_for_gpt = theories
+            if interpretation_block:
+                theories_for_gpt = f"{theories_for_gpt}\n\n{interpretation_block}"
             # 종합 해석
             content = generator.generate_comprehensive_interpretation(
                 analysis=analysis,
                 tone=req.tone,
-                theories=theories,
+                theories=theories_for_gpt,
                 interpretation=interpretation
             )
 
@@ -1988,7 +2005,11 @@ async def summary_gpt(req: SummaryGPTRequest, request: Request):
                     f"재물: {_fmt(s.get('money_points'))}\n"
                     f"연애: {_fmt(s.get('love_points'))}\n"
                     f"직업: {_fmt(s.get('career_points'))}\n"
-                    f"현재시기: {_fmt(s.get('period_points'))}\n"
+                    f"현재시기: {_fmt(s.get('current_period_points', s.get('period_points')))}\n"
+                    f"통근투출: {_fmt(s.get('tonggeun_points'))}\n"
+                    f"기둥별구조: {_fmt(s.get('geunmyo_points'))}\n"
+                    f"형파해원진: {_fmt(s.get('hyeong_points'))}\n"
+                    f"올해세운: {_fmt(s.get('seun_points'))}\n"
                 )
                 system_prompt = interp_block + "\n" + system_prompt
         except Exception as e:

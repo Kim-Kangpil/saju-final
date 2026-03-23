@@ -105,3 +105,89 @@ def save_payment(user_id: str, payment_id: str, order_id: str, status: str = "pa
         conn.commit()
     finally:
         conn.close()
+
+
+def _ensure_purchased_reports_table(cur) -> None:
+    if USE_PG:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS purchased_reports (
+                id BIGSERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                report_type TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                kakao_tid TEXT DEFAULT '',
+                purchased_at TEXT NOT NULL
+            )
+        """)
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pr_user_type ON purchased_reports(user_id, report_type)"
+        )
+    else:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS purchased_reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                report_type TEXT NOT NULL,
+                amount INTEGER NOT NULL,
+                kakao_tid TEXT DEFAULT '',
+                purchased_at TEXT NOT NULL
+            )
+        """)
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_pr_user_type ON purchased_reports(user_id, report_type)"
+        )
+
+
+def save_purchased_report(user_id: int, report_type: str, amount: int, tid: str = "") -> None:
+    """리포트 단건 구매 저장."""
+    now = datetime.utcnow().isoformat()
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        _ensure_purchased_reports_table(cur)
+        cur.execute(
+            adapt("INSERT INTO purchased_reports (user_id, report_type, amount, kakao_tid, purchased_at) VALUES (?, ?, ?, ?, ?)"),
+            (user_id, report_type, amount, tid, now),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def has_purchased_report(user_id: int, report_type: str) -> bool:
+    """해당 유저가 report_type 리포트를 구매한 적 있는지 확인."""
+    try:
+        conn = _conn()
+        try:
+            cur = conn.cursor()
+            _ensure_purchased_reports_table(cur)
+            conn.commit()
+            cur.execute(
+                adapt("SELECT id FROM purchased_reports WHERE user_id = ? AND report_type = ? LIMIT 1"),
+                (user_id, report_type),
+            )
+            return cur.fetchone() is not None
+        finally:
+            conn.close()
+    except Exception:
+        return False
+
+
+def get_purchased_reports(user_id: int) -> list:
+    """유저의 구매 리포트 목록 반환."""
+    try:
+        conn = _conn()
+        try:
+            cur = conn.cursor()
+            _ensure_purchased_reports_table(cur)
+            conn.commit()
+            cur.execute(
+                adapt("SELECT report_type, amount, kakao_tid, purchased_at FROM purchased_reports WHERE user_id = ? ORDER BY purchased_at DESC"),
+                (user_id,),
+            )
+            rows = cur.fetchall()
+            return [{"report_type": r[0], "amount": r[1], "tid": r[2], "purchased_at": r[3]} for r in rows]
+        finally:
+            conn.close()
+    except Exception:
+        return []

@@ -27,7 +27,7 @@ export default function SeedChargePage({ params }: { params?: Promise<Record<str
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         credentials: "include",
-        body: JSON.stringify({ order_type: "analysis_ticket" }),
+        body: JSON.stringify({ order_type: "basic" }),
       });
       if (res.status === 401) { router.push("/login"); return; }
       const data = await res.json();

@@ -1421,9 +1421,16 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
     _mst = refresh_and_get_membership_status(_uid)
-    if not _mst.get("is_member"):
-        if get_report_credits(_uid) <= 0:
-            raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+    _is_pro = bool(_mst.get("is_member"))
+    if (req.report_type or "basic").lower() == "deep":
+        if not _is_pro:
+            from logic.payment_db import has_purchased_report as _has_pr
+            if not _has_pr(_uid, "deep"):
+                raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 9900}, ensure_ascii=False))
+    else:
+        if not _is_pro:
+            if get_report_credits(_uid) <= 0:
+                raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
 
     try:
         print(f"✅ GPT 해석 요청: day_stem={req.day_stem}, tone={req.tone}")
@@ -1715,8 +1722,9 @@ async def _generate_deep_topic_report(
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
     _mst = refresh_and_get_membership_status(_uid)
     if not _mst.get("is_member"):
-        if get_report_credits(_uid) <= 0:
-            raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+        from logic.payment_db import has_purchased_report as _has_pr
+        if not _has_pr(_uid, topic_key) and get_report_credits(_uid) <= 0:
+            raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 5900}, ensure_ascii=False))
 
     if not client:
         return {"success": False, "error": "OPENAI_API_KEY not configured"}
@@ -1853,6 +1861,27 @@ async def payment_status_api(request: Request):
     }
 
 
+@app.get("/api/payment/report-access/{report_type}")
+async def report_access_check(report_type: str, request: Request):
+    """리포트 접근 권한 확인 — Pro·구매·분析권 여부에 따라 has_access 반환."""
+    _price_map = {
+        "basic": 1900, "deep": 9900,
+        "money": 5900, "love": 5900, "career": 5900, "couple": 13900,
+    }
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        return {"has_access": False, "reason": "not_logged_in", "price": _price_map.get(report_type, 5900)}
+    mst = refresh_and_get_membership_status(user_id)
+    if mst.get("is_member"):
+        return {"has_access": True, "reason": "pro"}
+    from logic.payment_db import has_purchased_report
+    if has_purchased_report(user_id, report_type):
+        return {"has_access": True, "reason": "purchased"}
+    if report_type in ("basic", "analysis_ticket") and get_report_credits(user_id) > 0:
+        return {"has_access": True, "reason": "credits"}
+    return {"has_access": False, "reason": "purchase_required", "price": _price_map.get(report_type, 5900)}
+
+
 @app.post("/api/chat/consume")
 async def chat_consume_api(request: Request):
     """로그인 유저 채팅 1회 차감 — Pro면 무제한, 아니면 하루 3회."""
@@ -1872,12 +1901,20 @@ async def kakao_pay_ready(request: Request):
         body = await request.json()
     except Exception:
         body = {}
-    order_type = body.get("order_type", "analysis_ticket")
-    if order_type == "pro_monthly":
-        item_name, amount = "한양사주 Pro (월간)", 3900
-    else:
-        item_name, amount = "분析권 1개", 1900
-        order_type = "analysis_ticket"
+    _ORDER_PRICE_MAP = {
+        "pro_monthly":     ("한양사주 Pro (월간)", 3900),
+        "basic":           ("분석권 1개", 1900),
+        "analysis_ticket": ("분석권 1개", 1900),
+        "deep":            ("심화 리포트", 9900),
+        "money":           ("재물운 리포트", 5900),
+        "love":            ("연애운 리포트", 5900),
+        "career":          ("직업운 리포트", 5900),
+        "couple":          ("궁합 리포트", 13900),
+    }
+    order_type = body.get("order_type", "basic")
+    if order_type not in _ORDER_PRICE_MAP:
+        order_type = "basic"
+    item_name, amount = _ORDER_PRICE_MAP[order_type]
     cid = os.getenv("KAKAO_PAY_CID", "TC0ONETIME")
     secret_key = os.getenv("KAKAO_PAY_SECRET_KEY", "")
     frontend_url = os.getenv("FRONTEND_URL", "https://hsaju.com")
@@ -1894,7 +1931,7 @@ async def kakao_pay_ready(request: Request):
         "tax_free_amount": amount,
         "approval_url": f"{frontend_url}/payment/success?order_id={order_id}&order_type={order_type}",
         "fail_url": f"{frontend_url}/payment/fail",
-        "cancel_url": f"{frontend_url}/payment/fail",
+        "cancel_url": f"{frontend_url}/payment/cancel",
     }
     import httpx as _httpx
     try:
@@ -1962,9 +1999,17 @@ async def kakao_pay_approve(request: Request):
     if resp.status_code != 200:
         raise HTTPException(status_code=502, detail=f"KakaoPay approve 실패: {resp.text}")
     # 혜택 지급
+    _SINGLE_REPORT_PRICES = {"deep": 9900, "money": 5900, "love": 5900, "career": 5900, "couple": 13900}
     if order_type == "pro_monthly":
         activate_membership(user_id, 1)
         redirect_url = "/home?payment=pro_success"
+    elif order_type in ("basic", "analysis_ticket"):
+        add_report_credits(user_id, 1)
+        redirect_url = "/home?payment=ticket_success"
+    elif order_type in _SINGLE_REPORT_PRICES:
+        from logic.payment_db import save_purchased_report
+        save_purchased_report(user_id, order_type, _SINGLE_REPORT_PRICES[order_type], tid)
+        redirect_url = f"/report/{order_type}"
     else:
         add_report_credits(user_id, 1)
         redirect_url = "/home?payment=ticket_success"

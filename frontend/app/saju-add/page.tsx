@@ -248,7 +248,7 @@ export default function SajuAddPage({
     const newErrors = {
       name: !name.trim(),
       birth: birthRaw.length !== 8,
-      time: knowTime === "yes" ? timeRaw.length !== 4 : true,
+      time: knowTime === "yes" ? timeRaw.length !== 4 : false,
       calendar: !calendarType,
       gender: !gender,
     };
@@ -689,6 +689,12 @@ export default function SajuAddPage({
                 }}
               />
               {errors.birth && <p style={{ marginTop: 6, fontSize: 12, color: "#e11d48" }}>생년월일 8자리를 입력해주세요.</p>}
+
+              {knowTime === "no" && (
+                <p style={{ marginBottom: 8, fontSize: 13, color: "#6B6B6B" }}>
+                  💡 시간을 알면 더 정확한 분석이 가능해요
+                </p>
+              )}
 
               {knowTime === "yes" && (
                 <>

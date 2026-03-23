@@ -1212,6 +1212,11 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
 [규칙 기반 분석 결과 — 이 내용만 사용]
 {analysis_block}
 
+[작성 원칙]
+읽다가 '나 얘기인데?' 반응이 나와야 성공.
+사주 용어 없이 현실 언어로.
+한 줄 + 괄호 힌트 방식 사용.
+
 [작성 규칙]
 1) 사주 전문용어 금지. 일상 언어만 사용.
 2) 각 핵심 문장은 "한 줄 + (짧은 괄호 힌트)" 형태로 작성.
@@ -1585,7 +1590,8 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
                 analysis=analysis,
                 tone=req.tone,
                 theories=theories_for_gpt,
-                interpretation=interpretation
+                interpretation=interpretation,
+                report_type=req.report_type or 'basic',
             )
 
             core_values = generator.generate_core_values(
@@ -2190,13 +2196,21 @@ async def summary_gpt(req: SummaryGPTRequest, request: Request):
         except Exception as e:
             print(f"⚠️ summary-gpt interpreter 실패: {e}")
 
+        system_prompt += (
+            "\n\n[작성 원칙]\n"
+            "읽다가 '나 얘기인데?' 반응이 나와야 성공.\n"
+            "사주 용어 없이 현실 언어로.\n"
+            "한 줄 + 괄호 힌트 방식 사용.\n\n"
+            "[분량] 전체 950~1,050자."
+        )
+
         resp = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": req.user},
             ],
-            max_tokens=1500,
+            max_tokens=1000,
             temperature=0.2,
         )
         content = (resp.choices[0].message.content or "").strip()

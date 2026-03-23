@@ -567,7 +567,7 @@ class GPTInterpretationGenerator:
                 harmony_patterns.append(p)
         return harmony_patterns
 
-    def generate_comprehensive_interpretation(self, analysis, tone='empathy', theories='', interpretation=None):
+    def generate_comprehensive_interpretation(self, analysis, tone='empathy', theories='', interpretation=None, report_type='basic'):
         """
         해석 엔진의 상세 분석 결과를 활용한 종합 해석 생성
 
@@ -696,9 +696,17 @@ class GPTInterpretationGenerator:
 ✅ 지금 당장 해야 할 것
 구체적인 행동 3~5개. "~해보세요" 형태로. 실행 가능한 것만.
 
+[작성 원칙]
+읽다가 '나 얘기인데?' 반응이 나와야 성공.
+사주 용어 없이 현실 언어로.
+한 줄 + 괄호 힌트 방식 사용.
+
 [분량]
-전체 4000~5000자. 각 섹션 400~600자. 읽다 보면 "이거 나 얘기네" 하게 만들 것.
-"""
+""" + (
+    "전체 6,000~8,000자. 각 섹션 700~900자.\n통근투출·기둥별구조·형파해원진·올해세운 분석을 본문에 자연스럽게 녹여낼 것."
+    if (report_type or 'basic').lower() == 'deep' else
+    "전체 4,000~5,000자. 각 섹션 400~600자."
+) + "\n"""
 
         try:
             response = self.client.chat.completions.create(
@@ -708,7 +716,7 @@ class GPTInterpretationGenerator:
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.8,
-                max_tokens=5000
+                max_tokens=4000 if (report_type or 'basic').lower() == 'deep' else 3000
             )
 
             content = response.choices[0].message.content

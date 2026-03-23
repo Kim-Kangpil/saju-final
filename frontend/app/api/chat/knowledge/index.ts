@@ -216,9 +216,9 @@ export function getKnowledgeBlocks(intent: Intent1, text: string): string[] {
         blocks.push(ILJU_INTRO);
         blocks.push(ILJU_60);
       }
-      // base(2) + 말투(1)만이면 토픽 미매칭 → 핵심 이론 기본 세트
+      // base(2) + 말투(1)만이면 토픽 미매칭 → 핵심 이론 기본 세트 (귀인 제외 — 명시적 요청 시에만 주입)
       if (blocks.length === 3) {
-        blocks.push(CHEONEUL_GWIAIN_CORE, TEN_GODS_INTRO, HAPCHUNG_FULL);
+        blocks.push(TEN_GODS_INTRO, HAPCHUNG_FULL, SINSAL_FULL);
       }
       return blocks;
     }

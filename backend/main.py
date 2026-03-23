@@ -104,6 +104,9 @@ from logic.user_db import (
     deduct_seed,
     refresh_and_get_membership_status,
     activate_membership,
+    get_report_credits,
+    add_report_credits,
+    deduct_report_credit,
 )
 from logic.session_token import verify_session_token
 
@@ -127,6 +130,14 @@ try:
     print("✅ 결제 DB 초기화 완료")
 except Exception as e:
     print(f"⚠️ 결제 DB 초기화: {e}")
+
+# 일간 채팅 카운터 DB 초기화
+try:
+    from logic.daily_chat_db import init_daily_chat_db
+    init_daily_chat_db()
+    print("✅ 일간 채팅 DB 초기화 완료")
+except Exception as e:
+    print(f"⚠️ 일간 채팅 DB 초기화: {e}")
 
 # 사용자 DB 초기화
 try:
@@ -1357,8 +1368,17 @@ async def test_new_engine(req: InterpretRequest):
 
 
 @app.post("/saju/interpret-gpt")
-async def interpret_with_gpt(req: GPTInterpretRequest):
-    """✅ RAG 기반 GPT 오행 해석 (합화 포함)"""
+async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
+    """✅ RAG 기반 GPT 오행 해석 (합화 포함) — Pro 또는 분析권 보유 필요."""
+    # 접근 제어: Pro 또는 분析권 보유
+    _uid = get_user_id_from_request(request)
+    if _uid is None:
+        raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+    _mst = refresh_and_get_membership_status(_uid)
+    if not _mst.get("is_member"):
+        if get_report_credits(_uid) <= 0:
+            raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+
     try:
         print(f"✅ GPT 해석 요청: day_stem={req.day_stem}, tone={req.tone}")
 
@@ -1631,6 +1651,161 @@ SEED_PRODUCTS = {
     "seed_10": {"orderName": "씨앗 10개+보너스 2개", "amount": 7700},
 }
 
+# ── KakaoPay ──────────────────────────────────────────────────────────────
+
+KAKAO_PAY_API = "https://open-api.kakaopay.com/online/v1/payment"
+
+
+@app.get("/api/payment/status")
+async def payment_status_api(request: Request):
+    """현재 로그인 유저의 결제 상태 반환. 비로그인 시 기본값."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        return {
+            "is_pro": False, "pro_expires_at": None,
+            "report_credits": 0, "daily_chat_count": 0, "chat_limit": 3,
+        }
+    from logic.daily_chat_db import get_daily_chat_count
+    status = refresh_and_get_membership_status(user_id)
+    credits = get_report_credits(user_id)
+    daily_count = get_daily_chat_count(str(user_id))
+    return {
+        "is_pro": bool(status.get("is_member")),
+        "pro_expires_at": status.get("membership_expires_at"),
+        "report_credits": credits,
+        "daily_chat_count": daily_count,
+        "chat_limit": 3,
+    }
+
+
+@app.post("/api/chat/consume")
+async def chat_consume_api(request: Request):
+    """로그인 유저 채팅 1회 차감 — Pro면 무제한, 아니면 하루 3회."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    status = refresh_and_get_membership_status(user_id)
+    if status.get("is_member"):
+        return {"ok": True, "is_pro": True}
+    from logic.daily_chat_db import consume_daily_chat
+    ok, count = consume_daily_chat(str(user_id), limit=3)
+    if not ok:
+        raise HTTPException(
+            status_code=429,
+            detail=json.dumps({"error": "daily_limit_exceeded", "limit": 3}, ensure_ascii=False),
+        )
+    return {"ok": True, "is_pro": False, "count": count}
+
+
+@app.post("/api/payment/kakao/ready")
+async def kakao_pay_ready(request: Request):
+    """KakaoPay 결제 준비 — tid 및 redirect URL 반환."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    order_type = body.get("order_type", "analysis_ticket")
+    if order_type == "pro_monthly":
+        item_name, amount = "한양사주 Pro (월간)", 3900
+    else:
+        item_name, amount = "분析권 1개", 1900
+        order_type = "analysis_ticket"
+    cid = os.getenv("KAKAO_PAY_CID", "TC0ONETIME")
+    secret_key = os.getenv("KAKAO_PAY_SECRET_KEY", "")
+    frontend_url = os.getenv("FRONTEND_URL", "https://hsaju.com")
+    import uuid as _uuid
+    order_id = f"kp_{_uuid.uuid4().hex[:16]}"
+    payload = {
+        "cid": cid,
+        "partner_order_id": order_id,
+        "partner_user_id": str(user_id),
+        "item_name": item_name,
+        "quantity": 1,
+        "total_amount": amount,
+        "vat_amount": 0,
+        "tax_free_amount": amount,
+        "approval_url": f"{frontend_url}/payment/success?order_id={order_id}&order_type={order_type}",
+        "fail_url": f"{frontend_url}/payment/fail",
+        "cancel_url": f"{frontend_url}/payment/fail",
+    }
+    import httpx as _httpx
+    try:
+        async with _httpx.AsyncClient() as hc:
+            resp = await hc.post(
+                f"{KAKAO_PAY_API}/ready",
+                headers={"Authorization": f"SECRET_KEY {secret_key}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=15,
+            )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"KakaoPay 연결 실패: {e}")
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"KakaoPay ready 실패: {resp.text}")
+    data = resp.json()
+    tid = data.get("tid", "")
+    from logic.payment_db import save_pending_payment
+    save_pending_payment(order_id=order_id, user_id=user_id, order_type=order_type, tid=tid)
+    return {
+        "tid": tid,
+        "order_id": order_id,
+        "next_redirect_mobile_url": data.get("next_redirect_mobile_url"),
+        "next_redirect_pc_url": data.get("next_redirect_pc_url"),
+    }
+
+
+@app.post("/api/payment/kakao/approve")
+async def kakao_pay_approve(request: Request):
+    """KakaoPay 결제 승인 — 성공 시 멤버십 or 분析권 지급."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    pg_token = (body.get("pg_token") or "").strip()
+    order_id = (body.get("order_id") or "").strip()
+    if not pg_token or not order_id:
+        raise HTTPException(status_code=400, detail="pg_token, order_id 필수")
+    from logic.payment_db import get_pending_payment, save_payment
+    pending = get_pending_payment(order_id)
+    if not pending:
+        raise HTTPException(status_code=404, detail="주문을 찾을 수 없습니다.")
+    tid = pending["tid"]
+    order_type = pending["order_type"]
+    cid = os.getenv("KAKAO_PAY_CID", "TC0ONETIME")
+    secret_key = os.getenv("KAKAO_PAY_SECRET_KEY", "")
+    payload = {
+        "cid": cid, "tid": tid,
+        "partner_order_id": order_id, "partner_user_id": str(user_id),
+        "pg_token": pg_token,
+    }
+    import httpx as _httpx
+    try:
+        async with _httpx.AsyncClient() as hc:
+            resp = await hc.post(
+                f"{KAKAO_PAY_API}/approve",
+                headers={"Authorization": f"SECRET_KEY {secret_key}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=15,
+            )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"KakaoPay 연결 실패: {e}")
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"KakaoPay approve 실패: {resp.text}")
+    # 혜택 지급
+    if order_type == "pro_monthly":
+        activate_membership(user_id, 1)
+        redirect_url = "/home?payment=pro_success"
+    else:
+        add_report_credits(user_id, 1)
+        redirect_url = "/home?payment=ticket_success"
+    save_payment(user_id=str(user_id), payment_id=tid, order_id=order_id, status="paid")
+    return {"success": True, "order_type": order_type, "redirect_url": redirect_url}
+
 
 @app.post("/payment/create")
 async def payment_create(req: Optional[PaymentCreateRequest] = None):
@@ -1783,8 +1958,18 @@ def get_saju(saju_id: int, request: Request):
 
 
 @app.post("/saju/summary-gpt")
-async def summary_gpt(req: SummaryGPTRequest):
-    """종합 요약 및 인생 가이드용 GPT 호출 (system + user 프롬프트 → 5단 요약 텍스트)"""
+async def summary_gpt(req: SummaryGPTRequest, request: Request):
+    """종합 요약 GPT — Pro 또는 분析권 1개 차감 후 허용."""
+    # 접근 제어: Pro 또는 분析권 보유 확인 + 차감
+    _uid = get_user_id_from_request(request)
+    if _uid is None:
+        raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+    _mst = refresh_and_get_membership_status(_uid)
+    if not _mst.get("is_member"):
+        _ok, _remaining = deduct_report_credit(_uid)
+        if not _ok:
+            raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+
     try:
         if not client:
             print("⚠️ OPENAI_API_KEY 없음 — summary-gpt 스킵")

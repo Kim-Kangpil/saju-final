@@ -27,6 +27,7 @@ function MyPageContent({
   const [sajuList, setSajuList] = useState<SavedSaju[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [seedCount, setSeedCount] = useState<number>(0);
+  const [isPro, setIsPro] = useState(false);
   const [seedCharged, setSeedCharged] = useState(false);
 
   useEffect(() => {
@@ -63,12 +64,15 @@ function MyPageContent({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/seeds`, {
+        const res = await fetch(`${API_BASE}/api/payment/status`, {
           credentials: "include",
           headers: getAuthHeaders(),
         });
         const data = await res.json().catch(() => ({}));
-        if (!cancelled && typeof data?.seeds === "number") setSeedCount(data.seeds);
+        if (!cancelled) {
+          if (typeof data?.report_credits === "number") setSeedCount(data.report_credits);
+          if (typeof data?.is_pro === "boolean") setIsPro(data.is_pro);
+        }
       } catch {
         if (!cancelled) setSeedCount(0);
       }
@@ -256,9 +260,17 @@ function MyPageContent({
             <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>
               마이페이지
             </div>
-            <div style={{ fontSize: 12, color: "var(--text-primary)" }}>
-              분석권 <strong style={{ color: "var(--text-primary)" }}>{seedCount}개</strong> 보유 중
-            </div>
+            {isPro ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-primary)" }}>
+                <Icon icon="mdi:crown" width={13} style={{ color: "#c9a227" }} />
+                <strong>Pro 구독 중</strong>
+                <span style={{ color: "#6b7280", marginLeft: 4 }}>· 분석권 {seedCount}개</span>
+              </div>
+            ) : (
+              <div style={{ fontSize: 12, color: "var(--text-primary)" }}>
+                분석권 <strong style={{ color: "var(--text-primary)" }}>{seedCount}개</strong> 보유 중
+              </div>
+            )}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button

@@ -877,6 +877,30 @@ export async function POST(req: Request) {
     }
   }
 
+  // ── 로그인 유저: 하루 3회 채팅 제한 (Pro면 무제한) ──────────────────────
+  if (!isGuest) {
+    const cookieHeader = req.headers.get("cookie") || "";
+    const authHeader = req.headers.get("authorization") || "";
+    const consumeRes = await fetch(`${API_BASE}/api/chat/consume`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+        ...(authHeader ? { Authorization: authHeader } : {}),
+      },
+      body: JSON.stringify({}),
+    }).catch(() => null);
+
+    if (consumeRes && !consumeRes.ok) {
+      if (consumeRes.status === 429 || consumeRes.status === 403) {
+        return new Response(
+          JSON.stringify({ error: "daily_limit_exceeded", limit: 3 }),
+          { status: 429, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+  }
+
   // ── 로그인 유저: 멤버십 (CHAT_MEMBERSHIP_REQUIRED=true 일 때만 검사) ──
   if (!isGuest && CHAT_MEMBERSHIP_REQUIRED) {
     const cookieHeader = req.headers.get("cookie") || "";

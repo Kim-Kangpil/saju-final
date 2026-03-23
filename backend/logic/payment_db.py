@@ -46,6 +46,54 @@ def init_payments_db():
         conn.close()
 
 
+def save_pending_payment(order_id: str, user_id: int, order_type: str, tid: str) -> None:
+    """카카오페이 ready 후 tid·order_type 임시 저장."""
+    now = datetime.utcnow().isoformat()
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS pending_payments (
+                order_id TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                order_type TEXT NOT NULL,
+                tid TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
+        cur.execute(
+            adapt("""
+            INSERT INTO pending_payments (order_id, user_id, order_type, tid, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(order_id) DO UPDATE SET
+              tid = EXCLUDED.tid, order_type = EXCLUDED.order_type
+            """),
+            (order_id, user_id, order_type, tid, now),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def get_pending_payment(order_id: str) -> dict | None:
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                adapt("SELECT user_id, order_type, tid FROM pending_payments WHERE order_id = ?"),
+                (order_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return {"user_id": int(row[0]), "order_type": row[1], "tid": row[2]}
+        except Exception:
+            return None
+    finally:
+        conn.close()
+
+
 def save_payment(user_id: str, payment_id: str, order_id: str, status: str = "paid"):
     conn = _conn()
     try:

@@ -40,6 +40,7 @@ def init_user_db():
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_member INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_started_at TEXT",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_expires_at TEXT",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS report_credits INTEGER DEFAULT 0",
             ):
                 cur.execute(col_sql)
         else:
@@ -64,6 +65,7 @@ def init_user_db():
                 "ALTER TABLE users ADD COLUMN is_member INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN membership_started_at TEXT",
                 "ALTER TABLE users ADD COLUMN membership_expires_at TEXT",
+                "ALTER TABLE users ADD COLUMN report_credits INTEGER DEFAULT 0",
             ):
                 try:
                     cur.execute(col_sql)
@@ -299,6 +301,62 @@ def activate_membership(user_id: int, months: int) -> dict:
             "membership_started_at": iso_now,
             "membership_expires_at": iso_exp,
         }
+    finally:
+        conn.close()
+
+
+def get_report_credits(user_id: int) -> int:
+    if not user_id:
+        return 0
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(adapt("SELECT report_credits FROM users WHERE id = ?"), (user_id,))
+        row = cur.fetchone()
+        if not row:
+            return 0
+        try:
+            return int(row[0]) if row[0] is not None else 0
+        except (TypeError, ValueError):
+            return 0
+    except Exception:
+        return 0
+    finally:
+        conn.close()
+
+
+def add_report_credits(user_id: int, amount: int = 1) -> int:
+    """분析권 N개 추가. 새 잔액 반환."""
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("UPDATE users SET report_credits = COALESCE(report_credits, 0) + ? WHERE id = ?"),
+            (amount, user_id),
+        )
+        conn.commit()
+        return get_report_credits(user_id)
+    finally:
+        conn.close()
+
+
+def deduct_report_credit(user_id: int) -> tuple[bool, int]:
+    """분析권 1개 차감. (success, remaining) 반환."""
+    current = get_report_credits(user_id)
+    if current < 1:
+        return False, current
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("UPDATE users SET report_credits = report_credits - 1 WHERE id = ? AND report_credits > 0"),
+            (user_id,),
+        )
+        conn.commit()
+        return True, current - 1
+    except Exception:
+        conn.rollback()
+        return False, current
     finally:
         conn.close()
 

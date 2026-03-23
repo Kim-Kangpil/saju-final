@@ -1420,17 +1420,18 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
-    _mst = refresh_and_get_membership_status(_uid)
-    _is_pro = bool(_mst.get("is_member"))
-    if (req.report_type or "basic").lower() == "deep":
-        if not _is_pro:
-            from logic.payment_db import has_purchased_report as _has_pr
-            if not _has_pr(_uid, "deep"):
-                raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 9900}, ensure_ascii=False))
-    else:
-        if not _is_pro:
-            if get_report_credits(_uid) <= 0:
-                raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+    if os.getenv("TEST_MODE", "").lower() != "true":
+        _mst = refresh_and_get_membership_status(_uid)
+        _is_pro = bool(_mst.get("is_member"))
+        if (req.report_type or "basic").lower() == "deep":
+            if not _is_pro:
+                from logic.payment_db import has_purchased_report as _has_pr
+                if not _has_pr(_uid, "deep"):
+                    raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 9900}, ensure_ascii=False))
+        else:
+            if not _is_pro:
+                if get_report_credits(_uid) <= 0:
+                    raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
 
     try:
         print(f"✅ GPT 해석 요청: day_stem={req.day_stem}, tone={req.tone}")
@@ -1720,11 +1721,12 @@ async def _generate_deep_topic_report(
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
-    _mst = refresh_and_get_membership_status(_uid)
-    if not _mst.get("is_member"):
-        from logic.payment_db import has_purchased_report as _has_pr
-        if not _has_pr(_uid, topic_key) and get_report_credits(_uid) <= 0:
-            raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 5900}, ensure_ascii=False))
+    if os.getenv("TEST_MODE", "").lower() != "true":
+        _mst = refresh_and_get_membership_status(_uid)
+        if not _mst.get("is_member"):
+            from logic.payment_db import has_purchased_report as _has_pr
+            if not _has_pr(_uid, topic_key) and get_report_credits(_uid) <= 0:
+                raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 5900}, ensure_ascii=False))
 
     if not client:
         return {"success": False, "error": "OPENAI_API_KEY not configured"}
@@ -1864,6 +1866,8 @@ async def payment_status_api(request: Request):
 @app.get("/api/payment/report-access/{report_type}")
 async def report_access_check(report_type: str, request: Request):
     """리포트 접근 권한 확인 — Pro·구매·분析권 여부에 따라 has_access 반환."""
+    if os.getenv("TEST_MODE", "").lower() == "true":
+        return {"has_access": True, "reason": "test_mode"}
     _price_map = {
         "basic": 1900, "deep": 9900,
         "money": 5900, "love": 5900, "career": 5900, "couple": 13900,

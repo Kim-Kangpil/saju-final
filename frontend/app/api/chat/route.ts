@@ -779,8 +779,15 @@ export async function POST(req: Request) {
   const selectedKnowledge = assembleKnowledge(intent, lastUserMessage);
 
   // 백엔드 동적 이론 + 규칙 기반 해석 (실패해도 채팅은 계속)
+  const sajuDataForTheory = hasSaju
+    ? {
+        ...((saju as any)?.result ?? {}),
+        gender: (saju as any)?.gender ?? "",
+      }
+    : undefined;
+
   const { theory: backendTheory, interpretation } =
-    await fetchTheoryFromBackend(lastUserMessage, intent, hasSaju ? saju : undefined);
+    await fetchTheoryFromBackend(lastUserMessage, intent, sajuDataForTheory);
   console.log("interpretation:", JSON.stringify((interpretation as any)?.summary_for_gpt ?? null));
 
   const theoryBlock = backendTheory

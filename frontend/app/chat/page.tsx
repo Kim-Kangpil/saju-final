@@ -1480,29 +1480,18 @@ function ChatPageInner({
   );
 }
 
-const SCROLL_LAST_MSG_MARGIN = 80;
-
-/** PC: 메시지 스크롤 컨테이너(.chat-list) / 모바일: 컨테이너가 안 켜지면 window 스크롤 */
-function scrollLastUserMessageIntoView(
-  msgEl: HTMLElement | null,
-  containerEl: HTMLElement | null,
-  marginTop = SCROLL_LAST_MSG_MARGIN,
-) {
+/** PC: data-chat-list 컨테이너 기준 / 모바일: window 스크롤 */
+function scrollLastUserMsg(msgEl: HTMLElement | null) {
   if (!msgEl) return;
-  if (containerEl && containerEl.scrollHeight > containerEl.clientHeight + 1) {
-    const cRect = containerEl.getBoundingClientRect();
-    const mRect = msgEl.getBoundingClientRect();
-    const relativeTop =
-      mRect.top - cRect.top + containerEl.scrollTop - marginTop;
-    containerEl.scrollTo({
-      top: Math.max(0, relativeTop),
-      behavior: "smooth",
-    });
-    return;
+  const container = msgEl.closest("[data-chat-list]") as HTMLElement | null;
+  if (container) {
+    const targetTop = msgEl.offsetTop - 80;
+    container.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
+  } else {
+    const rect = msgEl.getBoundingClientRect();
+    const targetY = window.scrollY + rect.top - 80;
+    window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
   }
-  const rect = msgEl.getBoundingClientRect();
-  const offset = rect.top + window.scrollY - marginTop;
-  window.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
 }
 
 type ChatContentProps = {
@@ -1863,10 +1852,7 @@ function ChatContent({
     if (last?.role !== "user") return;
     const tid = window.setTimeout(() => {
       requestAnimationFrame(() => {
-        scrollLastUserMessageIntoView(
-          lastUserMsgRef.current,
-          listRef.current,
-        );
+        scrollLastUserMsg(lastUserMsgRef.current);
       });
     }, 50);
     return () => clearTimeout(tid);
@@ -1928,10 +1914,7 @@ function ChatContent({
     try {
       await sendMessage({ text: trimmed });
       window.setTimeout(() => {
-        scrollLastUserMessageIntoView(
-          lastUserMsgRef.current,
-          listRef.current,
-        );
+        scrollLastUserMsg(lastUserMsgRef.current);
       }, 50);
       if (shouldIncrementGuestCount) {
         const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
@@ -1949,7 +1932,7 @@ function ChatContent({
   return (
     <>
       <div className="chat-main">
-        <div className="chat-list" ref={listRef} onScroll={handleScroll}>
+        <div className="chat-list" ref={listRef} onScroll={handleScroll} data-chat-list>
           {isInitialView ? (
             <div className="chat-initial-area">
               <div

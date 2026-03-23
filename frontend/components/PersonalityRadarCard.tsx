@@ -62,7 +62,7 @@ const AXIS_LABELS: Record<string, [string, string]> = {
 export function PersonalityRadarCard({ ruleSummary }: Props) {
   const scores = useMemo(() => calcRadarScores(ruleSummary), [ruleSummary]);
 
-  const SIZE = 300;
+  const SIZE = 320;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
   const R = 92;
@@ -94,14 +94,14 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
   const dataPath = dataPoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ") + "Z";
 
   // 축 라벨 위치 (여유 반경 확장)
-  const labelRadius = R + 34;
+  const labelRadius = R + 38;
 
   return (
     <div style={{
       width: "100%",
       background: "#fff",
       borderRadius: 16,
-      padding: "20px 40px",
+      padding: "20px 44px",
       border: "1px solid #E3D9CB",
     }}>
       <p style={{
@@ -117,7 +117,8 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
 
       <svg
         width="100%"
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        viewBox="-24 -18 368 356"
+        preserveAspectRatio="xMidYMid meet"
         style={{ display: "block", margin: "0 auto", maxWidth: SIZE, overflow: "visible" }}
       >
         {/* 배경 그리드 */}

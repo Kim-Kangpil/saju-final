@@ -237,6 +237,50 @@ function resolvePillarStrings(raw: unknown): {
   return null;
 }
 
+const V2_SECTION_TITLES = [
+  "🔮 한 줄 핵심 진단",
+  "🧠 타고난 성향과 사고방식",
+  "💪 이 사람의 진짜 무기",
+  "🔁 반복되는 문제 패턴",
+  "💰 돈 흐름 구조",
+  "🧭 일과 진로 방향",
+  "❤️ 관계와 연애 성향",
+  "⏰ 지금 이 시기",
+  "✅ 지금 당장 해야 할 것",
+] as const;
+
+function parseV2ComprehensiveSections(text: string): Array<{ title: string; body: string }> {
+  if (!text?.trim()) return [];
+  const sections: Array<{ title: string; body: string }> = [];
+  const lines = text.split("\n");
+  let currentTitle = "";
+  let currentBody: string[] = [];
+
+  const flush = () => {
+    if (currentTitle) {
+      sections.push({ title: currentTitle, body: currentBody.join("\n").trim() });
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const matched = V2_SECTION_TITLES.find((t) => trimmed.startsWith(t));
+    if (matched) {
+      flush();
+      currentTitle = matched;
+      currentBody = [];
+      continue;
+    }
+    if (currentTitle) currentBody.push(line);
+  }
+  flush();
+
+  if (sections.length === 0) {
+    return [{ title: "🔮 한 줄 핵심 진단", body: text.trim() }];
+  }
+  return sections;
+}
+
 function hanjaToHangul(h: string) {
   const map: Record<string, string> = {
     甲: "갑",
@@ -2537,52 +2581,30 @@ export default function Page({
                                 )}
 
                                 {v2Result && (() => {
+                                  const sections = parseV2ComprehensiveSections(v2Result.comprehensive || "");
                                   const hasText = (v?: string) => !!(v && v.trim());
-                                  const secPersonality = v2Result.section_personality || v2Result.comprehensive || "";
-                                  const secStrength = v2Result.section_strength || "";
-                                  const secProblem = v2Result.section_problem || "";
-                                  const secMoney = v2Result.section_money || "";
-                                  const secCareer = v2Result.section_career || "";
-                                  const secRelationship = v2Result.section_relationship || "";
-                                  const secCurrent = v2Result.section_current || "";
                                   return (
                                     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                                      {hasText(secPersonality) && (
-                                        <>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secPersonality.replace(/\n/g, "<br />") }} />
-                                          <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
-                                        </>
-                                      )}
-
-                                      {hasText(secProblem) && (
-                                        <>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secProblem.replace(/\n/g, "<br />") }} />
-                                          <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
-                                        </>
-                                      )}
-
-                                      {hasText(secMoney) && (
-                                        <>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secMoney.replace(/\n/g, "<br />") }} />
-                                          <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
-                                        </>
-                                      )}
-
-                                      {hasText(secStrength) && (
-                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secStrength.replace(/\n/g, "<br />") }} />
-                                      )}
-
-                                      {hasText(secCareer) && (
-                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCareer.replace(/\n/g, "<br />") }} />
-                                      )}
-
-                                      {hasText(secRelationship) && (
-                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secRelationship.replace(/\n/g, "<br />") }} />
-                                      )}
-
-                                      {hasText(secCurrent) && (
-                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCurrent.replace(/\n/g, "<br />") }} />
-                                      )}
+                                      {sections.map((sec) => (
+                                        <div key={sec.title} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                          <p style={{ fontSize: 12, fontWeight: 700, color: "#8B7355", letterSpacing: "0.06em" }}>
+                                            {sec.title}
+                                          </p>
+                                          <div
+                                            style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }}
+                                            dangerouslySetInnerHTML={{ __html: sec.body.replace(/\n/g, "<br />") }}
+                                          />
+                                          {sec.title === "🧠 타고난 성향과 사고방식" && (
+                                            <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
+                                          )}
+                                          {sec.title === "🔁 반복되는 문제 패턴" && (
+                                            <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
+                                          )}
+                                          {sec.title === "💰 돈 흐름 구조" && (
+                                            <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+                                          )}
+                                        </div>
+                                      ))}
 
                                       {hasText(v2Result.core_values) && (
                                         <div>

@@ -71,6 +71,9 @@ import { SpecialStarsMap } from "../../components/SpecialStarsMap";
 import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
 import { SajuSummaryCard } from "../../components/SummarySwipeCards";
+import { PersonalityRadarCard } from "../../components/PersonalityRadarCard";
+import { ProblemLoopCard } from "../../components/ProblemLoopCard";
+import { MoneyFlowCard } from "../../components/MoneyFlowCard";
 import { Icon } from "@iconify/react";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
@@ -2521,54 +2524,51 @@ export default function Page({
 
                                 {v2Result && (
                                   <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-                                    {/* 종합 해석 */}
-                                    <div>
-                                      <p className="saju-serif" style={{
-                                        fontSize: 13, fontWeight: 700, color: S.gold,
-                                        letterSpacing: "0.06em", marginBottom: 12,
-                                      }}>
-                                        📊 종합 해석
-                                      </p>
-                                      <div
-                                        style={{ fontSize: 13, color: S.ink2, lineHeight: 1.9, wordBreak: "keep-all" }}
-                                        dangerouslySetInnerHTML={{
-                                          __html: v2Result.comprehensive.replace(/\n/g, "<br />"),
-                                        }}
-                                      />
-                                    </div>
 
-                                    <div style={{ height: 1, background: S.beige }} />
+                                    {/* 종합 해석 텍스트 */}
+                                    <div
+                                      style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }}
+                                      dangerouslySetInnerHTML={{
+                                        __html: v2Result.comprehensive.replace(/\n/g, "<br />"),
+                                      }}
+                                    />
+
+                                    <div style={{ height: 1, background: "#D4C9B8" }} />
+
+                                    {/* 시각화 3개 */}
+                                    <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
+                                    <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
+                                    <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+
+                                    <div style={{ height: 1, background: "#D4C9B8" }} />
 
                                     {/* 가치관 */}
                                     <div>
-                                      <p className="saju-serif" style={{
-                                        fontSize: 13, fontWeight: 700, color: S.gold,
+                                      <p style={{
+                                        fontSize: 12, fontWeight: 700, color: "#8B7355",
                                         letterSpacing: "0.06em", marginBottom: 12,
                                       }}>
                                         🧭 삶의 핵심 가치관
                                       </p>
                                       <div
-                                        style={{ fontSize: 13, color: S.ink2, lineHeight: 1.9, wordBreak: "keep-all" }}
+                                        style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }}
                                         dangerouslySetInnerHTML={{
                                           __html: v2Result.core_values.replace(/\n/g, "<br />"),
                                         }}
                                       />
                                     </div>
 
-                                    {/* 규칙엔진 요약 (디버그용 — 나중에 숨겨도 됨) */}
+                                    {/* 디버그 */}
                                     {Object.keys(v2Result.rule_summary).length > 0 && (
                                       <>
-                                        <div style={{ height: 1, background: S.beige }} />
+                                        <div style={{ height: 1, background: "#D4C9B8" }} />
                                         <details>
-                                          <summary style={{
-                                            fontSize: 11, color: S.ink3, cursor: "pointer",
-                                            letterSpacing: "0.04em",
-                                          }}>
+                                          <summary style={{ fontSize: 11, color: "#6B5F4E", cursor: "pointer" }}>
                                             🔧 규칙엔진 계산값 (개발 확인용)
                                           </summary>
                                           <pre style={{
-                                            marginTop: 10, fontSize: 10, color: S.ink3,
-                                            background: S.cream2, borderRadius: 8,
+                                            marginTop: 10, fontSize: 10, color: "#6B5F4E",
+                                            background: "#EDE7DB", borderRadius: 8,
                                             padding: 12, overflowX: "auto",
                                             lineHeight: 1.6, whiteSpace: "pre-wrap",
                                           }}>

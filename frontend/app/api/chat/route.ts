@@ -786,26 +786,40 @@ export async function POST(req: Request) {
     ? `\n\n[사주 이론 참고 자료 — 해석 시 반드시 참고]\n${backendTheory}`
     : "";
 
-  // 의도에 맞는 규칙 기반 해석 포인트 추출
   let interpretationBlock = "";
   if (hasSaju && interpretation) {
     const summary = (interpretation as any)?.summary_for_gpt ?? {};
     const fmt = (v: unknown): string =>
-      Array.isArray(v) ? v.filter(Boolean).join("\n") : String(v ?? "");
+      Array.isArray(v) ? v.filter(Boolean).join(" / ") : String(v ?? "");
 
+    const personality = fmt(summary.personality_points);
+    const money = fmt(summary.money_points);
+    const love = fmt(summary.love_points);
+    const career = fmt(summary.career_points);
+    const period = fmt(summary.period_points);
+    const strength = summary.strength ?? "";
+
+    // 전체 규칙 기반 해석을 항상 주입 — 질문 의도와 무관하게
+    const allPoints = [
+      personality && `성격/기질: ${personality}`,
+      money && `재물 패턴: ${money}`,
+      love && `연애 패턴: ${love}`,
+      career && `직업 패턴: ${career}`,
+      period && `현재 시기: ${period}`,
+      strength && `신강약: ${strength}`,
+    ].filter(Boolean).join("\n");
+
+    if (allPoints) {
+      interpretationBlock = `\n[이 사람의 규칙 기반 사주 해석 — 반드시 이 내용 기반으로 답변. 질문과 관련된 항목을 우선 활용]\n${allPoints}`;
+    }
+
+    // 질문 의도에 맞는 항목 강조 (추가로 한 번 더)
     if (intent.includes("money") || /재물|돈|수입|재산|저축|투자/.test(lastUserMessage)) {
-      interpretationBlock = `\n[이 사람의 재물 패턴 — 규칙 기반 분석, 반드시 이 내용 기반으로 답변]\n${fmt(summary.money_points)}`;
+      interpretationBlock += money ? `\n\n[재물 집중 분석]\n${fmt(summary.money_points)}` : "";
     } else if (intent.includes("love") || /연애|결혼|이성|남자친구|여자친구|남편|아내|파트너/.test(lastUserMessage)) {
-      interpretationBlock = `\n[이 사람의 연애 패턴 — 규칙 기반 분석, 반드시 이 내용 기반으로 답변]\n${fmt(summary.love_points)}`;
+      interpretationBlock += love ? `\n\n[연애 집중 분석]\n${fmt(summary.love_points)}` : "";
     } else if (intent.includes("career") || /직업|직장|일|사업|취업|커리어|진로/.test(lastUserMessage)) {
-      interpretationBlock = `\n[이 사람의 직업 패턴 — 규칙 기반 분석, 반드시 이 내용 기반으로 답변]\n${fmt(summary.career_points)}`;
-    } else {
-      // 일반 질문 → 성격 + 현재 시기 요약
-      const personality = fmt(summary.personality_points);
-      const period = fmt(summary.period_points);
-      if (personality || period) {
-        interpretationBlock = `\n[이 사람의 사주 핵심 패턴 — 규칙 기반 분석]\n${personality}\n${period}`.trimEnd();
-      }
+      interpretationBlock += career ? `\n\n[직업 집중 분석]\n${fmt(summary.career_points)}` : "";
     }
   }
 
@@ -847,99 +861,10 @@ export async function POST(req: Request) {
   ].join("\n");
 
   // ── 게스트 채팅 사용량 제한(로그인 전 3회) ─────────────────────────
-  // 프론트에서 isGuest를 보내지만, 악용을 막기 위해 서버에서 백엔드 카운터를 먼저 확인합니다.
-  if (isGuest) {
-    const cookieHeader = req.headers.get("cookie") || "";
-    const quotaRes = await fetch(`${API_BASE}/api/guest-chat/consume`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-      },
-      body: JSON.stringify({}),
-    }).catch(() => null);
+  // 임시 해제: 게스트는 사용량 차감/차단 없이 통과
 
-    if (!quotaRes) {
-      return new Response(JSON.stringify({ error: "게스트 사용량 확인에 실패했어요. 잠시 후 다시 시도해주세요." }), {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    if (!quotaRes.ok) {
-      const errJson = await quotaRes.json().catch(() => null);
-      const detail =
-        errJson?.detail || errJson?.error || (quotaRes.status === 401 ? "로그인이 필요합니다." : "요청을 처리할 수 없어요.");
-      return new Response(JSON.stringify({ error: detail }), {
-        status: quotaRes.status,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  }
-
-  // ── 로그인 유저: 하루 3회 채팅 제한 (Pro면 무제한) ──────────────────────
-  if (!isGuest) {
-    const cookieHeader = req.headers.get("cookie") || "";
-    const authHeader = req.headers.get("authorization") || "";
-    const consumeRes = await fetch(`${API_BASE}/api/chat/consume`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-        ...(authHeader ? { Authorization: authHeader } : {}),
-      },
-      body: JSON.stringify({}),
-    }).catch(() => null);
-
-    if (consumeRes && !consumeRes.ok) {
-      if (consumeRes.status === 429 || consumeRes.status === 403) {
-        return new Response(
-          JSON.stringify({ error: "daily_limit_exceeded", limit: 3 }),
-          { status: 429, headers: { "Content-Type": "application/json" } }
-        );
-      }
-    }
-  }
-
-  // ── 로그인 유저: 멤버십 (CHAT_MEMBERSHIP_REQUIRED=true 일 때만 검사) ──
-  if (!isGuest && CHAT_MEMBERSHIP_REQUIRED) {
-    const cookieHeader = req.headers.get("cookie") || "";
-    const authHeader = req.headers.get("authorization") || "";
-    const memRes = await fetch(`${API_BASE}/api/membership/status`, {
-      method: "GET",
-      headers: {
-        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-        ...(authHeader ? { Authorization: authHeader } : {}),
-      },
-    }).catch(() => null);
-
-    if (!memRes) {
-      return new Response(JSON.stringify({ error: "멤버십 확인에 실패했어요. 잠시 후 다시 시도해주세요." }), {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    if (!memRes.ok) {
-      const errJson = await memRes.json().catch(() => null);
-      const detail =
-        errJson?.detail ||
-        errJson?.error ||
-        (memRes.status === 401 ? "로그인이 필요합니다." : "요청을 처리할 수 없어요.");
-      return new Response(JSON.stringify({ error: detail }), {
-        status: memRes.status,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const mem = (await memRes.json().catch(() => null)) as { is_member?: boolean } | null;
-    if (!mem?.is_member) {
-      return new Response(JSON.stringify({ error: "멤버십이 필요합니다." }), {
-        status: 403,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  }
+  // ── 로그인 유저 제한/멤버십 검사 해제 ──────────────────────
+  // 임시 해제: 로그인 유저도 사용량/멤버십 차단 없이 통과
 
   // ── LLM 호출 ──
   const modelMessages = await convertToModelMessages(messages as any);

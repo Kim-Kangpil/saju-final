@@ -781,6 +781,7 @@ export async function POST(req: Request) {
   // 백엔드 동적 이론 + 규칙 기반 해석 (실패해도 채팅은 계속)
   const { theory: backendTheory, interpretation } =
     await fetchTheoryFromBackend(lastUserMessage, intent, hasSaju ? saju : undefined);
+  console.log("interpretation:", JSON.stringify((interpretation as any)?.summary_for_gpt ?? null));
 
   const theoryBlock = backendTheory
     ? `\n\n[사주 이론 참고 자료 — 해석 시 반드시 참고]\n${backendTheory}`
@@ -799,7 +800,6 @@ export async function POST(req: Request) {
     const period = fmt(summary.period_points);
     const strength = summary.strength ?? "";
 
-    // 전체 규칙 기반 해석을 항상 주입 — 질문 의도와 무관하게
     const allPoints = [
       personality && `성격/기질: ${personality}`,
       money && `재물 패턴: ${money}`,
@@ -813,7 +813,6 @@ export async function POST(req: Request) {
       interpretationBlock = `\n[이 사람의 규칙 기반 사주 해석 — 반드시 이 내용 기반으로 답변. 질문과 관련된 항목을 우선 활용]\n${allPoints}`;
     }
 
-    // 질문 의도에 맞는 항목 강조 (추가로 한 번 더)
     if (intent.includes("money") || /재물|돈|수입|재산|저축|투자/.test(lastUserMessage)) {
       interpretationBlock += money ? `\n\n[재물 집중 분석]\n${fmt(summary.money_points)}` : "";
     } else if (intent.includes("love") || /연애|결혼|이성|남자친구|여자친구|남편|아내|파트너/.test(lastUserMessage)) {

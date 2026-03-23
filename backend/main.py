@@ -255,30 +255,7 @@ async def guest_chat_consume(request: Request):
     - 게스트면 guest_key 기준으로 카운트 후, 4번째부터 401 반환
     """
     user_id = get_user_id_from_request(request)
-    if user_id is not None:
-        return {"allowed": True, "loggedIn": True}
-
-    # 서버에서 강제하는 기본값 (프론트에서도 동일하게 3으로 두는 것을 권장)
-    limit = 3
-
-    client_ip = _get_client_ip(request)
-    user_agent = request.headers.get("user-agent", "")
-    raw_key = f"{client_ip}|{user_agent}"
-    guest_key = hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
-
-    try:
-        from logic.guest_chat_db import consume_guest_chat
-
-        allowed, _count = consume_guest_chat(guest_key, limit)
-        if not allowed:
-            raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
-        return {"allowed": True, "loggedIn": False}
-    except HTTPException:
-        raise
-    except Exception as e:
-        # 카운터 DB가 깨져 있으면 비용 폭탄을 막기 위해 기본 deny
-        print(f"❌ /api/guest-chat/consume 오류: {e}")
-        raise HTTPException(status_code=503, detail="게스트 사용량 체크 실패")
+    return {"allowed": True, "loggedIn": user_id is not None}
 
 
 class MembershipActivateRequest(BaseModel):
@@ -1684,17 +1661,7 @@ async def chat_consume_api(request: Request):
     user_id = get_user_id_from_request(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
-    status = refresh_and_get_membership_status(user_id)
-    if status.get("is_member"):
-        return {"ok": True, "is_pro": True}
-    from logic.daily_chat_db import consume_daily_chat
-    ok, count = consume_daily_chat(str(user_id), limit=3)
-    if not ok:
-        raise HTTPException(
-            status_code=429,
-            detail=json.dumps({"error": "daily_limit_exceeded", "limit": 3}, ensure_ascii=False),
-        )
-    return {"ok": True, "is_pro": False, "count": count}
+    return {"ok": True, "is_pro": True}
 
 
 @app.post("/api/payment/kakao/ready")

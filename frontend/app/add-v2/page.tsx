@@ -74,11 +74,6 @@ import { SajuSummaryCard } from "../../components/SummarySwipeCards";
 import { PersonalityRadarCard } from "../../components/PersonalityRadarCard";
 import { ProblemLoopCard } from "../../components/ProblemLoopCard";
 import { MoneyFlowCard } from "../../components/MoneyFlowCard";
-import { StrengthBadgeCard } from "../../components/StrengthBadgeCard";
-import { CareerMatrixCard } from "../../components/CareerMatrixCard";
-import { RelationshipFlowCard } from "../../components/RelationshipFlowCard";
-import { TimelineCard } from "../../components/TimelineCard";
-import { ChecklistCard } from "../../components/ChecklistCard";
 import { Icon } from "@iconify/react";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
@@ -2559,13 +2554,6 @@ export default function Page({
                                         </>
                                       )}
 
-                                      {hasText(secStrength) && (
-                                        <>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secStrength.replace(/\n/g, "<br />") }} />
-                                          <StrengthBadgeCard ruleSummary={v2Result.rule_summary} />
-                                        </>
-                                      )}
-
                                       {hasText(secProblem) && (
                                         <>
                                           <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secProblem.replace(/\n/g, "<br />") }} />
@@ -2580,25 +2568,20 @@ export default function Page({
                                         </>
                                       )}
 
+                                      {hasText(secStrength) && (
+                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secStrength.replace(/\n/g, "<br />") }} />
+                                      )}
+
                                       {hasText(secCareer) && (
-                                        <>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCareer.replace(/\n/g, "<br />") }} />
-                                          <CareerMatrixCard ruleSummary={v2Result.rule_summary} />
-                                        </>
+                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCareer.replace(/\n/g, "<br />") }} />
                                       )}
 
                                       {hasText(secRelationship) && (
-                                        <>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secRelationship.replace(/\n/g, "<br />") }} />
-                                          <RelationshipFlowCard ruleSummary={v2Result.rule_summary} />
-                                        </>
+                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secRelationship.replace(/\n/g, "<br />") }} />
                                       )}
 
                                       {hasText(secCurrent) && (
-                                        <>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCurrent.replace(/\n/g, "<br />") }} />
-                                          <TimelineCard />
-                                        </>
+                                        <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: secCurrent.replace(/\n/g, "<br />") }} />
                                       )}
 
                                       {hasText(v2Result.core_values) && (
@@ -2607,8 +2590,6 @@ export default function Page({
                                           <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: v2Result.core_values.replace(/\n/g, "<br />") }} />
                                         </div>
                                       )}
-
-                                      <ChecklistCard ruleSummary={v2Result.rule_summary} />
 
                                       {Object.keys(v2Result.rule_summary).length > 0 && (
                                         <>

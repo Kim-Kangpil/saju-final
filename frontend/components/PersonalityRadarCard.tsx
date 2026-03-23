@@ -62,10 +62,10 @@ const AXIS_LABELS: Record<string, [string, string]> = {
 export function PersonalityRadarCard({ ruleSummary }: Props) {
   const scores = useMemo(() => calcRadarScores(ruleSummary), [ruleSummary]);
 
-  const SIZE = 220;
+  const SIZE = 300;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
-  const R = 80;
+  const R = 92;
   const N = AXES.length;
 
   function polarToXY(angle: number, r: number) {
@@ -93,15 +93,15 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
   });
   const dataPath = dataPoints.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ") + "Z";
 
-  // 축 라벨 위치
-  const labelRadius = R + 22;
+  // 축 라벨 위치 (여유 반경 확장)
+  const labelRadius = R + 34;
 
   return (
     <div style={{
       width: "100%",
       background: "#fff",
       borderRadius: 16,
-      padding: "20px 16px",
+      padding: "20px 40px",
       border: "1px solid #E3D9CB",
     }}>
       <p style={{
@@ -115,7 +115,11 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
         나의 성향 지도
       </p>
 
-      <svg width={SIZE} height={SIZE} style={{ display: "block", margin: "0 auto" }}>
+      <svg
+        width="100%"
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        style={{ display: "block", margin: "0 auto", maxWidth: SIZE, overflow: "visible" }}
+      >
         {/* 배경 그리드 */}
         {bgCircles.map((pts, i) => (
           <polygon

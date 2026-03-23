@@ -110,7 +110,14 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* 5. 기존 애니메이션 유지 */
+/* 5. iOS Safari 자동 확대 방지 — font-size 16px 미만이면 zoom 발생 */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* 6. 기존 애니메이션 유지 */
 @keyframes ham-bounce {
 
   0%,

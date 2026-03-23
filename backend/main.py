@@ -2334,7 +2334,11 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
         "hour_pillar":     req.hour_pillar,
         "gender":          req.gender or "",
         "ten_gods":        req.ten_gods or {},
-        "strength":        req.strength or {},
+        "strength": (
+            req.strength.get("strength")
+            if isinstance(req.strength, dict)
+            else str(req.strength or "")
+        ) or "알 수 없음",
         "harmony_clash":   req.harmony_clash or {},
         "sinsal":          req.sinsal or {},
         "daeun_list":      req.daeun_list or [],

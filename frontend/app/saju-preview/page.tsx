@@ -232,6 +232,7 @@ function SajuPreviewContent() {
     daeun_direction: string | null;
     daeun_list: string[] | null;
   }>({ daeun_start_age: null, daeun_direction: null, daeun_list: null });
+  const [fullSajuData, setFullSajuData] = useState<any>(null);
   const [selectedDaeunIndex, setSelectedDaeunIndex] = useState<number | null>(null);
   const [deducting, setDeducting] = useState(false);
   const [showSeedSheet, setShowSeedSheet] = useState(false);
@@ -298,6 +299,15 @@ function SajuPreviewContent() {
           year: buildPillarBlock("년주", pillars.year_pillar),
           twelve_states: twelveStates ?? undefined,
           jijanggan: jijanggan ?? undefined,
+          year_pillar: pillars.year_pillar,
+          month_pillar: pillars.month_pillar,
+          day_pillar: pillars.day_pillar,
+          hour_pillar: pillars.hour_pillar,
+          daeun_list: daeun.daeun_list ?? [],
+          daeun_direction: daeun.daeun_direction ?? "순행",
+          ten_gods: fullSajuData?.ten_gods ?? {},
+          sinsal: fullSajuData?.sinsal ?? {},
+          strength: fullSajuData?.strength ?? {},
         },
       };
       sessionStorage.setItem("loadedSaju", JSON.stringify(loadedSaju));
@@ -373,6 +383,7 @@ function SajuPreviewContent() {
         }
         const fullData = await fullRes.json();
         if (cancelled) return;
+        setFullSajuData(fullData);
         setPillars({
           year_pillar: fullData.year_pillar,
           month_pillar: fullData.month_pillar,

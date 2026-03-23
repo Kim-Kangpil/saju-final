@@ -181,6 +181,59 @@ function splitPillar(text: string): [Pillar, Pillar] {
   ];
 }
 
+/** /saju/full JSON 또는 미리보기에서 넣은 SajuResult(년월일시 블록) 모두에서 기둥 한자 2글자 문자열 추출 */
+function resolvePillarStrings(raw: unknown): {
+  year_pillar: string;
+  month_pillar: string;
+  day_pillar: string;
+  hour_pillar: string;
+} | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const y = o.year_pillar;
+  const m = o.month_pillar;
+  const d = o.day_pillar;
+  const h = o.hour_pillar;
+  if (
+    typeof y === "string" &&
+    y.length >= 2 &&
+    typeof m === "string" &&
+    m.length >= 2 &&
+    typeof d === "string" &&
+    d.length >= 2 &&
+    typeof h === "string" &&
+    h.length >= 2
+  ) {
+    return {
+      year_pillar: y,
+      month_pillar: m,
+      day_pillar: d,
+      hour_pillar: h,
+    };
+  }
+  const blockToPillar = (b: unknown): string => {
+    if (!b || typeof b !== "object") return "";
+    const p = b as { cheongan?: { hanja?: string }; jiji?: { hanja?: string } };
+    const c = p.cheongan?.hanja ?? "";
+    const j = p.jiji?.hanja ?? "";
+    if (!c || !j) return "";
+    return `${c}${j}`;
+  };
+  const ys = blockToPillar(o.year);
+  const ms = blockToPillar(o.month);
+  const ds = blockToPillar(o.day);
+  const hs = blockToPillar(o.hour);
+  if (ys.length >= 2 && ms.length >= 2 && ds.length >= 2 && hs.length >= 2) {
+    return {
+      year_pillar: ys,
+      month_pillar: ms,
+      day_pillar: ds,
+      hour_pillar: hs,
+    };
+  }
+  return null;
+}
+
 function hanjaToHangul(h: string) {
   const map: Record<string, string> = {
     甲: "갑",
@@ -616,6 +669,8 @@ export default function Page({
   const resultRef = useRef<HTMLDivElement>(null);
   const [previewCardIndex, setPreviewCardIndex] = useState(0);
   const previewCarouselRef = useRef<HTMLDivElement>(null);
+  /** 불러오기/테스트 모드 처리 후 Strict Mode 재실행 시 saju-list로 잘못 보내지 않도록 */
+  const skipSajuListRedirectRef = useRef(false);
   const [seedCount, setSeedCount] = useState<number>(0);
 
   const [currentGreeting, setCurrentGreeting] = useState("");
@@ -735,13 +790,14 @@ export default function Page({
     const testMode = params.get("test") === "1";
 
     if (testMode) {
+      skipSajuListRedirectRef.current = true;
       setBirthYmd("19900101");
       setBirthHm("1200");
       setGender("M");
       setCalendar("solar");
       setTimeUnknown(false);
       setResult(MOCK_RESULT_FOR_TEST);
-      window.history.replaceState({}, "", "/add");
+      window.history.replaceState({}, "", "/add-v2");
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 300);
       return;
     }
@@ -760,8 +816,9 @@ export default function Page({
           setResult(loadedSaju.result);
           setSajuJsonRaw(loadedSaju.result);
 
+          skipSajuListRedirectRef.current = true;
           sessionStorage.removeItem("loadedSaju");
-          window.history.replaceState({}, "", "/add");
+          window.history.replaceState({}, "", "/add-v2");
 
           setTimeout(() => {
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -778,6 +835,7 @@ export default function Page({
     }
 
     // test/loaded 없으면 결과 없음 → 사주 목록으로 이동 (빈 결과 화면 거의 안 씀)
+    if (skipSajuListRedirectRef.current) return;
     router.replace("/saju-list");
   }, [MOCK_RESULT_FOR_TEST, router]);
 
@@ -1457,7 +1515,8 @@ export default function Page({
 
           fetch(`${API_BASE}/saju/summary-gpt`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+            credentials: "include",
             body: JSON.stringify({
               system: SUMMARY_SYSTEM_PROMPT,
               user: userPrompt,
@@ -1471,11 +1530,17 @@ export default function Page({
           })
             .then((res) => {
               if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                  console.warn("종합 요약 GPT는 로그인 후 이용권이 있을 때 제공됩니다.");
+                  setSummaryGuide(getSummaryGuideFallback(summaryInput));
+                  return null;
+                }
                 throw new Error(`summary-gpt ${res.status}`);
               }
               return res.json();
             })
             .then((summaryJson) => {
+              if (!summaryJson) return;
               if (summaryJson?.summary) {
                 setSummaryGuide(summaryJson.summary);
                 // 채팅에서 사용할 수 있도록 localStorage에 저장
@@ -2041,56 +2106,111 @@ export default function Page({
   }
 
   async function runV2Analysis() {
+    console.log("strength 값:", sajuJsonRaw?.strength);
     if (!sajuJsonRaw) {
       alert("먼저 사주를 조회해주세요.");
       return;
     }
-    if (!isLoggedIn) {
-      if (confirm("로그인이 필요합니다. 로그인 하시겠습니까?")) {
-        router.push("/start");
-      }
+
+    const pillars = resolvePillarStrings(sajuJsonRaw);
+    if (!pillars) {
+      alert(
+        "사주 네 기둥 정보를 찾을 수 없습니다. 사주를 다시 조회하거나 목록에서 다시 들어와 주세요."
+      );
       return;
     }
+
+    const raw = sajuJsonRaw as Record<string, unknown>;
 
     setV2Loading(true);
     setShowV2Modal(true);
     setV2Result(null);
 
     try {
-      const cacheKey = `v2_${sajuJsonRaw.year_pillar}_${sajuJsonRaw.month_pillar}_${sajuJsonRaw.day_pillar}_${sajuJsonRaw.hour_pillar}_empathy`;
+      const cacheKey = `v2_${pillars.year_pillar}_${pillars.month_pillar}_${pillars.day_pillar}_${pillars.hour_pillar}_empathy_${Date.now()}`;
 
       const res = await fetch(`${API_BASE}/saju/analyze-v2`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         credentials: "include",
         body: JSON.stringify({
-          year_pillar:     sajuJsonRaw.year_pillar,
-          month_pillar:    sajuJsonRaw.month_pillar,
-          day_pillar:      sajuJsonRaw.day_pillar,
-          hour_pillar:     sajuJsonRaw.hour_pillar,
+          year_pillar:     pillars.year_pillar,
+          month_pillar:    pillars.month_pillar,
+          day_pillar:      pillars.day_pillar,
+          hour_pillar:     pillars.hour_pillar,
           gender:          gender,
           birthdate:       birthYmd
             ? `${birthYmd.slice(0,4)}-${birthYmd.slice(4,6)}-${birthYmd.slice(6,8)}`
             : null,
-          daeun_list:      sajuJsonRaw.daeun_list ?? [],
-          daeun_direction: sajuJsonRaw.daeun_direction ?? "순행",
-          ten_gods:        sajuJsonRaw.ten_gods ?? {},
-          strength:        sajuJsonRaw.strength ?? {},
-          harmony_clash:   sajuJsonRaw.harmony_clash ?? {},
-          sinsal:          sajuJsonRaw.sinsal ?? {},
+          daeun_list:      Array.isArray(raw.daeun_list) ? raw.daeun_list : [],
+          daeun_direction:
+            typeof raw.daeun_direction === "string" ? raw.daeun_direction : "순행",
+          ten_gods:
+            raw.ten_gods && typeof raw.ten_gods === "object"
+              ? (raw.ten_gods as object)
+              : {},
+          strength:
+            raw.strength !== undefined && raw.strength !== null
+              ? raw.strength
+              : {},
+          harmony_clash:
+            raw.harmony_clash && typeof raw.harmony_clash === "object"
+              ? (raw.harmony_clash as object)
+              : raw.harmony_clash === null
+                ? null
+                : {},
+          sinsal:
+            raw.sinsal && typeof raw.sinsal === "object" ? (raw.sinsal as object) : {},
           tone:            "empathy",
           cache_key:       cacheKey,
         }),
       });
 
       if (res.status === 401) {
-        alert("로그인이 필요합니다.");
-        router.push("/start");
+        setShowV2Modal(false);
+        if (confirm("로그인이 필요합니다. 로그인 하시겠습니까?")) {
+          router.push("/start");
+        }
         return;
       }
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.detail || "분석 실패");
+      const data = await res.json().catch(() => ({} as Record<string, unknown>));
+
+      const detailToMessage = (d: unknown): string => {
+        if (d == null || d === "") {
+          return res.ok ? "분석 실패" : `요청 실패 (${res.status})`;
+        }
+        if (typeof d === "string") return d;
+        if (Array.isArray(d)) {
+          return d
+            .map((x: unknown) => {
+              if (x && typeof x === "object" && "msg" in x && typeof (x as { msg: unknown }).msg === "string") {
+                return (x as { msg: string }).msg;
+              }
+              try {
+                return JSON.stringify(x);
+              } catch {
+                return String(x);
+              }
+            })
+            .join(" · ");
+        }
+        if (typeof d === "object") {
+          try {
+            return JSON.stringify(d);
+          } catch {
+            return String(d);
+          }
+        }
+        return String(d);
+      };
+
+      if (!res.ok) {
+        throw new Error(detailToMessage(data.detail));
+      }
+      if (!data.success) {
+        throw new Error(detailToMessage(data.detail));
+      }
 
       setV2Result({
         comprehensive: data.comprehensive,
@@ -2113,6 +2233,7 @@ export default function Page({
         {/* gmarketsans 웹폰트 로드 */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css" />
       </Head>
+      {process.env.NEXT_PUBLIC_KAKAO_JS_KEY ? (
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.0/kakao.min.js"
         strategy="afterInteractive"
@@ -2126,10 +2247,7 @@ export default function Page({
             }
 
             const key = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
-            if (!key) {
-              console.error("❌ NEXT_PUBLIC_KAKAO_JS_KEY 값 비어있음");
-              return;
-            }
+            if (!key) return;
 
             if (!window.Kakao.isInitialized()) {
               window.Kakao.init(key);
@@ -2147,6 +2265,7 @@ export default function Page({
           console.error("❌ Kakao SDK 스크립트 로딩 실패 (네트워크/CSP/차단 가능)");
         }}
       />
+      ) : null}
 
       <style>{`
         :root {

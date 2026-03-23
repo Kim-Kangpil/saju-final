@@ -1,13 +1,12 @@
 "use client";
-import { use, useEffect, useState, useRef } from "react";
+import { Suspense, useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
-export default function PaymentSuccessPage({ params }: { params?: Promise<Record<string, string | string[]>> } = {}) {
-  use(params ?? Promise.resolve({}));
+function PaymentSuccessInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [state, setState] = useState<"loading" | "success" | "error">("loading");
@@ -46,44 +45,52 @@ export default function PaymentSuccessPage({ params }: { params?: Promise<Record
   }, []);
 
   return (
+    <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
+      {state === "loading" && (
+        <>
+          <Icon icon="mdi:loading" width={48} style={{ color: "#3A3A3A", marginBottom: 20, animation: "spin 1s linear infinite" }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <p style={{ fontSize: 16, color: "#3A3A3A", fontWeight: 700 }}>결제 확인 중...</p>
+        </>
+      )}
+      {state === "success" && (
+        <>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#3A3A3A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+            <Icon icon="mdi:check" width={36} color="#fff" />
+          </div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#3A3A3A", marginBottom: 10 }}>결제 완료!</h1>
+          <p style={{ fontSize: 14, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 28 }}>
+            {orderType === "pro_monthly" ? "한양사주 Pro가 활성화됐어요." : "분析권 1개가 지급됐어요."}<br />
+            3초 후 홈으로 이동해요.
+          </p>
+          <button onClick={() => router.replace("/home")} style={{ padding: "13px 32px", background: "#3A3A3A", color: "#fff", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+            홈으로 이동
+          </button>
+        </>
+      )}
+      {state === "error" && (
+        <>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#E1DDCF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
+            <Icon icon="mdi:alert-outline" width={36} color="#3A3A3A" />
+          </div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#3A3A3A", marginBottom: 10 }}>결제 오류</h1>
+          <p style={{ fontSize: 14, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 28 }}>{errorMsg}</p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+            <button onClick={() => router.push("/membership")} style={{ padding: "12px 20px", background: "#3A3A3A", color: "#fff", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>다시 시도</button>
+            <button onClick={() => router.push("/home")} style={{ padding: "12px 20px", background: "#E1DDCF", color: "#3A3A3A", borderRadius: 12, border: "1.5px solid #E0DDCF", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>홈으로</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function PaymentSuccessPage() {
+  return (
     <main style={{ minHeight: "100vh", backgroundColor: "#F5F2EE", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Serif KR', 'Apple SD Gothic Neo', serif", padding: 24 }}>
-      <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
-        {state === "loading" && (
-          <>
-            <Icon icon="mdi:loading" width={48} style={{ color: "#3A3A3A", marginBottom: 20, animation: "spin 1s linear infinite" }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            <p style={{ fontSize: 16, color: "#3A3A3A", fontWeight: 700 }}>결제 확인 중...</p>
-          </>
-        )}
-        {state === "success" && (
-          <>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#3A3A3A", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-              <Icon icon="mdi:check" width={36} color="#fff" />
-            </div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: "#3A3A3A", marginBottom: 10 }}>결제 완료!</h1>
-            <p style={{ fontSize: 14, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 28 }}>
-              {orderType === "pro_monthly" ? "한양사주 Pro가 활성화됐어요." : "분석권 1개가 지급됐어요."}<br />
-              3초 후 홈으로 이동해요.
-            </p>
-            <button onClick={() => router.replace("/home")} style={{ padding: "13px 32px", background: "#3A3A3A", color: "#fff", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-              홈으로 이동
-            </button>
-          </>
-        )}
-        {state === "error" && (
-          <>
-            <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#E1DDCF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-              <Icon icon="mdi:alert-outline" width={36} color="#3A3A3A" />
-            </div>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: "#3A3A3A", marginBottom: 10 }}>결제 오류</h1>
-            <p style={{ fontSize: 14, color: "#6B6B6B", lineHeight: 1.7, marginBottom: 28 }}>{errorMsg}</p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-              <button onClick={() => router.push("/membership")} style={{ padding: "12px 20px", background: "#3A3A3A", color: "#fff", borderRadius: 12, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>다시 시도</button>
-              <button onClick={() => router.push("/home")} style={{ padding: "12px 20px", background: "#E1DDCF", color: "#3A3A3A", borderRadius: 12, border: "1.5px solid #E0DDCF", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>홈으로</button>
-            </div>
-          </>
-        )}
-      </div>
+      <Suspense fallback={<p style={{ color: "#3A3A3A", fontSize: 16 }}>로딩 중...</p>}>
+        <PaymentSuccessInner />
+      </Suspense>
     </main>
   );
 }

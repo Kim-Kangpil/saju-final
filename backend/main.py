@@ -2288,6 +2288,153 @@ async def concern_analysis(req: ConcernAnalysisRequest):
     }
 
 
+# =====================================================
+# /saju/analyze-v2  — 규칙엔진 + GPT 표현변환 정밀분석
+# =====================================================
+
+class AnalyzeV2Request(BaseModel):
+    year_pillar: str
+    month_pillar: str
+    day_pillar: str
+    hour_pillar: str
+    gender: Optional[str] = None
+    birthdate: Optional[str] = None
+    daeun_list: Optional[list] = None
+    daeun_direction: Optional[str] = None
+    ten_gods: Optional[dict] = None
+    strength: Optional[Any] = None
+    harmony_clash: Optional[dict] = None
+    sinsal: Optional[dict] = None
+    tone: str = "empathy"
+    cache_key: Optional[str] = None
+
+
+@app.post("/saju/analyze-v2")
+async def analyze_v2(req: AnalyzeV2Request, request: Request):
+    """
+    v2 정밀 분석
+    1) interpret_all()  — 규칙 엔진 (환각 없음)
+    2) GPT             — 표현 변환만 담당
+    """
+    _uid = get_user_id_from_request(request)
+    if _uid is None:
+        raise HTTPException(
+            status_code=401,
+            detail=json.dumps({"error": "login_required"}, ensure_ascii=False),
+        )
+
+    if not client:
+        raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
+
+    # ── saju_data 조립 ──────────────────────────────────
+    saju_data: dict[str, Any] = {
+        "year_pillar":     req.year_pillar,
+        "month_pillar":    req.month_pillar,
+        "day_pillar":      req.day_pillar,
+        "hour_pillar":     req.hour_pillar,
+        "gender":          req.gender or "",
+        "ten_gods":        req.ten_gods or {},
+        "strength":        req.strength or {},
+        "harmony_clash":   req.harmony_clash or {},
+        "sinsal":          req.sinsal or {},
+        "daeun_list":      req.daeun_list or [],
+        "daeun_direction": req.daeun_direction or "순행",
+    }
+    if req.birthdate:
+        saju_data["birthdate"] = req.birthdate
+
+    # ── 1) 규칙 엔진 ────────────────────────────────────
+    try:
+        from logic.saju_engine.core.saju_interpreter import interpret_all
+        interpretation = interpret_all(saju_data)
+    except Exception as e:
+        print(f"❌ interpret_all 실패: {e}")
+        raise HTTPException(status_code=500, detail=f"규칙 엔진 오류: {e}")
+
+    # ── 2) analyzer (GPT generator 입력용) ──────────────
+    try:
+        from logic.saju_engine.core.analyzer import analyze_full_saju
+        day_stem = req.day_pillar[0] if req.day_pillar else ""
+        pillars = {
+            "year":  req.year_pillar,
+            "month": req.month_pillar,
+            "day":   req.day_pillar,
+            "hour":  req.hour_pillar,
+        }
+        analysis = analyze_full_saju(day_stem, pillars)
+        if req.harmony_clash:
+            analysis["harmony_clash"] = req.harmony_clash
+    except Exception as e:
+        print(f"❌ analyze_full_saju 실패: {e}")
+        raise HTTPException(status_code=500, detail=f"분석 엔진 오류: {e}")
+
+    # ── 3) 이론 검색 ────────────────────────────────────
+    theories = ""
+    try:
+        retriever = get_theory_retriever()
+        theories = retriever.get_relevant_theories(analysis) or ""
+    except Exception as e:
+        print(f"⚠️ 이론 검색 실패: {e}")
+
+    # ── 4) 캐시 확인 ────────────────────────────────────
+    cache_key = (
+        req.cache_key
+        or f"v2_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}"
+    )
+    cached_main = get_report_cache(cache_key, "v2_comprehensive")
+    cached_cv   = get_report_cache(cache_key, "v2_core_values")
+    if cached_main and cached_cv:
+        print(f"✅ v2 캐시 히트: {cache_key}")
+        return {
+            "success": True,
+            "cached": True,
+            "comprehensive": cached_main,
+            "core_values": cached_cv,
+            "rule_summary": interpretation.get("summary_for_gpt", {}),
+        }
+
+    # ── 5) GPT 표현 변환 ────────────────────────────────
+    try:
+        from logic.gpt_generator import GPTInterpretationGenerator
+        generator = GPTInterpretationGenerator()
+
+        # 종합 해석 (규칙엔진 결과를 시스템 프롬프트에 주입)
+        comprehensive = generator.generate_comprehensive_interpretation(
+            analysis=analysis,
+            tone=req.tone,
+            theories=theories,
+            interpretation=interpretation,   # ← 규칙엔진 결과 전달
+        )
+
+        # 월지 기반 가치관
+        month_branch = req.month_pillar[1] if len(req.month_pillar) >= 2 else ""
+        core_values = generator.generate_core_values(
+            day_stem=day_stem,
+            month_branch=month_branch,
+            tone=req.tone,
+            analysis=analysis,
+        )
+    except Exception as e:
+        print(f"❌ GPT 생성 실패: {e}")
+        raise HTTPException(status_code=502, detail=f"GPT 생성 오류: {e}")
+
+    # ── 6) 캐시 저장 ────────────────────────────────────
+    try:
+        save_report_cache(cache_key, "v2_comprehensive", comprehensive)
+        save_report_cache(cache_key, "v2_core_values",   core_values)
+        print(f"✅ v2 캐시 저장: {cache_key}")
+    except Exception as e:
+        print(f"⚠️ v2 캐시 저장 실패: {e}")
+
+    return {
+        "success": True,
+        "cached": False,
+        "comprehensive": comprehensive,
+        "core_values": core_values,
+        "rule_summary": interpretation.get("summary_for_gpt", {}),
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

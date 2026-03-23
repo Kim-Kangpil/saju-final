@@ -41,7 +41,57 @@ def init_saju_db():
             cur.execute("ALTER TABLE saju ADD COLUMN iana_timezone TEXT")
         except Exception:
             pass
+
+        # 리포트 캐시 테이블
+        cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS report_cache (
+                cache_key TEXT NOT NULL,
+                section_key TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                PRIMARY KEY (cache_key, section_key)
+            )
+            """
+        )
         conn.commit()
+    finally:
+        conn.close()
+
+
+def get_report_cache(cache_key: str, section_key: str) -> Optional[str]:
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT content FROM report_cache WHERE cache_key = ? AND section_key = ?",
+            (cache_key, section_key),
+        )
+        row = cur.fetchone()
+        return str(row[0]) if row else None
+    finally:
+        conn.close()
+
+
+def save_report_cache(cache_key: str, section_key: str, content: str) -> None:
+    now = datetime.utcnow().isoformat()
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO report_cache (cache_key, section_key, content, created_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(cache_key, section_key) DO UPDATE SET
+                content = excluded.content,
+                created_at = excluded.created_at
+            """,
+            (cache_key, section_key, content, now),
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         conn.close()
 

@@ -316,11 +316,29 @@ function ChatPageInner({
             urlSajuIdRef.current,
           );
           const saju = savedSajuToChatApiPayload(picked);
+
+          // 저장된 리포트 요약 읽기 (사주 기둥 기반 캐시 키)
+          let reportSummary: string | null = null;
+          if (picked?.result && typeof window !== "undefined") {
+            try {
+              const r = picked.result as Record<string, unknown>;
+              const yp = r.year_pillar as string | undefined;
+              const mp = r.month_pillar as string | undefined;
+              const dp = r.day_pillar as string | undefined;
+              const hp = r.hour_pillar as string | undefined;
+              if (yp && mp && dp && hp) {
+                const ck = `${yp}_${mp}_${dp}_${hp}`;
+                reportSummary = localStorage.getItem(`hsaju_report_summary_${ck}`);
+              }
+            } catch {}
+          }
+
           const body = {
             messages,
             isGuest: !isLoggedInRef.current,
             saju,
             lang: langRef.current,
+            ...(reportSummary ? { reportSummary } : {}),
           };
           console.log(
             "💬 chat body:",

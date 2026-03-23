@@ -716,7 +716,7 @@ export async function POST(req: Request) {
     });
   }
 
-  let body: { messages?: unknown[]; isGuest?: boolean; saju?: unknown; lang?: string };
+  let body: { messages?: unknown[]; isGuest?: boolean; saju?: unknown; lang?: string; reportSummary?: string };
   try {
     body = await req.json();
   } catch {
@@ -729,6 +729,9 @@ export async function POST(req: Request) {
   const isGuest = body.isGuest === true;
   const saju = body.saju;
   const lang: "ko" | "en" = body.lang === "en" ? "en" : "ko";
+  const reportSummary = typeof body.reportSummary === "string" && body.reportSummary.trim()
+    ? body.reportSummary.trim()
+    : null;
   const hasSaju = saju != null && typeof saju === "object" && (
     (saju as Record<string, unknown>).result != null ||
     (saju as Record<string, unknown>).model != null
@@ -807,6 +810,11 @@ export async function POST(req: Request) {
   const persona = isGuest || !hasSaju ? PERSONA_GUEST : PERSONA_LOGGEDIN;
   const sajuContext = hasSaju ? `\n\n${buildSajuContext(saju)}` : "";
 
+  // ── 저장된 리포트 요약 (채팅 맥락 보강) ──
+  const reportSummaryBlock = hasSaju && reportSummary
+    ? `\n\n[이 사람의 사주 분석 리포트 요약 — 답변 시 반드시 참고]\n${reportSummary}`
+    : "";
+
   // ── 언어 규칙 ──
   const languageRule = lang === "en"
     ? "\n[Language]\n- You must respond in English only.\n"
@@ -824,7 +832,8 @@ export async function POST(req: Request) {
     persona,
     hasSaju ? FEW_SHOT_EXAMPLES : "",  // ← 사주 있을 때만 few-shot 예시 삽입
     sajuContext,           // ← 사주 데이터를 페르소나 직후에 위치
-    hasSaju ? INTERPRETATION_GUIDE : "",      // ← 해석 품질 가이드 (사주 컨텍스트 바로 다음)
+    reportSummaryBlock,    // ← 저장된 리포트 요약 (사주 컨텍스트 바로 다음)
+    hasSaju ? INTERPRETATION_GUIDE : "",      // ← 해석 품질 가이드
     hasSaju ? ANTI_HALLUCINATION_RULE : "",   // ← 데이터가 있을 때만 절대 규칙 삽입
     interpretationBlock,                       // ← 규칙 기반 해석 포인트 (질문 의도별)
     MONTH_BRANCH_RULE,

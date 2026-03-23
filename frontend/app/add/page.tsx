@@ -1442,6 +1442,10 @@ export default function Page({
           // GPT 응답이 오면 그 내용으로 덮어쓴다.
           setSummaryGuide(getSummaryGuideFallback(summaryInput));
 
+          const summaryCacheKey = sajuJsonRaw
+            ? `${sajuJsonRaw.year_pillar}_${sajuJsonRaw.month_pillar}_${sajuJsonRaw.day_pillar}_${sajuJsonRaw.hour_pillar}`
+            : null;
+
           fetch(`${API_BASE}/saju/summary-gpt`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -1449,6 +1453,11 @@ export default function Page({
               system: SUMMARY_SYSTEM_PROMPT,
               user: userPrompt,
               harmony_clash: result.harmony_clash ?? null,
+              cache_key: summaryCacheKey,
+              year_pillar: sajuJsonRaw?.year_pillar ?? null,
+              month_pillar: sajuJsonRaw?.month_pillar ?? null,
+              day_pillar: sajuJsonRaw?.day_pillar ?? null,
+              hour_pillar: sajuJsonRaw?.hour_pillar ?? null,
             }),
           })
             .then((res) => {
@@ -1460,6 +1469,15 @@ export default function Page({
             .then((summaryJson) => {
               if (summaryJson?.summary) {
                 setSummaryGuide(summaryJson.summary);
+                // 채팅에서 사용할 수 있도록 localStorage에 저장
+                if (summaryCacheKey) {
+                  try {
+                    localStorage.setItem(
+                      `hsaju_report_summary_${summaryCacheKey}`,
+                      summaryJson.summary
+                    );
+                  } catch {}
+                }
               } else {
                 if (summaryJson?.error) console.warn("종합 요약 API 응답:", summaryJson.error);
                 setSummaryGuide(getSummaryGuideFallback(summaryInput));
@@ -1906,6 +1924,8 @@ export default function Page({
         return;
       }
 
+      const interpretCacheKey = `${sajuJsonRaw.year_pillar}_${sajuJsonRaw.month_pillar}_${sajuJsonRaw.day_pillar}_${sajuJsonRaw.hour_pillar}_${selectedChar}`;
+
       const interpretRes = await fetch(`${API_BASE}/saju/interpret-gpt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1921,6 +1941,7 @@ export default function Page({
           day: parsedYmd.day,
           hour: parsedHm.hour,
           gender: gender,
+          cache_key: interpretCacheKey,
         }),
       });
 

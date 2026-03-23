@@ -94,6 +94,8 @@ from logic.saju_db import (
     get_saju_by_id,
     get_saju_list_for_user,
     save_saju_for_user,
+    get_report_cache,
+    save_report_cache,
 )
 from logic.user_db import (
     get_user_id_from_session,
@@ -1052,6 +1054,7 @@ class GPTInterpretRequest(BaseModel):
     hour: Optional[int] = None
     minute: Optional[int] = None
     gender: Optional[str] = None
+    cache_key: Optional[str] = None
 
 
 class SummaryGPTRequest(BaseModel):
@@ -1059,6 +1062,15 @@ class SummaryGPTRequest(BaseModel):
     system: str
     user: str
     harmony_clash: Optional[Dict[str, Any]] = None
+    cache_key: Optional[str] = None
+    year_pillar: Optional[str] = None
+    month_pillar: Optional[str] = None
+    day_pillar: Optional[str] = None
+    hour_pillar: Optional[str] = None
+    ten_gods: Optional[Dict[str, Any]] = None
+    strength: Optional[str] = None
+    sinsal: Optional[Dict[str, Any]] = None
+    gender: Optional[str] = None
 
 
 class ConcernAnalysisRequest(BaseModel):
@@ -1446,6 +1458,52 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
             print(f"   - {trans.get('name', '')}")
 
         # ✅ 6. GPT 해석 생성 (종합 해석 + 월지 기반 핵심 가치관)
+        # 월지 추출 (캐시 반환에도 필요)
+        month_pillar_str = pillars_dict.get('month', '')
+        month_branch = month_pillar_str[1] if isinstance(
+            month_pillar_str, str) and len(month_pillar_str) >= 2 else ''
+
+        # ✅ 6-0. 캐시 확인
+        cache_key = req.cache_key or f"{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}"
+        cached_elements = get_report_cache(cache_key, "elements")
+        cached_core_values = get_report_cache(cache_key, "core_values")
+        if cached_elements and cached_core_values:
+            print(f"✅ 리포트 캐시 히트: {cache_key}")
+            return {
+                "success": True,
+                "cached": True,
+                "interpretations": [
+                    {
+                        "section": "elements",
+                        "title": get_title_by_tone(req.tone),
+                        "content": cached_elements,
+                        "related_theories": ["신강약", "오행십신", "합충", "신살"]
+                    },
+                    {
+                        "section": "core_values",
+                        "title": "삶의 핵심 가치관과 지향점",
+                        "content": cached_core_values,
+                        "related_theories": ["월지", "십신", "가치관"]
+                    }
+                ],
+                "metadata": {
+                    "model": "cached",
+                    "day_stem": req.day_stem,
+                    "tone": req.tone,
+                    "strength": analysis['summary']['strength'],
+                    "strength_score": analysis['summary']['strength_score'],
+                    "element_counts": element_counts,
+                    "ten_gods": analysis['summary']['ten_gods_count'],
+                    "patterns": analysis.get('patterns', []),
+                    "harmony": {
+                        "original": element_counts,
+                        "transformed": transformed_counts,
+                        "transformations": transformations
+                    },
+                    "core_values": {"month_branch": month_branch}
+                }
+            }
+
         try:
             # 종합 해석
             content = generator.generate_comprehensive_interpretation(
@@ -1454,11 +1512,6 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
                 theories=theories,
                 interpretation=interpretation
             )
-
-            # 월지(월지=월주 지지) 추출
-            month_pillar = pillars_dict.get('month', '')
-            month_branch = month_pillar[1] if isinstance(
-                month_pillar, str) and len(month_pillar) >= 2 else ''
 
             core_values = generator.generate_core_values(
                 day_stem=req.day_stem,
@@ -1469,8 +1522,17 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
 
             print(f"✅ GPT 해석 생성 완료: {len(content)}자")
 
+            # ✅ 캐시 저장
+            try:
+                save_report_cache(cache_key, "elements", content)
+                save_report_cache(cache_key, "core_values", core_values)
+                print(f"✅ 리포트 캐시 저장: {cache_key}")
+            except Exception as ce:
+                print(f"⚠️ 리포트 캐시 저장 실패: {ce}")
+
             return {
                 "success": True,
+                "cached": False,
                 "interpretations": [
                     {
                         "section": "elements",
@@ -1727,10 +1789,19 @@ async def summary_gpt(req: SummaryGPTRequest):
         if not client:
             print("⚠️ OPENAI_API_KEY 없음 — summary-gpt 스킵")
             return {"summary": None, "error": "OPENAI_API_KEY not configured"}
+
+        # ✅ 캐시 확인
+        cache_key = req.cache_key
+        if cache_key:
+            cached = get_report_cache(cache_key, "summary")
+            if cached:
+                print(f"✅ 요약 캐시 히트: {cache_key}")
+                return {"summary": cached, "cached": True}
+
         system_prompt = req.system
         hc = req.harmony_clash
 
-        # 합충 섹션 추가 (기존)
+        # 합충 섹션 추가
         if hc and isinstance(hc, dict):
             try:
                 from logic.gpt_generator import GPTInterpretationGenerator
@@ -1747,10 +1818,8 @@ async def summary_gpt(req: SummaryGPTRequest):
             saju_data: dict[str, Any] = {}
             if hc:
                 saju_data["harmony_clash"] = hc
-            # SummaryGPTRequest에서 꺼낼 수 있는 필드 수집
             for field in ("year_pillar", "month_pillar", "day_pillar", "hour_pillar",
-                          "ten_gods", "strength", "sinsal", "daeun_list",
-                          "daeun_direction", "daeun_start_age", "gender", "birthdate"):
+                          "ten_gods", "strength", "sinsal", "gender"):
                 val = getattr(req, field, None)
                 if val is not None:
                     saju_data[field] = val
@@ -1780,15 +1849,37 @@ async def summary_gpt(req: SummaryGPTRequest):
                 {"role": "user", "content": req.user},
             ],
             max_tokens=1500,
-            temperature=0.6,
+            temperature=0.2,
         )
         content = (resp.choices[0].message.content or "").strip()
-        return {"summary": content}
+
+        # ✅ 캐시 저장
+        if cache_key and content:
+            try:
+                save_report_cache(cache_key, "summary", content)
+                print(f"✅ 요약 캐시 저장: {cache_key}")
+            except Exception as ce:
+                print(f"⚠️ 요약 캐시 저장 실패: {ce}")
+
+        return {"summary": content, "cached": False}
     except Exception as e:
         print(f"❌ summary-gpt 오류: {e}")
         import traceback
         traceback.print_exc()
         return {"summary": None, "error": str(e)}
+
+
+@app.get("/saju/report-cache")
+async def get_cached_report(cache_key: str, section_key: str):
+    """캐시된 리포트 섹션 조회"""
+    try:
+        content = get_report_cache(cache_key, section_key)
+        if content:
+            return {"found": True, "content": content}
+        return {"found": False, "content": None}
+    except Exception as e:
+        print(f"❌ report-cache 조회 오류: {e}")
+        return {"found": False, "content": None, "error": str(e)}
 
 
 # ==================== 고민 분석 (GPT-4o) ====================

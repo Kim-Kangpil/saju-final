@@ -1049,6 +1049,17 @@ class GPTInterpretRequest(BaseModel):
     minute: Optional[int] = None
     gender: Optional[str] = None
     cache_key: Optional[str] = None
+    report_type: str = "basic"  # basic | deep
+
+
+class DeepReportRequest(BaseModel):
+    day_stem: str
+    year_pillar: str
+    month_pillar: str
+    day_pillar: str
+    hour_pillar: str
+    gender: Optional[str] = None
+    cache_key: Optional[str] = None
 
 
 class SummaryGPTRequest(BaseModel):
@@ -1177,6 +1188,51 @@ def split_pillar(pillar: str) -> tuple:
     if len(pillar) >= 2:
         return pillar[0], pillar[1]
     return '', ''
+
+
+def _fmt_prompt_value(v: Any) -> str:
+    if isinstance(v, list):
+        return " / ".join(str(x) for x in v if x)
+    return str(v).strip() if v is not None else ""
+
+
+def _build_non_empty_block(title: str, data: dict[str, Any], ordered_keys: list[str]) -> str:
+    lines = []
+    for k in ordered_keys:
+        text = _fmt_prompt_value(data.get(k))
+        if text:
+            lines.append(f"{k}: {text}")
+    if not lines:
+        return ""
+    return f"[{title}]\n" + "\n".join(lines)
+
+
+def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
+    return f"""
+[규칙 기반 분석 결과 — 이 내용만 사용]
+{analysis_block}
+
+[작성 규칙]
+1) 사주 전문용어 금지. 일상 언어만 사용.
+2) 각 핵심 문장은 "한 줄 + (짧은 괄호 힌트)" 형태로 작성.
+3) 읽는 사람이 "나 얘기인데?" 반응이 나오게 구체적으로 작성.
+4) 주제는 {topic}에만 집중. 다른 주제 확장 금지.
+5) 4~5개 섹션 구성, 전체 분량은 2000~3000자.
+""".strip()
+
+
+def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analysis: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "day_pillar": req.day_pillar,
+        "month_pillar": req.month_pillar,
+        "year_pillar": req.year_pillar,
+        "hour_pillar": req.hour_pillar,
+        "ten_gods": analysis.get("ten_gods", {}),
+        "strength": analysis.get("strength", analysis.get("summary", {}).get("strength", "")),
+        "harmony_clash": analysis.get("harmony_clash", {}),
+        "sinsal": analysis.get("sinsal", {}),
+        "gender": getattr(req, "gender", None),
+    }
 
 
 # ==================== 엔드포인트 ====================
@@ -1419,19 +1475,10 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
         # ✅ 3-5. 규칙 기반 사주 해석 (interpret_all)
         interpretation = None
         interpretation_block = ""
+        deep_block = ""
         try:
             from logic.saju_engine.core.saju_interpreter import interpret_all
-            saju_data_for_interp = {
-                "day_pillar": req.day_pillar,
-                "month_pillar": req.month_pillar,
-                "year_pillar": req.year_pillar,
-                "hour_pillar": req.hour_pillar,
-                "ten_gods": analysis.get("ten_gods", {}),
-                "strength": analysis.get("strength", analysis.get("summary", {}).get("strength", "")),
-                "harmony_clash": analysis.get("harmony_clash", {}),
-                "sinsal": analysis.get("sinsal", {}),
-                "gender": getattr(req, "gender", None),
-            }
+            saju_data_for_interp = _build_interp_saju_data(req, analysis)
             interpretation = interpret_all(saju_data_for_interp)
             summary = interpretation.get("summary_for_gpt", {}) if isinstance(interpretation, dict) else {}
             interpretation_block = f"""
@@ -1441,10 +1488,14 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
 연애: {summary.get('love_points', '')}
 직업: {summary.get('career_points', '')}
 현재시기: {summary.get('current_period_points', summary.get('period_points', ''))}
+"""
+            if (req.report_type or "basic").lower() == "deep":
+                deep_block = f"""
+[심화 분석 데이터]
 통근투출: {summary.get('tonggeun_points', '')}
-기둥별구조: {summary.get('geunmyo_points', '')}
+기둥별 구조: {summary.get('geunmyo_points', '')}
 형파해원진: {summary.get('hyeong_points', '')}
-올해세운: {summary.get('seun_points', '')}
+올해 세운: {summary.get('seun_points', '')}
 """
             print(f"✅ interpret_all 완료: {list(interpretation.keys())}")
         except Exception as e:
@@ -1525,6 +1576,8 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
             theories_for_gpt = theories
             if interpretation_block:
                 theories_for_gpt = f"{theories_for_gpt}\n\n{interpretation_block}"
+            if deep_block:
+                theories_for_gpt = f"{theories_for_gpt}\n\n{deep_block}"
             # 종합 해석
             content = generator.generate_comprehensive_interpretation(
                 analysis=analysis,
@@ -1641,6 +1694,120 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
+
+
+async def _generate_deep_topic_report(
+    request: Request,
+    req: DeepReportRequest,
+    topic_key: str,
+    section_key: str,
+) -> dict[str, Any]:
+    _uid = get_user_id_from_request(request)
+    if _uid is None:
+        raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+    _mst = refresh_and_get_membership_status(_uid)
+    if not _mst.get("is_member"):
+        if get_report_credits(_uid) <= 0:
+            raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+
+    if not client:
+        return {"success": False, "error": "OPENAI_API_KEY not configured"}
+
+    pillars_dict = {
+        "year": req.year_pillar,
+        "month": req.month_pillar,
+        "day": req.day_pillar,
+        "hour": req.hour_pillar,
+    }
+
+    from logic.saju_engine.core.analyzer import analyze_full_saju
+    from logic.saju_engine.core.saju_interpreter import (
+        interpret_money_deep,
+        interpret_love_deep,
+        interpret_career_deep,
+    )
+
+    analysis = analyze_full_saju(req.day_stem, pillars_dict)
+    saju_data_for_interp = _build_interp_saju_data(req, analysis)
+
+    if topic_key == "money":
+        deep_result = interpret_money_deep(saju_data_for_interp)
+        ordered_keys = ["pattern", "leak_point", "current_flow", "seun_money", "advice", "language_points"]
+        topic_label = "재물"
+    elif topic_key == "love":
+        deep_result = interpret_love_deep(saju_data_for_interp)
+        ordered_keys = ["partner_type", "pattern", "current_flow", "seun_love", "timing", "language_points"]
+        topic_label = "연애"
+    else:
+        deep_result = interpret_career_deep(saju_data_for_interp)
+        ordered_keys = ["work_style", "best_field", "org_vs_independent", "current_flow", "seun_career", "language_points"]
+        topic_label = "직업"
+
+    if not deep_result:
+        return {"success": False, "error": "deep analysis unavailable"}
+
+    cache_key = req.cache_key or f"{topic_key}_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_deep"
+    cached = get_report_cache(cache_key, section_key)
+    if cached:
+        return {"success": True, "cached": True, "report_type": topic_key, "content": cached, "analysis": deep_result}
+
+    analysis_block = _build_non_empty_block(f"{topic_label} 심화 해석", deep_result, ordered_keys)
+    if not analysis_block:
+        return {"success": False, "error": "empty analysis block"}
+
+    system_prompt = _build_deep_report_system_prompt(topic_label, analysis_block)
+    user_prompt = f"이 사람의 {topic_label} 리포트를 작성해줘."
+    resp = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_tokens=1800,
+        temperature=0.4,
+    )
+    content = (resp.choices[0].message.content or "").strip()
+
+    if content:
+        save_report_cache(cache_key, section_key, content)
+
+    return {
+        "success": True,
+        "cached": False,
+        "report_type": topic_key,
+        "content": content,
+        "analysis": deep_result,
+    }
+
+
+@app.post("/saju/report/money")
+async def report_money(req: DeepReportRequest, request: Request):
+    return await _generate_deep_topic_report(
+        request=request,
+        req=req,
+        topic_key="money",
+        section_key="report_money_deep",
+    )
+
+
+@app.post("/saju/report/love")
+async def report_love(req: DeepReportRequest, request: Request):
+    return await _generate_deep_topic_report(
+        request=request,
+        req=req,
+        topic_key="love",
+        section_key="report_love_deep",
+    )
+
+
+@app.post("/saju/report/career")
+async def report_career(req: DeepReportRequest, request: Request):
+    return await _generate_deep_topic_report(
+        request=request,
+        req=req,
+        topic_key="career",
+        section_key="report_career_deep",
+    )
 
 
 PAYMENT_PRODUCT = {"orderName": "고민분석", "amount": 3900}

@@ -706,6 +706,325 @@ def interpret_current_period(saju_data: dict) -> dict:
     }
 
 
+def interpret_money_deep(saju_data: dict) -> dict:
+    """
+    재물 심화 해석.
+    데이터가 부족하면 {} 반환.
+    """
+    ilgan = _get_ilgan(saju_data)
+    pillars = _get_pillars(saju_data)
+    if not ilgan or not pillars.get("day"):
+        return {}
+
+    from logic.saju_engine.core.tonggeun import calculate_tonggeun
+    from logic.saju_engine.core.geunmyo import analyze_geunmyo
+    from logic.saju_engine.core.seun import analyze_seun
+
+    ten_gods = _get_ten_gods(saju_data)
+    strength = _get_strength(saju_data)
+    tong = calculate_tonggeun(saju_data) or {}
+    geunmyo = analyze_geunmyo(saju_data) or {}
+    seun = analyze_seun(saju_data) or {}
+
+    jaeseong_positions = _positions_with(ten_gods, "편재", "정재")
+    siksang_count = _count_ten_god(ten_gods, "식신", "상관")
+    bigeop_count = _count_ten_god(ten_gods, "비견", "겁재")
+    jaeseong_count = len(jaeseong_positions)
+
+    jaeseong_root_positions = []
+    for pos in ("year", "month", "day", "hour"):
+        p = pillars.get(pos, "")
+        if len(p) < 1:
+            continue
+        stem = p[0]
+        stem_tg = calculate_ten_god(ilgan, stem)
+        stem_info = tong.get(f"{pos}_stem", {})
+        if stem_tg in ("편재", "정재") and stem_info.get("has_root"):
+            jaeseong_root_positions.append(pos)
+
+    geunmyo_money_pos = []
+    for pos in ("year", "month", "day", "hour"):
+        item = geunmyo.get(pos, {})
+        if item.get("stem_ten_god") in ("편재", "정재") or item.get("branch_ten_god") in ("편재", "정재"):
+            geunmyo_money_pos.append(pos)
+
+    current = _get_current_daeun(saju_data)
+    daeun_tg = ""
+    if current:
+        _, gapja = current
+        if len(gapja) >= 1:
+            daeun_tg = calculate_ten_god(ilgan, gapja[0])
+    money_active_now = daeun_tg in ("편재", "정재", "식신", "상관")
+
+    seun_stem_tg = seun.get("stem_ten_god") or ""
+    seun_branch_tg = seun.get("branch_ten_god") or ""
+    seun_money = "올해는 재물 흐름이 보통 수준이에요."
+    if seun_stem_tg in ("편재", "정재") or seun_branch_tg in ("편재", "정재"):
+        seun_money = "올해는 돈 기회가 눈에 띄게 들어오는 해예요."
+    elif seun_stem_tg in ("식신", "상관") or seun_branch_tg in ("식신", "상관"):
+        seun_money = "올해는 직접 벌어내는 능력이 강해지는 해예요."
+
+    leak_point = "지출 관리만 잡으면 안정적으로 쌓을 수 있어요."
+    if bigeop_count >= 2 and jaeseong_count > 0:
+        leak_point = "사람·관계에서 돈이 새기 쉬워요. 동업·보증·즉흥 지출을 특히 조심해야 해요."
+    elif strength == "신약" and jaeseong_count >= 2:
+        leak_point = "기회는 많은데 체력·집중이 분산되면서 수익이 새기 쉬운 구조예요."
+    elif jaeseong_count == 0:
+        leak_point = "버는 구조보다 쓰는 기준이 먼저 없어서 돈의 방향이 흐려질 수 있어요."
+
+    pattern = "한 번에 크게 움직이기보다 흐름을 읽고 분산해서 모으는 타입이에요."
+    if jaeseong_count >= 2 and siksang_count >= 1:
+        pattern = "직접 만들고 움직여서 돈으로 연결하는 타입이에요."
+    elif jaeseong_count >= 2 and bigeop_count >= 2:
+        pattern = "기회는 빠르게 잡지만 사람 변수로 수익 변동이 큰 타입이에요."
+
+    current_flow = "지금은 기반을 다지면서 흐름을 관찰하는 구간이에요."
+    if money_active_now:
+        current_flow = "지금은 재물 흐름이 활성화된 구간이라 실행 속도가 수익으로 이어지기 쉬워요."
+
+    advice = "수입원을 2개 이상으로 나누고, 자동저축 비율을 먼저 고정해보세요."
+    if leak_point.startswith("사람·관계"):
+        advice = "관계 지출 상한선을 먼저 정하고, 계약·돈거래는 문서로 남기는 습관이 필요해요."
+
+    language_points = [
+        f"재성 위치 포인트: {', '.join(jaeseong_positions) if jaeseong_positions else '뚜렷하지 않음'}",
+        f"재성 통근 위치: {', '.join(jaeseong_root_positions) if jaeseong_root_positions else '약함'}",
+        f"근묘화실 재성 자리: {', '.join(geunmyo_money_pos) if geunmyo_money_pos else '뚜렷하지 않음'}",
+        f"식상생재 구조: {'있음' if (siksang_count >= 1 and jaeseong_count >= 1) else '약함'}",
+        f"현재 재물 흐름: {current_flow}",
+        f"올해 재물운: {seun_money}",
+        f"누수 포인트: {leak_point}",
+    ]
+    language_points = [x for x in language_points if x]
+
+    return {
+        "pattern": pattern,
+        "leak_point": leak_point,
+        "current_flow": current_flow,
+        "seun_money": seun_money,
+        "advice": advice,
+        "language_points": language_points,
+    }
+
+
+def interpret_love_deep(saju_data: dict) -> dict:
+    """
+    연애 심화 해석.
+    데이터가 부족하면 {} 반환.
+    """
+    ilgan = _get_ilgan(saju_data)
+    pillars = _get_pillars(saju_data)
+    if not ilgan or not pillars.get("day"):
+        return {}
+
+    from logic.saju_engine.core.tonggeun import calculate_tonggeun
+    from logic.saju_engine.core.seun import analyze_seun
+
+    ten_gods = _get_ten_gods(saju_data)
+    harmony_clash = _get_harmony_clash(saju_data)
+    sinsal = _get_sinsal(saju_data)
+    gender = (saju_data.get("gender") or "").lower()
+
+    tong = calculate_tonggeun(saju_data) or {}
+    seun = analyze_seun(saju_data) or {}
+
+    yeonin_names = ("편관", "정관") if ("female" in gender or "여" in gender or gender == "f") else ("편재", "정재")
+    partner_positions = _positions_with(ten_gods, *yeonin_names)
+    day_branch_tg = ten_gods.get("day_branch") or ""
+    ilji_chung = _has_clash_on(harmony_clash, "일")
+    ilji_hap = _has_hap_on(harmony_clash, "일")
+
+    partner_root_stems = []
+    for pos in ("year", "month", "day", "hour"):
+        p = pillars.get(pos, "")
+        if len(p) < 1:
+            continue
+        stem = p[0]
+        tg = calculate_ten_god(ilgan, stem)
+        if tg in yeonin_names and tong.get(f"{pos}_stem", {}).get("has_root"):
+            partner_root_stems.append(pos)
+
+    dohwa = sinsal.get("dohwa") or []
+    hongyeom = sinsal.get("hongyeom") or []
+
+    current = _get_current_daeun(saju_data)
+    daeun_tg = ""
+    if current:
+        _, gapja = current
+        if len(gapja) >= 1:
+            daeun_tg = calculate_ten_god(ilgan, gapja[0])
+    love_active_now = daeun_tg in yeonin_names or daeun_tg in ("식신", "상관")
+
+    seun_stem_tg = seun.get("stem_ten_god") or ""
+    seun_branch_tg = seun.get("branch_ten_god") or ""
+    seun_love = "올해는 관계 흐름이 천천히 정리되는 해예요."
+    if seun_stem_tg in yeonin_names or seun_branch_tg in yeonin_names:
+        seun_love = "올해는 인연이 들어오기 쉬운 해예요."
+    elif seun_stem_tg in ("식신", "상관") or seun_branch_tg in ("식신", "상관"):
+        seun_love = "올해는 매력이 드러나면서 소개·만남이 늘기 쉬워요."
+
+    pattern = "관계가 시작되면 깊게 가지만, 속도 차이에서 흔들릴 수 있어요."
+    if ilji_chung:
+        pattern = "초반은 빠른데 가까워질수록 확신이 흔들리는 패턴이 반복되기 쉬워요."
+    elif ilji_hap:
+        pattern = "새로운 만남보다 이미 알던 인연에서 관계가 깊어지는 패턴이 강해요."
+
+    partner_type = "감정 기복이 적고 약속을 지키는 안정형 상대가 잘 맞아요."
+    if day_branch_tg in ("편관", "정관"):
+        partner_type = "책임감 있고 기준이 분명한 상대와 궁합이 좋아요."
+    elif day_branch_tg in ("편재", "정재"):
+        partner_type = "현실 감각이 좋고 생활 리듬이 맞는 상대가 잘 맞아요."
+
+    current_flow = "지금은 마음 정리와 기준 점검이 먼저 필요한 흐름이에요."
+    if love_active_now:
+        current_flow = "지금은 연애 신호가 분명한 시기라 만남을 행동으로 옮기기 좋아요."
+
+    timing = "관계는 급하게 확정하기보다 2~3번의 실제 만남에서 리듬을 확인해보세요."
+    if seun_love.startswith("올해는 인연"):
+        timing = "올해 하반기까지는 소개·재회·지인 연결에서 인연 타이밍이 좋아요."
+
+    language_points = [
+        f"배우자궁(일지) 흐름: {'충 있음' if ilji_chung else ('합 있음' if ilji_hap else '중립')}",
+        f"연인성 위치: {', '.join(partner_positions) if partner_positions else '뚜렷하지 않음'}",
+        f"연인성 통근: {', '.join(partner_root_stems) if partner_root_stems else '약함'}",
+        f"매력 신호: 도화 {len(dohwa)}건, 홍염 {len(hongyeom)}건",
+        f"현재 연애 흐름: {current_flow}",
+        f"올해 연애운: {seun_love}",
+        f"반복 패턴: {pattern}",
+    ]
+    language_points = [x for x in language_points if x]
+
+    return {
+        "partner_type": partner_type,
+        "pattern": pattern,
+        "current_flow": current_flow,
+        "seun_love": seun_love,
+        "timing": timing,
+        "language_points": language_points,
+    }
+
+
+def interpret_career_deep(saju_data: dict) -> dict:
+    """
+    직업 심화 해석.
+    데이터가 부족하면 {} 반환.
+    """
+    ilgan = _get_ilgan(saju_data)
+    pillars = _get_pillars(saju_data)
+    if not ilgan or not pillars.get("day"):
+        return {}
+
+    from logic.saju_engine.core.tonggeun import calculate_tonggeun
+    from logic.saju_engine.core.seun import analyze_seun
+
+    ten_gods = _get_ten_gods(saju_data)
+    sinsal = _get_sinsal(saju_data)
+    strength = _get_strength(saju_data)
+    wolji = _get_wolji(saju_data)
+
+    tong = calculate_tonggeun(saju_data) or {}
+    seun = analyze_seun(saju_data) or {}
+
+    siksang_count = _count_ten_god(ten_gods, "식신", "상관")
+    gwan_count = _count_ten_god(ten_gods, "편관", "정관")
+    bigeop_count = _count_ten_god(ten_gods, "비견", "겁재")
+
+    siksang_root = 0
+    gwan_root = 0
+    for pos in ("year", "month", "day", "hour"):
+        p = pillars.get(pos, "")
+        if len(p) < 1:
+            continue
+        stem = p[0]
+        tg = calculate_ten_god(ilgan, stem)
+        if tong.get(f"{pos}_stem", {}).get("has_root"):
+            if tg in ("식신", "상관"):
+                siksang_root += 1
+            if tg in ("편관", "정관"):
+                gwan_root += 1
+
+    org_vs_independent = "조직형"
+    if strength == "신강" and bigeop_count >= gwan_count:
+        org_vs_independent = "독립형"
+    elif gwan_count >= 2:
+        org_vs_independent = "조직형"
+    else:
+        org_vs_independent = "혼합형"
+
+    month_field_map = {
+        "寅": "기획·교육·콘텐츠",
+        "卯": "디자인·브랜딩·상담",
+        "辰": "운영·관리·재무",
+        "巳": "마케팅·영업·미디어",
+        "午": "공연·콘텐츠·홍보",
+        "未": "인사·코칭·복지",
+        "申": "기술·분석·전략",
+        "酉": "품질·법무·정밀업무",
+        "戌": "관리·감사·기획총괄",
+        "亥": "연구·상담·기획",
+        "子": "데이터·연구·기술",
+        "丑": "재무·행정·운영",
+    }
+    best_field = month_field_map.get(wolji, "현재 경험이 쌓인 분야")
+
+    special = []
+    if sinsal.get("munchang_gwiin"):
+        special.append("문창귀인")
+    if sinsal.get("hakdang_gwiin"):
+        special.append("학당귀인")
+    if sinsal.get("hwagae"):
+        special.append("화개살")
+
+    current = _get_current_daeun(saju_data)
+    daeun_tg = ""
+    if current:
+        _, gapja = current
+        if len(gapja) >= 1:
+            daeun_tg = calculate_ten_god(ilgan, gapja[0])
+
+    current_flow = "지금은 기술을 다듬고 포지션을 선명하게 만드는 구간이에요."
+    if daeun_tg in ("편관", "정관"):
+        current_flow = "지금은 조직에서 책임과 직함이 올라가기 쉬운 흐름이에요."
+    elif daeun_tg in ("식신", "상관"):
+        current_flow = "지금은 실무 결과물과 포트폴리오가 커리어를 밀어주는 흐름이에요."
+    elif daeun_tg in ("편재", "정재"):
+        current_flow = "지금은 수익화와 프로젝트 확장이 커리어 핵심이 되는 흐름이에요."
+
+    seun_stem_tg = seun.get("stem_ten_god") or ""
+    seun_branch_tg = seun.get("branch_ten_god") or ""
+    seun_career = "올해는 커리어 기반을 정리하는 해예요."
+    if seun_stem_tg in ("편관", "정관") or seun_branch_tg in ("편관", "정관"):
+        seun_career = "올해는 평가·승진·직책 변화 이슈가 커지기 쉬워요."
+    elif seun_stem_tg in ("식신", "상관") or seun_branch_tg in ("식신", "상관"):
+        seun_career = "올해는 실적·작품·성과를 보여주기 좋은 해예요."
+
+    work_style = "기준을 세우고 꾸준히 완성도를 올리는 스타일"
+    if siksang_count >= 2 and siksang_root >= 1:
+        work_style = "직접 만들고 개선하면서 성과를 만드는 실무형 스타일"
+    elif gwan_count >= 2 and gwan_root >= 1:
+        work_style = "체계와 책임을 중심으로 성과를 쌓는 관리형 스타일"
+
+    language_points = [
+        f"식상 구조: {siksang_count}개 / 통근 {siksang_root}개",
+        f"관성 구조: {gwan_count}개 / 통근 {gwan_root}개",
+        f"조직 vs 독립: {org_vs_independent}",
+        f"월지 기준 추천 직종: {best_field}",
+        f"특수 역량 신호: {', '.join(special) if special else '특이 신호 약함'}",
+        f"현재 커리어 흐름: {current_flow}",
+        f"올해 직업운: {seun_career}",
+    ]
+    language_points = [x for x in language_points if x]
+
+    return {
+        "work_style": work_style,
+        "best_field": best_field,
+        "org_vs_independent": org_vs_independent,
+        "current_flow": current_flow,
+        "seun_career": seun_career,
+        "language_points": language_points,
+    }
+
+
 # ─────────────────────────────────────────────────────────────
 # 전체 통합
 # ─────────────────────────────────────────────────────────────

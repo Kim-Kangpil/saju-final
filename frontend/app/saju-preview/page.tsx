@@ -301,7 +301,7 @@ function SajuPreviewContent() {
         },
       };
       sessionStorage.setItem("loadedSaju", JSON.stringify(loadedSaju));
-      router.push(`/add?loaded=${sajuId}`);
+      router.push(`/add-v2?loaded=${sajuId}`);
     } catch {
       alert("오류가 발생했습니다. 다시 시도해주세요.");
     } finally {

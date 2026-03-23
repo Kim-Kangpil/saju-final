@@ -567,7 +567,7 @@ class GPTInterpretationGenerator:
                 harmony_patterns.append(p)
         return harmony_patterns
 
-    def generate_comprehensive_interpretation(self, analysis, tone='empathy', theories=''):
+    def generate_comprehensive_interpretation(self, analysis, tone='empathy', theories='', interpretation=None):
         """
         해석 엔진의 상세 분석 결과를 활용한 종합 해석 생성
 
@@ -575,6 +575,7 @@ class GPTInterpretationGenerator:
             analysis: analyze_full_saju()의 결과
             tone: 'empathy' | 'reality' | 'fun'
             theories: 이론 텍스트
+            interpretation: saju_interpreter.interpret_all() 결과 (선택)
 
         Returns:
             str: GPT가 생성한 종합 해석 (3000~4000자)
@@ -589,6 +590,24 @@ class GPTInterpretationGenerator:
         }
 
         system_prompt = tone_prompts.get(tone, tone_prompts['empathy'])
+
+        # 규칙 기반 해석 결과 주입
+        if interpretation and isinstance(interpretation, dict):
+            s = interpretation.get("summary_for_gpt") or {}
+            def _fmt(v) -> str:
+                if isinstance(v, list):
+                    return " / ".join(str(x) for x in v if x)
+                return str(v) if v else ""
+            interp_lines = [
+                "[규칙 기반 사주 해석 결과 — 반드시 이 내용을 해석에 반영]",
+                f"성격 핵심: {_fmt(s.get('personality_points'))}",
+                f"재물 패턴: {_fmt(s.get('money_points'))}",
+                f"연애 패턴: {_fmt(s.get('love_points'))}",
+                f"직업 패턴: {_fmt(s.get('career_points'))}",
+                f"현재 시기: {_fmt(s.get('period_points'))}",
+            ]
+            interp_block = "\n".join(l for l in interp_lines if l.split(": ", 1)[-1].strip())
+            system_prompt = interp_block + "\n\n" + system_prompt
 
         summary = analysis['summary']
         element_count = summary['element_count']

@@ -1396,6 +1396,26 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
         if 'patterns' in analysis:
             print(f"📊 패턴: {analysis.get('patterns', [])}")
 
+        # ✅ 3-5. 규칙 기반 사주 해석 (interpret_all)
+        interpretation = None
+        try:
+            from logic.saju_engine.core.saju_interpreter import interpret_all
+            saju_data_for_interp = {
+                "day_pillar": req.day_pillar,
+                "month_pillar": req.month_pillar,
+                "year_pillar": req.year_pillar,
+                "hour_pillar": req.hour_pillar,
+                "ten_gods": analysis.get("ten_gods", {}),
+                "strength": analysis.get("strength", analysis.get("summary", {}).get("strength", "")),
+                "harmony_clash": analysis.get("harmony_clash", {}),
+                "sinsal": analysis.get("sinsal", {}),
+                "gender": getattr(req, "gender", None),
+            }
+            interpretation = interpret_all(saju_data_for_interp)
+            print(f"✅ interpret_all 완료: {list(interpretation.keys())}")
+        except Exception as e:
+            print(f"⚠️ interpret_all 실패: {e}")
+
         # ✅ 4. 이론 검색
         theories = ""
         try:
@@ -1426,7 +1446,8 @@ async def interpret_with_gpt(req: GPTInterpretRequest):
             content = generator.generate_comprehensive_interpretation(
                 analysis=analysis,
                 tone=req.tone,
-                theories=theories
+                theories=theories,
+                interpretation=interpretation
             )
 
             # 월지(월지=월주 지지) 추출

@@ -7,7 +7,7 @@ export default function PaymentFailPage({ params }: { params?: Promise<Record<st
   use(params ?? Promise.resolve({}));
   const router = useRouter();
   return (
-    <main style={{ minHeight: "100vh", backgroundColor: "#F5F2EE", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Serif KR', 'Apple SD Gothic Neo', serif", padding: 24 }}>
+    <main style={{ minHeight: "100vh", backgroundColor: "#F5F2EE", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Gmarket Sans'", padding: 24 }}>
       <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
         <div style={{ width: 72, height: 72, borderRadius: "50%", background: "#E1DDCF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
           <Icon icon="mdi:close" width={36} color="#3A3A3A" />

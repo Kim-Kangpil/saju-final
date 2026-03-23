@@ -87,7 +87,7 @@ function PaymentSuccessInner() {
 
 export default function PaymentSuccessPage() {
   return (
-    <main style={{ minHeight: "100vh", backgroundColor: "#F5F2EE", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Serif KR', 'Apple SD Gothic Neo', serif", padding: 24 }}>
+    <main style={{ minHeight: "100vh", backgroundColor: "#F5F2EE", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Gmarket Sans'", padding: 24 }}>
       <Suspense fallback={<p style={{ color: "#3A3A3A", fontSize: 16 }}>로딩 중...</p>}>
         <PaymentSuccessInner />
       </Suspense>

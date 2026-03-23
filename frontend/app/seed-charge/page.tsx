@@ -38,7 +38,7 @@ export default function SeedChargePage({ params }: { params?: Promise<Record<str
   }
 
   return (
-    <main style={{ backgroundColor: "#F5F2EE", minHeight: "100vh", fontFamily: "'Noto Serif KR', 'Apple SD Gothic Neo', serif", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: 100 }}>
+    <main style={{ backgroundColor: "#F5F2EE", minHeight: "100vh", fontFamily: "'Gmarket Sans'", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: 100 }}>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         .wrap { width: 100%; max-width: 420px; margin: 0 auto; padding: 0 20px; }

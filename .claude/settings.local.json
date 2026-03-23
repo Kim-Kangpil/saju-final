@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E '\\\\.\\(ts|tsx\\)$')",
+      "Bash(find C:/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend -name *db* -o -name models* -o -name database*)",
+      "Bash(grep \"\\\\.py$\")",
+      "Bash(grep -r \"TODO\\\\|FIXME\\\\|NEXT\\\\|다음\" --include=*.ts --include=*.tsx -l frontend/app/)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python -c \":*)",
+      "Bash(git push:*)",
+      "Bash(ls /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/*.db)",
+      "Bash(ls /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/logic/*.db)",
+      "Bash(git -C /c/Users/ksh00/OneDrive/Desktop/saju-project-temp log --oneline --all)",
+      "Bash(timeout 10 python -c \":*)"
+    ]
+  }
+}

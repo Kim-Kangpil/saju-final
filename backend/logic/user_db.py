@@ -1,14 +1,16 @@
 # backend/logic/user_db.py
-"""사용자 저장용 DB (PostgreSQL)."""
-import psycopg2
-import psycopg2.extras
+"""사용자 저장용 DB (SQLite)."""
+import sqlite3
+from pathlib import Path
 from datetime import datetime, timedelta
 
-from config import DATABASE_URL
+DB_PATH = Path(__file__).resolve().parent / "users.db"
 
 
 def get_conn():
-    return psycopg2.connect(DATABASE_URL)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def init_user_db():
@@ -17,7 +19,7 @@ def init_user_db():
         cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                id BIGSERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 provider TEXT NOT NULL,
                 provider_id TEXT NOT NULL,
                 email TEXT,
@@ -34,14 +36,17 @@ def init_user_db():
         cur.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_provider_provider_id ON users(provider, provider_id)"
         )
-        # 기존 테이블에 컬럼 없으면 추가 (PostgreSQL IF NOT EXISTS 지원)
+        # 기존 테이블에 컬럼 없으면 추가 (SQLite는 IF NOT EXISTS 미지원 → try/except)
         for col_sql in (
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS seed_balance INTEGER DEFAULT 0",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS is_member INTEGER DEFAULT 0",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_started_at TEXT",
-            "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_expires_at TEXT",
+            "ALTER TABLE users ADD COLUMN seed_balance INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN is_member INTEGER DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN membership_started_at TEXT",
+            "ALTER TABLE users ADD COLUMN membership_expires_at TEXT",
         ):
-            cur.execute(col_sql)
+            try:
+                cur.execute(col_sql)
+            except Exception:
+                pass
         conn.commit()
     finally:
         conn.close()
@@ -58,23 +63,23 @@ def get_or_create_user(
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT id FROM users WHERE provider = %s AND provider_id = %s",
+            "SELECT id FROM users WHERE provider = ? AND provider_id = ?",
             (provider, provider_id),
         )
         row = cur.fetchone()
         if row:
             user_id = row[0]
             cur.execute(
-                "UPDATE users SET last_login = %s WHERE id = %s",
+                "UPDATE users SET last_login = ? WHERE id = ?",
                 (now, user_id),
             )
             conn.commit()
             return user_id
         cur.execute(
-            "INSERT INTO users (provider, provider_id, email, nickname, created_at, last_login) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+            "INSERT INTO users (provider, provider_id, email, nickname, created_at, last_login) VALUES (?, ?, ?, ?, ?, ?)",
             (provider, provider_id, email or "", nickname or "", now, now),
         )
-        new_id = cur.fetchone()[0]
+        new_id = cur.lastrowid
         conn.commit()
         return new_id
     finally:
@@ -100,7 +105,7 @@ def get_user_id_from_session(session_value: str) -> int | None:
             try:
                 cur = conn.cursor()
                 cur.execute(
-                    "SELECT id FROM users WHERE provider = 'kakao' AND provider_id = %s",
+                    "SELECT id FROM users WHERE provider = 'kakao' AND provider_id = ?",
                     (provider_id,),
                 )
                 row = cur.fetchone()
@@ -117,7 +122,7 @@ def get_user_by_id(user_id: int) -> dict | None:
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT provider, email, nickname FROM users WHERE id = %s",
+            "SELECT provider, email, nickname FROM users WHERE id = ?",
             (user_id,),
         )
         row = cur.fetchone()
@@ -139,7 +144,7 @@ def get_seed_balance(user_id: int) -> int:
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT seed_balance FROM users WHERE id = %s",
+            "SELECT seed_balance FROM users WHERE id = ?",
             (user_id,),
         )
         row = cur.fetchone()
@@ -165,7 +170,7 @@ def deduct_seed(user_id: int, amount: int = 1) -> tuple[bool, int]:
     try:
         cur = conn.cursor()
         cur.execute(
-            "UPDATE users SET seed_balance = seed_balance - %s WHERE id = %s",
+            "UPDATE users SET seed_balance = seed_balance - ? WHERE id = ?",
             (amount, user_id),
         )
         conn.commit()
@@ -198,7 +203,7 @@ def refresh_and_get_membership_status(user_id: int) -> dict:
         cur.execute(
             """
             SELECT is_member, membership_started_at, membership_expires_at
-            FROM users WHERE id = %s
+            FROM users WHERE id = ?
             """,
             (user_id,),
         )
@@ -218,7 +223,7 @@ def refresh_and_get_membership_status(user_id: int) -> dict:
         exp_dt = _parse_iso_dt(expires)
         now = datetime.utcnow()
         if exp_dt is not None and exp_dt < now and is_m:
-            cur.execute("UPDATE users SET is_member = 0 WHERE id = %s", (user_id,))
+            cur.execute("UPDATE users SET is_member = 0 WHERE id = ?", (user_id,))
             conn.commit()
             is_m = False
         return {
@@ -243,16 +248,16 @@ def activate_membership(user_id: int, months: int) -> dict:
     conn = get_conn()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT id FROM users WHERE id = %s", (user_id,))
+        cur.execute("SELECT id FROM users WHERE id = ?", (user_id,))
         if not cur.fetchone():
             raise LookupError("user not found")
         cur.execute(
             """
             UPDATE users SET
                 is_member = 1,
-                membership_started_at = %s,
-                membership_expires_at = %s
-            WHERE id = %s
+                membership_started_at = ?,
+                membership_expires_at = ?
+            WHERE id = ?
             """,
             (iso_now, iso_exp, user_id),
         )
@@ -279,7 +284,7 @@ def list_users(limit: int = 50, offset: int = 0) -> list[dict]:
             SELECT id, provider, provider_id, email, nickname, created_at, last_login
             FROM users
             ORDER BY id DESC
-            LIMIT %s OFFSET %s
+            LIMIT ? OFFSET ?
             """,
             (limit, offset),
         )

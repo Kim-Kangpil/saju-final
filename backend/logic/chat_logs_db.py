@@ -1,16 +1,19 @@
 """
-채팅 로그 저장용 DB (PostgreSQL)
+채팅 로그 저장용 DB (SQLite)
 """
 
-import psycopg2
+import sqlite3
+from pathlib import Path
 from datetime import datetime
 from typing import Optional, Any
 
-from config import DATABASE_URL
+DB_PATH = Path(__file__).resolve().parent / "chat_logs.db"
 
 
 def get_conn():
-    return psycopg2.connect(DATABASE_URL)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def init_chat_logs_db() -> None:
@@ -32,7 +35,7 @@ def init_chat_logs_db() -> None:
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS chat_messages (
-              id BIGSERIAL PRIMARY KEY,
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
               session_id TEXT NOT NULL,
               idx INTEGER NOT NULL,
               role TEXT NOT NULL,
@@ -89,23 +92,23 @@ def save_chat_session(
         cur.execute(
             """
             INSERT INTO chat_sessions (session_id, user_id, guest_key, title, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(session_id) DO UPDATE SET
-              user_id = EXCLUDED.user_id,
-              guest_key = EXCLUDED.guest_key,
-              title = COALESCE(EXCLUDED.title, chat_sessions.title),
-              updated_at = EXCLUDED.updated_at
+              user_id = excluded.user_id,
+              guest_key = excluded.guest_key,
+              title = COALESCE(excluded.title, chat_sessions.title),
+              updated_at = excluded.updated_at
             """,
             (session_id, user_id, guest_key, title or "", now, now),
         )
 
-        cur.execute("DELETE FROM chat_messages WHERE session_id = %s", (session_id,))
+        cur.execute("DELETE FROM chat_messages WHERE session_id = ?", (session_id,))
 
         for m in normalized:
             cur.execute(
                 """
                 INSERT INTO chat_messages (session_id, idx, role, content, created_at)
-                VALUES (%s, %s, %s, %s, %s)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 (session_id, int(m["idx"]), m["role"], m["content"], now),
             )
@@ -129,10 +132,10 @@ def get_sessions_for_owner(
     try:
         cur = conn.cursor()
         if user_id is not None:
-            where = "user_id = %s"
+            where = "user_id = ?"
             params: list[Any] = [user_id]
         else:
-            where = "guest_key = %s"
+            where = "guest_key = ?"
             params = [guest_key or ""]
 
         limit = max(1, min(int(limit), 50))
@@ -159,7 +162,7 @@ def get_sessions_for_owner(
             FROM chat_sessions s
             WHERE {where}
             ORDER BY s.updated_at DESC
-            LIMIT %s OFFSET %s
+            LIMIT ? OFFSET ?
             """,
             (*params, limit, offset),
         )
@@ -190,12 +193,12 @@ def get_messages_for_session(
         cur = conn.cursor()
         if user_id is not None:
             cur.execute(
-                "SELECT 1 FROM chat_sessions WHERE session_id = %s AND user_id = %s",
+                "SELECT 1 FROM chat_sessions WHERE session_id = ? AND user_id = ?",
                 (session_id, user_id),
             )
         else:
             cur.execute(
-                "SELECT 1 FROM chat_sessions WHERE session_id = %s AND guest_key = %s",
+                "SELECT 1 FROM chat_sessions WHERE session_id = ? AND guest_key = ?",
                 (session_id, guest_key or ""),
             )
 
@@ -206,7 +209,7 @@ def get_messages_for_session(
             """
             SELECT role, content, idx, created_at
             FROM chat_messages
-            WHERE session_id = %s
+            WHERE session_id = ?
             ORDER BY idx ASC
             """,
             (session_id,),
@@ -229,7 +232,7 @@ def get_messages_for_admin(
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT 1 FROM chat_sessions WHERE session_id = %s AND user_id = %s",
+            "SELECT 1 FROM chat_sessions WHERE session_id = ? AND user_id = ?",
             (session_id, target_user_id),
         )
         if cur.fetchone() is None:
@@ -239,7 +242,7 @@ def get_messages_for_admin(
             """
             SELECT role, content, idx, created_at
             FROM chat_messages
-            WHERE session_id = %s
+            WHERE session_id = ?
             ORDER BY idx ASC
             """,
             (session_id,),

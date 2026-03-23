@@ -1,13 +1,16 @@
-"""사주 저장용 DB (PostgreSQL)."""
-import psycopg2
+"""사주 저장용 DB (SQLite)."""
+import sqlite3
+from pathlib import Path
 from datetime import datetime
 from typing import Optional, List
 
-from config import DATABASE_URL
+DB_PATH = Path(__file__).resolve().parent / "saju.db"
 
 
 def get_conn():
-    return psycopg2.connect(DATABASE_URL)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 
 def init_saju_db():
@@ -17,7 +20,7 @@ def init_saju_db():
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS saju (
-                id BIGSERIAL PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER NOT NULL,
                 name TEXT NOT NULL,
                 relation TEXT,
@@ -31,11 +34,13 @@ def init_saju_db():
             """
         )
         cur.execute(
-            "ALTER TABLE saju ADD COLUMN IF NOT EXISTS iana_timezone TEXT"
-        )
-        cur.execute(
             "CREATE INDEX IF NOT EXISTS idx_saju_user_id ON saju(user_id)"
         )
+        # 기존 테이블에 컬럼 없으면 추가 (SQLite는 IF NOT EXISTS 미지원 → try/except)
+        try:
+            cur.execute("ALTER TABLE saju ADD COLUMN iana_timezone TEXT")
+        except Exception:
+            pass
         conn.commit()
     finally:
         conn.close()
@@ -46,7 +51,7 @@ def get_saju_count_for_user(user_id: int) -> int:
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM saju WHERE user_id = %s",
+            "SELECT COUNT(*) FROM saju WHERE user_id = ?",
             (user_id,),
         )
         row = cur.fetchone()
@@ -60,7 +65,7 @@ def get_saju_by_id(saju_id: int, user_id: int) -> Optional[dict]:
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at, iana_timezone FROM saju WHERE id = %s AND user_id = %s",
+            "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at, iana_timezone FROM saju WHERE id = ? AND user_id = ?",
             (saju_id, user_id),
         )
         row = cur.fetchone()
@@ -88,7 +93,7 @@ def get_saju_list_for_user(user_id: int) -> List[dict]:
         cur = conn.cursor()
         cur.execute(
             "SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at, iana_timezone "
-            "FROM saju WHERE user_id = %s ORDER BY created_at DESC",
+            "FROM saju WHERE user_id = ? ORDER BY created_at DESC",
             (user_id,),
         )
         rows = cur.fetchall()
@@ -133,8 +138,7 @@ def save_saju_for_user(
                 calendar_type, gender,
                 created_at, iana_timezone
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 user_id,
@@ -148,7 +152,7 @@ def save_saju_for_user(
                 iana_timezone,
             ),
         )
-        new_id = cur.fetchone()[0]
+        new_id = cur.lastrowid
         conn.commit()
         return int(new_id)
     finally:

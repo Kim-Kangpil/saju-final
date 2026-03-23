@@ -1232,12 +1232,26 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
 
 
 def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analysis: dict[str, Any]) -> dict[str, Any]:
+    # analyze_full_saju() returns ten_gods as {"년간": {"char": "庚", "ten_god": "정인"}, ...}
+    # saju_interpreter expects flat string values: {"년간": "정인", ...}
+    raw_tg = analysis.get("ten_gods", {})
+    flat_ten_gods: dict[str, str] = {}
+    for pos, val in raw_tg.items():
+        if isinstance(val, dict):
+            tg_name = val.get("ten_god") or val.get("ten_god_name", "")
+            if tg_name:
+                flat_ten_gods[pos] = tg_name
+        elif isinstance(val, str) and val:
+            flat_ten_gods[pos] = val
+
     return {
+        "day_stem": req.day_stem,
         "day_pillar": req.day_pillar,
         "month_pillar": req.month_pillar,
         "year_pillar": req.year_pillar,
         "hour_pillar": req.hour_pillar,
-        "ten_gods": analysis.get("ten_gods", {}),
+        "ten_gods": flat_ten_gods,
+        "ten_gods_count": analysis.get("summary", {}).get("ten_gods_count", {}),
         "strength": analysis.get("strength", analysis.get("summary", {}).get("strength", "")),
         "harmony_clash": analysis.get("harmony_clash", {}),
         "sinsal": analysis.get("sinsal", {}),
@@ -1750,6 +1764,13 @@ async def _generate_deep_topic_report(
 
     analysis = analyze_full_saju(req.day_stem, pillars_dict)
     saju_data_for_interp = _build_interp_saju_data(req, analysis)
+
+    print(f"[DEBUG:{topic_key}] day_stem={saju_data_for_interp.get('day_stem')!r}")
+    print(f"[DEBUG:{topic_key}] pillars year={req.year_pillar} month={req.month_pillar} day={req.day_pillar} hour={req.hour_pillar}")
+    print(f"[DEBUG:{topic_key}] ten_gods={saju_data_for_interp.get('ten_gods')}")
+    print(f"[DEBUG:{topic_key}] ten_gods_count={saju_data_for_interp.get('ten_gods_count')}")
+    print(f"[DEBUG:{topic_key}] harmony_clash keys={list((saju_data_for_interp.get('harmony_clash') or {}).keys())}")
+    print(f"[DEBUG:{topic_key}] daeun_list={'MISSING' if not saju_data_for_interp.get('daeun_list') else 'present'}")
 
     if topic_key == "money":
         deep_result = interpret_money_deep(saju_data_for_interp)

@@ -1,51 +1,69 @@
-"""
-채팅 로그 저장용 DB (SQLite)
-"""
+"""채팅 로그 저장용 DB — DATABASE_URL 있으면 PostgreSQL, 없으면 SQLite."""
 
-import sqlite3
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Any
 
+from logic._db import USE_PG, get_conn, adapt
+
 DB_PATH = Path(__file__).resolve().parent / "chat_logs.db"
 
 
-def get_conn():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+def _conn():
+    return get_conn(DB_PATH)
 
 
 def init_chat_logs_db() -> None:
-    conn = get_conn()
+    conn = _conn()
     try:
         cur = conn.cursor()
+        if USE_PG:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS chat_sessions (
+                  session_id TEXT PRIMARY KEY,
+                  user_id INTEGER,
+                  guest_key TEXT,
+                  title TEXT,
+                  created_at TEXT NOT NULL,
+                  updated_at TEXT NOT NULL
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS chat_messages (
+                  id BIGSERIAL PRIMARY KEY,
+                  session_id TEXT NOT NULL,
+                  idx INTEGER NOT NULL,
+                  role TEXT NOT NULL,
+                  content TEXT NOT NULL,
+                  created_at TEXT NOT NULL,
+                  FOREIGN KEY(session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
+                )
+            """)
+        else:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS chat_sessions (
+                  session_id TEXT PRIMARY KEY,
+                  user_id INTEGER,
+                  guest_key TEXT,
+                  title TEXT,
+                  created_at TEXT NOT NULL,
+                  updated_at TEXT NOT NULL
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS chat_messages (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  session_id TEXT NOT NULL,
+                  idx INTEGER NOT NULL,
+                  role TEXT NOT NULL,
+                  content TEXT NOT NULL,
+                  created_at TEXT NOT NULL,
+                  FOREIGN KEY(session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
+                )
+            """)
         cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS chat_sessions (
-              session_id TEXT PRIMARY KEY,
-              user_id INTEGER,
-              guest_key TEXT,
-              title TEXT,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL
-            )
-            """
+            "CREATE INDEX IF NOT EXISTS idx_chat_messages_session_idx ON chat_messages(session_id, idx)"
         )
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS chat_messages (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              session_id TEXT NOT NULL,
-              idx INTEGER NOT NULL,
-              role TEXT NOT NULL,
-              content TEXT NOT NULL,
-              created_at TEXT NOT NULL,
-              FOREIGN KEY(session_id) REFERENCES chat_sessions(session_id) ON DELETE CASCADE
-            )
-            """
-        )
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_session_idx ON chat_messages(session_id, idx)")
         conn.commit()
     finally:
         conn.close()
@@ -86,30 +104,30 @@ def save_chat_session(
 
     normalized.sort(key=lambda x: x["idx"])
 
-    conn = get_conn()
+    conn = _conn()
     try:
         cur = conn.cursor()
         cur.execute(
-            """
+            adapt("""
             INSERT INTO chat_sessions (session_id, user_id, guest_key, title, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?)
             ON CONFLICT(session_id) DO UPDATE SET
-              user_id = excluded.user_id,
-              guest_key = excluded.guest_key,
-              title = COALESCE(excluded.title, chat_sessions.title),
-              updated_at = excluded.updated_at
-            """,
+              user_id = EXCLUDED.user_id,
+              guest_key = EXCLUDED.guest_key,
+              title = COALESCE(EXCLUDED.title, chat_sessions.title),
+              updated_at = EXCLUDED.updated_at
+            """),
             (session_id, user_id, guest_key, title or "", now, now),
         )
 
-        cur.execute("DELETE FROM chat_messages WHERE session_id = ?", (session_id,))
+        cur.execute(adapt("DELETE FROM chat_messages WHERE session_id = ?"), (session_id,))
 
         for m in normalized:
             cur.execute(
-                """
+                adapt("""
                 INSERT INTO chat_messages (session_id, idx, role, content, created_at)
                 VALUES (?, ?, ?, ?, ?)
-                """,
+                """),
                 (session_id, int(m["idx"]), m["role"], m["content"], now),
             )
 
@@ -128,7 +146,7 @@ def get_sessions_for_owner(
     limit: int = 20,
     offset: int = 0,
 ) -> list[dict[str, Any]]:
-    conn = get_conn()
+    conn = _conn()
     try:
         cur = conn.cursor()
         if user_id is not None:
@@ -142,7 +160,7 @@ def get_sessions_for_owner(
         offset = max(0, int(offset))
 
         cur.execute(
-            f"""
+            adapt(f"""
             SELECT
               s.session_id,
               s.title,
@@ -163,7 +181,7 @@ def get_sessions_for_owner(
             WHERE {where}
             ORDER BY s.updated_at DESC
             LIMIT ? OFFSET ?
-            """,
+            """),
             (*params, limit, offset),
         )
 
@@ -188,17 +206,17 @@ def get_messages_for_session(
     user_id: Optional[int] = None,
     guest_key: Optional[str] = None,
 ) -> Optional[list[dict[str, Any]]]:
-    conn = get_conn()
+    conn = _conn()
     try:
         cur = conn.cursor()
         if user_id is not None:
             cur.execute(
-                "SELECT 1 FROM chat_sessions WHERE session_id = ? AND user_id = ?",
+                adapt("SELECT 1 FROM chat_sessions WHERE session_id = ? AND user_id = ?"),
                 (session_id, user_id),
             )
         else:
             cur.execute(
-                "SELECT 1 FROM chat_sessions WHERE session_id = ? AND guest_key = ?",
+                adapt("SELECT 1 FROM chat_sessions WHERE session_id = ? AND guest_key = ?"),
                 (session_id, guest_key or ""),
             )
 
@@ -206,12 +224,12 @@ def get_messages_for_session(
             return None
 
         cur.execute(
-            """
+            adapt("""
             SELECT role, content, idx, created_at
             FROM chat_messages
             WHERE session_id = ?
             ORDER BY idx ASC
-            """,
+            """),
             (session_id,),
         )
         rows = cur.fetchall()
@@ -228,23 +246,23 @@ def get_messages_for_admin(
     session_id: str,
     target_user_id: int,
 ) -> Optional[list[dict[str, Any]]]:
-    conn = get_conn()
+    conn = _conn()
     try:
         cur = conn.cursor()
         cur.execute(
-            "SELECT 1 FROM chat_sessions WHERE session_id = ? AND user_id = ?",
+            adapt("SELECT 1 FROM chat_sessions WHERE session_id = ? AND user_id = ?"),
             (session_id, target_user_id),
         )
         if cur.fetchone() is None:
             return None
 
         cur.execute(
-            """
+            adapt("""
             SELECT role, content, idx, created_at
             FROM chat_messages
             WHERE session_id = ?
             ORDER BY idx ASC
-            """,
+            """),
             (session_id,),
         )
         rows = cur.fetchall()

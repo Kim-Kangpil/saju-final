@@ -1,32 +1,43 @@
 # backend/logic/contact_db.py
-"""문의하기 저장용 DB (SQLite)."""
-import sqlite3
+"""문의하기 저장용 DB — DATABASE_URL 있으면 PostgreSQL, 없으면 SQLite."""
 from pathlib import Path
 from datetime import datetime
+
+from logic._db import USE_PG, get_conn, adapt
 
 DB_PATH = Path(__file__).resolve().parent / "contact.db"
 
 
-def get_conn():
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    return conn
+def _conn():
+    return get_conn(DB_PATH)
 
 
 def init_contact_db():
-    conn = get_conn()
+    conn = _conn()
     try:
         cur = conn.cursor()
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS inquiries (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT NOT NULL,
-                subject TEXT NOT NULL,
-                message TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            )
-        """)
+        if USE_PG:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS inquiries (
+                    id BIGSERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    email TEXT NOT NULL,
+                    subject TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+            """)
+        else:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS inquiries (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    email TEXT NOT NULL,
+                    subject TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+            """)
         conn.commit()
     finally:
         conn.close()
@@ -34,14 +45,16 @@ def init_contact_db():
 
 def save_inquiry(name: str, email: str, subject: str, message: str) -> int:
     now = datetime.utcnow().isoformat()
-    conn = get_conn()
+    conn = _conn()
     try:
         cur = conn.cursor()
-        cur.execute(
-            "INSERT INTO inquiries (name, email, subject, message, created_at) VALUES (?, ?, ?, ?, ?)",
-            (name.strip(), email.strip(), subject.strip(), message.strip(), now),
+        sql = adapt(
+            "INSERT INTO inquiries (name, email, subject, message, created_at) VALUES (?, ?, ?, ?, ?)"
         )
-        new_id = cur.lastrowid
+        if USE_PG:
+            sql += " RETURNING id"
+        cur.execute(sql, (name.strip(), email.strip(), subject.strip(), message.strip(), now))
+        new_id = cur.fetchone()[0] if USE_PG else cur.lastrowid
         conn.commit()
         return new_id
     finally:

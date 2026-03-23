@@ -57,6 +57,9 @@ else:
     client = None
 
 # ==================== 4. FastAPI 앱 생성 ====================
+TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
+print(f"TEST_MODE: {TEST_MODE}")
+
 app = FastAPI(title="Saju API", version="0.1.0")
 app.include_router(kakao_router)
 app.include_router(google_router)
@@ -1420,7 +1423,7 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
-    if os.getenv("TEST_MODE", "").lower() != "true":
+    if not TEST_MODE:
         _mst = refresh_and_get_membership_status(_uid)
         _is_pro = bool(_mst.get("is_member"))
         if (req.report_type or "basic").lower() == "deep":
@@ -1721,7 +1724,7 @@ async def _generate_deep_topic_report(
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
-    if os.getenv("TEST_MODE", "").lower() != "true":
+    if not TEST_MODE:
         _mst = refresh_and_get_membership_status(_uid)
         if not _mst.get("is_member"):
             from logic.payment_db import has_purchased_report as _has_pr
@@ -1866,7 +1869,7 @@ async def payment_status_api(request: Request):
 @app.get("/api/payment/report-access/{report_type}")
 async def report_access_check(report_type: str, request: Request):
     """리포트 접근 권한 확인 — Pro·구매·분析권 여부에 따라 has_access 반환."""
-    if os.getenv("TEST_MODE", "").lower() == "true":
+    if TEST_MODE:
         return {"has_access": True, "reason": "test_mode"}
     _price_map = {
         "basic": 1900, "deep": 9900,

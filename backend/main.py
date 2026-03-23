@@ -1217,7 +1217,9 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
 2) 각 핵심 문장은 "한 줄 + (짧은 괄호 힌트)" 형태로 작성.
 3) 읽는 사람이 "나 얘기인데?" 반응이 나오게 구체적으로 작성.
 4) 주제는 {topic}에만 집중. 다른 주제 확장 금지.
-5) 4~5개 섹션 구성, 전체 분량은 2000~3000자.
+5) 섹션은 반드시 6개 구성.
+6) 각 섹션은 600~800자 분량으로 작성.
+7) 전체 분량은 4,000~5,000자로 작성.
 """.strip()
 
 
@@ -1763,7 +1765,7 @@ async def _generate_deep_topic_report(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        max_tokens=1800,
+        max_tokens=3000,
         temperature=0.4,
     )
     content = (resp.choices[0].message.content or "").strip()

@@ -1063,6 +1063,11 @@ class DeepReportRequest(BaseModel):
     hour_pillar: str
     gender: Optional[str] = None
     cache_key: Optional[str] = None
+    birth_year: Optional[int] = None
+    birth_month: Optional[int] = None
+    birth_day: Optional[int] = None
+    birth_hour: Optional[int] = None
+    calendar_type: Optional[str] = "solar"
 
 
 class SummaryGPTRequest(BaseModel):
@@ -1765,12 +1770,26 @@ async def _generate_deep_topic_report(
     analysis = analyze_full_saju(req.day_stem, pillars_dict)
     saju_data_for_interp = _build_interp_saju_data(req, analysis)
 
-    print(f"[DEBUG:{topic_key}] day_stem={saju_data_for_interp.get('day_stem')!r}")
-    print(f"[DEBUG:{topic_key}] pillars year={req.year_pillar} month={req.month_pillar} day={req.day_pillar} hour={req.hour_pillar}")
-    print(f"[DEBUG:{topic_key}] ten_gods={saju_data_for_interp.get('ten_gods')}")
-    print(f"[DEBUG:{topic_key}] ten_gods_count={saju_data_for_interp.get('ten_gods_count')}")
-    print(f"[DEBUG:{topic_key}] harmony_clash keys={list((saju_data_for_interp.get('harmony_clash') or {}).keys())}")
-    print(f"[DEBUG:{topic_key}] daeun_list={'MISSING' if not saju_data_for_interp.get('daeun_list') else 'present'}")
+    # 대운 계산 — 생년월일이 있을 때만
+    if req.birth_year and req.birth_month and req.birth_day:
+        try:
+            birth_payload = {
+                "calendar_type": req.calendar_type or "solar",
+                "year": req.birth_year,
+                "month": req.birth_month,
+                "day": req.birth_day,
+                "hour": req.birth_hour,
+                "minute": 0,
+                "gender": req.gender or "M",
+                "is_leap_month": False,
+            }
+            full_data = compute_full_saju(birth_payload, DB)
+            daeun_list = full_data.get("daeun_list") or []
+            if daeun_list:
+                saju_data_for_interp["daeun_list"] = daeun_list
+                saju_data_for_interp["birth_year"] = req.birth_year
+        except Exception as _daeun_err:
+            print(f"daeun 계산 실패: {_daeun_err}")
 
     if topic_key == "money":
         deep_result = interpret_money_deep(saju_data_for_interp)

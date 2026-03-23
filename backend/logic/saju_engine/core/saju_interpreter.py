@@ -713,9 +713,7 @@ def interpret_money_deep(saju_data: dict) -> dict:
     """
     ilgan = _get_ilgan(saju_data)
     pillars = _get_pillars(saju_data)
-    print(f"[DEBUG:money] ilgan={ilgan!r}  day_pillar={pillars.get('day')!r}")
     if not ilgan or not pillars.get("day"):
-        print(f"[DEBUG:money] 데이터 부족으로 종료 (ilgan={ilgan!r}, day={pillars.get('day')!r})")
         return {}
 
     from logic.saju_engine.core.tonggeun import calculate_tonggeun
@@ -724,7 +722,6 @@ def interpret_money_deep(saju_data: dict) -> dict:
 
     ten_gods = _get_ten_gods(saju_data)
     strength = _get_strength(saju_data)
-    print(f"[DEBUG:money] ten_gods={ten_gods}  strength={strength!r}  daeun={_get_current_daeun(saju_data)}")
     tong = calculate_tonggeun(saju_data) or {}
     geunmyo = analyze_geunmyo(saju_data) or {}
     seun = analyze_seun(saju_data) or {}

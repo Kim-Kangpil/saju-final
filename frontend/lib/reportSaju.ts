@@ -14,6 +14,11 @@ export type ReportInput = {
   hour_pillar: string;
   gender: string;
   cache_key: string;
+  birth_year?: number;
+  birth_month?: number;
+  birth_day?: number;
+  birth_hour?: number | null;
+  calendar_type?: string;
 };
 
 function toApiGender(g: string): string {
@@ -42,6 +47,14 @@ function extractFromSaved(saved: SavedSaju): ReportInput | null {
 
   const cache_key = `report_${saved.id}_${year_pillar}_${month_pillar}_${day_pillar}_${hour_pillar}`;
 
+  // Extract birth info for daeun calculation
+  const ymd = saved.birthYmd || "";
+  const birth_year  = ymd.length >= 4 ? Number(ymd.slice(0, 4)) : undefined;
+  const birth_month = ymd.length >= 6 ? Number(ymd.slice(4, 6)) : undefined;
+  const birth_day   = ymd.length >= 8 ? Number(ymd.slice(6, 8)) : undefined;
+  const hm = saved.birthHm || "";
+  const birth_hour  = !saved.timeUnknown && hm.length >= 2 ? Number(hm.slice(0, 2)) : null;
+
   return {
     day_stem,
     year_pillar,
@@ -50,6 +63,11 @@ function extractFromSaved(saved: SavedSaju): ReportInput | null {
     hour_pillar,
     gender: toApiGender(saved.gender),
     cache_key,
+    birth_year,
+    birth_month,
+    birth_day,
+    birth_hour,
+    calendar_type: saved.calendar === "lunar" ? "lunar" : "solar",
   };
 }
 
@@ -129,6 +147,12 @@ export async function loadReportInputBySajuId(sajuId: string): Promise<ReportInp
   const day_stem = day_pillar?.[0] || "";
   if (!day_stem || !year_pillar || !month_pillar || !day_pillar || !hour_pillar) return null;
 
+  // Extract birth info from server row for daeun calculation
+  const [by, bm, bd] = (row.birthdate || "").split("-").map(Number);
+  const t = (row.birth_time || "").trim();
+  const hasTime = /^\d{1,2}:\d{1,2}$/.test(t);
+  const [bh] = hasTime ? t.split(":").map(Number) : [null];
+
   return {
     day_stem,
     year_pillar,
@@ -137,6 +161,11 @@ export async function loadReportInputBySajuId(sajuId: string): Promise<ReportInp
     hour_pillar,
     gender: row.gender === "남자" ? "M" : "F",
     cache_key: `report_srv-${row.id}_${year_pillar}_${month_pillar}_${day_pillar}_${hour_pillar}`,
+    birth_year:  by || undefined,
+    birth_month: bm || undefined,
+    birth_day:   bd || undefined,
+    birth_hour:  hasTime ? (bh ?? null) : null,
+    calendar_type: row.calendar_type === "음력" ? "lunar" : "solar",
   };
 }
 

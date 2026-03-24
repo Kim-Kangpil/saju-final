@@ -1293,6 +1293,44 @@ def _build_money_analysis_block(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _call_gpt_with_retry(
+    system_prompt: str,
+    user_prompt: str,
+    model: str = "gpt-4o",
+    max_tokens: int = 4000,
+    max_retries: int = 2,
+) -> str:
+    """GPT 호출 + 길이 검증 재시도. 최소 3,000자 & 6개 섹션 보장."""
+    current_system = system_prompt
+    content = ""
+    for attempt in range(max_retries + 1):
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": current_system},
+                {"role": "user", "content": user_prompt},
+            ],
+            max_tokens=max_tokens,
+            temperature=0.4,
+        )
+        content = (resp.choices[0].message.content or "").strip()
+        section_count = sum(1 for m in ["1.", "2.", "3.", "4.", "5.", "6."] if m in content)
+        logger.warning(f"[GPT] attempt {attempt + 1}: {len(content)} chars, {section_count} sections")
+
+        if len(content) >= 3000 and section_count >= 6:
+            return content
+
+        if attempt < max_retries:
+            logger.warning(f"[GPT] Too short ({len(content)} chars), retrying with stronger prompt...")
+            current_system = (
+                "[재시도: 이전 응답이 너무 짧았음. 반드시 각 섹션 600자 이상 작성]\n\n"
+                + system_prompt
+            )
+
+    logger.warning(f"[GPT] Final attempt result: {len(content)} chars")
+    return content
+
+
 def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
     SECTION_NAMES = {
         "재물": [
@@ -1323,7 +1361,13 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
     sections = SECTION_NAMES.get(topic, [f"섹션 {i+1}" for i in range(6)])
     sections_str = "\n".join(f"{i+1}. {s}" for i, s in enumerate(sections))
 
-    return f"""[계산된 사실 — 이 내용만 사용. 없는 내용 추가 금지. 추측 금지.]
+    return f"""[CRITICAL: 분량 규칙 - 이것이 가장 중요한 규칙]
+반드시 6개 섹션을 모두 작성해야 합니다.
+각 섹션은 최소 600자 이상이어야 합니다.
+전체 응답은 최소 4,000자 이상이어야 합니다.
+섹션을 건너뛰거나 짧게 끝내는 것은 절대 금지입니다.
+
+[계산된 사실 — 이 내용만 사용. 없는 내용 추가 금지. 추측 금지.]
 {analysis_block}
 
 [작성 전 필수 확인]
@@ -2031,20 +2075,19 @@ async def _generate_deep_topic_report(
         return {"success": False, "error": "empty analysis block"}
 
     system_prompt = _build_deep_report_system_prompt(topic_label, analysis_block)
-    user_prompt = f"이 사람의 {topic_label} 리포트를 작성해줘."
-    resp = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        max_tokens=4000,
-        temperature=0.4,
+    user_prompt = (
+        f"이 사람의 {topic_label} 리포트를 작성해줘. "
+        "반드시 6개 섹션 전부 작성하고, 각 섹션 600자 이상으로 상세하게 써줘. 전체 4,000자 이상이어야 함."
     )
-    content = (resp.choices[0].message.content or "").strip()
+    content = _call_gpt_with_retry(system_prompt, user_prompt)
 
-    if content:
+    section_count = sum(1 for m in ["1.", "2.", "3.", "4.", "5.", "6."] if m in content)
+    logger.warning(f"[REPORT] Final content length: {len(content)} chars, sections: {section_count}")
+
+    if content and len(content) >= 3000:
         save_report_cache(cache_key, section_key, content)
+    elif content:
+        logger.warning(f"[REPORT] Skipping cache — content too short ({len(content)} chars)")
 
     return {
         "success": True,

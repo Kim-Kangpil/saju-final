@@ -8,6 +8,13 @@
 
 from logic.jijanggan import get_jijanggan
 
+# 지지 한자 → 한글 변환 (get_jijanggan은 한글 키를 받음)
+HANJA_TO_HANGUL_BRANCH = {
+    '子': '자', '丑': '축', '寅': '인', '卯': '묘',
+    '辰': '진', '巳': '사', '午': '오', '未': '미',
+    '申': '신', '酉': '유', '戌': '술', '亥': '해',
+}
+
 STEM_TO_ELEMENT = {
     "甲": "wood",
     "乙": "wood",
@@ -81,8 +88,14 @@ def calculate_tonggeun(saju_data: dict) -> dict:
         for branch_pos, branch in branches.items():
             if not branch:
                 continue
-            jijanggan = get_jijanggan(branch) or []
-            if stem in jijanggan:
+            branch_hangul = HANJA_TO_HANGUL_BRANCH.get(branch, branch)
+            jijanggan_list = get_jijanggan(branch_hangul) or []
+            # get_jijanggan returns list of dicts {hanja, hangul, element} — extract hanja strings
+            jijanggan_hanja = [
+                item.get('hanja', '') if isinstance(item, dict) else item
+                for item in jijanggan_list
+            ]
+            if stem in jijanggan_hanja:
                 pos_name = POSITION_NAMES.get(branch_pos, branch_pos)
                 root_positions.append(pos_name)
                 if branch_pos == "month":

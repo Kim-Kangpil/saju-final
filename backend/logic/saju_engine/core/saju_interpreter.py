@@ -175,6 +175,20 @@ def _has_hap_on(harmony_clash: dict, position_keyword: str) -> bool:
     return False
 
 
+TG_KEY_MAP = {
+    'year_stem':   '년간', 'year_branch':  '년지',
+    'month_stem':  '월간', 'month_branch': '월지',
+    'day_branch':  '일지',
+    'hour_stem':   '시간', 'hour_branch':  '시지',
+}
+
+
+def _get_tg(ten_gods: dict, english_key: str) -> str:
+    """ten_gods dict에서 영문/한글 키 둘 다 지원하는 헬퍼."""
+    korean_key = TG_KEY_MAP.get(english_key, english_key)
+    return ten_gods.get(korean_key, '') or ten_gods.get(english_key, '')
+
+
 def _parse_daeun_entry(entry: str) -> tuple[int, str]:
     """'5세 甲子(갑자)' → (5, '甲子')"""
     try:
@@ -784,6 +798,30 @@ def interpret_money_deep(saju_data: dict) -> dict:
     siksang_count = _count_ten_god(ten_gods, "식신", "상관")
     siksang_saengjae = siksang_count > 0 and not jaeseong_absent
 
+    # 재성 없을 때 대안 수입 구조 분석
+    alt_income: list = []
+    if jaeseong_absent:
+        if siksang_count >= 2:
+            alt_income.append({
+                "type": "식상형",
+                "meaning": "재능과 표현력이 수입으로 연결되는 구조",
+                "chars": [k for k, v in ten_gods.items() if v in ("식신", "상관")],
+            })
+        gwan_count_alt = _count_ten_god(ten_gods, "정관", "편관")
+        if gwan_count_alt >= 1:
+            alt_income.append({
+                "type": "관성형",
+                "meaning": "직장/조직에서 안정적 수입이 오는 구조",
+                "chars": [k for k, v in ten_gods.items() if v in ("정관", "편관")],
+            })
+        in_count_alt = _count_ten_god(ten_gods, "정인", "편인")
+        if in_count_alt >= 2:
+            alt_income.append({
+                "type": "인성형",
+                "meaning": "지식/자격/학문을 통해 수입이 생기는 구조",
+                "chars": [k for k, v in ten_gods.items() if v in ("정인", "편인")],
+            })
+
     # 신강약 + 점수
     if isinstance(raw_strength, dict):
         strength_value = raw_strength.get("strength", "알 수 없음")
@@ -812,24 +850,35 @@ def interpret_money_deep(saju_data: dict) -> dict:
     # 대운 — _get_current_daeun 반환값은 (age: int, gapja: str) 튜플
     current = _get_current_daeun(saju_data)
     daeun_ten_god = ""
+    daeun_stem_tg = ""
+    daeun_branch_tg = ""
     daeun_pillar = ""
     daeun_favorable = None
     daeun_effect = ""
     if current:
         _, daeun_pillar = current
-        if daeun_pillar:
-            daeun_ten_god = calculate_ten_god(ilgan, daeun_pillar[0])
+        if daeun_pillar and len(daeun_pillar) >= 2:
+            daeun_stem_tg = calculate_ten_god(ilgan, daeun_pillar[0])
+            daeun_branch_tg = calculate_ten_god(ilgan, daeun_pillar[1])
+            daeun_ten_god = daeun_stem_tg
+        elif daeun_pillar and len(daeun_pillar) >= 1:
+            daeun_stem_tg = calculate_ten_god(ilgan, daeun_pillar[0])
+            daeun_ten_god = daeun_stem_tg
         FAVORABLE = ("편재", "정재", "식신", "상관")
         UNFAVORABLE = ("편인", "정인", "비견", "겁재")
-        if daeun_ten_god in FAVORABLE:
+        is_favorable = daeun_stem_tg in FAVORABLE or daeun_branch_tg in FAVORABLE
+        is_unfavorable = daeun_stem_tg in UNFAVORABLE and daeun_branch_tg in UNFAVORABLE
+        parts = list(dict.fromkeys(g for g in (daeun_stem_tg, daeun_branch_tg) if g))
+        label = "·".join(parts)
+        if is_favorable:
             daeun_favorable = True
-            daeun_effect = f"{daeun_ten_god} 대운 = 재물 활성화 구간"
-        elif daeun_ten_god in UNFAVORABLE:
+            daeun_effect = f"{label} 대운 = 재물 활성화 구간"
+        elif is_unfavorable:
             daeun_favorable = False
-            daeun_effect = f"{daeun_ten_god} 대운 = 재물 정체 구간"
+            daeun_effect = f"{label} 대운 = 재물 정체 구간"
         else:
             daeun_favorable = None
-            daeun_effect = f"{daeun_ten_god} 대운 = 중립"
+            daeun_effect = f"{label} 대운 = 중립"
 
     # 세운
     seun_stem_god = ""
@@ -852,12 +901,14 @@ def interpret_money_deep(saju_data: dict) -> dict:
     yongshin_elements = yongshin.get("final_yongshin") or []
     gishin_elements = yongshin.get("gishin") or []
 
-    # 재물 관련 신살
+    # 재물 관련 신살 (analyze_sinsal 실제 키 사용)
     money_sinsal: list = []
-    for key in ("rok", "amrok", "munchang"):
-        items = sinsal.get(key) or []
-        if items:
-            money_sinsal.append({"type": key, "items": items})
+    if sinsal.get("munchang_gwiin"):
+        money_sinsal.append({"type": "문창귀인", "meaning": "글/지식/콘텐츠로 수익 내는 구조"})
+    if sinsal.get("wolgong"):
+        money_sinsal.append({"type": "월공", "meaning": "재물이 들어와도 허무하게 나가는 패턴"})
+    if sinsal.get("yeokma"):
+        money_sinsal.append({"type": "역마살", "meaning": "움직일수록 돈이 생기는 구조"})
 
     # 근묘화실 재성 인생 단계
     STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "현재", "hour": "말년"}
@@ -884,11 +935,14 @@ def interpret_money_deep(saju_data: dict) -> dict:
         "bigeop_controls_money": bigeop_count >= 2,
         "siksang_count": siksang_count,
         "siksang_saengjae": siksang_saengjae,
+        "alt_income": alt_income,
         "strength": strength_value,
         "strength_score": strength_score,
         "can_handle_money": can_handle_money,
         "current_daeun_pillar": daeun_pillar,
         "daeun_ten_god": daeun_ten_god,
+        "daeun_stem_tg": daeun_stem_tg,
+        "daeun_branch_tg": daeun_branch_tg,
         "daeun_favorable": daeun_favorable,
         "daeun_effect": daeun_effect,
         "seun_stem_god": seun_stem_god,
@@ -928,7 +982,7 @@ def interpret_love_deep(saju_data: dict) -> dict:
 
     yeonin_names = ("편관", "정관") if ("female" in gender or "여" in gender or gender == "f") else ("편재", "정재")
     partner_positions = _positions_with(ten_gods, *yeonin_names)
-    day_branch_tg = ten_gods.get("day_branch") or ""
+    day_branch_tg = _get_tg(ten_gods, "day_branch")
     ilji_chung = _has_clash_on(harmony_clash, "일")
     ilji_hap = _has_hap_on(harmony_clash, "일")
 
@@ -951,15 +1005,22 @@ def interpret_love_deep(saju_data: dict) -> dict:
             yeonin_life_stages.append(STAGE_LABEL.get(pos, pos))
 
     dohwa = sinsal.get("dohwa") or []
-    hongyeom = sinsal.get("hongyeom") or []
+    hongyeom: list = []  # 홍염살 — analyze_sinsal 미구현, 항상 0
 
     current = _get_current_daeun(saju_data)
     daeun_tg = ""
+    daeun_branch_tg = ""
     if current:
         _, gapja = current
-        if len(gapja) >= 1:
+        if len(gapja) >= 2:
             daeun_tg = calculate_ten_god(ilgan, gapja[0])
-    love_active_now = daeun_tg in yeonin_names or daeun_tg in ("식신", "상관")
+            daeun_branch_tg = calculate_ten_god(ilgan, gapja[1])
+        elif len(gapja) >= 1:
+            daeun_tg = calculate_ten_god(ilgan, gapja[0])
+    love_active_now = (
+        daeun_tg in yeonin_names or daeun_tg in ("식신", "상관")
+        or daeun_branch_tg in yeonin_names or daeun_branch_tg in ("식신", "상관")
+    )
 
     seun_stem_tg = seun.get("stem_ten_god") or ""
     seun_branch_tg = seun.get("branch_ten_god") or ""
@@ -1012,6 +1073,7 @@ def interpret_love_deep(saju_data: dict) -> dict:
         "dohwa_count": len(dohwa),
         "hongyeom_count": len(hongyeom),
         "daeun_ten_god": daeun_tg if daeun_tg else "확인 필요",
+        "daeun_branch_tg": daeun_branch_tg if daeun_branch_tg else "",
         "daeun_favorable": "유리" if love_active_now else "중립",
         "seun_favorable": "유리" if seun_favorable else "보통",
         "yongshin_elements": yongshin_elements if yongshin_elements else ["확인 필요"],
@@ -1075,13 +1137,21 @@ def interpret_career_deep(saju_data: dict) -> dict:
             tg_label = stg or btg
             career_life_stages.append(f"{label}({tg_label})")
 
-    org_vs_independent = "조직형"
-    if strength == "신강" and bigeop_count >= gwan_count:
-        org_vs_independent = "독립형"
-    elif gwan_count >= 2:
+    if gwan_root >= 2 or (gwan_count >= 2 and siksang_count <= 1):
         org_vs_independent = "조직형"
+        org_reason = "관성이 강하고 뿌리가 있어 조직에서 힘을 발휘하는 구조"
+    elif siksang_root >= 2 or (strength == "신강" and siksang_count >= 2):
+        org_vs_independent = "독립형"
+        org_reason = "식상이 강하고 신강해서 혼자 움직일 때 더 강한 구조"
+    elif siksang_count >= 1 and gwan_count >= 1:
+        org_vs_independent = "프리에이전트형"
+        org_reason = "조직 안에서도 독립적으로 움직이는 프리에이전트 스타일"
+    elif siksang_count == 0 and gwan_count == 0:
+        org_vs_independent = "전문가형"
+        org_reason = "인성/비겁 중심으로 전문 역량을 쌓는 구조"
     else:
-        org_vs_independent = "혼합형"
+        org_vs_independent = "상황적응형"
+        org_reason = "환경에 따라 조직/독립 모두 소화 가능한 유연한 구조"
 
     month_field_map = {
         "寅": "기획·교육·콘텐츠",
@@ -1102,8 +1172,7 @@ def interpret_career_deep(saju_data: dict) -> dict:
     special = []
     if sinsal.get("munchang_gwiin"):
         special.append("문창귀인(글·표현 능력)")
-    if sinsal.get("hakdang_gwiin"):
-        special.append("학당귀인(학문·전문직)")
+    # 학당귀인: analyze_sinsal 미구현 — 포함하지 않음
     if sinsal.get("hwagae"):
         special.append("화개살(예술·철학·종교)")
     if sinsal.get("yeokma"):
@@ -1111,18 +1180,27 @@ def interpret_career_deep(saju_data: dict) -> dict:
 
     current = _get_current_daeun(saju_data)
     daeun_tg = ""
+    daeun_branch_tg = ""
     if current:
         _, gapja = current
-        if len(gapja) >= 1:
+        if len(gapja) >= 2:
             daeun_tg = calculate_ten_god(ilgan, gapja[0])
-    career_active_now = daeun_tg in ("편관", "정관", "식신", "상관", "편재", "정재")
+            daeun_branch_tg = calculate_ten_god(ilgan, gapja[1])
+        elif len(gapja) >= 1:
+            daeun_tg = calculate_ten_god(ilgan, gapja[0])
+    CAREER_ACTIVE_GODS = ("편관", "정관", "식신", "상관", "편재", "정재")
+    career_active_now = (
+        daeun_tg in CAREER_ACTIVE_GODS or daeun_branch_tg in CAREER_ACTIVE_GODS
+    )
 
+    # current_flow: 천간 기준, 없으면 지지 참조
+    _daeun_for_flow = daeun_tg or daeun_branch_tg
     current_flow = "기술을 다듬고 포지션을 선명하게 만드는 구간"
-    if daeun_tg in ("편관", "정관"):
+    if _daeun_for_flow in ("편관", "정관"):
         current_flow = "조직에서 책임과 직함이 올라가기 쉬운 흐름"
-    elif daeun_tg in ("식신", "상관"):
+    elif _daeun_for_flow in ("식신", "상관"):
         current_flow = "실무 결과물과 포트폴리오가 커리어를 밀어주는 흐름"
-    elif daeun_tg in ("편재", "정재"):
+    elif _daeun_for_flow in ("편재", "정재"):
         current_flow = "수익화와 프로젝트 확장이 커리어 핵심이 되는 흐름"
 
     seun_stem_tg = seun.get("stem_ten_god") or ""
@@ -1151,6 +1229,7 @@ def interpret_career_deep(saju_data: dict) -> dict:
         "work_style": work_style,
         "best_field": best_field,
         "org_vs_independent": org_vs_independent,
+        "org_reason": org_reason,
         "current_flow": current_flow,
         "seun_career": seun_career,
         "siksang_count": siksang_count,
@@ -1160,6 +1239,7 @@ def interpret_career_deep(saju_data: dict) -> dict:
         "career_life_stages": career_life_stages if career_life_stages else ["뚜렷하지 않음"],
         "special_sinsal": special if special else ["특이 신호 약함"],
         "daeun_ten_god": daeun_tg if daeun_tg else "확인 필요",
+        "daeun_branch_tg": daeun_branch_tg if daeun_branch_tg else "",
         "daeun_favorable": "유리" if career_active_now else "중립",
         "seun_favorable": "유리" if seun_favorable else "보통",
         "yongshin_elements": yongshin_elements if yongshin_elements else ["확인 필요"],

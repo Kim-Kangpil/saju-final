@@ -1244,6 +1244,8 @@ def _build_money_analysis_block(data: dict[str, Any]) -> str:
     strength_score = data.get("strength_score", 0)
     can_handle_money = data.get("can_handle_money", False)
     daeun_effect = data.get("daeun_effect", "")
+    daeun_branch_tg = data.get("daeun_branch_tg", "")
+    alt_income = data.get("alt_income") or []
     seun_stem_god = data.get("seun_stem_god", "")
     seun_branch_god = data.get("seun_branch_god", "")
     seun_favorable = data.get("seun_favorable")
@@ -1268,6 +1270,9 @@ def _build_money_analysis_block(data: dict[str, Any]) -> str:
     lines.append(f"비겁 개수: {bigeop_count}{'  (비겁 과다 — 재물 분산 위험)' if bigeop_count >= 3 else ''}")
     lines.append(f"식상 개수: {siksang_count}")
     lines.append(f"식상생재: {'있음' if siksang_saengjae else '없음'}")
+    if alt_income:
+        alt_strs = [f"{a['type']}: {a['meaning']}" for a in alt_income]
+        lines.append(f"대안 수입 구조 (재성 없을 때): {' / '.join(alt_strs)}")
     lines.append(f"신강약: {strength} (점수: {strength_score})")
     lines.append(f"재성 감당 여부: {'가능' if can_handle_money else '어려움 (신약 — 재물 들어와도 소화 힘듦)'}")
 
@@ -1287,7 +1292,7 @@ def _build_money_analysis_block(data: dict[str, Any]) -> str:
     if geunmyo_stages:
         lines.append(f"재물 활성 인생 단계: {', '.join(geunmyo_stages)}")
     if money_sinsal:
-        sinsal_strs = [f"{s['type']}({s['items']})" for s in money_sinsal]
+        sinsal_strs = [f"{s['type']}({s.get('meaning', s.get('items', ''))})" for s in money_sinsal]
         lines.append(f"재물 신살: {', '.join(sinsal_strs)}")
 
     return "\n".join(lines)
@@ -2044,17 +2049,19 @@ async def _generate_deep_topic_report(
             "partner_type", "pattern", "current_flow", "seun_love", "timing",
             "ilji_ten_god", "ilji_state", "partner_positions", "partner_tonggeun",
             "yeonin_life_stages", "dohwa_count", "hongyeom_count", "daeun_ten_god",
-            "daeun_favorable", "seun_favorable", "yongshin_elements", "gishin_elements",
-            "yongshin_love_tip",
+            "daeun_branch_tg", "daeun_favorable", "seun_favorable",
+            "yongshin_elements", "gishin_elements", "yongshin_love_tip",
         ]
         topic_label = "연애"
     else:
         deep_result = interpret_career_deep(saju_data_for_interp)
         ordered_keys = [
-            "work_style", "best_field", "org_vs_independent", "current_flow", "seun_career",
+            "work_style", "best_field", "org_vs_independent", "org_reason",
+            "current_flow", "seun_career",
             "siksang_count", "siksang_root_count", "gwan_count", "gwan_root_count",
-            "career_life_stages", "special_sinsal", "daeun_ten_god", "daeun_favorable",
-            "seun_favorable", "yongshin_elements", "gishin_elements", "yongshin_career_tip",
+            "career_life_stages", "special_sinsal", "daeun_ten_god", "daeun_branch_tg",
+            "daeun_favorable", "seun_favorable",
+            "yongshin_elements", "gishin_elements", "yongshin_career_tip",
         ]
         topic_label = "직업"
 

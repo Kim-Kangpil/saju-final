@@ -589,7 +589,16 @@ class GPTInterpretationGenerator:
             'fun': "당신은 재미있고 친근한 사주 해석가입니다. 친구같은 느낌으로 반말을 하죠. 밈과 이모지를 활용하여 Z세대 감성으로 쉽고 재미있게 사주를 해석합니다."
         }
 
-        system_prompt = tone_prompts.get(tone, tone_prompts['empathy'])
+        is_deep = (report_type or 'basic').lower() == 'deep'
+        length_rule = (
+            "[CRITICAL: 분량 규칙 — 반드시 준수]\n"
+            "- 아래 9개 섹션을 순서대로 전부 작성할 것. 단 하나도 생략 불가.\n"
+            + ("- 각 섹션 700자 이상. 전체 6,000자 이상.\n" if is_deep else
+               "- 각 섹션 400자 이상. 전체 4,000자 이상.\n")
+            + "- 분량 미달 시 재작성 요청됨. 반드시 충분히 작성할 것.\n\n"
+        )
+
+        system_prompt = length_rule + tone_prompts.get(tone, tone_prompts['empathy'])
 
         # 규칙 기반 해석 결과 주입
         if interpretation and isinstance(interpretation, dict):
@@ -708,24 +717,32 @@ class GPTInterpretationGenerator:
     "전체 4,000~5,000자. 각 섹션 400~600자."
 ) + "\n"""
 
-        try:
-            response = self.client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                temperature=0.8,
-                max_tokens=4000 if (report_type or 'basic').lower() == 'deep' else 3000
-            )
+        min_chars = 4000 if is_deep else 3000
+        max_tok = 7000 if is_deep else 5000
+        content = ""
+        for attempt in range(3):
+            try:
+                response = self.client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.8,
+                    max_tokens=max_tok
+                )
+                content = response.choices[0].message.content or ""
+                section_count = sum(1 for m in ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"] if m in content)
+                print(f"✅ 종합 GPT 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
+                if len(content) >= min_chars and section_count >= 7:
+                    break
+                print(f"⚠️ 분량 부족 — 재시도 ({attempt+1}/3)")
+            except Exception as e:
+                print(f"❌ GPT API 호출 실패 (시도 {attempt+1}): {e}")
 
-            content = response.choices[0].message.content
-            print(f"✅ 종합 GPT 해석 생성 완료: {len(content)}자")
+        if content:
             return content
-
-        except Exception as e:
-            print(f"❌ GPT API 호출 실패: {e}")
-            return self._fallback_comprehensive(analysis, tone)
+        return self._fallback_comprehensive(analysis, tone)
 
     # ============================================================
     # 섹션: 월지 기반 삶의 핵심 가치관/지향점

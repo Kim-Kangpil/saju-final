@@ -9,10 +9,15 @@
 
 from datetime import datetime
 
-from logic.saju_engine.core.harmony_clash import analyze_harmony_clash
 from logic.saju_engine.core.ten_gods import calculate_ten_god
 
 # 연도별 간지
+BRANCH_CLASH_PAIRS = {
+    "子": "午", "午": "子", "丑": "未", "未": "丑",
+    "寅": "申", "申": "寅", "卯": "酉", "酉": "卯",
+    "辰": "戌", "戌": "辰", "巳": "亥", "亥": "巳",
+}
+
 YEAR_GANZHI = {
     2020: ("庚", "子"),
     2021: ("辛", "丑"),
@@ -90,20 +95,19 @@ def analyze_seun(saju_data: dict, year: int = None) -> dict:
     except Exception:
         pass
 
-    # 세운과 원국 합충 분석
-    original_pillars = _get_pillars_dict(saju_data)
-    seun_pillars = {
-        "year": f"{seun_stem}{seun_branch}",
-        "month": original_pillars.get("month", ""),
-        "day": original_pillars.get("day", ""),
-        "hour": original_pillars.get("hour", ""),
-    }
-
-    harmony_clash = {}
-    try:
-        harmony_clash = analyze_harmony_clash(seun_pillars)
-    except Exception:
-        pass
+    # 세운 지지와 원국 지지 충(冲) 여부 체크
+    orig_branches = []
+    for key in ("year_pillar", "month_pillar", "day_pillar", "hour_pillar"):
+        p = saju_data.get(key, "")
+        if isinstance(p, str) and len(p) >= 2:
+            orig_branches.append(p[1])
+    if not orig_branches:
+        for p in _get_pillars_dict(saju_data).values():
+            if isinstance(p, str) and len(p) >= 2:
+                orig_branches.append(p[1])
+    clash_target = BRANCH_CLASH_PAIRS.get(seun_branch, "")
+    branch_clash = bool(clash_target and clash_target in orig_branches)
+    clash_with = clash_target if branch_clash else ""
 
     activated = _get_activated_domain(stem_ten_god, branch_ten_god)
     overall = _build_overall(year, seun_stem, seun_branch, stem_ten_god, branch_ten_god)
@@ -117,7 +121,8 @@ def analyze_seun(saju_data: dict, year: int = None) -> dict:
         "branch_ten_god": branch_ten_god,
         "stem_meaning": TEN_GOD_SEUN_MEANING.get(stem_ten_god, ""),
         "branch_meaning": TEN_GOD_SEUN_MEANING.get(branch_ten_god, ""),
-        "harmony_clash": harmony_clash,
+        "branch_clash": branch_clash,
+        "clash_with": clash_with,
         "activated_domain": activated,
         "overall": overall,
         "advice": advice,

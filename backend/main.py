@@ -1216,24 +1216,57 @@ def _build_non_empty_block(title: str, data: dict[str, Any], ordered_keys: list[
 
 
 def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
-    return f"""
-[규칙 기반 분석 결과 — 이 내용만 사용]
+    SECTION_NAMES = {
+        "재물": [
+            "💰 재물 기질",
+            "💵 수입 구조",
+            "🕳 지출 패턴",
+            "📈 현재 재물 흐름",
+            "🗓 올해 재물운",
+            "✅ 실천 조언",
+        ],
+        "연애": [
+            "❤️ 연애 기질",
+            "👤 이상형",
+            "🔄 관계 패턴",
+            "💫 현재 인연 흐름",
+            "🗓 올해 연애운",
+            "✅ 실천 조언",
+        ],
+        "직업": [
+            "💼 일하는 방식",
+            "🎯 잘 맞는 직종",
+            "🏢 조직 vs 독립",
+            "📈 현재 커리어 흐름",
+            "🗓 올해 직업운",
+            "✅ 실천 조언",
+        ],
+    }
+    sections = SECTION_NAMES.get(topic, [f"섹션 {i+1}" for i in range(6)])
+    sections_str = "\n".join(f"{i+1}. {s}" for i, s in enumerate(sections))
+
+    return f"""[계산된 사실 — 이 내용만 사용. 없는 내용 추가 금지. 추측 금지.]
 {analysis_block}
+
+[섹션 구성 — 반드시 아래 순서대로 작성]
+{sections_str}
+
+섹션 제목은 위 이모지+한글 그대로 사용. 순서·이름 변경 금지.
+
+[분량 기준 — 반드시 지킬 것]
+• 전체: 4,000~5,000자
+• 섹션 6개, 각 섹션 600~800자
+• 각 섹션 최소 5~7문장 — 한 문장으로 끝내는 섹션 절대 금지
+• 각 섹션 구조:
+  1) 이 사람만의 핵심 특성 1문장
+  2) 왜 그런지 현실 언어로 2~3문장
+  3) 실제 삶에서 어떻게 나타나는지 2~3문장
+  4) 지금 이 시기와 연결 1~2문장
 
 [작성 원칙]
 읽다가 '나 얘기인데?' 반응이 나와야 성공.
-사주 용어 없이 현실 언어로.
-한 줄 + 괄호 힌트 방식 사용.
-
-[작성 규칙]
-1) 사주 전문용어 금지. 일상 언어만 사용.
-2) 각 핵심 문장은 "한 줄 + (짧은 괄호 힌트)" 형태로 작성.
-3) 읽는 사람이 "나 얘기인데?" 반응이 나오게 구체적으로 작성.
-4) 주제는 {topic}에만 집중. 다른 주제 확장 금지.
-5) 섹션은 반드시 6개 구성.
-6) 각 섹션은 600~800자 분량으로 작성.
-7) 전체 분량은 4,000~5,000자로 작성.
-""".strip()
+사주 전문용어 금지 — 일상 언어만.
+주제는 {topic}에만 집중. 다른 주제 확장 금지.""".strip()
 
 
 def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analysis: dict[str, Any]) -> dict[str, Any]:
@@ -1249,7 +1282,17 @@ def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analys
         elif isinstance(val, str) and val:
             flat_ten_gods[pos] = val
 
-    return {
+    # basic_info lets tonggeun/geunmyo/seun sub-modules find pillar data
+    # (those modules only read basic_info or pillars, not year_pillar etc.)
+    basic_info = {
+        "day_stem": req.day_stem,
+        "year": req.year_pillar,
+        "month": req.month_pillar,
+        "day": req.day_pillar,
+        "hour": req.hour_pillar,
+    }
+
+    result: dict[str, Any] = {
         "day_stem": req.day_stem,
         "day_pillar": req.day_pillar,
         "month_pillar": req.month_pillar,
@@ -1261,7 +1304,11 @@ def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analys
         "harmony_clash": analysis.get("harmony_clash", {}),
         "sinsal": analysis.get("sinsal", {}),
         "gender": getattr(req, "gender", None),
+        "basic_info": basic_info,
     }
+    if analysis.get("pillars"):
+        result["pillars"] = analysis["pillars"]
+    return result
 
 
 # ==================== 엔드포인트 ====================
@@ -1761,6 +1808,7 @@ async def _generate_deep_topic_report(
     }
 
     from logic.saju_engine.core.analyzer import analyze_full_saju
+    from logic.saju_engine.core.yongshin import calculate_yongshin
     from logic.saju_engine.core.saju_interpreter import (
         interpret_money_deep,
         interpret_love_deep,
@@ -1769,6 +1817,12 @@ async def _generate_deep_topic_report(
 
     analysis = analyze_full_saju(req.day_stem, pillars_dict)
     saju_data_for_interp = _build_interp_saju_data(req, analysis)
+
+    # 용신 계산 — 모든 심화 리포트에 사용
+    try:
+        saju_data_for_interp["yongshin"] = calculate_yongshin(analysis)
+    except Exception as _ys_err:
+        print(f"yongshin 계산 실패: {_ys_err}")
 
     # 대운 계산 — 생년월일이 있을 때만
     if req.birth_year and req.birth_month and req.birth_day:
@@ -1793,15 +1847,31 @@ async def _generate_deep_topic_report(
 
     if topic_key == "money":
         deep_result = interpret_money_deep(saju_data_for_interp)
-        ordered_keys = ["pattern", "leak_point", "current_flow", "seun_money", "advice", "language_points"]
+        ordered_keys = [
+            "pattern", "leak_point", "current_flow", "seun_money", "advice",
+            "jaeseong_positions", "jaeseong_root_strength", "siksang_saengjae",
+            "bigeop_count", "geunmyo_money_stages", "daeun_ten_god", "daeun_favorable",
+            "seun_favorable", "yongshin_elements", "gishin_elements", "yongshin_money_tip",
+        ]
         topic_label = "재물"
     elif topic_key == "love":
         deep_result = interpret_love_deep(saju_data_for_interp)
-        ordered_keys = ["partner_type", "pattern", "current_flow", "seun_love", "timing", "language_points"]
+        ordered_keys = [
+            "partner_type", "pattern", "current_flow", "seun_love", "timing",
+            "ilji_ten_god", "ilji_state", "partner_positions", "partner_tonggeun",
+            "yeonin_life_stages", "dohwa_count", "hongyeom_count", "daeun_ten_god",
+            "daeun_favorable", "seun_favorable", "yongshin_elements", "gishin_elements",
+            "yongshin_love_tip",
+        ]
         topic_label = "연애"
     else:
         deep_result = interpret_career_deep(saju_data_for_interp)
-        ordered_keys = ["work_style", "best_field", "org_vs_independent", "current_flow", "seun_career", "language_points"]
+        ordered_keys = [
+            "work_style", "best_field", "org_vs_independent", "current_flow", "seun_career",
+            "siksang_count", "siksang_root_count", "gwan_count", "gwan_root_count",
+            "career_life_stages", "special_sinsal", "daeun_ten_god", "daeun_favorable",
+            "seun_favorable", "yongshin_elements", "gishin_elements", "yongshin_career_tip",
+        ]
         topic_label = "직업"
 
     if not deep_result:
@@ -1824,7 +1894,7 @@ async def _generate_deep_topic_report(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        max_tokens=3000,
+        max_tokens=4000,
         temperature=0.4,
     )
     content = (resp.choices[0].message.content or "").strip()

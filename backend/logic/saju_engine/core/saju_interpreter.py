@@ -911,7 +911,7 @@ def interpret_money_deep(saju_data: dict) -> dict:
         money_sinsal.append({"type": "역마살", "meaning": "움직일수록 돈이 생기는 구조"})
 
     # 근묘화실 재성 인생 단계
-    STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "현재", "hour": "말년"}
+    STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "중장년기", "hour": "말년"}
     geunmyo_money_stages: list = []
     try:
         from logic.saju_engine.core.geunmyo import analyze_geunmyo
@@ -997,7 +997,7 @@ def interpret_love_deep(saju_data: dict) -> dict:
             partner_root_stems.append(pos)
 
     # 근묘화실 연인성 인생 단계
-    STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "현재", "hour": "말년"}
+    STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "중장년기", "hour": "말년"}
     yeonin_life_stages = []
     for pos in ("year", "month", "day", "hour"):
         item = geunmyo.get(pos, {})
@@ -1125,7 +1125,7 @@ def interpret_career_deep(saju_data: dict) -> dict:
                 gwan_root += 1
 
     # 근묘화실 커리어 단계
-    STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "현재", "hour": "말년"}
+    STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "중장년기", "hour": "말년"}
     CAREER_GODS = ("식신", "상관", "편관", "정관")
     career_life_stages = []
     for pos in ("year", "month", "day", "hour"):

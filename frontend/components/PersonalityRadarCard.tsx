@@ -167,7 +167,7 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
           const score = scores[axis];
           const label = score >= 50 ? left : right;
           const intensity = Math.abs(score - 50);
-          const alpha = intensity > 30 ? 1 : 0.7;
+          const alpha = intensity > 18 ? 1 : intensity > 8 ? 0.8 : 0.6;
 
           let textAnchor: "middle" | "start" | "end" = "middle";
           if (x < CX - 10) textAnchor = "end";
@@ -203,12 +203,19 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
           const [left, right] = AXIS_LABELS[axis];
           const label = score >= 50 ? left : right;
           const intensity = Math.abs(score - 50);
-          const level = intensity > 30 ? "강함" : intensity > 15 ? "보통" : "중간";
+          const level = intensity > 30 ? "매우 강함"
+                      : intensity > 18 ? "강함"
+                      : intensity > 8  ? "보통"
+                      : "중립";
+          const dotColor = intensity > 30 ? "#5C4A30"
+                         : intensity > 18 ? "#8B7355"
+                         : intensity > 8  ? "#C4B8A4"
+                         : "#E3D9CB";
           return (
             <div key={axis} style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <div style={{
                 width: 6, height: 6, borderRadius: "50%",
-                background: intensity > 30 ? "#8B7355" : "#C4B8A4",
+                background: dotColor,
               }} />
               <span style={{ fontSize: 10, color: "#6B5F4E" }}>
                 {label} <span style={{ color: "#C4B8A4" }}>({level})</span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
@@ -11,14 +11,35 @@ import KakaoPayButton from "@/components/KakaoPayButton";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 
-type MoneyAnalysis = {
-  pattern?: string;
-  leak_point?: string;
-  current_flow?: string;
-  seun_money?: string;
-  advice?: string;
-  language_points?: string[];
-};
+const SECTION_TITLES = [
+  "💰 재물 기질",
+  "💵 수입 구조",
+  "🕳 지출 패턴",
+  "📈 현재 재물 흐름",
+  "🗓 올해 재물운",
+  "✅ 실천 조언",
+];
+
+/** GPT가 반환한 단일 문자열을 6개 섹션으로 분리 */
+function parseGptSections(content: string, count: number): string[] {
+  const result: string[] = new Array(count).fill("");
+  if (!content) return result;
+  // "1. " 또는 "## 1. " 형태의 섹션 헤더 앞에서 분리
+  const parts = content.split(/\n(?=(?:#{0,3}\s*)?\d+[.．]\s)/);
+  let idx = 0;
+  for (const part of parts) {
+    if (idx >= count) break;
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    // 숫자로 시작하지 않는 서문 건너뜀
+    if (!/^(?:#{0,3}\s*)?\d+[.．]/.test(trimmed)) continue;
+    const firstNewline = trimmed.indexOf("\n");
+    const body = firstNewline >= 0 ? trimmed.slice(firstNewline + 1).trim() : "";
+    result[idx] = body;
+    idx++;
+  }
+  return result;
+}
 
 function PurchaseModal({ price, sajuId, onDismiss }: { price: number; sajuId: string; onDismiss: () => void }) {
   const [payErr, setPayErr] = useState<string | null>(null);
@@ -73,7 +94,7 @@ function MoneyReportContent() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<MoneyAnalysis>({});
+  const [sections, setSections] = useState<string[]>(new Array(6).fill(""));
   const [showPurchase, setShowPurchase] = useState(false);
   const [purchasePrice, setPurchasePrice] = useState(5900);
   const [accessChecked, setAccessChecked] = useState(false);
@@ -131,7 +152,8 @@ function MoneyReportContent() {
           throw new Error(data?.error || "재물운 리포트를 불러오지 못했어요.");
         }
         if (cancelled) return;
-        setAnalysis((data.analysis || {}) as MoneyAnalysis);
+        console.log("[DEBUG] content length:", data.content?.length, "preview:", data.content?.slice(0, 200));
+        setSections(parseGptSections(data.content || "", 6));
       } catch (e: any) {
         if (!cancelled) setError(e?.message || "오류가 발생했어요.");
       } finally {
@@ -140,14 +162,6 @@ function MoneyReportContent() {
     })();
     return () => { cancelled = true; };
   }, [sajuId, accessChecked, showPurchase]);
-
-  const moneyWay = useMemo(() => {
-    if (analysis?.language_points?.length) {
-      const hit = analysis.language_points.find((x) => x.includes("식상생재") || x.includes("재성 위치"));
-      if (hit) return hit;
-    }
-    return analysis.pattern || "";
-  }, [analysis]);
 
   return (
     <main style={{ minHeight: "100vh", background: "#F5F1EA", fontFamily: "'Gmarket Sans', sans-serif", color: "#2C2417" }}>
@@ -170,12 +184,15 @@ function MoneyReportContent() {
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>💰 재물운 분석</h1>
         </header>
 
-        <ReportSection title="1. 나의 재물 DNA" loading={loading} error={error} content={analysis.pattern} />
-        <ReportSection title="2. 돈 버는 방식" loading={loading} error={error} content={moneyWay} />
-        <ReportSection title="3. 누수 포인트" loading={loading} error={error} content={analysis.leak_point} />
-        <ReportSection title="4. 현재 재물 흐름" loading={loading} error={error} content={analysis.current_flow} />
-        <ReportSection title="5. 올해 재물운" loading={loading} error={error} content={analysis.seun_money} />
-        <ReportSection title="6. 재물 늘리는 방법" loading={loading} error={error} content={analysis.advice} />
+        {SECTION_TITLES.map((title, i) => (
+          <ReportSection
+            key={title}
+            title={title}
+            loading={loading}
+            error={error}
+            content={sections[i]}
+          />
+        ))}
       </div>
     </main>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
@@ -11,14 +11,32 @@ import KakaoPayButton from "@/components/KakaoPayButton";
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
 
-type CareerAnalysis = {
-  work_style?: string;
-  best_field?: string;
-  org_vs_independent?: string;
-  current_flow?: string;
-  seun_career?: string;
-  language_points?: string[];
-};
+const SECTION_TITLES = [
+  "💼 일하는 방식",
+  "🎯 잘 맞는 직종",
+  "🏢 조직 vs 독립",
+  "📈 현재 커리어 흐름",
+  "🗓 올해 직업운",
+  "✅ 실천 조언",
+];
+
+function parseGptSections(content: string, count: number): string[] {
+  const result: string[] = new Array(count).fill("");
+  if (!content) return result;
+  const parts = content.split(/\n(?=(?:#{0,3}\s*)?\d+[.．]\s)/);
+  let idx = 0;
+  for (const part of parts) {
+    if (idx >= count) break;
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    if (!/^(?:#{0,3}\s*)?\d+[.．]/.test(trimmed)) continue;
+    const firstNewline = trimmed.indexOf("\n");
+    const body = firstNewline >= 0 ? trimmed.slice(firstNewline + 1).trim() : "";
+    result[idx] = body;
+    idx++;
+  }
+  return result;
+}
 
 function PurchaseModal({ price, sajuId, onDismiss }: { price: number; sajuId: string; onDismiss: () => void }) {
   const [payErr, setPayErr] = useState<string | null>(null);
@@ -62,7 +80,7 @@ function CareerReportContent() {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [analysis, setAnalysis] = useState<CareerAnalysis>({});
+  const [sections, setSections] = useState<string[]>(new Array(6).fill(""));
   const [showPurchase, setShowPurchase] = useState(false);
   const [purchasePrice, setPurchasePrice] = useState(5900);
   const [accessChecked, setAccessChecked] = useState(false);
@@ -106,7 +124,8 @@ function CareerReportContent() {
         }
         if (!res.ok || !data?.success) throw new Error(data?.error || "직업운 리포트를 불러오지 못했어요.");
         if (cancelled) return;
-        setAnalysis((data.analysis || {}) as CareerAnalysis);
+        console.log("[DEBUG] content length:", data.content?.length, "preview:", data.content?.slice(0, 200));
+        setSections(parseGptSections(data.content || "", 6));
       } catch (e: any) {
         if (!cancelled) setError(e?.message || "오류가 발생했어요.");
       } finally {
@@ -115,11 +134,6 @@ function CareerReportContent() {
     })();
     return () => { cancelled = true; };
   }, [sajuId, accessChecked, showPurchase]);
-
-  const dna = useMemo(() => {
-    const fp = analysis?.language_points?.find((x) => x.includes("식상 구조") || x.includes("관성 구조"));
-    return fp || analysis.work_style || "";
-  }, [analysis]);
 
   return (
     <main style={{ minHeight: "100vh", background: "#F5F1EA", fontFamily: "'Gmarket Sans', sans-serif", color: "#2C2417" }}>
@@ -134,12 +148,9 @@ function CareerReportContent() {
           </button>
           <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>💼 직업운 분석</h1>
         </header>
-        <ReportSection title="1. 나의 직업 DNA" loading={loading} error={error} content={dna} />
-        <ReportSection title="2. 일하는 방식" loading={loading} error={error} content={analysis.work_style} />
-        <ReportSection title="3. 잘 맞는 직종" loading={loading} error={error} content={analysis.best_field} />
-        <ReportSection title="4. 조직 vs 독립" loading={loading} error={error} content={analysis.org_vs_independent} />
-        <ReportSection title="5. 현재 커리어 흐름" loading={loading} error={error} content={analysis.current_flow} />
-        <ReportSection title="6. 올해 직업운" loading={loading} error={error} content={analysis.seun_career} />
+        {SECTION_TITLES.map((title, i) => (
+          <ReportSection key={title} title={title} loading={loading} error={error} content={sections[i]} />
+        ))}
       </div>
     </main>
   );

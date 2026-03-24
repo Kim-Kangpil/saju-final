@@ -120,34 +120,28 @@ async function fetchFullByRow(row: ServerSajuRow): Promise<any | null> {
   return await res.json().catch(() => null);
 }
 
-export async function loadReportInputBySajuId(sajuId: string): Promise<ReportInput | null> {
-  if (!sajuId) return null;
-
-  const list = getSavedSajuList();
-  const saved =
-    list.find((s) => String(s.id) === sajuId) ||
-    list.find((s) => String(s.id) === `srv-${sajuId}`) ||
-    list.find((s) => String(s.id).startsWith("srv-") && String(s.id).slice(4) === sajuId) ||
-    null;
-
-  if (saved) {
-    const local = extractFromSaved(saved);
-    if (local) return local;
+async function fetchServerRowByIdDirect(numericId: string): Promise<ServerSajuRow | null> {
+  if (!numericId || isNaN(Number(numericId))) return null;
+  try {
+    const res = await fetch(`${API_BASE}/api/saju/${numericId}`, {
+      credentials: "include",
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) return null;
+    return await res.json().catch(() => null);
+  } catch {
+    return null;
   }
+}
 
-  const row = await fetchServerRowById(sajuId);
-  if (!row) return null;
-  const full = await fetchFullByRow(row);
-  if (!full) return null;
-
+function buildReportInputFromRow(row: ServerSajuRow, full: any): ReportInput | null {
   const year_pillar = String(full.year_pillar ?? "").trim();
   const month_pillar = String(full.month_pillar ?? "").trim();
   const day_pillar = String(full.day_pillar ?? "").trim();
   const hour_pillar = String(full.hour_pillar ?? "").trim();
   const day_stem = day_pillar?.[0] || "";
-  if (!day_stem || !year_pillar || !month_pillar || !day_pillar || !hour_pillar) return null;
+  if (!day_stem || !year_pillar || !month_pillar || !day_pillar) return null;
 
-  // Extract birth info from server row for daeun calculation
   const [by, bm, bd] = (row.birthdate || "").split("-").map(Number);
   const t = (row.birth_time || "").trim();
   const hasTime = /^\d{1,2}:\d{1,2}$/.test(t);
@@ -158,7 +152,7 @@ export async function loadReportInputBySajuId(sajuId: string): Promise<ReportInp
     year_pillar,
     month_pillar,
     day_pillar,
-    hour_pillar,
+    hour_pillar: hour_pillar || "시간미상",
     gender: row.gender === "남자" ? "M" : "F",
     cache_key: `report_srv-${row.id}_${year_pillar}_${month_pillar}_${day_pillar}_${hour_pillar}`,
     birth_year:  by || undefined,
@@ -167,5 +161,53 @@ export async function loadReportInputBySajuId(sajuId: string): Promise<ReportInp
     birth_hour:  hasTime ? (bh ?? null) : null,
     calendar_type: row.calendar_type === "음력" ? "lunar" : "solar",
   };
+}
+
+export async function loadReportInputBySajuId(sajuId: string): Promise<ReportInput | null> {
+  if (!sajuId) return null;
+
+  console.log("[DEBUG] loadReportInputBySajuId called with:", sajuId);
+
+  const list = getSavedSajuList();
+  console.log("[DEBUG] savedList ids:", list.map((s) => s.id));
+
+  const saved =
+    list.find((s) => String(s.id) === sajuId) ||
+    list.find((s) => String(s.id) === `srv-${sajuId}`) ||
+    list.find((s) => String(s.id).startsWith("srv-") && String(s.id).slice(4) === sajuId) ||
+    null;
+
+  console.log("[DEBUG] found saju:", saved ? saved.id : "not found in localStorage");
+
+  if (saved) {
+    const local = extractFromSaved(saved);
+    if (local) return local;
+    console.log("[DEBUG] extractFromSaved returned null for id:", saved.id, "result keys:", Object.keys(saved.result ?? {}));
+  }
+
+  // Fallback 1: fetch saju row directly by numeric ID (faster, more reliable)
+  const numericId = sajuId.startsWith("srv-") ? sajuId.slice(4) : sajuId;
+  console.log("[DEBUG] trying direct fetch /api/saju/" + numericId);
+  const directRow = await fetchServerRowByIdDirect(numericId);
+  if (directRow) {
+    console.log("[DEBUG] directRow found:", directRow.id, directRow.birthdate);
+    const full = await fetchFullByRow(directRow);
+    if (full) {
+      const input = buildReportInputFromRow(directRow, full);
+      if (input) return input;
+    }
+  }
+
+  // Fallback 2: fetch from full list
+  console.log("[DEBUG] trying list fallback /api/saju/list");
+  const row = await fetchServerRowById(sajuId);
+  if (!row) {
+    console.log("[DEBUG] row not found in list either — returning null");
+    return null;
+  }
+  const full = await fetchFullByRow(row);
+  if (!full) return null;
+
+  return buildReportInputFromRow(row, full);
 }
 

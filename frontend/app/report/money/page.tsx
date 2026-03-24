@@ -69,6 +69,7 @@ function MoneyReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("saju_id") || "";
+  console.log("[DEBUG] saju_id from URL:", sajuId);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

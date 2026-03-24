@@ -1,6 +1,9 @@
 # ==================== 1. 환경변수 로드 (가장 먼저!) ====================
 import io
+import logging
 import sys
+
+logger = logging.getLogger(__name__)
 
 if getattr(sys.stdout, "buffer", None):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
@@ -1787,6 +1790,7 @@ async def _generate_deep_topic_report(
     topic_key: str,
     section_key: str,
 ) -> dict[str, Any]:
+    logger.warning(f"[DEBUG] _generate_deep_topic_report called for topic: {topic_key}")
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
@@ -1818,12 +1822,12 @@ async def _generate_deep_topic_report(
     analysis = analyze_full_saju(req.day_stem, pillars_dict)
     saju_data_for_interp = _build_interp_saju_data(req, analysis)
 
-    print(f"[DEBUG] saju_data keys: {list(saju_data_for_interp.keys())}")
-    print(f"[DEBUG] day_stem: {saju_data_for_interp.get('day_stem')}")
-    print(f"[DEBUG] basic_info: {saju_data_for_interp.get('basic_info')}")
-    print(f"[DEBUG] ten_gods: {saju_data_for_interp.get('ten_gods')}")
-    print(f"[DEBUG] pillars: {saju_data_for_interp.get('pillars')}")
-    print(f"[DEBUG] daeun_list length: {len(saju_data_for_interp.get('daeun_list', []))}")
+    logger.warning(f"[DEBUG] saju_data keys: {list(saju_data_for_interp.keys())}")
+    logger.warning(f"[DEBUG] day_stem: {saju_data_for_interp.get('day_stem')}")
+    logger.warning(f"[DEBUG] basic_info: {saju_data_for_interp.get('basic_info')}")
+    logger.warning(f"[DEBUG] ten_gods: {saju_data_for_interp.get('ten_gods')}")
+    logger.warning(f"[DEBUG] pillars: {saju_data_for_interp.get('pillars')}")
+    logger.warning(f"[DEBUG] daeun_list length: {len(saju_data_for_interp.get('daeun_list', []))}")
 
     # 용신 계산 — 모든 심화 리포트에 사용
     try:
@@ -1854,13 +1858,13 @@ async def _generate_deep_topic_report(
 
     if topic_key == "money":
         deep_result = interpret_money_deep(saju_data_for_interp)
-        print(f"[DEBUG money] jaeseong_positions: {deep_result.get('jaeseong_positions')}")
-        print(f"[DEBUG money] siksang_saengjae: {deep_result.get('siksang_saengjae')}")
-        print(f"[DEBUG money] bigeop_count: {deep_result.get('bigeop_count')}")
-        print(f"[DEBUG money] daeun_ten_god: {deep_result.get('daeun_ten_god')}")
-        print(f"[DEBUG money] daeun_favorable: {deep_result.get('daeun_favorable')}")
-        print(f"[DEBUG money] seun_favorable: {deep_result.get('seun_favorable')}")
-        print(f"[DEBUG money] yongshin_elements: {deep_result.get('yongshin_elements')}")
+        logger.warning(f"[DEBUG money] jaeseong_positions: {deep_result.get('jaeseong_positions')}")
+        logger.warning(f"[DEBUG money] siksang_saengjae: {deep_result.get('siksang_saengjae')}")
+        logger.warning(f"[DEBUG money] bigeop_count: {deep_result.get('bigeop_count')}")
+        logger.warning(f"[DEBUG money] daeun_ten_god: {deep_result.get('daeun_ten_god')}")
+        logger.warning(f"[DEBUG money] daeun_favorable: {deep_result.get('daeun_favorable')}")
+        logger.warning(f"[DEBUG money] seun_favorable: {deep_result.get('seun_favorable')}")
+        logger.warning(f"[DEBUG money] yongshin_elements: {deep_result.get('yongshin_elements')}")
         ordered_keys = [
             "pattern", "leak_point", "current_flow", "seun_money", "advice",
             "jaeseong_positions", "jaeseong_root_strength", "siksang_saengjae",
@@ -1897,7 +1901,7 @@ async def _generate_deep_topic_report(
         return {"success": True, "cached": True, "report_type": topic_key, "content": cached, "analysis": deep_result}
 
     analysis_block = _build_non_empty_block(f"{topic_label} 심화 해석", deep_result, ordered_keys)
-    print(f"[DEBUG GPT input]:\n{analysis_block[:1000]}")
+    logger.warning(f"[DEBUG GPT input]:\n{analysis_block[:1000]}")
     if not analysis_block:
         return {"success": False, "error": "empty analysis block"}
 

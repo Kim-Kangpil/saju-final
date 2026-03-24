@@ -1295,6 +1295,19 @@ def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analys
         "hour": req.hour_pillar,
     }
 
+    # Build pillars dict from basic_info so tonggeun/geunmyo sub-modules can read it.
+    # analyze_full_saju does not return a 'pillars' key — basic_info has full pillar strings.
+    pillars: dict[str, Any] = {}
+    for pos, key in [("year", "year"), ("month", "month"), ("day", "day"), ("hour", "hour")]:
+        val = basic_info.get(key, "")
+        if isinstance(val, str) and len(val) >= 2:
+            pillars[pos] = {
+                "stem": val[0],
+                "branch": val[1],
+                "heavenly_stem": val[0],
+                "earthly_branch": val[1],
+            }
+
     result: dict[str, Any] = {
         "day_stem": req.day_stem,
         "day_pillar": req.day_pillar,
@@ -1308,9 +1321,8 @@ def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analys
         "sinsal": analysis.get("sinsal", {}),
         "gender": getattr(req, "gender", None),
         "basic_info": basic_info,
+        "pillars": pillars if pillars else None,
     }
-    if analysis.get("pillars"):
-        result["pillars"] = analysis["pillars"]
     return result
 
 
@@ -1822,18 +1834,15 @@ async def _generate_deep_topic_report(
     analysis = analyze_full_saju(req.day_stem, pillars_dict)
     saju_data_for_interp = _build_interp_saju_data(req, analysis)
 
-    logger.warning(f"[DEBUG] saju_data keys: {list(saju_data_for_interp.keys())}")
-    logger.warning(f"[DEBUG] day_stem: {saju_data_for_interp.get('day_stem')}")
-    logger.warning(f"[DEBUG] basic_info: {saju_data_for_interp.get('basic_info')}")
-    logger.warning(f"[DEBUG] ten_gods: {saju_data_for_interp.get('ten_gods')}")
-    logger.warning(f"[DEBUG] pillars: {saju_data_for_interp.get('pillars')}")
-    logger.warning(f"[DEBUG] daeun_list length: {len(saju_data_for_interp.get('daeun_list', []))}")
-
     # 용신 계산 — 모든 심화 리포트에 사용
     try:
         saju_data_for_interp["yongshin"] = calculate_yongshin(analysis)
     except Exception as _ys_err:
-        print(f"yongshin 계산 실패: {_ys_err}")
+        logger.warning(f"yongshin 계산 실패: {_ys_err}")
+
+    # birth_year를 조기에 설정 — _get_current_daeun이 사용
+    if req.birth_year:
+        saju_data_for_interp["birth_year"] = req.birth_year
 
     # 대운 계산 — 생년월일이 있을 때만
     if req.birth_year and req.birth_month and req.birth_day:
@@ -1852,9 +1861,15 @@ async def _generate_deep_topic_report(
             daeun_list = full_data.get("daeun_list") or []
             if daeun_list:
                 saju_data_for_interp["daeun_list"] = daeun_list
-                saju_data_for_interp["birth_year"] = req.birth_year
         except Exception as _daeun_err:
-            print(f"daeun 계산 실패: {_daeun_err}")
+            logger.warning(f"daeun 계산 실패: {_daeun_err}")
+
+    logger.warning(f"[DEBUG] saju_data keys: {list(saju_data_for_interp.keys())}")
+    logger.warning(f"[DEBUG] day_stem: {saju_data_for_interp.get('day_stem')}")
+    logger.warning(f"[DEBUG] basic_info: {saju_data_for_interp.get('basic_info')}")
+    logger.warning(f"[DEBUG] ten_gods: {saju_data_for_interp.get('ten_gods')}")
+    logger.warning(f"[DEBUG] pillars after fix: {saju_data_for_interp.get('pillars')}")
+    logger.warning(f"[DEBUG] daeun_list after fix: {len(saju_data_for_interp.get('daeun_list', []))}")
 
     if topic_key == "money":
         deep_result = interpret_money_deep(saju_data_for_interp)

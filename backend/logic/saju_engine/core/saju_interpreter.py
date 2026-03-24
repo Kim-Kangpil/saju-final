@@ -708,7 +708,7 @@ def interpret_current_period(saju_data: dict) -> dict:
 
 def interpret_money_deep(saju_data: dict) -> dict:
     """
-    재물 심화 해석 — 구조화된 사실 데이터 반환.
+    재물 심화 해석 — 순수 구조 데이터 반환 (pre-written 텍스트 없음).
     데이터가 부족하면 {} 반환.
     """
     ilgan = _get_ilgan(saju_data)
@@ -716,105 +716,189 @@ def interpret_money_deep(saju_data: dict) -> dict:
     if not ilgan or not pillars.get("day"):
         return {}
 
-    from logic.saju_engine.core.tonggeun import calculate_tonggeun
-    from logic.saju_engine.core.geunmyo import analyze_geunmyo
-    from logic.saju_engine.core.seun import analyze_seun
-
     ten_gods = _get_ten_gods(saju_data)
-    strength = _get_strength(saju_data)
-    tong = calculate_tonggeun(saju_data) or {}
-    geunmyo = analyze_geunmyo(saju_data) or {}
-    seun = analyze_seun(saju_data) or {}
-    yongshin = saju_data.get("yongshin") or {}
+    raw_strength = saju_data.get("strength") or {}
+    harmony_clash = _get_harmony_clash(saju_data)
+    sinsal = _get_sinsal(saju_data)
 
-    jaeseong_positions = _positions_with(ten_gods, "편재", "정재")
-    siksang_count = _count_ten_god(ten_gods, "식신", "상관")
+    # 재성 오행 계산 (일간 기준)
+    ILGAN_JAESEONG = {
+        "甲": "화", "乙": "화", "丙": "토", "丁": "토",
+        "戊": "수", "己": "수", "庚": "목", "辛": "목",
+        "壬": "화", "癸": "화",
+    }
+    jaeseong_element = ILGAN_JAESEONG.get(ilgan, "")
+
+    ELEMENT_STEMS = {
+        "목": ["甲", "乙"], "화": ["丙", "丁"],
+        "토": ["戊", "己"], "금": ["庚", "辛"],
+        "수": ["壬", "癸"],
+    }
+    ELEMENT_BRANCHES = {
+        "목": ["寅", "卯"], "화": ["巳", "午"],
+        "토": ["辰", "戌", "丑", "未"], "금": ["申", "酉"],
+        "수": ["子", "亥"],
+    }
+
+    jaeseong_stems = ELEMENT_STEMS.get(jaeseong_element, [])
+    jaeseong_branches = ELEMENT_BRANCHES.get(jaeseong_element, [])
+
+    # 재성 위치 찾기 — pillars는 "甲申" 형태 문자열
+    POSITION_MAP = [
+        ("year_stem",    "년간"),
+        ("year_branch",  "년지"),
+        ("month_stem",   "월간"),
+        ("month_branch", "월지"),
+        ("day_branch",   "일지"),
+        ("hour_stem",    "시간"),
+        ("hour_branch",  "시지"),
+    ]
+    jaeseong_positions = []
+    for pos_key, label in POSITION_MAP:
+        pillar_key = pos_key.replace("_stem", "").replace("_branch", "")
+        p = pillars.get(pillar_key, "")
+        char = p[0] if "_stem" in pos_key and len(p) >= 1 else (p[1] if len(p) >= 2 else "")
+        if char and (char in jaeseong_stems or char in jaeseong_branches):
+            ten_god = ten_gods.get(label, "")
+            jaeseong_positions.append({"position": label, "char": char, "ten_god": ten_god})
+
+    jaeseong_absent = len(jaeseong_positions) == 0
+
+    # 통근 계산 (재성 천간 위치만)
+    jaeseong_tonggeun: dict = {}
+    try:
+        from logic.saju_engine.core.tonggeun import calculate_tonggeun
+        tonggeun_result = calculate_tonggeun(saju_data) or {}
+        LABEL_TO_TONG_KEY = {"년간": "year_stem", "월간": "month_stem", "시간": "hour_stem"}
+        for jp in jaeseong_positions:
+            tong_key = LABEL_TO_TONG_KEY.get(jp["position"], "")
+            if tong_key:
+                jaeseong_tonggeun[jp["position"]] = bool(
+                    tonggeun_result.get(tong_key, {}).get("has_root", False)
+                )
+    except Exception:
+        pass
+
+    # 비겁 / 식상 개수
     bigeop_count = _count_ten_god(ten_gods, "비견", "겁재")
-    jaeseong_count = len(jaeseong_positions)
+    siksang_count = _count_ten_god(ten_gods, "식신", "상관")
+    siksang_saengjae = siksang_count > 0 and not jaeseong_absent
 
-    jaeseong_root_positions = []
-    for pos in ("year", "month", "day", "hour"):
-        p = pillars.get(pos, "")
-        if len(p) < 1:
-            continue
-        stem = p[0]
-        stem_tg = calculate_ten_god(ilgan, stem)
-        stem_info = tong.get(f"{pos}_stem", {})
-        if stem_tg in ("편재", "정재") and stem_info.get("has_root"):
-            jaeseong_root_positions.append(pos)
+    # 신강약 + 점수
+    if isinstance(raw_strength, dict):
+        strength_value = raw_strength.get("strength", "알 수 없음")
+        strength_score = int(raw_strength.get("total_score", 0) or 0)
+    else:
+        strength_value = str(raw_strength or "알 수 없음")
+        strength_score = 0
+    can_handle_money = strength_value in ("신강", "중화") or strength_score >= 50
+
+    # 재성 합충 영향
+    jaeseong_hap: list = []
+    jaeseong_chung: list = []
+    try:
+        jae_chars = {jp["char"] for jp in jaeseong_positions}
+        for item in harmony_clash.get("jiji_yukhap", []):
+            desc = item.get("description", "") if isinstance(item, dict) else str(item)
+            if any(c in desc for c in jae_chars):
+                jaeseong_hap.append(desc)
+        for item in harmony_clash.get("jiji_chung", []):
+            desc = item.get("description", "") if isinstance(item, dict) else str(item)
+            if any(c in desc for c in jae_chars):
+                jaeseong_chung.append(desc)
+    except Exception:
+        pass
+
+    # 대운 — _get_current_daeun 반환값은 (age: int, gapja: str) 튜플
+    current = _get_current_daeun(saju_data)
+    daeun_ten_god = ""
+    daeun_pillar = ""
+    daeun_favorable = None
+    daeun_effect = ""
+    if current:
+        _, daeun_pillar = current
+        if daeun_pillar:
+            daeun_ten_god = calculate_ten_god(ilgan, daeun_pillar[0])
+        FAVORABLE = ("편재", "정재", "식신", "상관")
+        UNFAVORABLE = ("편인", "정인", "비견", "겁재")
+        if daeun_ten_god in FAVORABLE:
+            daeun_favorable = True
+            daeun_effect = f"{daeun_ten_god} 대운 = 재물 활성화 구간"
+        elif daeun_ten_god in UNFAVORABLE:
+            daeun_favorable = False
+            daeun_effect = f"{daeun_ten_god} 대운 = 재물 정체 구간"
+        else:
+            daeun_favorable = None
+            daeun_effect = f"{daeun_ten_god} 대운 = 중립"
+
+    # 세운
+    seun_stem_god = ""
+    seun_branch_god = ""
+    seun_favorable = None
+    seun_effect = ""
+    try:
+        from logic.saju_engine.core.seun import analyze_seun
+        seun_result = analyze_seun(saju_data) or {}
+        seun_stem_god = seun_result.get("stem_ten_god", "")
+        seun_branch_god = seun_result.get("branch_ten_god", "")
+        SEUN_FAVORABLE = ("편재", "정재", "식신", "상관")
+        seun_favorable = seun_stem_god in SEUN_FAVORABLE or seun_branch_god in SEUN_FAVORABLE
+        seun_effect = f"{seun_stem_god}/{seun_branch_god} 세운"
+    except Exception:
+        pass
+
+    # 용신
+    yongshin = saju_data.get("yongshin") or {}
+    yongshin_elements = yongshin.get("final_yongshin") or []
+    gishin_elements = yongshin.get("gishin") or []
+
+    # 재물 관련 신살
+    money_sinsal: list = []
+    for key in ("rok", "amrok", "munchang"):
+        items = sinsal.get(key) or []
+        if items:
+            money_sinsal.append({"type": key, "items": items})
 
     # 근묘화실 재성 인생 단계
     STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "현재", "hour": "말년"}
-    geunmyo_money_stages = []
-    for pos in ("year", "month", "day", "hour"):
-        item = geunmyo.get(pos, {})
-        if item.get("stem_ten_god") in ("편재", "정재") or item.get("branch_ten_god") in ("편재", "정재"):
-            geunmyo_money_stages.append(STAGE_LABEL.get(pos, pos))
-
-    current = _get_current_daeun(saju_data)
-    daeun_tg = ""
-    if current:
-        _, gapja = current
-        if len(gapja) >= 1:
-            daeun_tg = calculate_ten_god(ilgan, gapja[0])
-    money_active_now = daeun_tg in ("편재", "정재", "식신", "상관")
-
-    seun_stem_tg = seun.get("stem_ten_god") or ""
-    seun_branch_tg = seun.get("branch_ten_god") or ""
-    seun_favorable = (
-        seun_stem_tg in ("편재", "정재", "식신", "상관")
-        or seun_branch_tg in ("편재", "정재", "식신", "상관")
-    )
-
-    pattern = "흐름을 읽고 분산해서 모으는 타입"
-    if jaeseong_count >= 2 and siksang_count >= 1:
-        pattern = "직접 만들고 움직여서 돈으로 연결하는 타입"
-    elif jaeseong_count >= 2 and bigeop_count >= 2:
-        pattern = "기회는 빠르게 잡지만 사람 변수로 수익 변동이 큰 타입"
-
-    leak_point = "지출 관리를 잡으면 안정적으로 쌓을 수 있는 구조"
-    if bigeop_count >= 2 and jaeseong_count > 0:
-        leak_point = "사람·관계에서 돈이 새기 쉬운 구조 — 동업·보증·즉흥 지출 주의"
-    elif strength == "신약" and jaeseong_count >= 2:
-        leak_point = "기회는 많은데 체력·집중이 분산되면서 수익이 새기 쉬운 구조"
-    elif jaeseong_count == 0:
-        leak_point = "버는 구조보다 쓰는 기준이 먼저 없어서 돈의 방향이 흐려질 수 있는 구조"
-
-    current_flow = "기반을 다지면서 흐름을 관찰하는 구간"
-    if money_active_now:
-        current_flow = "재물 흐름이 활성화된 구간 — 실행 속도가 수익으로 이어지기 쉬운 시기"
-
-    seun_money = "재물 흐름이 보통 수준인 해"
-    if seun_stem_tg in ("편재", "정재") or seun_branch_tg in ("편재", "정재"):
-        seun_money = "돈 기회가 눈에 띄게 들어오는 해"
-    elif seun_stem_tg in ("식신", "상관") or seun_branch_tg in ("식신", "상관"):
-        seun_money = "직접 벌어내는 능력이 강해지는 해"
-
-    advice = "수입원 2개 이상으로 분산, 자동저축 비율을 먼저 고정"
-    if bigeop_count >= 2 and jaeseong_count > 0:
-        advice = "관계 지출 상한선을 정하고, 계약·돈거래는 반드시 문서화"
-
-    yongshin_elements = yongshin.get("final_yongshin") or []
-    gishin_elements = yongshin.get("gishin") or []
-    yongshin_tip = yongshin.get("modern_meaning") or ""
+    geunmyo_money_stages: list = []
+    try:
+        from logic.saju_engine.core.geunmyo import analyze_geunmyo
+        geunmyo = analyze_geunmyo(saju_data) or {}
+        for pos in ("year", "month", "day", "hour"):
+            item = geunmyo.get(pos, {})
+            if item.get("stem_ten_god") in ("편재", "정재") or item.get("branch_ten_god") in ("편재", "정재"):
+                geunmyo_money_stages.append(STAGE_LABEL.get(pos, pos))
+    except Exception:
+        pass
 
     return {
-        "pattern": pattern,
-        "leak_point": leak_point,
-        "current_flow": current_flow,
-        "seun_money": seun_money,
-        "advice": advice,
-        "jaeseong_positions": jaeseong_positions if jaeseong_positions else ["뚜렷하지 않음"],
-        "jaeseong_root_strength": "강함" if len(jaeseong_root_positions) >= 2 else ("보통" if jaeseong_root_positions else "약함"),
-        "siksang_saengjae": "있음" if (siksang_count >= 1 and jaeseong_count >= 1) else "약함",
+        "ilgan": ilgan,
+        "jaeseong_element": jaeseong_element,
+        "jaeseong_absent": jaeseong_absent,
+        "jaeseong_positions": jaeseong_positions,
+        "jaeseong_tonggeun": jaeseong_tonggeun,
+        "jaeseong_hap": jaeseong_hap,
+        "jaeseong_chung": jaeseong_chung,
         "bigeop_count": bigeop_count,
-        "geunmyo_money_stages": geunmyo_money_stages if geunmyo_money_stages else ["뚜렷하지 않음"],
-        "daeun_ten_god": daeun_tg if daeun_tg else "확인 필요",
-        "daeun_favorable": "유리" if money_active_now else "중립",
-        "seun_favorable": "유리" if seun_favorable else "보통",
-        "yongshin_elements": yongshin_elements if yongshin_elements else ["확인 필요"],
-        "gishin_elements": gishin_elements if gishin_elements else [],
-        "yongshin_money_tip": yongshin_tip,
+        "bigeop_controls_money": bigeop_count >= 2,
+        "siksang_count": siksang_count,
+        "siksang_saengjae": siksang_saengjae,
+        "strength": strength_value,
+        "strength_score": strength_score,
+        "can_handle_money": can_handle_money,
+        "current_daeun_pillar": daeun_pillar,
+        "daeun_ten_god": daeun_ten_god,
+        "daeun_favorable": daeun_favorable,
+        "daeun_effect": daeun_effect,
+        "seun_stem_god": seun_stem_god,
+        "seun_branch_god": seun_branch_god,
+        "seun_favorable": seun_favorable,
+        "seun_effect": seun_effect,
+        "yongshin_elements": yongshin_elements,
+        "gishin_elements": gishin_elements,
+        "money_sinsal": money_sinsal,
+        "geunmyo_money_stages": geunmyo_money_stages,
     }
 
 

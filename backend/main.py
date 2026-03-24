@@ -1218,6 +1218,81 @@ def _build_non_empty_block(title: str, data: dict[str, Any], ordered_keys: list[
     return f"[{title}]\n" + "\n".join(lines)
 
 
+def _build_money_analysis_block(data: dict[str, Any]) -> str:
+    """재물 심화 데이터를 GPT가 읽기 쉬운 구조화 텍스트로 변환."""
+    ILGAN_NAME = {
+        "甲": "갑목", "乙": "을목", "丙": "병화", "丁": "정화",
+        "戊": "무토", "己": "기토", "庚": "경금", "辛": "신금",
+        "壬": "임수", "癸": "계수",
+    }
+    ELEMENT_KO = {
+        "목": "목(木)", "화": "화(火)", "토": "토(土)",
+        "금": "금(金)", "수": "수(水)",
+    }
+
+    ilgan = data.get("ilgan", "")
+    jaeseong_element = data.get("jaeseong_element", "")
+    jaeseong_absent = data.get("jaeseong_absent", True)
+    jaeseong_positions = data.get("jaeseong_positions") or []
+    jaeseong_tonggeun = data.get("jaeseong_tonggeun") or {}
+    jaeseong_hap = data.get("jaeseong_hap") or []
+    jaeseong_chung = data.get("jaeseong_chung") or []
+    bigeop_count = data.get("bigeop_count", 0)
+    siksang_count = data.get("siksang_count", 0)
+    siksang_saengjae = data.get("siksang_saengjae", False)
+    strength = data.get("strength", "")
+    strength_score = data.get("strength_score", 0)
+    can_handle_money = data.get("can_handle_money", False)
+    daeun_effect = data.get("daeun_effect", "")
+    seun_stem_god = data.get("seun_stem_god", "")
+    seun_branch_god = data.get("seun_branch_god", "")
+    seun_favorable = data.get("seun_favorable")
+    yongshin_elements = data.get("yongshin_elements") or []
+    gishin_elements = data.get("gishin_elements") or []
+    geunmyo_stages = data.get("geunmyo_money_stages") or []
+    money_sinsal = data.get("money_sinsal") or []
+
+    lines = ["[재물 분석 데이터 - 이것만 사용, 추측 금지]"]
+    lines.append(f"일간: {ilgan} ({ILGAN_NAME.get(ilgan, ilgan)})")
+    lines.append(f"재성 오행: {ELEMENT_KO.get(jaeseong_element, jaeseong_element)}")
+
+    if jaeseong_absent:
+        lines.append(f"재성 사주 존재 여부: 없음 ({jaeseong_element} 오행이 원국에 없음)")
+    else:
+        pos_strs = []
+        for jp in jaeseong_positions:
+            tong = "통근O" if jaeseong_tonggeun.get(jp["position"]) else ""
+            pos_strs.append(f"{jp['position']}({jp['char']}/{jp['ten_god']}{' ' + tong if tong else ''})")
+        lines.append(f"재성 위치: {', '.join(pos_strs)}")
+
+    lines.append(f"비겁 개수: {bigeop_count}{'  (비겁 과다 — 재물 분산 위험)' if bigeop_count >= 3 else ''}")
+    lines.append(f"식상 개수: {siksang_count}")
+    lines.append(f"식상생재: {'있음' if siksang_saengjae else '없음'}")
+    lines.append(f"신강약: {strength} (점수: {strength_score})")
+    lines.append(f"재성 감당 여부: {'가능' if can_handle_money else '어려움 (신약 — 재물 들어와도 소화 힘듦)'}")
+
+    if daeun_effect:
+        lines.append(f"현재 대운: {daeun_effect}")
+    if seun_stem_god or seun_branch_god:
+        seun_label = "유리" if seun_favorable else "중립/불리"
+        lines.append(f"올해 세운: {seun_stem_god}/{seun_branch_god} 세운 ({seun_label})")
+    if yongshin_elements:
+        lines.append(f"용신: {'/'.join(str(e) for e in yongshin_elements)}")
+    if gishin_elements:
+        lines.append(f"기신: {'/'.join(str(e) for e in gishin_elements)}")
+    if jaeseong_hap:
+        lines.append(f"재성 합: {'; '.join(jaeseong_hap)}")
+    if jaeseong_chung:
+        lines.append(f"재성 충: {'; '.join(jaeseong_chung)}")
+    if geunmyo_stages:
+        lines.append(f"재물 활성 인생 단계: {', '.join(geunmyo_stages)}")
+    if money_sinsal:
+        sinsal_strs = [f"{s['type']}({s['items']})" for s in money_sinsal]
+        lines.append(f"재물 신살: {', '.join(sinsal_strs)}")
+
+    return "\n".join(lines)
+
+
 def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
     SECTION_NAMES = {
         "재물": [
@@ -1250,6 +1325,12 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
 
     return f"""[계산된 사실 — 이 내용만 사용. 없는 내용 추가 금지. 추측 금지.]
 {analysis_block}
+
+[작성 전 필수 확인]
+위 계산된 사실만 사용해서 각 섹션을 작성해줘.
+재성이 없으면 없다고 솔직하게 쓰고 그 의미를 현실 언어로 설명해줘.
+데이터에 없는 내용 절대 추가 금지.
+"재성이 있다", "돈이 잘 들어온다" 같은 긍정 추측 금지 — 데이터가 없으면 없는 이유를 설명해.
 
 [섹션 구성 — 반드시 아래 순서대로 작성]
 {sections_str}
@@ -1873,19 +1954,16 @@ async def _generate_deep_topic_report(
 
     if topic_key == "money":
         deep_result = interpret_money_deep(saju_data_for_interp)
+        logger.warning(f"[DEBUG money] ilgan: {deep_result.get('ilgan')}")
+        logger.warning(f"[DEBUG money] jaeseong_element: {deep_result.get('jaeseong_element')}")
+        logger.warning(f"[DEBUG money] jaeseong_absent: {deep_result.get('jaeseong_absent')}")
         logger.warning(f"[DEBUG money] jaeseong_positions: {deep_result.get('jaeseong_positions')}")
         logger.warning(f"[DEBUG money] siksang_saengjae: {deep_result.get('siksang_saengjae')}")
         logger.warning(f"[DEBUG money] bigeop_count: {deep_result.get('bigeop_count')}")
-        logger.warning(f"[DEBUG money] daeun_ten_god: {deep_result.get('daeun_ten_god')}")
-        logger.warning(f"[DEBUG money] daeun_favorable: {deep_result.get('daeun_favorable')}")
-        logger.warning(f"[DEBUG money] seun_favorable: {deep_result.get('seun_favorable')}")
+        logger.warning(f"[DEBUG money] strength: {deep_result.get('strength')} (score: {deep_result.get('strength_score')})")
+        logger.warning(f"[DEBUG money] daeun_effect: {deep_result.get('daeun_effect')}")
+        logger.warning(f"[DEBUG money] seun_effect: {deep_result.get('seun_effect')}")
         logger.warning(f"[DEBUG money] yongshin_elements: {deep_result.get('yongshin_elements')}")
-        ordered_keys = [
-            "pattern", "leak_point", "current_flow", "seun_money", "advice",
-            "jaeseong_positions", "jaeseong_root_strength", "siksang_saengjae",
-            "bigeop_count", "geunmyo_money_stages", "daeun_ten_god", "daeun_favorable",
-            "seun_favorable", "yongshin_elements", "gishin_elements", "yongshin_money_tip",
-        ]
         topic_label = "재물"
     elif topic_key == "love":
         deep_result = interpret_love_deep(saju_data_for_interp)
@@ -1915,7 +1993,10 @@ async def _generate_deep_topic_report(
     if cached:
         return {"success": True, "cached": True, "report_type": topic_key, "content": cached, "analysis": deep_result}
 
-    analysis_block = _build_non_empty_block(f"{topic_label} 심화 해석", deep_result, ordered_keys)
+    if topic_key == "money":
+        analysis_block = _build_money_analysis_block(deep_result)
+    else:
+        analysis_block = _build_non_empty_block(f"{topic_label} 심화 해석", deep_result, ordered_keys)
     logger.warning(f"[DEBUG GPT input]:\n{analysis_block[:1000]}")
     if not analysis_block:
         return {"success": False, "error": "empty analysis block"}

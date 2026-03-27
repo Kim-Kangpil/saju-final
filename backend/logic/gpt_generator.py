@@ -580,7 +580,7 @@ class GPTInterpretationGenerator:
         Returns:
             str: GPT가 생성한 종합 해석 (3000~4000자)
         """
-        if not self.client:
+        if not self.client and not os.getenv("GEMINI_API_KEY"):
             return self._fallback_comprehensive(analysis, tone)
 
         tone_prompts = {

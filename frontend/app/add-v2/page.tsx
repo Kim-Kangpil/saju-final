@@ -2606,13 +2606,6 @@ export default function Page({
                                         </div>
                                       ))}
 
-                                      {hasText(v2Result.core_values) && (
-                                        <div>
-                                          <p style={{ fontSize: 12, fontWeight: 700, color: "#8B7355", letterSpacing: "0.06em", marginBottom: 12 }}>🧭 삶의 핵심 가치관</p>
-                                          <div style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }} dangerouslySetInnerHTML={{ __html: v2Result.core_values.replace(/\n/g, "<br />") }} />
-                                        </div>
-                                      )}
-
                                       {Object.keys(v2Result.rule_summary).length > 0 && (
                                         <>
                                           <div style={{ height: 1, background: "#D4C9B8" }} />

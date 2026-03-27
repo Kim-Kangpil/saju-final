@@ -12,7 +12,9 @@
       "Bash(ls /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/*.db)",
       "Bash(ls /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/logic/*.db)",
       "Bash(git -C /c/Users/ksh00/OneDrive/Desktop/saju-project-temp log --oneline --all)",
-      "Bash(timeout 10 python -c \":*)"
+      "Bash(timeout 10 python -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
     ]
   }
 }

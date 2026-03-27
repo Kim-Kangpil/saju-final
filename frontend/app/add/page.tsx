@@ -71,6 +71,9 @@ import { SpecialStarsMap } from "../../components/SpecialStarsMap";
 import { LuckyItemMap } from "../../components/LuckyItemMap";
 import { HealthBodyMap } from "../../components/HealthBodyMap";
 import { SajuSummaryCard } from "../../components/SummarySwipeCards";
+import { PersonalityRadarCard } from "../../components/PersonalityRadarCard";
+import { ProblemLoopCard } from "../../components/ProblemLoopCard";
+import { MoneyFlowCard } from "../../components/MoneyFlowCard";
 import { Icon } from "@iconify/react";
 import { buildSummaryPromptData, getSummaryGuideFallback, type SummaryInput } from "../../data/summaryAnalysis";
 import { SUMMARY_SYSTEM_PROMPT, buildSummaryUserPrompt } from "../../data/summaryPrompt";
@@ -179,6 +182,103 @@ function splitPillar(text: string): [Pillar, Pillar] {
     { hanja: hanja1, hangul: hanjaToHangul(hanja1) },
     { hanja: hanja2, hangul: hanjaToHangul(hanja2) },
   ];
+}
+
+/** /saju/full JSON 또는 미리보기에서 넣은 SajuResult(년월일시 블록) 모두에서 기둥 한자 2글자 문자열 추출 */
+function resolvePillarStrings(raw: unknown): {
+  year_pillar: string;
+  month_pillar: string;
+  day_pillar: string;
+  hour_pillar: string;
+} | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  const y = o.year_pillar;
+  const m = o.month_pillar;
+  const d = o.day_pillar;
+  const h = o.hour_pillar;
+  if (
+    typeof y === "string" &&
+    y.length >= 2 &&
+    typeof m === "string" &&
+    m.length >= 2 &&
+    typeof d === "string" &&
+    d.length >= 2 &&
+    typeof h === "string" &&
+    h.length >= 2
+  ) {
+    return {
+      year_pillar: y,
+      month_pillar: m,
+      day_pillar: d,
+      hour_pillar: h,
+    };
+  }
+  const blockToPillar = (b: unknown): string => {
+    if (!b || typeof b !== "object") return "";
+    const p = b as { cheongan?: { hanja?: string }; jiji?: { hanja?: string } };
+    const c = p.cheongan?.hanja ?? "";
+    const j = p.jiji?.hanja ?? "";
+    if (!c || !j) return "";
+    return `${c}${j}`;
+  };
+  const ys = blockToPillar(o.year);
+  const ms = blockToPillar(o.month);
+  const ds = blockToPillar(o.day);
+  const hs = blockToPillar(o.hour);
+  if (ys.length >= 2 && ms.length >= 2 && ds.length >= 2 && hs.length >= 2) {
+    return {
+      year_pillar: ys,
+      month_pillar: ms,
+      day_pillar: ds,
+      hour_pillar: hs,
+    };
+  }
+  return null;
+}
+
+const V2_SECTION_TITLES = [
+  "🔮 한 줄 핵심 진단",
+  "🧠 타고난 성향과 사고방식",
+  "💪 이 사람의 진짜 무기",
+  "🔁 반복되는 문제 패턴",
+  "💰 돈 흐름 구조",
+  "🧭 일과 진로 방향",
+  "❤️ 관계와 연애 성향",
+  "⏰ 지금 이 시기",
+  "✅ 지금 당장 해야 할 것",
+] as const;
+
+function parseV2ComprehensiveSections(text: string): Array<{ title: string; body: string }> {
+  if (!text?.trim()) return [];
+  const sections: Array<{ title: string; body: string }> = [];
+  const lines = text.split("\n");
+  let currentTitle = "";
+  let currentBody: string[] = [];
+
+  const flush = () => {
+    if (currentTitle) {
+      sections.push({ title: currentTitle, body: currentBody.join("\n").trim() });
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const matched = V2_SECTION_TITLES.find((t) => trimmed.startsWith(t));
+    if (matched) {
+      flush();
+      currentTitle = matched;
+      currentBody = [];
+      continue;
+    }
+    if (currentTitle) currentBody.push(line);
+  }
+  flush();
+
+  if (sections.length === 0) {
+    return [{ title: "🔮 한 줄 핵심 진단", body: text.trim() }];
+  }
+  return sections;
 }
 
 function hanjaToHangul(h: string) {
@@ -616,6 +716,8 @@ export default function Page({
   const resultRef = useRef<HTMLDivElement>(null);
   const [previewCardIndex, setPreviewCardIndex] = useState(0);
   const previewCarouselRef = useRef<HTMLDivElement>(null);
+  /** 불러오기/테스트 모드 처리 후 Strict Mode 재실행 시 saju-list로 잘못 보내지 않도록 */
+  const skipSajuListRedirectRef = useRef(false);
   const [seedCount, setSeedCount] = useState<number>(0);
 
   const [currentGreeting, setCurrentGreeting] = useState("");
@@ -735,13 +837,14 @@ export default function Page({
     const testMode = params.get("test") === "1";
 
     if (testMode) {
+      skipSajuListRedirectRef.current = true;
       setBirthYmd("19900101");
       setBirthHm("1200");
       setGender("M");
       setCalendar("solar");
       setTimeUnknown(false);
       setResult(MOCK_RESULT_FOR_TEST);
-      window.history.replaceState({}, "", "/add");
+      window.history.replaceState({}, "", "/add-v2");
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 300);
       return;
     }
@@ -758,9 +861,11 @@ export default function Page({
           setCalendar(loadedSaju.calendar);
           setTimeUnknown(loadedSaju.timeUnknown);
           setResult(loadedSaju.result);
+          setSajuJsonRaw(loadedSaju.result);
 
+          skipSajuListRedirectRef.current = true;
           sessionStorage.removeItem("loadedSaju");
-          window.history.replaceState({}, "", "/add");
+          window.history.replaceState({}, "", "/add-v2");
 
           setTimeout(() => {
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -777,6 +882,7 @@ export default function Page({
     }
 
     // test/loaded 없으면 결과 없음 → 사주 목록으로 이동 (빈 결과 화면 거의 안 씀)
+    if (skipSajuListRedirectRef.current) return;
     router.replace("/saju-list");
   }, [MOCK_RESULT_FOR_TEST, router]);
 
@@ -1043,6 +1149,21 @@ export default function Page({
 
   const [sajuJsonRaw, setSajuJsonRaw] = useState<any>(null);
   const [interpLoading, setInterpLoading] = useState(false);
+  // ── v2 분석 state ──────────────────────────────────
+  const [v2Loading, setV2Loading] = useState(false);
+  const [v2Result, setV2Result] = useState<{
+    comprehensive: string;
+    core_values: string;
+    section_personality: string;
+    section_strength: string;
+    section_problem: string;
+    section_money: string;
+    section_career: string;
+    section_relationship: string;
+    section_current: string;
+    rule_summary: Record<string, any>;
+  } | null>(null);
+  const [showV2Modal, setShowV2Modal] = useState(false);
   const selectedChar: CharKey = "empathy";
 
   useEffect(() => {
@@ -1448,7 +1569,8 @@ export default function Page({
 
           fetch(`${API_BASE}/saju/summary-gpt`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+            credentials: "include",
             body: JSON.stringify({
               system: SUMMARY_SYSTEM_PROMPT,
               user: userPrompt,
@@ -1462,11 +1584,17 @@ export default function Page({
           })
             .then((res) => {
               if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                  console.warn("종합 요약 GPT는 로그인 후 이용권이 있을 때 제공됩니다.");
+                  setSummaryGuide(getSummaryGuideFallback(summaryInput));
+                  return null;
+                }
                 throw new Error(`summary-gpt ${res.status}`);
               }
               return res.json();
             })
             .then((summaryJson) => {
+              if (!summaryJson) return;
               if (summaryJson?.summary) {
                 setSummaryGuide(summaryJson.summary);
                 // 채팅에서 사용할 수 있도록 localStorage에 저장
@@ -2031,6 +2159,134 @@ export default function Page({
     }
   }
 
+  async function runV2Analysis() {
+    console.log("strength 값:", sajuJsonRaw?.strength);
+    if (!sajuJsonRaw) {
+      alert("먼저 사주를 조회해주세요.");
+      return;
+    }
+
+    const pillars = resolvePillarStrings(sajuJsonRaw);
+    if (!pillars) {
+      alert(
+        "사주 네 기둥 정보를 찾을 수 없습니다. 사주를 다시 조회하거나 목록에서 다시 들어와 주세요."
+      );
+      return;
+    }
+
+    const raw = sajuJsonRaw as Record<string, unknown>;
+
+    setV2Loading(true);
+    setShowV2Modal(true);
+    setV2Result(null);
+
+    try {
+      const cacheKey = `v2_${pillars.year_pillar}_${pillars.month_pillar}_${pillars.day_pillar}_${pillars.hour_pillar}_empathy_${Date.now()}`;
+
+      const res = await fetch(`${API_BASE}/saju/analyze-v2`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        credentials: "include",
+        body: JSON.stringify({
+          year_pillar:     pillars.year_pillar,
+          month_pillar:    pillars.month_pillar,
+          day_pillar:      pillars.day_pillar,
+          hour_pillar:     pillars.hour_pillar,
+          gender:          gender,
+          birthdate:       birthYmd
+            ? `${birthYmd.slice(0,4)}-${birthYmd.slice(4,6)}-${birthYmd.slice(6,8)}`
+            : null,
+          daeun_list:      Array.isArray(raw.daeun_list) ? raw.daeun_list : [],
+          daeun_direction:
+            typeof raw.daeun_direction === "string" ? raw.daeun_direction : "순행",
+          ten_gods:
+            raw.ten_gods && typeof raw.ten_gods === "object"
+              ? (raw.ten_gods as object)
+              : {},
+          strength:
+            raw.strength !== undefined && raw.strength !== null
+              ? raw.strength
+              : {},
+          harmony_clash:
+            raw.harmony_clash && typeof raw.harmony_clash === "object"
+              ? (raw.harmony_clash as object)
+              : raw.harmony_clash === null
+                ? null
+                : {},
+          sinsal:
+            raw.sinsal && typeof raw.sinsal === "object" ? (raw.sinsal as object) : {},
+          tone:            "empathy",
+          cache_key:       cacheKey,
+        }),
+      });
+
+      if (res.status === 401) {
+        setShowV2Modal(false);
+        if (confirm("로그인이 필요합니다. 로그인 하시겠습니까?")) {
+          router.push("/start");
+        }
+        return;
+      }
+
+      const data = await res.json().catch(() => ({} as Record<string, unknown>));
+
+      const detailToMessage = (d: unknown): string => {
+        if (d == null || d === "") {
+          return res.ok ? "분석 실패" : `요청 실패 (${res.status})`;
+        }
+        if (typeof d === "string") return d;
+        if (Array.isArray(d)) {
+          return d
+            .map((x: unknown) => {
+              if (x && typeof x === "object" && "msg" in x && typeof (x as { msg: unknown }).msg === "string") {
+                return (x as { msg: string }).msg;
+              }
+              try {
+                return JSON.stringify(x);
+              } catch {
+                return String(x);
+              }
+            })
+            .join(" · ");
+        }
+        if (typeof d === "object") {
+          try {
+            return JSON.stringify(d);
+          } catch {
+            return String(d);
+          }
+        }
+        return String(d);
+      };
+
+      if (!res.ok) {
+        throw new Error(detailToMessage(data.detail));
+      }
+      if (!data.success) {
+        throw new Error(detailToMessage(data.detail));
+      }
+
+      setV2Result({
+        comprehensive: data.comprehensive,
+        core_values:   data.core_values,
+        section_personality: data.section_personality ?? "",
+        section_strength: data.section_strength ?? "",
+        section_problem: data.section_problem ?? "",
+        section_money: data.section_money ?? "",
+        section_career: data.section_career ?? "",
+        section_relationship: data.section_relationship ?? "",
+        section_current: data.section_current ?? "",
+        rule_summary:  data.rule_summary ?? {},
+      });
+    } catch (e: any) {
+      console.error("v2 분석 오류:", e);
+      alert("분석 중 오류가 발생했습니다: " + (e?.message ?? ""));
+      setShowV2Modal(false);
+    } finally {
+      setV2Loading(false);
+    }
+  }
+
   return (
     <>
       <Head>
@@ -2038,6 +2294,7 @@ export default function Page({
         {/* gmarketsans 웹폰트 로드 */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css" />
       </Head>
+      {process.env.NEXT_PUBLIC_KAKAO_JS_KEY ? (
       <Script
         src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.0/kakao.min.js"
         strategy="afterInteractive"
@@ -2051,10 +2308,7 @@ export default function Page({
             }
 
             const key = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
-            if (!key) {
-              console.error("❌ NEXT_PUBLIC_KAKAO_JS_KEY 값 비어있음");
-              return;
-            }
+            if (!key) return;
 
             if (!window.Kakao.isInitialized()) {
               window.Kakao.init(key);
@@ -2072,6 +2326,7 @@ export default function Page({
           console.error("❌ Kakao SDK 스크립트 로딩 실패 (네트워크/CSP/차단 가능)");
         }}
       />
+      ) : null}
 
       <style>{`
         :root {
@@ -2209,6 +2464,169 @@ export default function Page({
                         style={{ paddingTop: 20, paddingLeft: 16, paddingRight: 16, paddingBottom: 32, maxWidth: 520, margin: "0 auto", width: "100%", boxSizing: "border-box" }}
                       >
                         <div style={{ marginBottom: 20 }}>
+                        {/* ── v2 AI 정밀 분석 버튼 ── */}
+                        <button
+                          type="button"
+                          onClick={runV2Analysis}
+                          disabled={v2Loading}
+                          style={{
+                            width: "100%",
+                            padding: "14px 16px",
+                            marginBottom: 16,
+                            background: v2Loading
+                              ? S.beige
+                              : `linear-gradient(135deg, ${S.gold} 0%, ${S.goldLight} 100%)`,
+                            border: "none",
+                            borderRadius: 12,
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: 14,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: 8,
+                            cursor: v2Loading ? "wait" : "pointer",
+                            fontFamily: S.fontBody,
+                            boxShadow: v2Loading ? "none" : "0 4px 16px rgba(139,115,85,0.35)",
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          {v2Loading ? (
+                            <>
+                              <span style={{ fontSize: 16 }}>⏳</span>
+                              AI 정밀 분석 중...
+                            </>
+                          ) : (
+                            <>
+                              <span style={{ fontSize: 16 }}>🔬</span>
+                              AI 정밀 분석 (베타)
+                            </>
+                          )}
+                        </button>
+
+                        {/* ── v2 결과 모달 ── */}
+                        {showV2Modal && typeof window !== "undefined" && createPortal(
+                          <div
+                            style={{
+                              position: "fixed", inset: 0,
+                              background: "rgba(44,36,23,0.55)",
+                              zIndex: 9998,
+                              display: "flex", alignItems: "flex-end",
+                              justifyContent: "center",
+                              padding: 0,
+                            }}
+                            onClick={() => { if (!v2Loading) setShowV2Modal(false); }}
+                          >
+                            <div
+                              style={{
+                                background: S.cream,
+                                borderRadius: "20px 20px 0 0",
+                                width: "100%",
+                                maxWidth: 450,
+                                maxHeight: "90dvh",
+                                display: "flex",
+                                flexDirection: "column",
+                                boxShadow: "0 -8px 40px rgba(44,36,23,0.18)",
+                                overflow: "hidden",
+                              }}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {/* 헤더 */}
+                              <div style={{
+                                padding: "16px 20px 12px",
+                                borderBottom: `1px solid ${S.beige}`,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                flexShrink: 0,
+                              }}>
+                                <div>
+                                  <p className="saju-serif" style={{ fontSize: 15, fontWeight: 700, color: S.ink }}>
+                                    🔬 AI 정밀 분석 (베타)
+                                  </p>
+                                  <p style={{ fontSize: 11, color: S.ink3, marginTop: 2 }}>
+                                    규칙 엔진 계산 → GPT 표현 변환
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowV2Modal(false)}
+                                  style={{
+                                    width: 32, height: 32,
+                                    borderRadius: "50%",
+                                    border: `1px solid ${S.beige}`,
+                                    background: S.cream2,
+                                    cursor: "pointer",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    color: S.ink3, fontSize: 16,
+                                  }}
+                                >×</button>
+                              </div>
+
+                              {/* 바디 */}
+                              <div style={{ overflowY: "auto", flex: 1, padding: "20px 20px 40px" }}>
+                                {v2Loading && (
+                                  <div style={{ textAlign: "center", padding: "40px 0" }}>
+                                    <motion.img
+                                      src={CHARACTERS.empathy.img}
+                                      alt=""
+                                      style={{ width: 72, height: 72, objectFit: "contain", margin: "0 auto 16px", display: "block" }}
+                                      animate={{ y: [0, -8, 0] }}
+                                      transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
+                                    />
+                                    <p className="saju-serif" style={{ color: S.ink, fontSize: 14, lineHeight: 1.8 }}>
+                                      규칙 엔진으로 계산하고<br />GPT가 표현을 다듬고 있어요...
+                                    </p>
+                                  </div>
+                                )}
+
+                                {v2Result && (() => {
+                                  const sections = parseV2ComprehensiveSections(v2Result.comprehensive || "");
+                                  const hasText = (v?: string) => !!(v && v.trim());
+                                  return (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                      {sections.map((sec) => (
+                                        <div key={sec.title} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                          <p style={{ fontSize: 12, fontWeight: 700, color: "#8B7355", letterSpacing: "0.06em" }}>
+                                            {sec.title}
+                                          </p>
+                                          <div
+                                            style={{ fontSize: 13, color: "#4A3F30", lineHeight: 1.9, wordBreak: "keep-all" }}
+                                            dangerouslySetInnerHTML={{ __html: sec.body.replace(/\n/g, "<br />") }}
+                                          />
+                                          {sec.title === "🧠 타고난 성향과 사고방식" && (
+                                            <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
+                                          )}
+                                          {sec.title === "🔁 반복되는 문제 패턴" && (
+                                            <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
+                                          )}
+                                          {sec.title === "💰 돈 흐름 구조" && (
+                                            <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+                                          )}
+                                        </div>
+                                      ))}
+
+                                      {Object.keys(v2Result.rule_summary).length > 0 && (
+                                        <>
+                                          <div style={{ height: 1, background: "#D4C9B8" }} />
+                                          <details>
+                                            <summary style={{ fontSize: 11, color: "#6B5F4E", cursor: "pointer" }}>
+                                              🔧 규칙엔진 계산값 (개발 확인용)
+                                            </summary>
+                                            <pre style={{ marginTop: 10, fontSize: 10, color: "#6B5F4E", background: "#EDE7DB", borderRadius: 8, padding: 12, overflowX: "auto", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                                              {JSON.stringify(v2Result.rule_summary, null, 2)}
+                                            </pre>
+                                          </details>
+                                        </>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            </div>
+                          </div>,
+                          document.body
+                        )}
                           <div ref={previewCarouselRef} className="add-preview-carousel"
                             onScroll={() => {
                               const el = previewCarouselRef.current;

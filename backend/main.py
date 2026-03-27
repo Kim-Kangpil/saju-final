@@ -1349,7 +1349,7 @@ def _call_gpt_with_retry(
 async def _call_gemini_with_retry(
     system_prompt: str,
     user_prompt: str,
-    model: str = "gemini-2.5-flash-preview-04-17",
+    model: str = "gemini-3-flash-preview",
     max_tokens: int = 8192,
     max_retries: int = 2,
     temperature: float = 0.7,

@@ -720,25 +720,57 @@ class GPTInterpretationGenerator:
         min_chars = 4000 if is_deep else 3000
         max_tok = 7000 if is_deep else 5000
         content = ""
-        for attempt in range(3):
-            try:
-                response = self.client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ],
-                    temperature=0.8,
-                    max_tokens=max_tok
-                )
-                content = response.choices[0].message.content or ""
-                section_count = sum(1 for m in ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"] if m in content)
-                print(f"✅ 종합 GPT 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
-                if len(content) >= min_chars and section_count >= 7:
-                    break
-                print(f"⚠️ 분량 부족 — 재시도 ({attempt+1}/3)")
-            except Exception as e:
-                print(f"❌ GPT API 호출 실패 (시도 {attempt+1}): {e}")
+
+        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+        if GEMINI_API_KEY:
+            import google.generativeai as genai
+            genai.configure(api_key=GEMINI_API_KEY)
+            gemini_model = genai.GenerativeModel(
+                model_name="gemini-2.5-flash-preview-04-17",
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=max_tok,
+                    temperature=0.7,
+                ),
+            )
+            current_system = system_prompt
+            for attempt in range(3):
+                try:
+                    full_prompt = f"{current_system}\n\n{user_prompt}"
+                    response = gemini_model.generate_content(full_prompt)
+                    content = response.text or ""
+                    section_markers = ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"]
+                    section_count = sum(1 for m in section_markers if m in content)
+                    print(f"✅ 종합 Gemini 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
+                    if len(content) >= min_chars and section_count >= 7:
+                        break
+                    if attempt < 2:
+                        print(f"⚠️ 분량 부족 — 재시도 ({attempt+1}/3)")
+                        current_system = "[재시도: 더 길게 작성]\n\n" + system_prompt
+                except Exception as e:
+                    print(f"❌ Gemini API 호출 실패 (시도 {attempt+1}): {e}")
+        else:
+            if not self.client:
+                return self._fallback_comprehensive(analysis, tone)
+            current_system = system_prompt
+            for attempt in range(3):
+                try:
+                    response = self.client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {"role": "system", "content": current_system},
+                            {"role": "user", "content": user_prompt}
+                        ],
+                        temperature=0.8,
+                        max_tokens=max_tok
+                    )
+                    content = response.choices[0].message.content or ""
+                    section_count = sum(1 for m in ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"] if m in content)
+                    print(f"✅ 종합 GPT 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
+                    if len(content) >= min_chars and section_count >= 7:
+                        break
+                    print(f"⚠️ 분량 부족 — 재시도 ({attempt+1}/3)")
+                except Exception as e:
+                    print(f"❌ GPT API 호출 실패 (시도 {attempt+1}): {e}")
 
         if content:
             return content

@@ -59,6 +59,16 @@ else:
     print("⚠️  OPENAI_API_KEY 없음")
     client = None
 
+# ==================== 3b. Gemini 클라이언트 초기화 ====================
+import google.generativeai as genai
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+    logger.warning("✅ Gemini 클라이언트 초기화 성공")
+else:
+    logger.warning("⚠️ GEMINI_API_KEY 없음 - GPT-4o fallback 사용")
+
 # ==================== 4. FastAPI 앱 생성 ====================
 TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
 print(f"TEST_MODE: {TEST_MODE}")
@@ -1305,7 +1315,7 @@ def _call_gpt_with_retry(
     max_tokens: int = 4000,
     max_retries: int = 2,
 ) -> str:
-    """GPT 호출 + 길이 검증 재시도. 최소 3,000자 & 6개 섹션 보장."""
+    """GPT-4o fallback 호출 (GEMINI_API_KEY 없을 때)."""
     current_system = system_prompt
     content = ""
     for attempt in range(max_retries + 1):
@@ -1326,13 +1336,60 @@ def _call_gpt_with_retry(
             return content
 
         if attempt < max_retries:
-            logger.warning(f"[GPT] Too short ({len(content)} chars), retrying with stronger prompt...")
+            logger.warning(f"[GPT] Too short ({len(content)} chars), retrying...")
             current_system = (
                 "[재시도: 이전 응답이 너무 짧았음. 반드시 각 섹션 600자 이상 작성]\n\n"
                 + system_prompt
             )
 
     logger.warning(f"[GPT] Final attempt result: {len(content)} chars")
+    return content
+
+
+async def _call_gemini_with_retry(
+    system_prompt: str,
+    user_prompt: str,
+    model: str = "gemini-2.5-flash-preview-04-17",
+    max_tokens: int = 8192,
+    max_retries: int = 2,
+    temperature: float = 0.7,
+) -> str:
+    """Gemini 호출 + 길이 검증 재시도. 최소 2,000자 & 6개 섹션 보장."""
+    gemini_model = genai.GenerativeModel(
+        model_name=model,
+        generation_config=genai.types.GenerationConfig(
+            max_output_tokens=max_tokens,
+            temperature=temperature,
+        ),
+    )
+
+    current_system = system_prompt
+    content = ""
+    for attempt in range(max_retries + 1):
+        try:
+            full_prompt = f"{current_system}\n\n{user_prompt}"
+            response = await asyncio.to_thread(gemini_model.generate_content, full_prompt)
+            content = response.text or ""
+
+            section_count = sum(
+                1 for marker in ["1.", "2.", "3.", "4.", "5.", "6."]
+                if marker in content
+            )
+            logger.warning(f"[Gemini] attempt {attempt + 1}: {len(content)} chars, {section_count} sections")
+
+            if len(content) >= 2000 and section_count >= 6:
+                return content
+
+            if attempt < max_retries:
+                logger.warning(f"[Gemini] Too short ({len(content)} chars), retrying...")
+                current_system = "[재시도: 이전 응답이 너무 짧음. 각 섹션 600자 이상 필수]\n\n" + system_prompt
+
+        except Exception as e:
+            logger.warning(f"[Gemini] attempt {attempt + 1} error: {e}")
+            if attempt == max_retries:
+                raise
+
+    logger.warning(f"[Gemini] Final attempt result: {len(content)} chars")
     return content
 
 
@@ -2086,7 +2143,10 @@ async def _generate_deep_topic_report(
         f"이 사람의 {topic_label} 리포트를 작성해줘. "
         "반드시 6개 섹션 전부 작성하고, 각 섹션 600자 이상으로 상세하게 써줘. 전체 4,000자 이상이어야 함."
     )
-    content = _call_gpt_with_retry(system_prompt, user_prompt)
+    if GEMINI_API_KEY:
+        content = await _call_gemini_with_retry(system_prompt, user_prompt)
+    else:
+        content = _call_gpt_with_retry(system_prompt, user_prompt)
 
     section_count = sum(1 for m in ["1.", "2.", "3.", "4.", "5.", "6."] if m in content)
     logger.warning(f"[REPORT] Final content length: {len(content)} chars, sections: {section_count}")

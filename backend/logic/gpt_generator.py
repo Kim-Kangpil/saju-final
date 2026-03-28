@@ -1120,37 +1120,8 @@ class GPTInterpretationGenerator:
         return "\n".join(lines)
 
     def _fallback_comprehensive(self, analysis, tone):
-        """폴백 종합 해석"""
-        summary = analysis['summary']
-        element_count = summary['element_count']
-
-        # 가장 강한/약한 오행
-        strongest = max(element_count.items(), key=lambda x: x[1])
-        weakest = min(element_count.items(), key=lambda x: x[1])
-
-        element_names = {
-            'wood': '木(나무)', 'fire': '火(불)', 'earth': '土(흙)',
-            'metal': '金(쇠)', 'water': '水(물)'
-        }
-
-        return f"""## 🌈 당신의 사주 종합 분석
-
-신강약: {summary['strength']} ({summary['strength_score']}점)
-
-당신의 사주는 {summary['strength']} 성향입니다.
-
-오행 균형: 
-가장 강한 오행은 {element_names[strongest[0]]} ({strongest[1]}개)이고,
-가장 약한 오행은 {element_names[weakest[0]]} ({weakest[1]}개)입니다.
-
-십성 분포: 
-{self._format_ten_gods_detail(summary['ten_gods_count'])}
-
-패턴: 
-{self._format_patterns(analysis.get('patterns', []))}
-
-상세한 해석은 GPT 서비스 연결 후 제공됩니다.
-"""
+        """GPT/Gemini 모두 실패 시 빈 문자열 반환 — 프론트에서 재시도 안내 표시."""
+        return ""
 
     def _fallback_element_interpretation(self, element_counts, tone):
         """GPT 실패 시 폴백 해석"""

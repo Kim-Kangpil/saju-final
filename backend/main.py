@@ -116,6 +116,7 @@ from logic.saju_db import (
     get_saju_by_id,
     get_saju_list_for_user,
     save_saju_for_user,
+    delete_saju_for_user,
     get_report_cache,
     save_report_cache,
 )
@@ -2536,6 +2537,18 @@ def get_saju(saju_id: int, request: Request):
         "gender": row["gender"],
         "iana_timezone": row.get("iana_timezone"),
     }
+
+
+@app.delete("/api/saju/{saju_id}")
+def delete_saju(saju_id: int, request: Request):
+    """저장된 사주 1건 삭제 (본인 소유만)."""
+    user_id = get_user_id_from_request(request)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    deleted = delete_saju_for_user(saju_id, user_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="해당 사주를 찾을 수 없습니다.")
+    return {"success": True}
 
 
 @app.post("/saju/summary-gpt")

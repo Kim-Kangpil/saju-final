@@ -2828,7 +2828,18 @@ export default function Page({
                         )}
 
                         {/* ── v2 분석 결과 인라인 표시 ── */}
-                        {v2Result && (
+                        {v2Result && !v2Result.comprehensive?.trim() && (
+                          <div style={{ background: "#fff8f0", border: "1px solid #e8d5b0", borderRadius: 16, padding: "20px 18px", marginBottom: 24, textAlign: "center" }}>
+                            <p style={{ fontSize: 14, color: "#8B7355", marginBottom: 14 }}>AI 분석 생성에 실패했습니다. 다시 시도해주세요.</p>
+                            <button
+                              onClick={() => { v2AutoTriggeredRef.current = false; runV2Analysis(); }}
+                              style={{ background: S.gold, color: "#fff", border: "none", borderRadius: 20, padding: "10px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+                            >
+                              다시 분석하기
+                            </button>
+                          </div>
+                        )}
+                        {v2Result && !!v2Result.comprehensive?.trim() && (
                           <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
                             {parseV2ComprehensiveSections(v2Result.comprehensive || "").map((sec) => (
                               <div key={sec.title} style={{ background: "#fff", borderRadius: 16, border: `1px solid ${S.beige}`, padding: "20px 18px", boxShadow: "0 2px 10px rgba(44,36,23,0.05)" }}>

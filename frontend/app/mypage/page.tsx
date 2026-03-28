@@ -91,7 +91,20 @@ function MyPageContent({
     router.push("/add?edit=" + saju.id);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    // 서버 저장 항목(srv- 접두사)이면 DB에서도 삭제
+    if (id.startsWith("srv-")) {
+      const numericId = id.replace("srv-", "");
+      try {
+        await fetch(`${API_BASE}/api/saju/${numericId}`, {
+          method: "DELETE",
+          credentials: "include",
+          headers: getAuthHeaders(),
+        });
+      } catch (e) {
+        console.warn("서버 사주 삭제 실패:", e);
+      }
+    }
     const result = deleteSaju(id);
     if (result.success) {
       setSajuList(getSavedSajuList());

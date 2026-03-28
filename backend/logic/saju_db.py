@@ -189,6 +189,21 @@ def save_saju_for_user(
         conn.close()
 
 
+def delete_saju_for_user(saju_id: int, user_id: int) -> bool:
+    """본인 소유 사주 1건 삭제. 삭제 성공 시 True 반환."""
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("DELETE FROM saju WHERE id = ? AND user_id = ?"),
+            (saju_id, user_id),
+        )
+        conn.commit()
+        return (cur.rowcount or 0) > 0
+    finally:
+        conn.close()
+
+
 # ==================== 리포트 캐시 ====================
 
 def get_report_cache(cache_key: str, section_key: str) -> Optional[str]:

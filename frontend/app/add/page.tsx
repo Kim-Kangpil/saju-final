@@ -2383,7 +2383,7 @@ export default function Page({
 
       <main style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: S.cream, backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto", position: "relative", zIndex: 10 }}>
         <div style={{ width: "100%", maxWidth: 450, margin: "0 auto" }}>
-          <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 24px rgba(44,36,23,0.10)", background: "#fff", border: `1px solid ${S.beige}`, position: "relative" }}>
+          <div style={{ borderRadius: 20, overflow: "visible", boxShadow: "0 2px 24px rgba(44,36,23,0.10)", background: "#fff", border: `1px solid ${S.beige}`, position: "relative" }}>
             <div style={{ position: "absolute", inset: 0, backgroundImage: "url('/images/hanji-bg.png')", backgroundRepeat: "repeat", backgroundSize: "auto", opacity: 0.04, pointerEvents: "none", zIndex: 0 }} />
             <header style={{
               height: 56,

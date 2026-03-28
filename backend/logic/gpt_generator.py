@@ -718,7 +718,7 @@ class GPTInterpretationGenerator:
 ) + "\n"""
 
         min_chars = 4000 if is_deep else 3000
-        max_tok = 7000 if is_deep else 5000
+        max_tok = 9000 if is_deep else 8000
         content = ""
 
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")

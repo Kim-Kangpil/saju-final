@@ -60,13 +60,15 @@ else:
     client = None
 
 # ==================== 3b. Gemini 클라이언트 초기화 ====================
-import google.generativeai as genai
+from google import genai as _genai_lib
+from google.genai import types as _genai_types
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
+    gemini_client = _genai_lib.Client(api_key=GEMINI_API_KEY)
     logger.warning("✅ Gemini 클라이언트 초기화 성공")
 else:
+    gemini_client = None
     logger.warning("⚠️ GEMINI_API_KEY 없음 - GPT-4o fallback 사용")
 
 # ==================== 4. FastAPI 앱 생성 ====================
@@ -1350,18 +1352,18 @@ def _call_gpt_with_retry(
 async def _call_gemini_with_retry(
     system_prompt: str,
     user_prompt: str,
-    model: str = "gemini-2.5-flash-preview-04-17",
+    model: str = "gemini-3-flash-preview",
     max_tokens: int = 8192,
     max_retries: int = 2,
     temperature: float = 0.7,
 ) -> str:
     """Gemini 호출 + 길이 검증 재시도. 최소 2,000자 & 6개 섹션 보장."""
-    gemini_model = genai.GenerativeModel(
-        model_name=model,
-        generation_config=genai.types.GenerationConfig(
-            max_output_tokens=max_tokens,
-            temperature=temperature,
-        ),
+    if not gemini_client:
+        raise RuntimeError("GEMINI_API_KEY not configured")
+
+    cfg = _genai_types.GenerateContentConfig(
+        max_output_tokens=max_tokens,
+        temperature=temperature,
     )
 
     current_system = system_prompt
@@ -1369,7 +1371,12 @@ async def _call_gemini_with_retry(
     for attempt in range(max_retries + 1):
         try:
             full_prompt = f"{current_system}\n\n{user_prompt}"
-            response = await asyncio.to_thread(gemini_model.generate_content, full_prompt)
+            response = await asyncio.to_thread(
+                gemini_client.models.generate_content,
+                model=model,
+                contents=full_prompt,
+                config=cfg,
+            )
             content = response.text or ""
 
             section_count = sum(

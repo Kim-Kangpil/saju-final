@@ -723,20 +723,22 @@ class GPTInterpretationGenerator:
 
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
         if GEMINI_API_KEY:
-            import google.generativeai as genai
-            genai.configure(api_key=GEMINI_API_KEY)
-            gemini_model = genai.GenerativeModel(
-                model_name="gemini-2.5-flash-preview-04-17",
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=max_tok,
-                    temperature=0.7,
-                ),
+            from google import genai as _genai
+            from google.genai import types as _gtypes
+            _gclient = _genai.Client(api_key=GEMINI_API_KEY)
+            _gcfg = _gtypes.GenerateContentConfig(
+                max_output_tokens=max_tok,
+                temperature=0.7,
             )
             current_system = system_prompt
             for attempt in range(3):
                 try:
                     full_prompt = f"{current_system}\n\n{user_prompt}"
-                    response = gemini_model.generate_content(full_prompt)
+                    response = _gclient.models.generate_content(
+                        model="gemini-3-flash-preview",
+                        contents=full_prompt,
+                        config=_gcfg,
+                    )
                     content = response.text or ""
                     section_markers = ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"]
                     section_count = sum(1 for m in section_markers if m in content)

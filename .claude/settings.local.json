@@ -19,7 +19,12 @@
       "Bash(find /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/frontend/app/api -type f -name *.ts -o -name *.tsx)",
       "Bash(grep -r \"Cache-Control\\\\|revalidate\\\\|next:\\\\|getServerSideProps\\\\|getStaticProps\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/frontend/app --include=*.ts --include=*.tsx)",
       "Bash(grep -r \"loginType\\\\|isLoggedIn\\\\|hsaju_token\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/frontend --include=*.ts --include=*.tsx)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(pip show:*)",
+      "Bash(pip check:*)",
+      "Bash(pip index:*)",
+      "Bash(pip download:*)",
+      "Bash(grep -v \"^$\")"
     ]
   }
 }

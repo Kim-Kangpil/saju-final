@@ -169,8 +169,7 @@ export function SajuSummaryCard({ text, name, sub, pillar }: SajuSummaryCardProp
         borderRadius: 18,
         border: "1px solid #D4C9B8",
         padding: "16px 14px 18px",
-        fontFamily:
-          "'Gmarket Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        fontFamily: "var(--font-sans)",
       }}
     >
       <div style={{ marginBottom: 14 }}>

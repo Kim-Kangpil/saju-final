@@ -49,7 +49,7 @@ function parseInline(text: string): React.ReactNode[] {
         <code
           key={match.index}
           style={{
-            fontFamily: "monospace",
+            fontFamily: "var(--font-sans)",
             fontSize: "0.88em",
             background: "rgba(0,0,0,0.07)",
             borderRadius: 4,

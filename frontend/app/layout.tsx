@@ -8,7 +8,7 @@ import PageTransition from "../components/PageTransition";
 
 export const metadata: Metadata = {
   title: "사주 프로젝트",
-  description: "네오둥근모 폰트 적용",
+  description: "한양사주 — Gmarket Sans",
 };
 
 export const viewport: Viewport = {

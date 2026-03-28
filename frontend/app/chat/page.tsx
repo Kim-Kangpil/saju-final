@@ -1926,7 +1926,7 @@ function ChatContent({
                                     borderRadius: 12,
                                     textDecoration: "none",
                                     color: "#3D3530",
-                                    fontFamily: "GmarketSans",
+                                    fontFamily: "var(--font-sans)",
                                   }}
                                 >
                                   <span>
@@ -2133,7 +2133,7 @@ export default function ChatPage({
             justifyContent: "center",
             background: "#F2EDE4",
             color: "#7A776F",
-            fontFamily: "system-ui, sans-serif",
+            fontFamily: "var(--font-sans)",
           }}
         >
           불러오는 중...

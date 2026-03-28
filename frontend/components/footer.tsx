@@ -25,7 +25,7 @@ export default function Footer() {
                     </p>
                     <p className="leading-relaxed">
                         <span className="font-semibold">사업자등록번호:</span>{" "}
-                        <span className="font-mono">889-28-01406</span>
+                        <span>889-28-01406</span>
                     </p>
                     <p className="leading-relaxed px-2 sm:px-0">
                         <span className="font-semibold">주소:</span> 경기도 안산시 상록구 학사4길 9-1,<br />302호(사동, 쁘띠메종)

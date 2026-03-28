@@ -8,7 +8,7 @@ function MoneyIntroContent() {
   const sajuId = searchParams.get('saju_id') || ''
 
   return (
-    <div style={{maxWidth: 480, margin: '0 auto', padding: '24px 20px', fontFamily: 'GmarketSans', background: '#F5F1EA', minHeight: '100vh'}}>
+    <div style={{maxWidth: 480, margin: '0 auto', padding: '24px 20px', fontFamily: 'var(--font-sans)', background: '#F5F1EA', minHeight: '100vh'}}>
       
       {/* 헤더 */}
       <div style={{textAlign: 'center', marginBottom: 32}}>

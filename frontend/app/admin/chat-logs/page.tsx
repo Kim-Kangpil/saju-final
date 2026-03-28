@@ -401,7 +401,7 @@ export default function AdminChatLogsPage() {
             ) : (
               <>
                 <div style={{ fontSize: 12, color: "#7A776F", marginBottom: 10 }}>
-                  sessionId: <span style={{ fontFamily: "monospace" }}>{selectedSessionId}</span>
+                  sessionId: <span style={{ fontFamily: "var(--font-sans)" }}>{selectedSessionId}</span>
                 </div>
                 <div
                   style={{

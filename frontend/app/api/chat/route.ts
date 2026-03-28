@@ -690,7 +690,7 @@ const RESPONSE_FORMAT_RULE = `[응답 형식 — 반드시 준수]
 - 사주 컨텍스트에 있는 데이터만 사용. 없는 건 "해당 데이터가 없어요"라고 해라.
 - 마지막에 후속 질문 1개. 번호 없이 한 줄로.
 - 섹션 헤더(###) 금지.
-- "~예요", "~있어요" 체로만. "~할 것입니다" 금지.`;
+- "~예요", "~있어요", "~해요" 체로만. "~합니다", "~입니다", "~할 것입니다" 전부 금지.`;
 
 const RESPONSE_FORMAT_RULE_EN = `[Response format — required]
 - Always use two sections:

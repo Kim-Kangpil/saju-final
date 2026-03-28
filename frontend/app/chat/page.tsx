@@ -140,7 +140,13 @@ function stripSinsalTable(text: string): string {
     .filter((line) => {
       // 일간별 지지 나열 패턴 제거
       if (/[갑을병정무기경신임계][일]간\s*[:：]/.test(line)) return false;
-      if (/甲|乙|丙|丁|戊|己|庚|辛|壬|癸/.test(line) && /丑|子|亥|巳|午|未|申|酉|寅|卯|辰|戌/.test(line))
+      // 한글 설명이 충분한 줄은 유지(무토·계수·화 등이 한 줄에 있어도 본문이 잘리지 않게)
+      const hangulInLine = (line.match(/[가-힣]/g) ?? []).length;
+      if (
+        hangulInLine < 12 &&
+        /甲|乙|丙|丁|戊|己|庚|辛|壬|癸/.test(line) &&
+        /丑|子|亥|巳|午|未|申|酉|寅|卯|辰|戌/.test(line)
+      )
         return false;
       // 문장 안에 일간+지지 예시가 섞인 패턴 제거
       if (
@@ -1594,6 +1600,33 @@ function ChatContent({
     }
   }
 
+  const prevUserText =
+    lastUserIndex >= 0
+      ? getMessageText(messages[lastUserIndex] as any)
+      : (lastUserMessageRef.current ?? "");
+  const reportDeepLinks = (() => {
+    const t = prevUserText;
+    const out: Array<{ emoji: string; label: string; path: string; price: string }> = [];
+    const moneyMatch = ["재물", "돈", "수입", "저축", "투자", "재산", "부자"].some((k) => t.includes(k));
+    const loveMatch = ["연애", "결혼", "이성", "남자친구", "여자친구", "남편", "아내", "파트너", "인연"].some((k) => t.includes(k));
+    const tCareerNoSaju = t.replace(/일간|일주|일진|일지|일원|일대|일월|일시|일요일/g, "");
+    const careerMultiMatch = ["직업", "직장", "사업", "취업", "커리어", "진로", "이직"].some((k) =>
+      t.includes(k),
+    );
+    const careerIlAfterMask = tCareerNoSaju.includes("일");
+    const careerMatch = careerMultiMatch || careerIlAfterMask;
+    if (moneyMatch) {
+      out.push({ emoji: "💰", label: "재물운 심층 분석", path: "money", price: "5,900원" });
+    }
+    if (loveMatch) {
+      out.push({ emoji: "❤️", label: "연애운 심층 분석", path: "love", price: "5,900원" });
+    }
+    if (careerMatch) {
+      out.push({ emoji: "💼", label: "직업운 심층 분석", path: "career", price: "5,900원" });
+    }
+    return out;
+  })();
+
   // useChat 메시지를 세션 스토리지와 동기화 (무한 루프 방지용 스냅샷)
   const lastSnapshotRef = useRef<string>("");
   // 세션 전환 시 이전 대화 스냅샷이 남아 잘못 스킵되거나 연쇄 업데이트가 나지 않도록 초기화
@@ -1867,38 +1900,43 @@ function ChatContent({
                             text={messageContent}
                             isAI={isAI}
                           />
-                          {isLastAssistant && (
-  <div style={{marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8}}>
-    <p style={{fontSize: 13, color: '#8B7355', marginBottom: 4}}>
-      더 깊이 알고 싶다면
-    </p>
-    {[ 
-      { emoji: '💰', label: '재물운 심층 분석', path: 'money', price: '5,900원' },
-      { emoji: '❤️', label: '연애운 심층 분석', path: 'love', price: '5,900원' },
-      { emoji: '💼', label: '직업운 심층 분석', path: 'career', price: '5,900원' },
-    ].map((item) => (
-      <a
-        key={item.path}
-        href={`/report/${item.path}/intro${sajuId ? `?saju_id=${sajuId}` : ''}`}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '12px 16px',
-          background: '#F5F1EA',
-          border: '1px solid #D4C9B8',
-          borderRadius: 12,
-          textDecoration: 'none',
-          color: '#3D3530',
-          fontFamily: 'GmarketSans',
-        }}
-      >
-        <span>{item.emoji} {item.label}</span>
-        <span style={{fontSize: 13, color: '#8B7355'}}>{item.price} →</span>
-      </a>
-    ))}
-  </div>
-)}
+                          {isLastAssistant && reportDeepLinks.length > 0 && (
+                            <div
+                              style={{
+                                marginTop: 16,
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 8,
+                              }}
+                            >
+                              <p style={{ fontSize: 13, color: "#8B7355", marginBottom: 4 }}>
+                                더 깊이 알고 싶다면
+                              </p>
+                              {reportDeepLinks.map((item) => (
+                                <a
+                                  key={item.path}
+                                  href={`/report/${item.path}/intro${sajuId ? `?saju_id=${sajuId}` : ""}`}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    padding: "12px 16px",
+                                    background: "#F5F1EA",
+                                    border: "1px solid #D4C9B8",
+                                    borderRadius: 12,
+                                    textDecoration: "none",
+                                    color: "#3D3530",
+                                    fontFamily: "GmarketSans",
+                                  }}
+                                >
+                                  <span>
+                                    {item.emoji} {item.label}
+                                  </span>
+                                  <span style={{ fontSize: 13, color: "#8B7355" }}>{item.price} →</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <button
                           type="button"

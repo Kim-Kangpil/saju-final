@@ -57,7 +57,9 @@ export function ReportSection({ title, content, loading = false, error = null }:
             wordBreak: "keep-all",
           }}
         >
-          {content || "데이터를 불러오는 중이에요."}
+          {content?.trim()
+            ? content
+            : "이 구간에 표시할 내용이 없어요."}
         </p>
       )}
     </section>

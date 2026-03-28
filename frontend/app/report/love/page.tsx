@@ -7,6 +7,7 @@ import { getAuthHeaders } from "@/lib/auth";
 import { loadReportInputBySajuId } from "@/lib/reportSaju";
 import { ReportSection } from "@/components/ReportSection";
 import KakaoPayButton from "@/components/KakaoPayButton";
+import { parseGptSections } from "@/lib/parseGptReportSections";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -19,24 +20,6 @@ const SECTION_TITLES = [
   "🗓 올해 연애운",
   "✅ 실천 조언",
 ];
-
-function parseGptSections(content: string, count: number): string[] {
-  const result: string[] = new Array(count).fill("");
-  if (!content) return result;
-  const parts = content.split(/\n(?=(?:#{0,3}\s*)?\d+[.．]\s)/);
-  let idx = 0;
-  for (const part of parts) {
-    if (idx >= count) break;
-    const trimmed = part.trim();
-    if (!trimmed) continue;
-    if (!/^(?:#{0,3}\s*)?\d+[.．]/.test(trimmed)) continue;
-    const firstNewline = trimmed.indexOf("\n");
-    const body = firstNewline >= 0 ? trimmed.slice(firstNewline + 1).trim() : "";
-    result[idx] = body;
-    idx++;
-  }
-  return result;
-}
 
 function PurchaseModal({ price, sajuId, onDismiss }: { price: number; sajuId: string; onDismiss: () => void }) {
   const [payErr, setPayErr] = useState<string | null>(null);

@@ -2609,19 +2609,10 @@ export default function Page({
                             onClick={() => setSajuTableOpen(v => !v)}
                             style={{ width: "100%", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer" }}
                           >
-                            <span className="saju-serif" style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>내 사주팔자</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              {sajuTableOpen && (
-                                <div style={{ display: "flex", background: S.cream2, borderRadius: 6, padding: 2, border: `1px solid ${S.beige}` }} onClick={e => e.stopPropagation()}>
-                                  {(["hanja", "hangul"] as const).map(mode => (
-                                    <button key={mode} type="button" onClick={() => setScriptMode(mode)} style={{ padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700, border: "none", cursor: "pointer", background: scriptMode === mode ? S.gold : "transparent", color: scriptMode === mode ? "#fff" : S.ink3 }}>{mode === "hanja" ? "한자" : "한글"}</button>
-                                  ))}
-                                </div>
-                              )}
-                              <motion.span animate={{ rotate: sajuTableOpen ? 180 : 0 }} transition={{ duration: 0.15 }} style={{ color: S.ink3 }}>
-                                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                              </motion.span>
-                            </div>
+                            <span className="saju-serif" style={{ fontSize: 14, fontWeight: 700, color: S.ink }}>내 사주팔자</span>
+                            <motion.span animate={{ rotate: sajuTableOpen ? 180 : 0 }} transition={{ duration: 0.15 }} style={{ color: S.ink3 }}>
+                              <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            </motion.span>
                           </button>
                           <AnimatePresence initial={false}>
                             {sajuTableOpen && (
@@ -2633,82 +2624,115 @@ export default function Page({
                                 style={{ overflow: "hidden" }}
                               >
                                 <div style={{ padding: "0 16px 14px", borderTop: `1px solid ${S.cream3}` }}>
-                                  <div style={{ paddingTop: 14, border: `1.5px solid ${S.beige}`, borderRadius: 10, overflow: "hidden", marginTop: 12 }}>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream2, borderBottom: `1.5px solid ${S.beige}` }}>
-                                      {["시주","일주","월주","년주"].map((label, i) => (
-                                        <div key={label} style={{ padding: "7px 4px", textAlign: "center", fontSize: 10, fontWeight: 700, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.beige}` : "none" }}>
-                                          {label}
-                                        </div>
-                                      ))}
-                                    </div>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream, borderBottom: `1px solid ${S.cream3}` }}>
-                                      {pillars.map((p, i) => (
-                                        <div key={i} style={{ padding: "5px 4px", textAlign: "center", fontSize: 10, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
-                                          {tenGod(result.day.cheongan.hanja, p.cheongan.hanja)}
-                                        </div>
-                                      ))}
-                                    </div>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", borderBottom: `1.5px solid ${S.beige}` }}>
-                                      {pillars.map((p, i) => {
-                                        const el = hanjaToElement(p.cheongan.hanja);
-                                        const bgMap: Record<string, string> = { wood: "#e8f5ee", fire: "#fdecea", earth: "#fdf5e8", metal: "#eef0f4", water: "#e8eef8", none: "#f9f9f9" };
-                                        return (
-                                          <div key={i} className="pillar-cell" style={{ padding: "10px 4px", textAlign: "center", background: bgMap[el] ?? "#fff", borderRight: i < 3 ? `1.5px solid ${S.beige}` : "none" }}>
-                                            <span className="saju-serif" style={{ fontSize: 22, fontWeight: 700, color: ELEMENT_COLOR[el] ?? S.ink }}>
-                                              {scriptMode === "hanja" ? p.cheongan.hanja : p.cheongan.hangul}
-                                            </span>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", borderBottom: `1px solid ${S.cream3}` }}>
-                                      {pillars.map((p, i) => {
-                                        const el = hanjaToElement(p.jiji.hanja);
-                                        const bgMap: Record<string, string> = { wood: "#f0faf4", fire: "#fff5f4", earth: "#fffbf0", metal: "#f4f5f7", water: "#f0f4fc", none: "#fafafa" };
-                                        return (
-                                          <div key={i} className="pillar-cell" style={{ padding: "10px 4px", textAlign: "center", background: bgMap[el] ?? "#fff", borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
-                                            <span className="saju-serif" style={{ fontSize: 22, fontWeight: 700, color: ELEMENT_COLOR[el] ?? S.ink }}>
-                                              {scriptMode === "hanja" ? p.jiji.hanja : p.jiji.hangul}
-                                            </span>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream, borderBottom: `1px solid ${S.cream3}` }}>
-                                      {pillars.map((p, i) => {
-                                        const ms = branchMainStem(p.jiji.hanja);
-                                        return (
-                                          <div key={i} style={{ padding: "5px 4px", textAlign: "center", fontSize: 10, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
-                                            {ms ? tenGod(result.day.cheongan.hanja, ms) : ""}
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                    {result.jijanggan && (
-                                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream2, borderBottom: `1px solid ${S.cream3}` }}>
-                                        {pillars.map((p, i) => {
-                                          const list = i === 0 ? result.jijanggan!.hour : i === 1 ? result.jijanggan!.day : i === 2 ? result.jijanggan!.month : result.jijanggan!.year;
-                                          return (
-                                            <div key={i} style={{ padding: "6px 4px", textAlign: "center", borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
-                                              {list?.map((jj: any, idx: number) => (
-                                                <span key={idx} style={{ fontSize: 9, fontWeight: 700, color: ELEMENT_COLOR[jj.element] ?? S.ink, display: "block", lineHeight: 1.6 }}>
-                                                  {scriptMode === "hanja" ? jj.hanja : jj.hangul}
-                                                </span>
-                                              ))}
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                    {result.twelve_states && (
-                                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", background: S.cream }}>
-                                        {pillars.map((p, i) => (
-                                          <div key={i} style={{ padding: "5px 4px", textAlign: "center", fontSize: 9, color: S.ink3, borderRight: i < 3 ? `1px solid ${S.cream3}` : "none" }}>
-                                            {i === 0 && result.twelve_states!.hour}{i === 1 && result.twelve_states!.day}{i === 2 && result.twelve_states!.month}{i === 3 && result.twelve_states!.year}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
+                                  <div style={{ overflowX: "auto", paddingTop: 14 }}>
+                                    <table className="add-saju-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, background: "#fff", borderRadius: 10, overflow: "hidden", tableLayout: "fixed" }}>
+                                      <thead>
+                                        <tr>
+                                          <th style={{ width: 80, background: S.cream2, border: `1px solid ${S.beige}`, padding: "8px 6px", textAlign: "center", fontSize: 11, fontWeight: 700, color: S.ink }} />
+                                          {["시주","일주","월주","년주"].map((h) => (
+                                            <th key={h} style={{ background: S.cream2, border: `1px solid ${S.beige}`, padding: "8px 6px", textAlign: "center", fontSize: 11, fontWeight: 700, color: S.ink }}>{h}</th>
+                                          ))}
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr style={{ background: S.cream }}>
+                                          <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>십성(천간)</td>
+                                          {pillars.map((p, i) => {
+                                            const dayStem = result.day.cheongan.hanja;
+                                            const stem = p.cheongan.hanja;
+                                            return <td key={i} style={{ border: `1px solid ${S.beige}`, padding: "6px 4px", fontSize: 11, color: S.ink2 }}>{tenGod(dayStem, stem)}</td>;
+                                          })}
+                                        </tr>
+                                        <tr>
+                                          <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>천간</td>
+                                          {pillars.map((p, i) => {
+                                            const el = hanjaToElement(p.cheongan.hanja);
+                                            const palette = {
+                                              wood: { text: "#27500A", bg: "#C0DD97", border: "#3B6D11" },
+                                              fire: { text: "#712B13", bg: "#F0997B", border: "#993C1D" },
+                                              earth: { text: "#633806", bg: "#FAC775", border: "#854F0B" },
+                                              metal: { text: "#444441", bg: "#FFFFFF", border: "#D4C9B8" },
+                                              water: { text: "#444441", bg: "#B4B2A9", border: "#5F5E5A" },
+                                              none: { text: S.ink, bg: S.cream2, border: S.beige },
+                                            };
+                                            const col = palette[el] ?? palette.none;
+                                            return (
+                                              <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                                <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", width: "100%", boxSizing: "border-box", background: col.bg, color: col.text, fontWeight: 700, border: `1px solid ${col.border}` }}>
+                                                  {p.cheongan.hanja}
+                                                  {p.cheongan.hangul}
+                                                </div>
+                                              </td>
+                                            );
+                                          })}
+                                        </tr>
+                                        <tr>
+                                          <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>지지</td>
+                                          {pillars.map((p, i) => {
+                                            const el = hanjaToElement(p.jiji.hanja);
+                                            const palette = {
+                                              wood: { text: "#27500A", bg: "#C0DD97", border: "#3B6D11" },
+                                              fire: { text: "#712B13", bg: "#F0997B", border: "#993C1D" },
+                                              earth: { text: "#633806", bg: "#FAC775", border: "#854F0B" },
+                                              metal: { text: "#444441", bg: "#FFFFFF", border: "#D4C9B8" },
+                                              water: { text: "#444441", bg: "#B4B2A9", border: "#5F5E5A" },
+                                              none: { text: S.ink, bg: S.cream2, border: S.beige },
+                                            };
+                                            const col = palette[el] ?? palette.none;
+                                            return (
+                                              <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                                <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", width: "100%", boxSizing: "border-box", background: col.bg, color: col.text, fontWeight: 700, border: `1px solid ${col.border}` }}>
+                                                  {p.jiji.hanja}
+                                                  {p.jiji.hangul}
+                                                </div>
+                                              </td>
+                                            );
+                                          })}
+                                        </tr>
+                                        <tr style={{ background: S.cream }}>
+                                          <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>십성(지지)</td>
+                                          {pillars.map((p, i) => {
+                                            const dayStem = result.day.cheongan.hanja;
+                                            const ms = branchMainStem(p.jiji.hanja);
+                                            return <td key={i} style={{ border: `1px solid ${S.beige}`, padding: "6px 4px", fontSize: 11, color: S.ink2 }}>{ms ? tenGod(dayStem, ms) : ""}</td>;
+                                          })}
+                                        </tr>
+                                        {result.jijanggan && (
+                                          <tr>
+                                            <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>지장간</td>
+                                            {pillars.map((p, i) => {
+                                              const list = i === 0 ? result.jijanggan!.hour : i === 1 ? result.jijanggan!.day : i === 2 ? result.jijanggan!.month : result.jijanggan!.year;
+                                              const dayStem = result.day.cheongan.hanja;
+                                              const ELEMENT_NAME_KR: Record<string, string> = { wood: "목", fire: "화", earth: "토", metal: "금", water: "수" };
+                                              return (
+                                                <td key={i} style={{ fontSize: 10, padding: 6, textAlign: "center", lineHeight: 1.5, border: `1px solid ${S.beige}` }}>
+                                                  {list?.map((jj: any, idx: number) => {
+                                                    const elKr = ELEMENT_NAME_KR[jj.element] ?? "";
+                                                    const tg = tenGod(dayStem, jj.hanja);
+                                                    return (
+                                                      <div key={idx}>
+                                                        {jj.hanja}
+                                                        {elKr} ({tg})
+                                                      </div>
+                                                    );
+                                                  })}
+                                                </td>
+                                              );
+                                            })}
+                                          </tr>
+                                        )}
+                                        {result.twelve_states && (
+                                          <tr style={{ background: S.cream }}>
+                                            <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>십이운성</td>
+                                            {pillars.map((p, i) => (
+                                              <td key={i} style={{ border: `1px solid ${S.beige}`, padding: "6px 4px", fontSize: 11, color: S.ink2 }}>
+                                                {i === 0 && result.twelve_states!.hour}{i === 1 && result.twelve_states!.day}{i === 2 && result.twelve_states!.month}{i === 3 && result.twelve_states!.year}
+                                              </td>
+                                            ))}
+                                          </tr>
+                                        )}
+                                      </tbody>
+                                    </table>
                                   </div>
                                 </div>
                               </motion.div>

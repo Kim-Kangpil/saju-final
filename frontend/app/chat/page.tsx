@@ -1531,40 +1531,6 @@ type ChatContentProps = {
   sajuId?: string;
 };
 
-function hasTwoFollowupQuestions(text: string): boolean {
-  const sectionSplit = text.split(/###\s*이어서 보면 좋은 질문/i);
-  const target = sectionSplit.length > 1 ? sectionSplit[sectionSplit.length - 1] : text;
-  const numbered = target.match(/^\s*(?:[-*]\s+)?\d+\.\s+.+$/gm) || [];
-  return numbered.length >= 2;
-}
-
-/** 모델이 후속 질문을 빠뜨렸을 때만 쓰는 폴백. 사주·명리와 무관한 자기계발 문장 금지. */
-
-function normalizeAssistantMessage(
-  text: string,
-  lastUserText: string,
-  lang: "ko" | "en",
-  hasSajuProfile: boolean,
-): string {
-  const trimmed = (text || "").trim();
-  if (!trimmed) return text;
-
-  const hasCoreSection = /###\s*(핵심 해석|Core Interpretation)/i.test(trimmed);
-  let next = trimmed;
-  if (!hasCoreSection) {
-    next = lang === "en" ? `### Core Interpretation\n${next}` : `### 핵심 해석\n${next}`;
-  }
-
-  if (!hasTwoFollowupQuestions(next)) {
-    const [q1, q2] = buildSajuAwareFollowupQuestions(lastUserText, lang, hasSajuProfile);
-    next +=
-      lang === "en"
-        ? `\n\n### Follow-up Questions\n1. ${q1}\n2. ${q2}`
-        : `\n\n### 이어서 보면 좋은 질문\n1. ${q1}\n2. ${q2}`;
-  }
-  return next;
-}
-
 
 function ChatContent({
   sessionId,
@@ -1581,7 +1547,8 @@ function ChatContent({
   handleRetryRef,
   savedSajuName,
   sessionTitle,
-}: ChatContentProps & {sajuId?: string}) {
+  sajuId,
+}: ChatContentProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
@@ -1868,8 +1835,10 @@ function ChatContent({
               {messages.map((m, i) => {
                 const text = getMessageText(m);
                 const isAI = m.role === "assistant";
-                const prevUserText = i > 0 ? getMessageText(messages[i - 1]) : "";
-                const cleanContent = text.replace(/###\s*Follow-up Questions[\s\S]*/i, '').trim();
+                const cleanContent = text
+                  .replace(/###\s*Follow-up Questions[\s\S]*/i, "")
+                  .replace(/###\s*이어서 보면 좋은 질문[\s\S]*/i, "")
+                  .trim();
                 const messageContent = isAI ? stripSinsalTable(cleanContent) : cleanContent;
                 const isLastUser = m.role === "user" && lastUserIndex === i;
                 const isLastAssistant = isAI && lastAssistantIndex === i;
@@ -1882,7 +1851,7 @@ function ChatContent({
                     ref={isLastUser ? lastUserMsgRef : undefined}
                   >
                     <div className="chat-msg-bubble-wrap">
-                      {isAI && /천을\s*귀인.*일간별|일간별.*천을\s*귀인|천을귀인.*조견표|조견표.*천을귀인/.test(normalizedText) && (
+                      {isAI && /천을\s*귀인.*일간별|일간별.*천을\s*귀인|천을귀인.*조견표|조견표.*천을귀인/.test(messageContent) && (
                         <aside
                           className="chat-cheoneul-reference-card"
                           role="region"
@@ -1936,7 +1905,7 @@ function ChatContent({
                           className="chat-msg-copy"
                           aria-label="복사"
                           onClick={() => {
-                            navigator.clipboard?.writeText(followup.mainText).catch(() => { });
+                            navigator.clipboard?.writeText(messageContent).catch(() => { });
                           }}
                         >
                           <Icon icon="mdi:content-copy" width={14} />

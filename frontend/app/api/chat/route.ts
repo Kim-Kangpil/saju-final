@@ -1,5 +1,5 @@
 import { streamText, convertToModelMessages, tool, stepCountIs } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { z } from "zod";
 import { detectIntent, assembleKnowledge } from "./knowledge/index";
 import { SAJU_EN_TERMS_GUIDE } from "./knowledge/enTerms";
@@ -715,9 +715,9 @@ const RESPONSE_FORMAT_RULE_EN = `[Response format — required]
 // POST handler
 // ─────────────────────────────────────────────
 export async function POST(req: Request) {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "OPENAI_API_KEY not configured" }), {
+    return new Response(JSON.stringify({ error: "GOOGLE_GENERATIVE_AI_API_KEY not configured" }), {
       status: 503, headers: { "Content-Type": "application/json" },
     });
   }
@@ -877,10 +877,10 @@ export async function POST(req: Request) {
 
   // ── LLM 호출 ──
   const modelMessages = await convertToModelMessages(messages as any);
-  const openai = createOpenAI({ apiKey: apiKey! });
+  const google = createGoogleGenerativeAI({ apiKey: apiKey! });
 
   const result = streamText({
-    model: openai("gpt-4o"),
+    model: google("gemini-2.5-flash-preview-04-17"),
     system,
     messages: modelMessages,
     maxOutputTokens: 3000,

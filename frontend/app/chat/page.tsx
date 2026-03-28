@@ -1487,6 +1487,7 @@ function ChatPageInner({
                     savedSajuName={savedSajuName}
                     replaceMessages={replaceMessages}
                     ensureTitleFromFirstMessage={ensureTitleFromFirstMessage}
+                    sajuId={urlSajuId || undefined}
                   />
                 </>
               )}
@@ -1527,6 +1528,7 @@ type ChatContentProps = {
   handleRetryRef: React.MutableRefObject<((text: string) => void) | null>;
   savedSajuName: string | null;
   sessionTitle: string;
+  sajuId?: string;
 };
 
 function hasTwoFollowupQuestions(text: string): boolean {
@@ -1537,114 +1539,6 @@ function hasTwoFollowupQuestions(text: string): boolean {
 }
 
 /** 모델이 후속 질문을 빠뜨렸을 때만 쓰는 폴백. 사주·명리와 무관한 자기계발 문장 금지. */
-function buildSajuAwareFollowupQuestions(
-  lastUserText: string,
-  lang: "ko" | "en",
-  hasSajuProfile: boolean,
-): [string, string] {
-  const q = lastUserText.trim();
-
-  if (lang === "en") {
-    if (/천을|天乙|noble|gui.?ren/i.test(q)) {
-      return hasSajuProfile
-        ? [
-          "Can you check my chart for 天乙貴人 and which pillar (year/month/day/hour) it sits in?",
-          "If 天乙貴人 clashes or combines with another branch, how is that usually read?",
-        ]
-        : [
-          "What birth data do I need to tell you so you can see if I have 天乙貴人 in my pillars?",
-          "How does the pillar placement (year vs month vs day vs hour) change how 天乙貴人 shows up?",
-        ];
-    }
-    if (/empty|空亡|kong wang/i.test(q)) {
-      return hasSajuProfile
-        ? [
-          "Where is 空亡 in my chart and what does it tend to soften?",
-          "How do combinations or clashes involving the empty branch change the reading?",
-        ]
-        : [
-          "What do you need from me to locate 空亡 in a ba zi chart?",
-          "Is 空亡 always “bad,” or can it be useful in some structures?",
-        ];
-    }
-    return hasSajuProfile
-      ? [
-        "Which element or ten-god pattern stands out strongest in my four pillars?",
-        "How should I read this year's annual luck (liu nian) together with my da yun timing?",
-      ]
-      : [
-        "What birth details (date, solar/lunar, gender, time if known) do you need to cast my four pillars?",
-        "If I'm new to ba zi, which pillar—year, month, day, or hour—should I understand first?",
-      ];
-  }
-
-  // Korean
-  if (/천을귀인|천을 귀인|천을/.test(q)) {
-    return hasSajuProfile
-      ? [
-        "내 만세력에서 천을귀인이 있는지, 년·월·일·시 중 어디에 붙는지 봐줄 수 있어?",
-        "천을귀인이 다른 지지랑 합이나 충으로 이어지면 보통 어떻게 읽으면 돼?",
-      ]
-      : [
-        "천을귀인이 내 사주에 있는지 보려면 생년월일·양력음력·성별·출생시각을 어떻게 알려주면 돼?",
-        "천을귀인이 년·월·일·시 중 어디에 있을 때 체감이 달라지는 편이야?",
-      ];
-  }
-  if (/공망/.test(q)) {
-    return hasSajuProfile
-      ? [
-        "내 사주에서 공망이 어디에 걸리는지, 어떤 기운이 비어 보이기 쉬운지 짚어줄 수 있어?",
-        "공망이 있는 글자가 합·충과 만나면 해석이 어떻게 달라져?",
-      ]
-      : [
-        "공망을 보려면 일간 기준으로 어떤 정보가 필요해?",
-        "공망은 무조건 안 좋은 거야, 아니면 구조에 따라 다르기도 해?",
-      ];
-  }
-  if (/도화|역마|화개|원진|백호|겁살|재살|월덕|천덕/.test(q)) {
-    return hasSajuProfile
-      ? [
-        "같은 신살이 내 만세력 년·월·일·시 중 어디에 있을 때 달라 보여?",
-        "이 신살이 합·충이나 다른 신살과 겹치면 만세력에서 어떻게 읽으면 돼?",
-      ]
-      : [
-        "이 신살을 내 사주에서 찾으려면 생년월일·양력음력·성별·시간을 어떻게 알려줘야 해?",
-        "이 신살이랑 자주 같이 보는 다른 신살·십성 조합이 뭐야?",
-      ];
-  }
-  if (/십성|비견|겁재|식신|상관|편재|정재|편관|정관|편인|정인/.test(q)) {
-    return hasSajuProfile
-      ? [
-        "내 일간 기준으로 이 십성이 년·월·일·시 중 어디에 많이 깔리면 만세력에서 체감이 커?",
-        "이 십성이 다른 천간·지지랑 합이나 극으로 묶이면 사주에서 어떻게 읽어?",
-      ]
-      : [
-        "십성을 내 사주에 대입하려면 일간(일주의 윗글자)을 알아야 하는데, 어떤 정보가 필요해?",
-        "같은 십성이라도 월주와 시주 중 어디에 있을 때 만세력 해석이 달라져?",
-      ];
-  }
-  if (/대운|세운|합충|형파해|삼합/.test(q)) {
-    return hasSajuProfile
-      ? [
-        "지금 말한 내용을 내 대운 흐름이랑 겹쳐 보면 어떤 점이 달라져?",
-        "같은 패턴이 세운(올해·내년)에 들어올 때는 어떻게 보면 돼?",
-      ]
-      : [
-        "대운을 보려면 성별이 왜 필요해?",
-        "세운이랑 대운을 같이 볼 때 가장 먼저 보는 건 뭐야?",
-      ];
-  }
-
-  return hasSajuProfile
-    ? [
-      "내 사주에서 가장 강한 기운은 뭐야?",
-      "올해 대운이나 세운 흐름이 어떻게 되는지, 내 만세력이랑 같이 알려줄 수 있어?",
-    ]
-    : [
-      "내 사주를 보려면 생년월일·양력음력·성별·출생 시각을 어떻게 알려주면 돼?",
-      "만세력에서 년주·월주·일주·시주 중 어디부터 보면 이해하기 쉬워?",
-    ];
-}
 
 function normalizeAssistantMessage(
   text: string,
@@ -1671,26 +1565,6 @@ function normalizeAssistantMessage(
   return next;
 }
 
-function extractFollowupQuestions(text: string): { mainText: string; questions: [string, string] | null } {
-  const sectionSplit = text.split(/###\s*(이어서 보면 좋은 질문|Follow-up Questions)/i);
-  if (sectionSplit.length < 2) {
-    return { mainText: text, questions: null };
-  }
-
-  const mainText = sectionSplit[0].trim();
-  const tail = sectionSplit[sectionSplit.length - 1];
-  const numbered = tail.match(/^\s*(?:[-*]\s+)?\d+\.\s+(.+)$/gm) || [];
-  const questions = numbered
-    .map((line) => line.replace(/^\s*(?:[-*]\s+)?\d+\.\s+/, "").trim())
-    .filter(Boolean)
-    .slice(0, 2);
-
-  if (questions.length < 2) {
-    return { mainText: text, questions: null };
-  }
-
-  return { mainText, questions: [questions[0], questions[1]] };
-}
 
 function ChatContent({
   sessionId,
@@ -1707,7 +1581,7 @@ function ChatContent({
   handleRetryRef,
   savedSajuName,
   sessionTitle,
-}: ChatContentProps) {
+}: ChatContentProps & {sajuId?: string}) {
   const listRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastUserMsgRef = useRef<HTMLDivElement>(null);
@@ -1995,10 +1869,8 @@ function ChatContent({
                 const text = getMessageText(m);
                 const isAI = m.role === "assistant";
                 const prevUserText = i > 0 ? getMessageText(messages[i - 1]) : "";
-                const normalizedText = isAI
-                  ? normalizeAssistantMessage(text, prevUserText, lang, Boolean(savedSajuName?.trim()))
-                  : text;
-                const followup = isAI ? extractFollowupQuestions(normalizedText) : { mainText: normalizedText, questions: null };
+                const cleanContent = text.replace(/###\s*Follow-up Questions[\s\S]*/i, '').trim();
+                const messageContent = isAI ? stripSinsalTable(cleanContent) : cleanContent;
                 const isLastUser = m.role === "user" && lastUserIndex === i;
                 const isLastAssistant = isAI && lastAssistantIndex === i;
                 const stableKey =
@@ -2023,41 +1895,41 @@ function ChatContent({
                       <div className="chat-msg-bubble-row">
                         <div className="chat-msg-bubble">
                           <MarkdownMessage
-                            text={isAI ? stripSinsalTable(followup.mainText) : followup.mainText}
+                            text={messageContent}
                             isAI={isAI}
                           />
-                          {isLastAssistant && followup.questions && (
-                            <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
-                              <div style={{ fontSize: 11, color: "#6B5F4E" }}>
-                                이런 것도 궁금하지 않으세요?
-                              </div>
-                              {followup.questions.map((q) => (
-                                <button
-                                  key={q}
-                                  type="button"
-                                  disabled={sending}
-                                  onClick={() => handleSubmit(q)}
-                                  style={{
-                                    width: "100%",
-                                    background: "#F5F1EA",
-                                    border: "1px solid #D4C9B8",
-                                    borderRadius: 10,
-                                    color: "#4A3F30",
-                                    fontSize: 13,
-                                    padding: "10px 12px",
-                                    textAlign: "left",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                    cursor: sending ? "not-allowed" : "pointer",
-                                  }}
-                                >
-                                  <span aria-hidden>{"→"}</span>
-                                  <span>{q}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                          {isLastAssistant && (
+  <div style={{marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8}}>
+    <p style={{fontSize: 13, color: '#8B7355', marginBottom: 4}}>
+      더 깊이 알고 싶다면
+    </p>
+    {[ 
+      { emoji: '💰', label: '재물운 심층 분석', path: 'money', price: '5,900원' },
+      { emoji: '❤️', label: '연애운 심층 분석', path: 'love', price: '5,900원' },
+      { emoji: '💼', label: '직업운 심층 분석', path: 'career', price: '5,900원' },
+    ].map((item) => (
+      <a
+        key={item.path}
+        href={`/report/${item.path}/intro${sajuId ? `?saju_id=${sajuId}` : ''}`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          background: '#F5F1EA',
+          border: '1px solid #D4C9B8',
+          borderRadius: 12,
+          textDecoration: 'none',
+          color: '#3D3530',
+          fontFamily: 'GmarketSans',
+        }}
+      >
+        <span>{item.emoji} {item.label}</span>
+        <span style={{fontSize: 13, color: '#8B7355'}}>{item.price} →</span>
+      </a>
+    ))}
+  </div>
+)}
                         </div>
                         <button
                           type="button"

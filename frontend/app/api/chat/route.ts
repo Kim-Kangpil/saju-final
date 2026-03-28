@@ -704,12 +704,9 @@ const RESPONSE_FORMAT_RULE = `[응답 형식 규칙 — 반드시 지킬 것]
 const RESPONSE_FORMAT_RULE_EN = `[Response format — required]
 - Always use two sections:
   1) "### Core Interpretation"
-  2) "### Follow-up Questions"
 - Core: at least 6 sentences; explain in plain language.
 - For definitional questions (stars, ten gods, nobleman, etc.): include at least one sentence with the lookup rule (e.g. which branches for which day stem), not only generic "luck" wording.
-- Follow-up Questions: exactly two numbered items (1. 2.). Both must directly extend the SAME saju / Chinese-metaphysics topic just answered.
-- FORBIDDEN in follow-ups: generic life coaching ("what to change this week", "avoid repeating mistakes", habits, motivation) unrelated to ba zi.
-- End with those two questions only.`;
+- End with the "Core Interpretation" section only.`;
 
 // ─────────────────────────────────────────────
 // POST handler

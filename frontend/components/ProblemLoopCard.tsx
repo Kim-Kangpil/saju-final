@@ -6,10 +6,10 @@ interface Props {
 }
 
 export function ProblemLoopCard({ ruleSummary }: Props) {
-  const loop = useMemo(() => {
+  const loop = useMemo((): string[] => {
     const visualData = ruleSummary?.visual_data?.problem_loop;
     if (visualData && Array.isArray(visualData.steps)) {
-      return visualData.steps;
+      return visualData.steps.map((s: unknown) => String(s));
     }
     return ["목표 세움", "중간 흔들림", "방향 잃음", "다시 목표"];
   }, [ruleSummary]);

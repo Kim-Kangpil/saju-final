@@ -3404,6 +3404,9 @@ section_personality, section_strength, section_problem, section_money, section_c
     except Exception as e:
         print(f"⚠️ v2 캐시 저장 실패: {e}")
 
+    rule_summary_data = interpretation.get("summary_for_gpt", {})
+    print(f"[DEBUG] visual_data keys: {list(rule_summary_data.get('visual_data', {}).keys())}")
+
     return {
         "success": True,
         "cached": False,
@@ -3416,7 +3419,7 @@ section_personality, section_strength, section_problem, section_money, section_c
         "section_career": sections.get("section_career", ""),
         "section_relationship": sections.get("section_relationship", ""),
         "section_current": sections.get("section_current", ""),
-        "rule_summary": interpretation.get("summary_for_gpt", {}),
+        "rule_summary": rule_summary_data,
     }
 
 

@@ -5,51 +5,6 @@ interface Props {
   ruleSummary: Record<string, any>;
 }
 
-function calcRadarScores(ruleSummary: Record<string, any>) {
-  const patterns: string[] = ruleSummary.all_patterns ?? [];
-  const personality: string[] = ruleSummary.personality_points ?? [];
-  const strength: string = ruleSummary.strength ?? "";
-  const all = [...patterns, ...personality].join(" ");
-
-  // 각 축: 0~100 (50이 중간)
-  let 감정 = 50, 즉흥 = 50, 외향 = 50, 실행 = 50, 안정 = 50;
-
-  // 감정 vs 이성
-  if (all.includes("감수성") || all.includes("예민") || all.includes("감정")) 감정 += 20;
-  if (all.includes("분석") || all.includes("논리") || all.includes("계획")) 감정 -= 15;
-  if (all.includes("직관") || all.includes("통찰")) 감정 += 10;
-
-  // 즉흥 vs 계획
-  if (all.includes("추진") || all.includes("즉흥") || all.includes("열정")) 즉흥 += 20;
-  if (all.includes("신중") || all.includes("준비") || all.includes("꼼꼼")) 즉흥 -= 20;
-  if (all.includes("계획") || all.includes("안정")) 즉흥 -= 10;
-
-  // 외향 vs 내향
-  if (all.includes("표현") || all.includes("존재감") || all.includes("드러")) 외향 += 25;
-  if (all.includes("내향") || all.includes("조용") || all.includes("혼자")) 외향 -= 20;
-  if (all.includes("태양") || all.includes("에너지")) 외향 += 15;
-
-  // 실행 vs 고민
-  if (all.includes("추진") || all.includes("실행") || all.includes("직접")) 실행 += 20;
-  if (all.includes("고민") || all.includes("생각") || all.includes("신중")) 실행 -= 15;
-  if (strength === "신강") 실행 += 10;
-  if (strength === "신약") 실행 -= 10;
-
-  // 안정 vs 변화
-  if (all.includes("역마") || all.includes("변화") || all.includes("이동")) 안정 -= 25;
-  if (all.includes("안정") || all.includes("축적") || all.includes("꾸준")) 안정 += 20;
-  if (all.includes("도전") || all.includes("개척")) 안정 -= 15;
-
-  const clamp = (v: number) => Math.min(90, Math.max(10, v));
-  return {
-    감정: clamp(감정),
-    즉흥: clamp(즉흥),
-    외향: clamp(외향),
-    실행: clamp(실행),
-    안정: clamp(안정),
-  };
-}
-
 const AXES = ["감정", "즉흥", "외향", "실행", "안정"] as const;
 const AXIS_LABELS: Record<string, [string, string]> = {
   감정: ["감정형", "이성형"],
@@ -60,7 +15,13 @@ const AXIS_LABELS: Record<string, [string, string]> = {
 };
 
 export function PersonalityRadarCard({ ruleSummary }: Props) {
-  const scores = useMemo(() => calcRadarScores(ruleSummary), [ruleSummary]);
+  const scores = useMemo(() => {
+    const visualData = ruleSummary?.visual_data?.personality_radar;
+    if (visualData && typeof visualData === "object") {
+      return visualData as Record<string, number>;
+    }
+    return { 감정: 50, 즉흥: 50, 외향: 50, 실행: 50, 안정: 50 };
+  }, [ruleSummary]);
 
   const SIZE = 320;
   const CX = SIZE / 2;

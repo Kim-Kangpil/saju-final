@@ -11,65 +11,27 @@ interface FlowStep {
   isLeak?: boolean;
 }
 
-function buildMoneyFlow(ruleSummary: Record<string, any>): {
-  steps: FlowStep[];
-  leakLabel: string;
-  typeLabel: string;
-} {
-  const patterns: string[] = ruleSummary.all_patterns ?? [];
-  const money: string[] = ruleSummary.money_points ?? [];
-  const all = [...patterns, ...money].join(" ");
-
-  let steps: FlowStep[] = [];
-  let leakLabel = "";
-  let typeLabel = "";
-
-  if (all.includes("편재") || all.includes("비정기") || all.includes("변동")) {
-    typeLabel = "변동 수입형";
-    steps = [
-      { label: "기회 포착", sub: "순간 판단" },
-      { label: "빠른 실행", sub: "추진력" },
-      { label: "수입 발생", sub: "한 번에 큼" },
-      { label: "재투자", sub: "또 기회로", isLeak: true },
-    ];
-    leakLabel = "충동 소비·재투자로 잘 안 모임";
-  } else if (all.includes("정재") || all.includes("안정") || all.includes("꾸준")) {
-    typeLabel = "누적 안정형";
-    steps = [
-      { label: "꾸준한 일", sub: "성실함" },
-      { label: "정기 수입", sub: "안정적" },
-      { label: "저축 우선", sub: "차곡차곡" },
-      { label: "천천히 늘어남", sub: "복리 효과" },
-    ];
-    leakLabel = "큰 기회 앞에서 망설임";
-  } else if (all.includes("신약+재성") || all.includes("버는 만큼 나가")) {
-    typeLabel = "기회 있지만 버거운 구조";
-    steps = [
-      { label: "돈 기회 옴", sub: "많이 보임" },
-      { label: "잡으려 함", sub: "에너지 소모" },
-      { label: "일부 성공", sub: "들어옴" },
-      { label: "나가는 것도 많음", sub: "지출 증가", isLeak: true },
-    ];
-    leakLabel = "에너지 대비 수익이 적은 구조";
-  } else {
-    typeLabel = "균형 수입형";
-    steps = [
-      { label: "일로 수입", sub: "본업 중심" },
-      { label: "꾸준히 쌓임", sub: "안정적" },
-      { label: "필요한 곳 씀", sub: "균형 있게" },
-      { label: "조금씩 늘어남", sub: "천천히" },
-    ];
-    leakLabel = "큰 변화 없이 유지되는 구조";
-  }
-
-  return { steps, leakLabel, typeLabel };
-}
-
 export function MoneyFlowCard({ ruleSummary }: Props) {
-  const { steps, leakLabel, typeLabel } = useMemo(
-    () => buildMoneyFlow(ruleSummary),
-    [ruleSummary]
-  );
+  const { steps, leakLabel, typeLabel } = useMemo(() => {
+    const visualData = ruleSummary?.visual_data?.money_flow;
+    if (visualData && Array.isArray(visualData.steps)) {
+      return {
+        steps: visualData.steps as FlowStep[],
+        leakLabel: visualData.leakLabel || "큰 변화 없이 유지되는 구조",
+        typeLabel: visualData.typeLabel || "균형 수입형",
+      };
+    }
+    return {
+      steps: [
+        { label: "일로 수입", sub: "본업 중심", isLeak: false },
+        { label: "꾸준히 쌓임", sub: "안정적", isLeak: false },
+        { label: "필요한 곳 씀", sub: "균형 있게", isLeak: false },
+        { label: "조금씩 늘어남", sub: "천천히", isLeak: false },
+      ],
+      leakLabel: "큰 변화 없이 유지되는 구조",
+      typeLabel: "균형 수입형",
+    };
+  }, [ruleSummary]);
 
   return (
     <div style={{

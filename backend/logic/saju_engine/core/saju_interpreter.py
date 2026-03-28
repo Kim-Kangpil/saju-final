@@ -1388,6 +1388,263 @@ def interpret_career_deep(saju_data: dict) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────
+# 시각화 전용 계산 함수
+# ─────────────────────────────────────────────────────────────
+
+def calculate_personality_radar_scores(saju_data: dict, personality_result: dict, money_result: dict, career_result: dict) -> dict:
+    """
+    성향 레이더 차트용 5축 점수 계산 (0~100)
+    - 감정 vs 이성
+    - 즉흥 vs 계획
+    - 외향 vs 내향
+    - 실행 vs 고민
+    - 안정 vs 변화
+    """
+    ilgan = _get_ilgan(saju_data)
+    strength = _get_strength(saju_data)
+    ten_gods = _get_ten_gods(saju_data)
+    sinsal = saju_data.get("sinsal") or {}
+    
+    # 오행 분포 계산
+    pillars = _get_pillars(saju_data)
+    elements = {"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}
+    for pos in ["year", "month", "day", "hour"]:
+        p = pillars.get(pos, "")
+        if len(p) >= 2:
+            stem_elem = get_element(p[0])
+            branch_elem = get_element(p[1])
+            if stem_elem in elements:
+                elements[stem_elem] += 1
+            if branch_elem in elements:
+                elements[branch_elem] += 1
+    
+    # 십성 개수
+    tg_values = list(ten_gods.values())
+    siksang_count = sum(1 for tg in tg_values if tg in ("식신", "상관"))
+    gwan_count = sum(1 for tg in tg_values if tg in ("편관", "정관"))
+    jae_count = sum(1 for tg in tg_values if tg in ("편재", "정재"))
+    in_count = sum(1 for tg in tg_values if tg in ("편인", "정인"))
+    bigyeob_count = sum(1 for tg in tg_values if tg in ("비견", "겁재"))
+    
+    # 역마·도화 체크
+    yeokma_count = len(sinsal.get("역마") or [])
+    
+    # 십이운성 체크
+    sibiun_data = saju_data.get("twelve_states") or {}
+    strong_sibiun = sum(1 for s in sibiun_data.values() if s in ("건록", "제왕", "관대"))
+    
+    # 기본값 50 (중립)
+    감정 = 50
+    즉흥 = 50
+    외향 = 50
+    실행 = 50
+    안정 = 50
+    
+    # 감정 vs 이성 (수기·금기 많으면 감정↑, 목기·토기 많으면 이성↑)
+    감정 += elements["water"] * 8
+    감정 += elements["metal"] * 5
+    감정 -= elements["wood"] * 6
+    감정 -= elements["earth"] * 4
+    if siksang_count >= 2:
+        감정 += 12  # 식상 많으면 표현·감수성
+    if in_count >= 2:
+        감정 -= 10  # 인성 많으면 이성·학습
+    
+    # 즉흥 vs 계획 (화기·역마 많으면 즉흥↑, 토기·정성 많으면 계획↑)
+    즉흥 += elements["fire"] * 7
+    즉흥 += yeokma_count * 15
+    즉흥 -= elements["earth"] * 6
+    정성_count = sum(1 for tg in tg_values if tg in ("정재", "정관", "정인"))
+    즉흥 -= 정성_count * 8
+    
+    # 외향 vs 내향 (화기·식상 많으면 외향↑, 수기·인성 많으면 내향↑)
+    외향 += elements["fire"] * 9
+    외향 += siksang_count * 10
+    외향 += strong_sibiun * 5
+    외향 -= elements["water"] * 7
+    외향 -= in_count * 8
+    
+    # 실행 vs 고민 (신강·비겁·관성 많으면 실행↑, 신약·인성 많으면 고민↑)
+    if strength == "신강":
+        실행 += 15
+    elif strength == "신약":
+        실행 -= 15
+    실행 += bigyeob_count * 8
+    실행 += gwan_count * 6
+    실행 -= in_count * 10
+    
+    # 안정 vs 변화 (토기·정성 많으면 안정↑, 역마·편성 많으면 변화↑)
+    안정 += elements["earth"] * 8
+    안정 += 정성_count * 10
+    안정 -= yeokma_count * 18
+    편성_count = sum(1 for tg in tg_values if tg in ("편재", "편관", "편인"))
+    안정 -= 편성_count * 7
+    
+    # 0~100 범위로 제한
+    def clamp(v: float) -> int:
+        return int(max(10, min(90, v)))
+    
+    return {
+        "감정": clamp(감정),
+        "즉흥": clamp(즉흥),
+        "외향": clamp(외향),
+        "실행": clamp(실행),
+        "안정": clamp(안정),
+    }
+
+
+def calculate_problem_loop(saju_data: dict, personality_result: dict, money_result: dict, career_result: dict) -> dict:
+    """
+    반복되는 문제 패턴 계산
+    Returns: {"type": str, "steps": list[str]}
+    """
+    strength = _get_strength(saju_data)
+    ten_gods = _get_ten_gods(saju_data)
+    sinsal = saju_data.get("sinsal") or {}
+    
+    tg_values = list(ten_gods.values())
+    gwan_count = sum(1 for tg in tg_values if tg in ("편관", "정관"))
+    bigyeob_count = sum(1 for tg in tg_values if tg in ("비견", "겁재"))
+    jae_count = sum(1 for tg in tg_values if tg in ("편재", "정재"))
+    siksang_count = sum(1 for tg in tg_values if tg in ("식신", "상관"))
+    in_count = sum(1 for tg in tg_values if tg in ("편인", "정인"))
+    yeokma_count = len(sinsal.get("역마") or [])
+    
+    # 우선순위 기반 패턴 결정
+    # 1순위: 신약 + 관살多
+    if strength == "신약" and gwan_count >= 2:
+        return {
+            "type": "pressure_avoidance",
+            "steps": ["부담 받음", "회피하려 함", "기회 놓침", "다시 부담"]
+        }
+    
+    # 2순위: 신강 + 비겁多
+    if strength == "신강" and bigyeob_count >= 2:
+        return {
+            "type": "solo_conflict",
+            "steps": ["혼자 시작", "충돌 발생", "관계 멀어짐", "다시 혼자"]
+        }
+    
+    # 3순위: 재성多 + 신약
+    if jae_count >= 2 and strength == "신약":
+        return {
+            "type": "money_exhaustion",
+            "steps": ["돈 기회 옴", "과도한 시도", "에너지 소진", "남는 것 없음"]
+        }
+    
+    # 4순위: 역마 + 식상
+    if yeokma_count >= 1 and siksang_count >= 1:
+        return {
+            "type": "wanderlust",
+            "steps": ["새 시작", "금방 지루함", "또 다른 곳", "반복 이동"]
+        }
+    
+    # 5순위: 상관 + 관성
+    sanggwan_count = sum(1 for tg in tg_values if tg == "상관")
+    if sanggwan_count >= 1 and gwan_count >= 1:
+        return {
+            "type": "expression_conflict",
+            "steps": ["표현 욕구", "충돌 발생", "후회 반복", "다시 표현"]
+        }
+    
+    # 6순위: 인성多 (고민형)
+    if in_count >= 2:
+        return {
+            "type": "overthinking",
+            "steps": ["생각 많음", "실행 지연", "기회 놓침", "다시 고민"]
+        }
+    
+    # 기본 패턴
+    return {
+        "type": "goal_drift",
+        "steps": ["목표 세움", "중간 흔들림", "방향 잃음", "다시 목표"]
+    }
+
+
+def calculate_money_flow(saju_data: dict, money_result: dict) -> dict:
+    """
+    돈 흐름 구조 계산
+    Returns: {"type": str, "steps": list[dict], "leakLabel": str, "typeLabel": str}
+    """
+    strength = _get_strength(saju_data)
+    ten_gods = _get_ten_gods(saju_data)
+    
+    tg_values = list(ten_gods.values())
+    pyeonjae_count = sum(1 for tg in tg_values if tg == "편재")
+    jeongjae_count = sum(1 for tg in tg_values if tg == "정재")
+    jae_count = pyeonjae_count + jeongjae_count
+    
+    # 1순위: 편재 중심 (변동 수입형)
+    if pyeonjae_count >= 2 or (pyeonjae_count >= 1 and jeongjae_count == 0):
+        return {
+            "type": "variable_income",
+            "typeLabel": "변동 수입형",
+            "steps": [
+                {"label": "기회 포착", "sub": "순간 판단", "isLeak": False},
+                {"label": "빠른 실행", "sub": "추진력", "isLeak": False},
+                {"label": "수입 발생", "sub": "한 번에 큼", "isLeak": False},
+                {"label": "재투자", "sub": "또 기회로", "isLeak": True},
+            ],
+            "leakLabel": "충동 소비·재투자로 잘 안 모임"
+        }
+    
+    # 2순위: 정재 중심 (누적 안정형)
+    if jeongjae_count >= 2 or (jeongjae_count >= 1 and pyeonjae_count == 0):
+        return {
+            "type": "stable_accumulation",
+            "typeLabel": "누적 안정형",
+            "steps": [
+                {"label": "꾸준한 일", "sub": "성실함", "isLeak": False},
+                {"label": "정기 수입", "sub": "안정적", "isLeak": False},
+                {"label": "저축 우선", "sub": "차곡차곡", "isLeak": False},
+                {"label": "천천히 늘어남", "sub": "복리 효과", "isLeak": False},
+            ],
+            "leakLabel": "큰 기회 앞에서 망설임"
+        }
+    
+    # 3순위: 신약 + 재성多 (기회 있지만 버거운 구조)
+    if strength == "신약" and jae_count >= 2:
+        return {
+            "type": "high_opportunity_low_energy",
+            "typeLabel": "기회 있지만 버거운 구조",
+            "steps": [
+                {"label": "돈 기회 옴", "sub": "많이 보임", "isLeak": False},
+                {"label": "잡으려 함", "sub": "에너지 소모", "isLeak": False},
+                {"label": "일부 성공", "sub": "들어옴", "isLeak": False},
+                {"label": "나가는 것도 많음", "sub": "지출 증가", "isLeak": True},
+            ],
+            "leakLabel": "에너지 대비 수익이 적은 구조"
+        }
+    
+    # 4순위: 신강 + 재성 (직접 벌기형)
+    if strength == "신강" and jae_count >= 1:
+        return {
+            "type": "self_earning",
+            "typeLabel": "직접 벌기형",
+            "steps": [
+                {"label": "직접 벌기", "sub": "주도적", "isLeak": False},
+                {"label": "안정 수입", "sub": "꾸준함", "isLeak": False},
+                {"label": "필요한 곳 씀", "sub": "균형", "isLeak": False},
+                {"label": "조금씩 늘어남", "sub": "천천히", "isLeak": False},
+            ],
+            "leakLabel": "큰 변화 없이 유지되는 구조"
+        }
+    
+    # 기본: 균형형
+    return {
+        "type": "balanced",
+        "typeLabel": "균형 수입형",
+        "steps": [
+            {"label": "일로 수입", "sub": "본업 중심", "isLeak": False},
+            {"label": "꾸준히 쌓임", "sub": "안정적", "isLeak": False},
+            {"label": "필요한 곳 씀", "sub": "균형 있게", "isLeak": False},
+            {"label": "조금씩 늘어남", "sub": "천천히", "isLeak": False},
+        ],
+        "leakLabel": "큰 변화 없이 유지되는 구조"
+    }
+
+
+# ─────────────────────────────────────────────────────────────
 # 전체 통합
 # ─────────────────────────────────────────────────────────────
 
@@ -1420,6 +1677,13 @@ def interpret_all(saju_data: dict) -> dict:
         hyeong = {}
         seun = {}
 
+    # 시각화 데이터 계산
+    visual_data = {
+        "personality_radar": calculate_personality_radar_scores(saju_data, personality, money, career),
+        "problem_loop": calculate_problem_loop(saju_data, personality, money, career),
+        "money_flow": calculate_money_flow(saju_data, money),
+    }
+    
     # GPT에게 넘길 요약 블록
     summary_for_gpt = {
         "ilgan": _get_ilgan(saju_data),
@@ -1442,6 +1706,7 @@ def interpret_all(saju_data: dict) -> dict:
             + personality["patterns"]
             + period["patterns"]
         ),
+        "visual_data": visual_data,
     }
 
     return {

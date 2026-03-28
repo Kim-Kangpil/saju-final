@@ -726,7 +726,7 @@ class GPTInterpretationGenerator:
             import google.generativeai as genai
             genai.configure(api_key=GEMINI_API_KEY)
             gemini_model = genai.GenerativeModel(
-                model_name="gemini-3-flash-preview",
+                model_name="gemini-2.5-flash-preview-04-17",
                 generation_config=genai.types.GenerationConfig(
                     max_output_tokens=max_tok,
                     temperature=0.7,

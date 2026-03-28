@@ -26,6 +26,9 @@ const SUCCESS_MSG: Record<string, string> = {
   love:            "연애운 리포트 이용권이 지급됐어요.",
   career:          "직업운 리포트 이용권이 지급됐어요.",
   couple:          "궁합 리포트 이용권이 지급됐어요.",
+  money_realistic: "추가 분석이 열렸어요.",
+  love_realistic:  "추가 분석이 열렸어요.",
+  career_realistic: "추가 분석이 열렸어요.",
 };
 
 function PaymentSuccessInner() {
@@ -33,6 +36,7 @@ function PaymentSuccessInner() {
   const searchParams = useSearchParams();
   const [state, setState] = useState<"loading" | "success" | "error">("loading");
   const [orderType, setOrderType] = useState<string>("");
+  const [redirectOverride, setRedirectOverride] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(3);
   const [errorMsg, setErrorMsg] = useState("");
   const called = useRef(false);
@@ -58,7 +62,16 @@ function PaymentSuccessInner() {
       body: JSON.stringify({ pg_token, order_id }),
     }).then(r => r.json()).then(data => {
       if (data.success) {
-        setOrderType(data.order_type || order_type);
+        const ot = data.order_type || order_type;
+        setOrderType(ot);
+        if (typeof window !== "undefined" && String(ot).includes("realistic")) {
+          const ret = sessionStorage.getItem("kakao_pay_report_return");
+          if (ret) {
+            sessionStorage.removeItem("kakao_pay_report_return");
+            const sep = ret.includes("?") ? "&" : "?";
+            setRedirectOverride(`${ret}${sep}variant=realistic`);
+          }
+        }
         setState("success");
       } else {
         setState("error");
@@ -69,7 +82,7 @@ function PaymentSuccessInner() {
 
   useEffect(() => {
     if (state !== "success") return;
-    const dest = REDIRECT_MAP[orderType] || "/home";
+    const dest = redirectOverride || REDIRECT_MAP[orderType] || "/home";
     const t = setInterval(() => {
       setCountdown(c => {
         if (c <= 1) { clearInterval(t); router.replace(dest); return 0; }
@@ -77,9 +90,9 @@ function PaymentSuccessInner() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [state, orderType]);
+  }, [state, orderType, redirectOverride]);
 
-  const dest = REDIRECT_MAP[orderType] || "/home";
+  const dest = redirectOverride || REDIRECT_MAP[orderType] || "/home";
 
   return (
     <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>

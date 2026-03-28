@@ -121,6 +121,7 @@ from logic.saju_db import (
     delete_saju_for_user,
     get_report_cache,
     save_report_cache,
+    clear_all_report_cache,
 )
 from logic.user_db import (
     get_user_id_from_session,
@@ -1411,7 +1412,8 @@ async def _call_gemini_with_retry(
     return content
 
 
-def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
+def _build_deep_report_system_prompt(topic: str, analysis_block: str, tone: str = "empathy") -> str:
+    """tone: empathy(기본) | realistic(수정 전 직설 톤, 동일 분량·섹션)."""
     SECTION_NAMES = {
         "재물": [
             "💰 재물 기질",
@@ -1441,7 +1443,7 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
     sections = SECTION_NAMES.get(topic, [f"섹션 {i+1}" for i in range(6)])
     sections_str = "\n".join(f"{i+1}. {s}" for i, s in enumerate(sections))
 
-    return f"""[CRITICAL: 분량 규칙 - 이것이 가장 중요한 규칙]
+    shared_head = f"""[CRITICAL: 분량 규칙 - 이것이 가장 중요한 규칙]
 반드시 6개 섹션을 모두 작성해야 합니다.
 각 섹션은 최소 600자 이상이어야 합니다.
 전체 응답은 최소 4,000자 이상이어야 합니다.
@@ -1470,7 +1472,81 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
   2) 왜 그런지 현실 언어로 2~3문장
   3) 실제 삶에서 어떻게 나타나는지 2~3문장
   4) 지금 이 시기와 연결 1~2문장
+"""
 
+    empathy_tail = f"""
+[표현 규칙 — 절대 준수]
+1. 사주 용어 완전 금지:
+   - 재성, 관성, 식신, 상관, 편재, 정재, 비겁, 인성 → 사용 금지
+   - 대운, 세운, 천간, 지지, 오행 → 사용 금지
+   - 신강, 신약, 통근, 합충 → 사용 금지
+
+2. 톤 규칙 (Claude Sonnet 스타일 — 공감적이고 따뜻하게):
+   a) 부정적 사실을 말할 때 반드시 3단 구조:
+      ① 공감/상황 묘사 ("~하죠?", "~한 느낌 들죠?")
+      ② 사실 전달 (계산된 데이터 기반)
+      ③ "하지만" 또는 "그 대신"으로 실제 가능한 출구 제시
+   
+   b) 각 섹션 구조:
+      - 1~2문장: 공감 또는 상황 묘사 (독자가 "맞아, 나 이래" 느끼게)
+      - 2~3문장: 왜 그런지 (계산된 사실 기반)
+      - 2~3문장: 실제 삶에서 어떻게 나타나는지 + 구체적 예시
+      - 1~2문장: 출구/전략 (계산된 데이터에서 실제로 가능한 것만)
+   
+   c) 희망 신호 (단, 데이터 근거 있을 때만):
+      - "지금은 ~이지만, 앞으로는 ~" (대운·세운 데이터 있을 때)
+      - "~하면 달라질 수 있어요" (대안 구조가 데이터에 있을 때)
+      - "이미 ~는 잘하고 있어요" (강점 데이터 있을 때)
+      - 근거 없는 희망은 절대 금지
+
+3. 표현 변환 (사실 기반 + 공감 톤):
+   - 재성 없음 → "돈이 내 손에서 직접 만들어지진 않지만, 그 대신 사람·관계·기회를 통해 들어오는 구조예요. 혼자 벌려고 하면 힘들지만, 연결되면 오히려 더 잘 풀려요."
+   - 신약 → "에너지가 분산되기 쉬운 타입이에요. 그래서 '많이 하기'보다 '잘 고르기'가 중요하고, 환경을 잘 세팅하면 오히려 더 효율적으로 움직일 수 있어요."
+   - 비겁 과다 → "형제·친구·동료와 나누는 일이 많은 사주예요. 혼자 쌓아두는 것보다, 함께 쓰면서 관계를 키우는 게 원래 방식이거든요. 다만 '자동으로 빠지는 구조'를 만들면 같은 수입으로도 2배는 더 모을 수 있어요."
+   - 식상생재 → "재능과 표현이 수입으로 연결되는 구조예요. 내가 만든 것, 내가 한 말, 내 작품이 돈이 되는 방식이거든요."
+   - 정관 대운 → "지금은 급하게 뭔가 새로 만들려 하기보다, 현재 자리에서 인정받는 게 더 유리한 시기예요."
+
+4. 금지 표현 → 대체 표현:
+   - "~할 수 없습니다" → "~하긴 어렵지만, 대신 ~가 더 잘 맞아요"
+   - "~가 부족합니다" → "~보다는 ~가 강해요"
+   - "~하세요" (명령) → "~하면 더 편해요" (제안)
+   - "제한적입니다" → "이 방식보다는 저 방식이 더 잘 맞아요"
+
+5. 주어는 항상 "당신은" 또는 "이 사주는" 사용
+   "이런 사람들은", "이들은", "이러한 유형은" 절대 금지
+
+6. 문체 규칙:
+   - "~하는 경향이 있습니다" → "~해요"
+   - "~할 수 있습니다" → "~예요" 또는 "~할 수 있어요"
+   - "실제로, 이들은" → 삭제
+   - "~에 있어" → 삭제
+   - 존댓말 유지, 구어체 허용
+
+[좋은 예시 — 공감 → 사실 → 출구]
+나쁜: "재성이 없기 때문에 재정적 기회가 제한적입니다"
+좋은: "돈이 들어와도 왜 이렇게 불안한지 모르겠죠? 벌어도 벌어도 통장에 안 남는 느낌.
+      이 사주는 돈을 '내 손으로 만드는' 구조보다는, '사람·관계·기회를 통해 들어오는' 구조예요.
+      그래서 혼자 벌려고 하면 오히려 더 힘들어지고, 협업·소개·연결로 움직이면 훨씬 잘 풀려요."
+
+나쁜: "정관 대운이 진행 중이기 때문에 안정적인 흐름입니다"
+좋은: "지금은 급하게 뭔가 만들려 하기보다, 현재 자리에서 인정받는 게 더 유리한 시기예요.
+      새로 시작하는 것보다, 지금 하는 일을 더 잘하는 게 오히려 빠른 길이거든요."
+
+나쁜: "비겁이 많아 재물 분산 위험이 있습니다"
+좋은: "형제·친구·가족과 나누는 일이 많은 사주예요. 이게 나쁜 건 아니에요.
+      이 사주는 '혼자 쌓기'보다 '함께 쓰면서 관계 키우기'가 원래 방식이거든요.
+      다만 '의지로 모으기'보다 '자동으로 빠지는 구조'를 만들면 같은 수입으로도 2배는 더 모을 수 있어요."
+
+[✅ 실천 조언 섹션 필수 요소]
+- 추상적 조언 금지 ("긍정적으로 생각하세요" 같은 것)
+- 반드시 구체적 행동 3~5가지 제시
+- 각 행동은 "왜 이게 이 사주에 맞는지" 근거 포함
+- 예: "월급날 자동 이체 (의지 필요 없음) / 체크카드 대신 신용카드 (심리적 거리) / 쓰고 남은 돈이 아니라 처음부터 없던 돈으로 만들기"
+
+주제는 {topic}에만 집중. 다른 주제 확장 금지.
+"""
+
+    realistic_tail = f"""
 [표현 규칙 — 절대 준수]
 1. 사주 용어 완전 금지:
    - 재성, 관성, 식신, 상관, 편재, 정재, 비겁, 인성 → 사용 금지
@@ -1484,10 +1560,12 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
    - 식상생재 → "재능과 표현이 수입으로 연결되는 구조예요"
    - 정관 대운 → "지금 자리에서 인정받는 게 더 유리한 시기예요"
 
-3. 주어는 항상 "당신은" 또는 "이 사주는" 사용
+3. 톤: 위로·공감 멘트·질문형 첫머리를 과하게 쓰지 말 것. 계산된 사실을 현실 언어로 직설적으로 전달. 데이터에 없는 희망·완충 문장 금지.
+
+4. 주어는 항상 "당신은" 또는 "이 사주는" 사용
    "이런 사람들은", "이들은", "이러한 유형은" 절대 금지
 
-4. 문체 규칙:
+5. 문체 규칙:
    - "~하는 경향이 있습니다" → "~해요"
    - "~할 수 있습니다" → "~예요"
    - "실제로, 이들은" → 삭제
@@ -1503,7 +1581,12 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str) -> str:
 좋은: "지금은 급하게 뭔가 만들려 하기보다,
       현재 자리에서 인정받는 게 더 유리한 시기예요."
 
-주제는 {topic}에만 집중. 다른 주제 확장 금지.""".strip()
+주제는 {topic}에만 집중. 다른 주제 확장 금지.
+"""
+
+    if (tone or "empathy").strip().lower() == "realistic":
+        return (shared_head + realistic_tail).strip()
+    return (shared_head + empathy_tail).strip()
 
 
 def _build_interp_saju_data(req: GPTInterpretRequest | DeepReportRequest, analysis: dict[str, Any]) -> dict[str, Any]:
@@ -2035,17 +2118,29 @@ async def _generate_deep_topic_report(
     req: DeepReportRequest,
     topic_key: str,
     section_key: str,
+    report_tone: str = "empathy",
 ) -> dict[str, Any]:
-    logger.warning(f"[DEBUG] _generate_deep_topic_report called for topic: {topic_key}")
+    logger.warning(f"[DEBUG] _generate_deep_topic_report called for topic: {topic_key} tone={report_tone}")
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+    is_pro = False
     if not TEST_MODE:
         _mst = refresh_and_get_membership_status(_uid)
-        if not _mst.get("is_member"):
+        is_pro = bool(_mst.get("is_member"))
+        if not is_pro:
             from logic.payment_db import has_purchased_report as _has_pr
             if not _has_pr(_uid, topic_key) and get_report_credits(_uid) <= 0:
                 raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 5900}, ensure_ascii=False))
+            if (report_tone or "").strip().lower() == "realistic":
+                if not _has_pr(_uid, f"{topic_key}_realistic"):
+                    raise HTTPException(
+                        status_code=403,
+                        detail=json.dumps(
+                            {"error": "purchase_required", "price": 990, "addon": "realistic"},
+                            ensure_ascii=False,
+                        ),
+                    )
 
     if not client:
         return {"success": False, "error": "OPENAI_API_KEY not configured"}
@@ -2145,10 +2240,19 @@ async def _generate_deep_topic_report(
     if not deep_result:
         return {"success": False, "error": "deep analysis unavailable"}
 
-    cache_key = req.cache_key or f"{topic_key}_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_deep"
+    _tone = (report_tone or "empathy").strip().lower()
+    _ck_suffix = "realistic" if _tone == "realistic" else "deep"
+    cache_key = req.cache_key or f"{topic_key}_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{_ck_suffix}"
     cached = get_report_cache(cache_key, section_key)
     if cached:
-        return {"success": True, "cached": True, "report_type": topic_key, "content": cached, "analysis": deep_result}
+        return {
+            "success": True,
+            "cached": True,
+            "report_type": topic_key,
+            "report_tone": _tone,
+            "content": cached,
+            "analysis": deep_result,
+        }
 
     if topic_key == "money":
         analysis_block = _build_money_analysis_block(deep_result)
@@ -2158,7 +2262,7 @@ async def _generate_deep_topic_report(
     if not analysis_block:
         return {"success": False, "error": "empty analysis block"}
 
-    system_prompt = _build_deep_report_system_prompt(topic_label, analysis_block)
+    system_prompt = _build_deep_report_system_prompt(topic_label, analysis_block, tone=_tone)
     user_prompt = (
         f"이 사람의 {topic_label} 리포트를 작성해줘. "
         "반드시 6개 섹션 전부 작성하고, 각 섹션 600자 이상으로 상세하게 써줘. 전체 4,000자 이상이어야 함."
@@ -2180,6 +2284,7 @@ async def _generate_deep_topic_report(
         "success": True,
         "cached": False,
         "report_type": topic_key,
+        "report_tone": _tone,
         "content": content,
         "analysis": deep_result,
     }
@@ -2192,6 +2297,7 @@ async def report_money(req: DeepReportRequest, request: Request):
         req=req,
         topic_key="money",
         section_key="report_money_deep",
+        report_tone="empathy",
     )
 
 
@@ -2202,6 +2308,7 @@ async def report_love(req: DeepReportRequest, request: Request):
         req=req,
         topic_key="love",
         section_key="report_love_deep",
+        report_tone="empathy",
     )
 
 
@@ -2212,6 +2319,40 @@ async def report_career(req: DeepReportRequest, request: Request):
         req=req,
         topic_key="career",
         section_key="report_career_deep",
+        report_tone="empathy",
+    )
+
+
+@app.post("/saju/report/money-realistic")
+async def report_money_realistic(req: DeepReportRequest, request: Request):
+    return await _generate_deep_topic_report(
+        request=request,
+        req=req,
+        topic_key="money",
+        section_key="report_money_realistic",
+        report_tone="realistic",
+    )
+
+
+@app.post("/saju/report/love-realistic")
+async def report_love_realistic(req: DeepReportRequest, request: Request):
+    return await _generate_deep_topic_report(
+        request=request,
+        req=req,
+        topic_key="love",
+        section_key="report_love_realistic",
+        report_tone="realistic",
+    )
+
+
+@app.post("/saju/report/career-realistic")
+async def report_career_realistic(req: DeepReportRequest, request: Request):
+    return await _generate_deep_topic_report(
+        request=request,
+        req=req,
+        topic_key="career",
+        section_key="report_career_realistic",
+        report_tone="realistic",
     )
 
 
@@ -2253,24 +2394,108 @@ async def payment_status_api(request: Request):
 @app.get("/api/payment/report-access/{report_type}")
 async def report_access_check(report_type: str, request: Request):
     """리포트 접근 권한 확인 — Pro·구매·분析권 여부에 따라 has_access 반환."""
-    if TEST_MODE:
-        return {"has_access": True, "reason": "test_mode"}
     _price_map = {
         "basic": 1900, "deep": 9900,
         "money": 5900, "love": 5900, "career": 5900, "couple": 13900,
     }
     user_id = get_user_id_from_request(request)
+
+    def _addon_fields(uid: Optional[int], is_member: bool) -> dict[str, Any]:
+        out: dict[str, Any] = {"direct_addon_price": 990, "has_direct_addon": False}
+        if report_type not in ("money", "love", "career"):
+            return out
+        if TEST_MODE:
+            out["has_direct_addon"] = True
+            return out
+        if not uid:
+            return out
+        from logic.payment_db import has_purchased_report as _hpr
+        if is_member or _hpr(uid, f"{report_type}_realistic"):
+            out["has_direct_addon"] = True
+        return out
+
+    if TEST_MODE:
+        base = {"has_access": True, "reason": "test_mode"}
+        base.update(_addon_fields(user_id, True))
+        return base
+
     if not user_id:
-        return {"has_access": False, "reason": "not_logged_in", "price": _price_map.get(report_type, 5900)}
+        base = {"has_access": False, "reason": "not_logged_in", "price": _price_map.get(report_type, 5900)}
+        base.update(_addon_fields(None, False))
+        return base
     mst = refresh_and_get_membership_status(user_id)
-    if mst.get("is_member"):
-        return {"has_access": True, "reason": "pro"}
+    is_member = bool(mst.get("is_member"))
+    if is_member:
+        base = {"has_access": True, "reason": "pro"}
+        base.update(_addon_fields(user_id, True))
+        return base
     from logic.payment_db import has_purchased_report
     if has_purchased_report(user_id, report_type):
-        return {"has_access": True, "reason": "purchased"}
+        base = {"has_access": True, "reason": "purchased"}
+        base.update(_addon_fields(user_id, False))
+        return base
     if report_type in ("basic", "analysis_ticket") and get_report_credits(user_id) > 0:
-        return {"has_access": True, "reason": "credits"}
-    return {"has_access": False, "reason": "purchase_required", "price": _price_map.get(report_type, 5900)}
+        base = {"has_access": True, "reason": "credits"}
+        base.update(_addon_fields(user_id, False))
+        return base
+    base = {"has_access": False, "reason": "purchase_required", "price": _price_map.get(report_type, 5900)}
+    base.update(_addon_fields(user_id, False))
+    return base
+
+
+_REPORT_PURCHASE_LABELS: dict[str, str] = {
+    "deep": "심화 리포트",
+    "money": "재물운 리포트",
+    "love": "연애운 리포트",
+    "career": "직업운 리포트",
+    "couple": "궁합 리포트",
+    "money_realistic": "재물운 · 더 직설적인 분석",
+    "love_realistic": "연애운 · 더 직설적인 분석",
+    "career_realistic": "직업운 · 더 직설적인 분석",
+}
+
+
+@app.get("/api/payment/my-purchased-reports")
+async def my_purchased_reports_list(request: Request):
+    """로그인 유저의 카카오페이 리포트 구매 이력 (표시용 사주 메타 포함)."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    try:
+        from logic.payment_db import get_purchased_reports
+        from logic.saju_db import get_saju_by_id
+
+        rows = get_purchased_reports(user_id)
+        items: list[dict[str, Any]] = []
+        for r in rows:
+            rt = r.get("report_type") or ""
+            saju_out: Optional[dict[str, Any]] = None
+            sid = r.get("saju_id")
+            if sid is not None:
+                sj = get_saju_by_id(int(sid), int(user_id))
+                if sj:
+                    saju_out = {
+                        "id": sj["id"],
+                        "name": sj.get("name") or "",
+                        "birthdate": sj.get("birthdate") or "",
+                        "birth_time": sj.get("birth_time"),
+                        "calendar_type": sj.get("calendar_type") or "",
+                        "gender": sj.get("gender") or "",
+                    }
+            items.append(
+                {
+                    "id": r.get("id"),
+                    "report_type": rt,
+                    "report_label": _REPORT_PURCHASE_LABELS.get(rt, rt),
+                    "amount": r.get("amount"),
+                    "purchased_at": r.get("purchased_at"),
+                    "saju": saju_out,
+                }
+            )
+        return {"items": items}
+    except Exception as e:
+        print(f"⚠️ /api/payment/my-purchased-reports 오류: {e}")
+        return {"items": []}
 
 
 @app.post("/api/chat/consume")
@@ -2301,6 +2526,9 @@ async def kakao_pay_ready(request: Request):
         "love":            ("연애운 리포트", 5900),
         "career":          ("직업운 리포트", 5900),
         "couple":          ("궁합 리포트", 13900),
+        "money_realistic": ("재물운 직설 분석", 990),
+        "love_realistic":  ("연애운 직설 분석", 990),
+        "career_realistic": ("직업운 직설 분석", 990),
     }
     order_type = body.get("order_type", "basic")
     if order_type not in _ORDER_PRICE_MAP:
@@ -2339,8 +2567,16 @@ async def kakao_pay_ready(request: Request):
         raise HTTPException(status_code=502, detail=f"KakaoPay ready 실패: {resp.text}")
     data = resp.json()
     tid = data.get("tid", "")
-    from logic.payment_db import save_pending_payment
-    save_pending_payment(order_id=order_id, user_id=user_id, order_type=order_type, tid=tid)
+    from logic.payment_db import normalize_saju_id_from_client, save_pending_payment
+
+    pending_saju_id = normalize_saju_id_from_client(body.get("saju_id"))
+    save_pending_payment(
+        order_id=order_id,
+        user_id=user_id,
+        order_type=order_type,
+        tid=tid,
+        saju_id=pending_saju_id,
+    )
     return {
         "tid": tid,
         "order_id": order_id,
@@ -2367,8 +2603,11 @@ async def kakao_pay_approve(request: Request):
     pending = get_pending_payment(order_id)
     if not pending:
         raise HTTPException(status_code=404, detail="주문을 찾을 수 없습니다.")
+    if int(pending["user_id"]) != int(user_id):
+        raise HTTPException(status_code=403, detail="주문 정보가 일치하지 않습니다.")
     tid = pending["tid"]
     order_type = pending["order_type"]
+    purchase_saju_id = pending.get("saju_id")
     cid = os.getenv("KAKAO_PAY_CID", "TC0ONETIME")
     secret_key = os.getenv("KAKAO_PAY_SECRET_KEY", "")
     payload = {
@@ -2390,7 +2629,16 @@ async def kakao_pay_approve(request: Request):
     if resp.status_code != 200:
         raise HTTPException(status_code=502, detail=f"KakaoPay approve 실패: {resp.text}")
     # 혜택 지급
-    _SINGLE_REPORT_PRICES = {"deep": 9900, "money": 5900, "love": 5900, "career": 5900, "couple": 13900}
+    _SINGLE_REPORT_PRICES = {
+        "deep": 9900,
+        "money": 5900,
+        "love": 5900,
+        "career": 5900,
+        "couple": 13900,
+        "money_realistic": 990,
+        "love_realistic": 990,
+        "career_realistic": 990,
+    }
     if order_type == "pro_monthly":
         activate_membership(user_id, 1)
         redirect_url = "/home?payment=pro_success"
@@ -2399,8 +2647,22 @@ async def kakao_pay_approve(request: Request):
         redirect_url = "/home?payment=ticket_success"
     elif order_type in _SINGLE_REPORT_PRICES:
         from logic.payment_db import save_purchased_report
-        save_purchased_report(user_id, order_type, _SINGLE_REPORT_PRICES[order_type], tid)
-        redirect_url = f"/report/{order_type}"
+
+        save_purchased_report(
+            user_id,
+            order_type,
+            _SINGLE_REPORT_PRICES[order_type],
+            tid,
+            saju_id=purchase_saju_id if isinstance(purchase_saju_id, int) else None,
+        )
+        if order_type == "money_realistic":
+            redirect_url = "/report/money"
+        elif order_type == "love_realistic":
+            redirect_url = "/report/love"
+        elif order_type == "career_realistic":
+            redirect_url = "/report/career"
+        else:
+            redirect_url = f"/report/{order_type}"
     else:
         add_report_credits(user_id, 1)
         redirect_url = "/home?payment=ticket_success"
@@ -2690,6 +2952,23 @@ async def get_cached_report(cache_key: str, section_key: str):
     except Exception as e:
         print(f"❌ report-cache 조회 오류: {e}")
         return {"found": False, "content": None, "error": str(e)}
+
+
+@app.post("/saju/dev/clear-report-cache")
+async def dev_clear_report_cache():
+    """
+    로컬 개발용: report_cache 테이블 전체 비우기.
+    TEST_MODE=true 일 때만 동작. (프론트가 같은 cache_key로 재요청하면 새로 생성됨)
+    """
+    if not TEST_MODE:
+        raise HTTPException(status_code=404, detail="not found")
+    try:
+        deleted = clear_all_report_cache()
+        logger.warning(f"[dev] report_cache cleared, rows affected: {deleted}")
+        return {"ok": True, "deleted_rows": deleted}
+    except Exception as e:
+        logger.warning(f"[dev] clear_report_cache failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 # ==================== 고민 분석 (GPT-4o) ====================

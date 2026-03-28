@@ -10,6 +10,8 @@ interface KakaoPayButtonProps {
   label: string;
   sajuId?: string;
   onError?: (msg: string) => void;
+  /** 결제 페이지로 가기 직전 (복귀 URL 등 sessionStorage 저장용) */
+  onBeforePay?: () => void;
   style?: React.CSSProperties;
   fullWidth?: boolean;
 }
@@ -20,12 +22,14 @@ export default function KakaoPayButton({
   label,
   sajuId,
   onError,
+  onBeforePay,
   style,
   fullWidth = true,
 }: KakaoPayButtonProps) {
   const [loading, setLoading] = useState(false);
 
   async function handlePay() {
+    onBeforePay?.();
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/payment/kakao/ready`, {

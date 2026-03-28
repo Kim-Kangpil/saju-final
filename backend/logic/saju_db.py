@@ -241,3 +241,16 @@ def save_report_cache(cache_key: str, section_key: str, content: str) -> None:
         raise
     finally:
         conn.close()
+
+
+def clear_all_report_cache() -> int:
+    """리포트/요약 등 LLM 결과 캐시 전부 삭제. 반환: 삭제된 행 수(드라이버에 따라 -1일 수 있음)."""
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(adapt("DELETE FROM report_cache"))
+        conn.commit()
+        n = cur.rowcount
+        return int(n) if n is not None and n >= 0 else 0
+    finally:
+        conn.close()

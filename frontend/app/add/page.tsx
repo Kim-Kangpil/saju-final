@@ -113,6 +113,9 @@ const ELEMENT_COLOR: Record<string, string> = {
   none: S.ink,
 };
 
+// 기존 레거시 섹션 표시 여부 (false = 숨김, 코드는 보존)
+const SHOW_LEGACY_SECTIONS = false;
+
 // =====================================================
 // 타입
 // =====================================================
@@ -844,7 +847,7 @@ export default function Page({
       setCalendar("solar");
       setTimeUnknown(false);
       setResult(MOCK_RESULT_FOR_TEST);
-      window.history.replaceState({}, "", "/add-v2");
+      window.history.replaceState({}, "", "/add");
       setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth" }), 300);
       return;
     }
@@ -865,7 +868,7 @@ export default function Page({
 
           skipSajuListRedirectRef.current = true;
           sessionStorage.removeItem("loadedSaju");
-          window.history.replaceState({}, "", "/add-v2");
+          window.history.replaceState({}, "", "/add");
 
           setTimeout(() => {
             resultRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1163,13 +1166,42 @@ export default function Page({
     section_current: string;
     rule_summary: Record<string, any>;
   } | null>(null);
-  const [showV2Modal, setShowV2Modal] = useState(false);
+  const [showV2Modal, setShowV2Modal] = useState(false); // 레거시 (미사용)
+  const v2AutoTriggeredRef = useRef(false);
+  const [v2FakeProgress, setV2FakeProgress] = useState(0);
   const selectedChar: CharKey = "empathy";
 
   useEffect(() => {
     const v = localStorage.getItem("isChannelAdded") === "true";
     setIsChannelAdded(v);
   }, []);
+
+  // v2 분석 중 가짜 progress 애니메이션
+  useEffect(() => {
+    if (!v2Loading) {
+      if (v2Result) setV2FakeProgress(100);
+      return;
+    }
+    setV2FakeProgress(0);
+    const interval = setInterval(() => {
+      setV2FakeProgress(prev => {
+        if (prev >= 95) return prev;
+        const inc = prev < 40 ? 2.5 : prev < 70 ? 1.5 : prev < 85 ? 0.8 : 0.3;
+        return Math.min(95, prev + inc);
+      });
+    }, 150);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [v2Loading]);
+
+  // sajuJsonRaw 준비되면 자동으로 v2 분석 실행
+  useEffect(() => {
+    if (sajuJsonRaw && !v2AutoTriggeredRef.current) {
+      v2AutoTriggeredRef.current = true;
+      runV2Analysis();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sajuJsonRaw]);
 
   useEffect(() => {
     if (result && resultRef.current) {
@@ -2160,7 +2192,6 @@ export default function Page({
   }
 
   async function runV2Analysis() {
-    console.log("strength 값:", sajuJsonRaw?.strength);
     if (!sajuJsonRaw) {
       alert("먼저 사주를 조회해주세요.");
       return;
@@ -2177,7 +2208,6 @@ export default function Page({
     const raw = sajuJsonRaw as Record<string, unknown>;
 
     setV2Loading(true);
-    setShowV2Modal(true);
     setV2Result(null);
 
     try {
@@ -2221,7 +2251,6 @@ export default function Page({
       });
 
       if (res.status === 401) {
-        setShowV2Modal(false);
         if (confirm("로그인이 필요합니다. 로그인 하시겠습니까?")) {
           router.push("/start");
         }
@@ -2281,7 +2310,6 @@ export default function Page({
     } catch (e: any) {
       console.error("v2 분석 오류:", e);
       alert("분석 중 오류가 발생했습니다: " + (e?.message ?? ""));
-      setShowV2Modal(false);
     } finally {
       setV2Loading(false);
     }
@@ -2451,6 +2479,46 @@ export default function Page({
                   document.body
                 ) : null}
 
+                {/* ── v2 AI 분석 로딩 포탈 (퍼센트 progress) ── */}
+                {v2Loading && typeof window !== "undefined" ? createPortal(
+                  <div style={{ position: "fixed", inset: 0, background: "#F5F1EA", zIndex: 9999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px", fontFamily: "'Gmarket Sans', sans-serif" }}>
+                    <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
+                      {/* 제목 */}
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#6B5F4E", letterSpacing: "0.1em", marginBottom: 32 }}>분석 중...</p>
+
+                      {/* progress bar */}
+                      <div style={{ marginBottom: 14 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                          <span style={{ fontSize: 12, color: "#6B5F4E" }}>
+                            {v2FakeProgress < 20 ? "사주 팔자를 계산하고 있어요"
+                              : v2FakeProgress < 40 ? "오행과 십성을 분석하고 있어요"
+                              : v2FakeProgress < 60 ? "대운과 세운 흐름을 파악하고 있어요"
+                              : v2FakeProgress < 80 ? "당신만의 패턴을 찾고 있어요"
+                              : v2FakeProgress < 98 ? "결과를 정리하고 있어요"
+                              : "완성!"}
+                          </span>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "#8B7355", minWidth: 40, textAlign: "right" }}>
+                            {Math.round(v2FakeProgress)}%
+                          </span>
+                        </div>
+                        <div style={{ height: 8, background: "#E3D9CB", borderRadius: 99, overflow: "hidden" }}>
+                          <motion.div
+                            style={{ height: "100%", background: "linear-gradient(90deg, #8B7355, #A8946A)", borderRadius: 99 }}
+                            animate={{ width: `${v2FakeProgress}%` }}
+                            transition={{ duration: 0.3, ease: "linear" }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* 서브 메시지 */}
+                      <p style={{ fontSize: 12, color: "#8B7355", lineHeight: 1.7 }}>
+                        당신의 사주를 깊이 분석하고 있어요
+                      </p>
+                    </div>
+                  </div>,
+                  document.body
+                ) : null}
+
                 <div className="space-y-4">
                   <AnimatePresence mode="wait">
                     {loading ? null : !result ? null : (
@@ -2464,48 +2532,8 @@ export default function Page({
                         style={{ paddingTop: 20, paddingLeft: 16, paddingRight: 16, paddingBottom: 32, maxWidth: 520, margin: "0 auto", width: "100%", boxSizing: "border-box" }}
                       >
                         <div style={{ marginBottom: 20 }}>
-                        {/* ── v2 AI 정밀 분석 버튼 ── */}
-                        <button
-                          type="button"
-                          onClick={runV2Analysis}
-                          disabled={v2Loading}
-                          style={{
-                            width: "100%",
-                            padding: "14px 16px",
-                            marginBottom: 16,
-                            background: v2Loading
-                              ? S.beige
-                              : `linear-gradient(135deg, ${S.gold} 0%, ${S.goldLight} 100%)`,
-                            border: "none",
-                            borderRadius: 12,
-                            color: "#fff",
-                            fontWeight: 700,
-                            fontSize: 14,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: 8,
-                            cursor: v2Loading ? "wait" : "pointer",
-                            fontFamily: S.fontBody,
-                            boxShadow: v2Loading ? "none" : "0 4px 16px rgba(139,115,85,0.35)",
-                            transition: "all 0.2s",
-                          }}
-                        >
-                          {v2Loading ? (
-                            <>
-                              <span style={{ fontSize: 16 }}>⏳</span>
-                              AI 정밀 분석 중...
-                            </>
-                          ) : (
-                            <>
-                              <span style={{ fontSize: 16 }}>🔬</span>
-                              AI 정밀 분석 (베타)
-                            </>
-                          )}
-                        </button>
-
-                        {/* ── v2 결과 모달 ── */}
-                        {showV2Modal && typeof window !== "undefined" && createPortal(
+                        {/* ── v2 결과 모달 (레거시 보존) ── */}
+                        {false && createPortal(
                           <div
                             style={{
                               position: "fixed", inset: 0,
@@ -2772,6 +2800,40 @@ export default function Page({
                           </div>
                         </div>
 
+                        {/* ── v2 분석 결과 인라인 표시 ── */}
+                        {v2Result && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
+                            {parseV2ComprehensiveSections(v2Result.comprehensive || "").map((sec) => (
+                              <div key={sec.title} style={{ background: "#fff", borderRadius: 16, border: `1px solid ${S.beige}`, padding: "20px 18px", boxShadow: "0 2px 10px rgba(44,36,23,0.05)" }}>
+                                <p style={{ fontSize: 14, fontWeight: 700, color: S.gold, marginBottom: 12, letterSpacing: "0.04em", fontFamily: "'Gmarket Sans'" }}>
+                                  {sec.title}
+                                </p>
+                                <div
+                                  style={{ fontSize: 14, color: S.ink2, lineHeight: 1.9, wordBreak: "keep-all" }}
+                                  dangerouslySetInnerHTML={{ __html: sec.body.replace(/\n/g, "<br />") }}
+                                />
+                                {sec.title === "🧠 타고난 성향과 사고방식" && (
+                                  <div style={{ marginTop: 16 }}>
+                                    <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
+                                  </div>
+                                )}
+                                {sec.title === "🔁 반복되는 문제 패턴" && (
+                                  <div style={{ marginTop: 16 }}>
+                                    <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
+                                  </div>
+                                )}
+                                {sec.title === "💰 돈 흐름 구조" && (
+                                  <div style={{ marginTop: 16 }}>
+                                    <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {SHOW_LEGACY_SECTIONS && (
+                        <>
                         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
                           <div style={{ flex: 1, height: 1, background: S.beige }} />
                           <span className="saju-serif" style={{ fontSize: 11, color: S.ink3, letterSpacing: "0.12em" }}>사주 분석</span>
@@ -3013,6 +3075,8 @@ export default function Page({
                               );
                             })}
                           </div>
+                        </>
+                        )}
 
                         <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "24px 0 16px" }}>
                           <div style={{ flex: 1, height: 1, background: S.beige }} />

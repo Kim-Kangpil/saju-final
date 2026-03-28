@@ -2609,7 +2609,8 @@ export default function Page({
                                 )}
 
                                 {v2Result && (() => {
-                                  const sections = parseV2ComprehensiveSections(v2Result.comprehensive || "");
+                                  const _v2r = v2Result!;
+                                  const sections = parseV2ComprehensiveSections(_v2r.comprehensive || "");
                                   const hasText = (v?: string) => !!(v && v.trim());
                                   return (
                                     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -2623,30 +2624,16 @@ export default function Page({
                                             dangerouslySetInnerHTML={{ __html: sec.body.replace(/\n/g, "<br />") }}
                                           />
                                           {sec.title === "🧠 타고난 성향과 사고방식" && (
-                                            <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
+                                            <PersonalityRadarCard ruleSummary={_v2r.rule_summary} />
                                           )}
                                           {sec.title === "🔁 반복되는 문제 패턴" && (
-                                            <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
+                                            <ProblemLoopCard ruleSummary={_v2r.rule_summary} />
                                           )}
                                           {sec.title === "💰 돈 흐름 구조" && (
-                                            <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+                                            <MoneyFlowCard ruleSummary={_v2r.rule_summary} />
                                           )}
                                         </div>
                                       ))}
-
-                                      {Object.keys(v2Result.rule_summary).length > 0 && (
-                                        <>
-                                          <div style={{ height: 1, background: "#D4C9B8" }} />
-                                          <details>
-                                            <summary style={{ fontSize: 11, color: "#6B5F4E", cursor: "pointer" }}>
-                                              🔧 규칙엔진 계산값 (개발 확인용)
-                                            </summary>
-                                            <pre style={{ marginTop: 10, fontSize: 10, color: "#6B5F4E", background: "#EDE7DB", borderRadius: 8, padding: 12, overflowX: "auto", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                                              {JSON.stringify(v2Result.rule_summary, null, 2)}
-                                            </pre>
-                                          </details>
-                                        </>
-                                      )}
                                     </div>
                                   );
                                 })()}

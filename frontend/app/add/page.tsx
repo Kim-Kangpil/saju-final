@@ -2483,36 +2483,64 @@ export default function Page({
                 {v2Loading && typeof window !== "undefined" ? createPortal(
                   <div style={{ position: "fixed", inset: 0, background: "#F5F1EA", zIndex: 9999, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "0 24px", fontFamily: "'Gmarket Sans', sans-serif" }}>
                     <div style={{ width: "100%", maxWidth: 360, textAlign: "center" }}>
-                      {/* 제목 */}
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "#6B5F4E", letterSpacing: "0.1em", marginBottom: 32 }}>분석 중...</p>
+                      {/* 제목 — 95% 이상이면 pulse 애니메이션 */}
+                      {v2FakeProgress >= 95 ? (
+                        <motion.p
+                          style={{ fontSize: 13, fontWeight: 600, color: "#6B5F4E", letterSpacing: "0.1em", marginBottom: 32 }}
+                          animate={{ opacity: [1, 0.4, 1] }}
+                          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          AI가 답변을 완성하고 있어요 ✨
+                        </motion.p>
+                      ) : (
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "#6B5F4E", letterSpacing: "0.1em", marginBottom: 32 }}>분석 중...</p>
+                      )}
 
                       {/* progress bar */}
                       <div style={{ marginBottom: 14 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                          <span style={{ fontSize: 12, color: "#6B5F4E" }}>
-                            {v2FakeProgress < 20 ? "사주 팔자를 계산하고 있어요"
-                              : v2FakeProgress < 40 ? "오행과 십성을 분석하고 있어요"
-                              : v2FakeProgress < 60 ? "대운과 세운 흐름을 파악하고 있어요"
-                              : v2FakeProgress < 80 ? "당신만의 패턴을 찾고 있어요"
-                              : v2FakeProgress < 98 ? "결과를 정리하고 있어요"
-                              : "완성!"}
-                          </span>
-                          <span style={{ fontSize: 14, fontWeight: 700, color: "#8B7355", minWidth: 40, textAlign: "right" }}>
-                            {Math.round(v2FakeProgress)}%
-                          </span>
-                        </div>
-                        <div style={{ height: 8, background: "#E3D9CB", borderRadius: 99, overflow: "hidden" }}>
-                          <motion.div
-                            style={{ height: "100%", background: "linear-gradient(90deg, #8B7355, #A8946A)", borderRadius: 99 }}
-                            animate={{ width: `${v2FakeProgress}%` }}
-                            transition={{ duration: 0.3, ease: "linear" }}
-                          />
-                        </div>
+                        {v2FakeProgress < 95 && (
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                            <span style={{ fontSize: 12, color: "#6B5F4E" }}>
+                              {v2FakeProgress < 20 ? "사주 팔자를 계산하고 있어요"
+                                : v2FakeProgress < 40 ? "오행과 십성을 분석하고 있어요"
+                                : v2FakeProgress < 60 ? "대운과 세운 흐름을 파악하고 있어요"
+                                : v2FakeProgress < 80 ? "당신만의 패턴을 찾고 있어요"
+                                : "결과를 정리하고 있어요"}
+                            </span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: "#8B7355", minWidth: 40, textAlign: "right" }}>
+                              {Math.round(v2FakeProgress)}%
+                            </span>
+                          </div>
+                        )}
+
+                        {/* 95% 미만: 일반 progress bar / 95% 이상: shimmer */}
+                        {v2FakeProgress < 95 ? (
+                          <div style={{ height: 8, background: "#E3D9CB", borderRadius: 99, overflow: "hidden" }}>
+                            <motion.div
+                              style={{ height: "100%", background: "linear-gradient(90deg, #8B7355, #A8946A)", borderRadius: 99 }}
+                              animate={{ width: `${v2FakeProgress}%` }}
+                              transition={{ duration: 0.3, ease: "linear" }}
+                            />
+                          </div>
+                        ) : (
+                          <div style={{ height: 8, background: "#E3D9CB", borderRadius: 99, overflow: "hidden", position: "relative" }}>
+                            {/* 95% 채워진 기본 바 */}
+                            <div style={{ position: "absolute", inset: 0, width: "95%", background: "linear-gradient(90deg, #8B7355, #A8946A)", borderRadius: 99 }} />
+                            {/* shimmer 광택 */}
+                            <motion.div
+                              style={{ position: "absolute", top: 0, height: "100%", width: "35%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)", borderRadius: 99 }}
+                              animate={{ x: ["-35%", "310%"] }}
+                              transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {/* 서브 메시지 */}
                       <p style={{ fontSize: 12, color: "#8B7355", lineHeight: 1.7 }}>
-                        당신의 사주를 깊이 분석하고 있어요
+                        {v2FakeProgress >= 95
+                          ? "AI 모델이 응답을 작성 중이에요.\n보통 10~20초 정도 걸려요 :)"
+                          : "당신의 사주를 깊이 분석하고 있어요"}
                       </p>
                     </div>
                   </div>,

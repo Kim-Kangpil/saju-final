@@ -880,7 +880,7 @@ export async function POST(req: Request) {
   const google = createGoogleGenerativeAI({ apiKey: apiKey! });
 
   const result = streamText({
-    model: google("gemini-2.5-flash-preview-04-17"),
+    model: google("gemini-2.5-flash"),
     system,
     messages: modelMessages,
     maxOutputTokens: 3000,

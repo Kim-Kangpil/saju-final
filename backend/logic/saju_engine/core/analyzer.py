@@ -79,6 +79,21 @@ def analyze_full_saju(day_stem, pillars):
     # ✅ 5. 오행 카운트 계산 (추가!)
     element_count = _calculate_element_count(pillars)
 
+    # ✅ 5-1. 십이운성 분석 (추가!)
+    sibiun_result = {}
+    try:
+        from .sibiun import analyze_sibiun_full
+        sibiun_result = analyze_sibiun_full({
+            "year_pillar": pillars.get("year", ""),
+            "month_pillar": pillars.get("month", ""),
+            "day_pillar": pillars.get("day", ""),
+            "hour_pillar": pillars.get("hour", ""),
+        })
+    except Exception as e:
+        print(f"십이운성 계산 오류: {e}")
+    
+    result['sibiun'] = sibiun_result
+
     # 6. 요약
     result['summary'] = {
         'strength': result['strength']['strength'],

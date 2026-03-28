@@ -1307,6 +1307,16 @@ def _build_money_analysis_block(data: dict[str, Any]) -> str:
     if money_sinsal:
         sinsal_strs = [f"{s['type']}({s.get('meaning', s.get('items', ''))})" for s in money_sinsal]
         lines.append(f"재물 신살: {', '.join(sinsal_strs)}")
+    
+    # 십이운성 (재성 위치의 생명력)
+    jaeseong_sibiun = data.get("jaeseong_sibiun") or []
+    if jaeseong_sibiun:
+        sibiun_strs = []
+        for js in jaeseong_sibiun:
+            sibiun_strs.append(
+                f"{js['position']} {js.get('char', '')} — {js['sibiun']}({js['vitality']}점): {js['meaning']}"
+            )
+        lines.append(f"재성 십이운성 (생명력): {' / '.join(sibiun_strs)}")
 
     return "\n".join(lines)
 
@@ -2116,6 +2126,7 @@ async def _generate_deep_topic_report(
             "yeonin_life_stages", "dohwa_count", "hongyeom_count", "daeun_ten_god",
             "daeun_branch_tg", "daeun_favorable", "seun_favorable",
             "yongshin_elements", "gishin_elements", "yongshin_love_tip",
+            "yeonin_sibiun",
         ]
         topic_label = "연애"
     else:
@@ -2127,6 +2138,7 @@ async def _generate_deep_topic_report(
             "career_life_stages", "special_sinsal", "daeun_ten_god", "daeun_branch_tg",
             "daeun_favorable", "seun_favorable",
             "yongshin_elements", "gishin_elements", "yongshin_career_tip",
+            "career_sibiun",
         ]
         topic_label = "직업"
 

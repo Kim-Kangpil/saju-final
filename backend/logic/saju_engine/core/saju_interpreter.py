@@ -574,6 +574,7 @@ def interpret_career(saju_data: dict) -> dict:
 def interpret_personality(saju_data: dict) -> dict:
     ilgan = _get_ilgan(saju_data)
     wolji = _get_wolji(saju_data)
+    pillars = _get_pillars(saju_data)
     ten_gods = _get_ten_gods(saju_data)
     strength = _get_strength(saju_data)
 
@@ -592,6 +593,28 @@ def interpret_personality(saju_data: dict) -> dict:
     patterns.append(f"일간 {ilgan} → {ilgan_nature['keyword']}")
     if ilgan_nature["core"]:
         language_points.append(ilgan_nature["core"])
+    
+    # ── 십이운성 (일간 생명력) ──
+    ilji_branch = pillars.get("day", "")[1] if len(pillars.get("day", "")) >= 2 else ""
+    if ilgan and ilji_branch:
+        try:
+            from .sibiun import calculate_sibiun
+            sibiun_result = calculate_sibiun(ilgan, ilji_branch)
+            phase = sibiun_result.get("phase", "")
+            vitality = sibiun_result.get("vitality", 0)
+            sibiun_name = sibiun_result.get("sibiun", "")
+            
+            if sibiun_name:
+                patterns.append(f"일간 십이운성: {sibiun_name}({vitality}점) — {phase}")
+            
+            if phase == "왕성기" and vitality >= 75:
+                language_points.append("에너지가 외부로 강하게 표출되는 사주예요. 리더십이나 주도성이 강해요.")
+            elif phase == "쇠퇴기":
+                language_points.append("에너지가 내부로 수렴하는 사주예요. 겉보다 속이 단단하고 준비하는 타입.")
+            elif phase == "준비기" and vitality >= 50:
+                language_points.append("지금은 준비 단계예요. 축적하고 기반 다지는 시기로 보면 좋아요.")
+        except Exception:
+            pass
 
     # ── 월지 에너지 ──
     if wolji_season:
@@ -831,6 +854,45 @@ def interpret_money_deep(saju_data: dict) -> dict:
         strength_score = 0
     can_handle_money = strength_value in ("신강", "중화") or strength_score >= 50
 
+    # 재성 십이운성 (봉법 + 좌법)
+    jaeseong_sibiun: list = []
+    try:
+        from .sibiun import analyze_bongbeop, analyze_jwabeop
+        bong = analyze_bongbeop(saju_data)
+        jwa = analyze_jwabeop(saju_data)
+        
+        for jp in jaeseong_positions:
+            pos = jp["position"]
+            char = jp["char"]
+            
+            # 천간 위치면 봉법, 지지 위치면 좌법에서 해당 지장간 찾기
+            if pos in ["년간", "월간", "시간"]:
+                sibiun_data = bong.get(pos, {})
+                if sibiun_data:
+                    jaeseong_sibiun.append({
+                        "position": pos,
+                        "char": char,
+                        "sibiun": sibiun_data.get("sibiun", ""),
+                        "vitality": sibiun_data.get("vitality", 0),
+                        "meaning": "재성이 강하게 작동" if sibiun_data.get("vitality", 0) >= 70 else "재성이 약함",
+                    })
+            else:
+                # 지지 위치: 좌법에서 해당 지장간 찾기
+                jwa_data = jwa.get(pos, {})
+                if jwa_data:
+                    for jj in jwa_data.get("jijanggan", []):
+                        if jj.get("stem") == char:
+                            jaeseong_sibiun.append({
+                                "position": pos,
+                                "char": char,
+                                "sibiun": jj.get("sibiun", ""),
+                                "vitality": jj.get("vitality", 0),
+                                "meaning": "재성이 강하게 작동" if jj.get("vitality", 0) >= 70 else "재성이 약함",
+                            })
+                            break
+    except Exception:
+        pass
+
     # 재성 합충 영향
     jaeseong_hap: list = []
     jaeseong_chung: list = []
@@ -953,6 +1015,7 @@ def interpret_money_deep(saju_data: dict) -> dict:
         "gishin_elements": gishin_elements,
         "money_sinsal": money_sinsal,
         "geunmyo_money_stages": geunmyo_money_stages,
+        "jaeseong_sibiun": jaeseong_sibiun,
     }
 
 
@@ -1059,6 +1122,40 @@ def interpret_love_deep(saju_data: dict) -> dict:
     gishin_elements = yongshin.get("gishin") or []
     yongshin_tip = yongshin.get("modern_meaning") or ""
 
+    # 연인성 십이운성 (봉법 + 좌법)
+    yeonin_sibiun: list = []
+    try:
+        from .sibiun import analyze_bongbeop, analyze_jwabeop
+        bong = analyze_bongbeop(saju_data)
+        jwa = analyze_jwabeop(saju_data)
+        
+        for pos_label in partner_positions:
+            if pos_label in ["년간", "월간", "시간"]:
+                sibiun_data = bong.get(pos_label, {})
+                if sibiun_data:
+                    yeonin_sibiun.append({
+                        "position": pos_label,
+                        "sibiun": sibiun_data.get("sibiun", ""),
+                        "vitality": sibiun_data.get("vitality", 0),
+                        "meaning": "인연이 강하게 작동" if sibiun_data.get("vitality", 0) >= 70 else "인연이 약함",
+                    })
+            elif pos_label in ["년지", "월지", "일지", "시지"]:
+                jwa_data = jwa.get(pos_label, {})
+                if jwa_data:
+                    for jj in jwa_data.get("jijanggan", []):
+                        stem = jj.get("stem", "")
+                        if stem and calculate_ten_god(ilgan, stem) in yeonin_names:
+                            yeonin_sibiun.append({
+                                "position": pos_label,
+                                "char": stem,
+                                "sibiun": jj.get("sibiun", ""),
+                                "vitality": jj.get("vitality", 0),
+                                "meaning": "인연이 강하게 작동" if jj.get("vitality", 0) >= 70 else "인연이 약함",
+                            })
+                            break
+    except Exception:
+        pass
+
     return {
         "partner_type": partner_type,
         "pattern": pattern,
@@ -1079,6 +1176,7 @@ def interpret_love_deep(saju_data: dict) -> dict:
         "yongshin_elements": yongshin_elements if yongshin_elements else ["확인 필요"],
         "gishin_elements": gishin_elements if gishin_elements else [],
         "yongshin_love_tip": yongshin_tip,
+        "yeonin_sibiun": yeonin_sibiun,
     }
 
 
@@ -1225,6 +1323,46 @@ def interpret_career_deep(saju_data: dict) -> dict:
     gishin_elements = yongshin.get("gishin") or []
     yongshin_tip = yongshin.get("modern_meaning") or ""
 
+    # 식상·관성 십이운성 (봉법 + 좌법)
+    career_sibiun: list = []
+    try:
+        from .sibiun import analyze_bongbeop, analyze_jwabeop
+        bong = analyze_bongbeop(saju_data)
+        jwa = analyze_jwabeop(saju_data)
+        
+        CAREER_GODS = ("식신", "상관", "편관", "정관")
+        for label in ["년간", "월간", "시간"]:
+            sibiun_data = bong.get(label, {})
+            if sibiun_data:
+                stem = sibiun_data.get("stem", "")
+                if stem and calculate_ten_god(ilgan, stem) in CAREER_GODS:
+                    career_sibiun.append({
+                        "position": label,
+                        "char": stem,
+                        "ten_god": calculate_ten_god(ilgan, stem),
+                        "sibiun": sibiun_data.get("sibiun", ""),
+                        "vitality": sibiun_data.get("vitality", 0),
+                        "meaning": "직업 에너지 강함" if sibiun_data.get("vitality", 0) >= 70 else "직업 에너지 약함",
+                    })
+        
+        for label in ["년지", "월지", "일지", "시지"]:
+            jwa_data = jwa.get(label, {})
+            if jwa_data:
+                for jj in jwa_data.get("jijanggan", []):
+                    stem = jj.get("stem", "")
+                    if stem and calculate_ten_god(ilgan, stem) in CAREER_GODS:
+                        career_sibiun.append({
+                            "position": label,
+                            "char": stem,
+                            "ten_god": calculate_ten_god(ilgan, stem),
+                            "sibiun": jj.get("sibiun", ""),
+                            "vitality": jj.get("vitality", 0),
+                            "meaning": "직업 에너지 강함" if jj.get("vitality", 0) >= 70 else "직업 에너지 약함",
+                        })
+                        break
+    except Exception:
+        pass
+
     return {
         "work_style": work_style,
         "best_field": best_field,
@@ -1245,6 +1383,7 @@ def interpret_career_deep(saju_data: dict) -> dict:
         "yongshin_elements": yongshin_elements if yongshin_elements else ["확인 필요"],
         "gishin_elements": gishin_elements if gishin_elements else [],
         "yongshin_career_tip": yongshin_tip,
+        "career_sibiun": career_sibiun,
     }
 
 

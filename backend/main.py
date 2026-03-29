@@ -2532,6 +2532,22 @@ async def report_access_check(report_type: str, request: Request):
         coupon_key = f"beta_coupon_{user_id}"
         coupon_data = get_cached_data(coupon_key)
         beta_features = coupon_data.get("features") if coupon_data else None
+        
+        # 관리자 모드 확인
+        if beta_features and beta_features.get("is_admin"):
+            return {
+                "has_access": True,
+                "reason": "admin_mode",
+                "is_admin": True
+            }
+        
+        # 베타 테스터 무제한 기본 리포트
+        if report_type == "basic" and beta_features and beta_features.get("unlimited_basic"):
+            return {
+                "has_access": True,
+                "reason": "beta_unlimited_basic",
+                "unlimited": True
+            }
 
     if TEST_MODE:
         base = {"has_access": True, "reason": "test_mode"}
@@ -2681,8 +2697,28 @@ async def kakao_pay_ready(request: Request):
     
     # 베타 쿠폰 무료 처리
     if beta_features:
+        # 관리자 모드 처리
+        if beta_features.get("is_admin"):
+            if order_type == "basic":
+                add_report_credits(user_id, 1)
+            else:
+                from logic.payment_db import save_purchase_record
+                save_purchase_record(user_id, order_type, 0, "admin_mode")
+            return {
+                "free_access": True,
+                "redirect_url": f"{os.getenv('FRONTEND_URL', 'https://hsaju.com')}/report/{order_type}?payment=admin_success",
+                "message": f"관리자 모드로 {order_type} 리포트가 무료로 제공됩니다."
+            }
+        
         if order_type == "basic" and beta_features.get("free_basic_report"):
-            # 기본 리포트 무료 처리
+            # 베타 테스터 무제한 기본 리포트 - 크레딧 추가 없이 바로 접근
+            if beta_features.get("unlimited_basic"):
+                return {
+                    "free_access": True,
+                    "redirect_url": f"{os.getenv('FRONTEND_URL', 'https://hsaju.com')}/report/basic?payment=beta_unlimited",
+                    "message": "베타 테스터로 기본 리포트를 무제한으로 이용할 수 있습니다."
+                }
+            # 일반 베타 테스터 (1회만)
             add_report_credits(user_id, 1)
             return {
                 "free_access": True,
@@ -2690,7 +2726,6 @@ async def kakao_pay_ready(request: Request):
                 "message": "베타 쿠폰으로 기본 리포트가 무료로 제공됩니다."
             }
         elif order_type in ("deep", "money", "love", "career", "couple") and beta_features.get(f"free_{order_type}_report"):
-            # 특화/심화 리포트 무료 처리
             from logic.payment_db import save_purchase_record
             save_purchase_record(user_id, order_type, 0, "beta_coupon")
             return {
@@ -3038,6 +3073,11 @@ async def save_saju(request: Request, body: SajuSaveRequest):
     if user_id is None:
         print("🧩 /api/saju/save: user_id 없음 → 401 반환")
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
+    # 만세력 2개 제한 확인
+    existing_saju_list = get_saju_list_for_user(user_id)
+    if len(existing_saju_list) >= 2:
+        raise HTTPException(status_code=400, detail="최대 2개의 만세력만 등록할 수 있습니다. 기존 만세력을 삭제한 후 새로 등록해주세요.")
 
     try:
         name = body.name.strip()
@@ -3727,8 +3767,18 @@ BETA_COUPONS = {
         "free_basic_report": True,
         "free_special_report": False,
         "free_deep_report": False,
+        "unlimited_basic": True,
         "max_uses": 100,
         "used_count": 0,
+    },
+    "sem101019": {
+        "free_chat": True,
+        "free_basic_report": True,
+        "free_special_report": True,
+        "free_deep_report": True,
+        "max_uses": 1,
+        "used_count": 0,
+        "is_admin": True,
     }
 }
 
@@ -3811,6 +3861,39 @@ async def get_beta_features(request: Request):
         return {"features": coupon_data.get("features")}
     
     return {"features": None}
+
+@app.post("/api/beta/reset")
+async def reset_beta_coupon(request: Request):
+    """베타 쿠폰 초기화 API"""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    
+    coupon_key = f"beta_coupon_{user_id}"
+    
+    # 쿠폰 데이터 삭제
+    if coupon_key in _beta_coupon_cache:
+        del _beta_coupon_cache[coupon_key]
+        
+        # 사용 횟수 감소 (선택적)
+        coupon_code = None
+        for code, data in BETA_COUPONS.items():
+            if data.get("used_count", 0) > 0:
+                data["used_count"] -= 1
+                coupon_code = code
+                break
+        
+        print(f"[DEBUG] 베타 쿠폰 초기화: user_id={user_id}, coupon={coupon_code}")
+        
+        return {
+            "success": True,
+            "message": "베타 쿠폰이 초기화되었습니다."
+        }
+    
+    return {
+        "success": False,
+        "message": "적용된 쿠폰이 없습니다."
+    }
 
 if __name__ == "__main__":
     import uvicorn

@@ -38,7 +38,6 @@ const MENU_ITEMS: MenuItem[] = [
     color: "#4A6741",
     path: "/chat",
   },
-  { key: "seed-charge", icon: "mdi:ticket-confirmation-outline", label: "분석권 충전", desc: "분석에 사용하는 분석권", color: "var(--text-secondary)", path: "/seed-charge" },
   { key: "membership", icon: "mdi:crown", label: "한양사주 Pro", desc: "매달 분석권 + 전용 혜택", color: "#c9a227", path: "/membership" },
   { key: "usage", icon: "mdi:receipt-text-outline", label: "사용 내역", desc: "분석권 사용 기록", color: "var(--text-secondary)", action: "usage" },
   { key: "contact", icon: "mdi:message-outline", label: "문의하기", desc: "궁금한 점이 있으신가요?", color: "var(--text-secondary)", path: "/contact" },
@@ -52,7 +51,6 @@ export default function SajuMyPage({
   const { isLoggedIn, loading } = useAuthStatus();
   const [userInfo, setUserInfo] = useState<UserInfo>(null);
   const [userInfoLoading, setUserInfoLoading] = useState(true);
-  const [seedCount, setSeedCount] = useState<number>(0);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
@@ -109,22 +107,48 @@ export default function SajuMyPage({
     return () => { cancelled = true; };
   }, []);
 
+
   useEffect(() => {
+    if (typeof window === "undefined" || !isLoggedIn) return;
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/seeds`, {
+        const res = await fetch(`${API_BASE}/api/saju/list`, {
           credentials: "include",
           headers: getAuthHeaders(),
         });
-        const data = await res.json().catch(() => ({}));
-        if (!cancelled && typeof data?.seeds === "number") setSeedCount(data.seeds);
+        if (!cancelled && res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            // syncSavedSajuListWithServer(list);
+            // setSajuBadgeTick((t) => t + 1);
+          }
+        }
       } catch {
-        if (!cancelled) setSeedCount(0);
+        // ignore
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const fetchBetaFeatures = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/beta/features`, {
+          credentials: "include",
+          headers: { Accept: "application/json", ...getAuthHeaders() },
+        });
+        const data = await res.json();
+        if (data.features) {
+          setBetaFeatures(data.features);
+        }
+      } catch (error) {
+        console.error("베타 혜택 확인 오류:", error);
+      }
+    };
+    fetchBetaFeatures();
+  }, [isLoggedIn]);
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -255,10 +279,6 @@ export default function SajuMyPage({
                 </>
               )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, background: "var(--bg-surface)", border: `1.5px solid ${borderField}`, borderRadius: 99, padding: "5px 10px", flexShrink: 0 }}>
-              <Icon icon="mdi:ticket-confirmation-outline" width={15} style={{ color: "var(--text-secondary)" }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: textDark }}>{seedCount}개</span>
-            </div>
           </div>
         </section>
 
@@ -325,15 +345,99 @@ export default function SajuMyPage({
 
         {/* 베타 혜택 표시 */}
         {betaFeatures && (
-          <section style={{ margin: "20px -20px 0", background: "#f0f9f0", padding: "20px", borderRadius: 12, border: "1.5px solid #4A6741" }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#4A6741", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-              🎉 베타 테스터 혜택
+          <section style={{ margin: "20px -20px 0", background: betaFeatures.is_admin ? "#fef3c7" : "#f0f9f0", padding: "20px", borderRadius: 12, border: betaFeatures.is_admin ? "1.5px solid #f59e0b" : "1.5px solid #4A6741" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: betaFeatures.is_admin ? "#d97706" : "#4A6741", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+              {betaFeatures.is_admin ? "👑 관리자 모드" : "🎉 베타 테스터 혜택"}
             </div>
-            <div style={{ fontSize: 13, color: "#4A6741", lineHeight: 1.6 }}>
-              <div style={{ marginBottom: 8 }}>✅ AI 채팅 무제한 이용</div>
-              <div style={{ marginBottom: 8 }}>✅ 기본 리포트 무료 열람</div>
-              <div style={{ marginBottom: 8 }}>✅ 특화/심화 리포트 정상가 이용</div>
-              <div>📱 채팅 페이지와 리포트 페이지에서 혜택을 확인하세요!</div>
+            <div style={{ fontSize: 13, color: betaFeatures.is_admin ? "#d97706" : "#4A6741", lineHeight: 1.6 }}>
+              {betaFeatures.is_admin ? (
+                <>
+                  <div style={{ marginBottom: 8 }}>👑 모든 기능 무료 이용</div>
+                  <div style={{ marginBottom: 8 }}>✅ AI 채팅 무제한</div>
+                  <div style={{ marginBottom: 8 }}>✅ 모든 리포트 무료</div>
+                  <div style={{ marginBottom: 8 }}>✅ 결제 없이 바로 이용</div>
+                  <div>🔥 관리자 권한이 활성화되었습니다.</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 8 }}>✅ AI 채팅 무제한 이용</div>
+                  <div style={{ marginBottom: 8 }}>✅ 기본 리포트 무제한 열람</div>
+                  <div style={{ marginBottom: 8 }}>✅ 특화/심화 리포트 정상가 이용</div>
+                  <div>📱 채팅과 기본 리포트를 무제한으로 이용하세요!</div>
+                </>
+              )}
+            </div>
+            
+            {/* 베타 테스터 관리 기능 */}
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #4A6741" }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#4A6741", marginBottom: 8 }}>
+                🔧 테스터 관리
+              </div>
+              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (confirm("베타 테스터 혜택을 초기화하시겠습니까?\n쿠폰을 다시 입력해야 혜택을 받을 수 있습니다.")) {
+                      try {
+                        const res = await fetch(`${API_BASE}/api/beta/reset`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            ...getAuthHeaders(),
+                          },
+                          credentials: "include",
+                        });
+                        
+                        const data = await res.json();
+                        
+                        if (res.ok && data.success) {
+                          setBetaFeatures(null);
+                          setCouponMessage("🔄 베타 혜택이 초기화되었습니다.");
+                        } else {
+                          setCouponMessage(data.message || "초기화에 실패했습니다.");
+                        }
+                      } catch (error) {
+                        setCouponMessage("초기화 중 오류가 발생했습니다.");
+                      }
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    border: "1px solid #4A6741",
+                    background: "white",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#4A6741",
+                    cursor: "pointer",
+                  }}
+                >
+                  혜택 초기화
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    alert("테스트 기간 종료 기능은 준비 중입니다.\n관리자가 자동으로 권한을 해제해 드립니다.");
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "8px 12px",
+                    borderRadius: 6,
+                    border: "1px solid #dc2626",
+                    background: "white",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#dc2626",
+                    cursor: "pointer",
+                  }}
+                >
+                  권한 해제 요청
+                </button>
+              </div>
+              <div style={{ fontSize: 11, color: "#4A6741", lineHeight: 1.4 }}>
+                💡 팁: 혜택 초기화 시 쿠폰을 다시 입력해야 합니다.
+              </div>
             </div>
           </section>
         )}

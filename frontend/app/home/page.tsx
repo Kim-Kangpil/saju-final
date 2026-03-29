@@ -145,6 +145,29 @@ export default function HomePage({
   const { lang, setLang, t } = useLang();
   const messages = lang === "ko" ? ko : en;
   const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const [betaFeatures, setBetaFeatures] = useState<any>(null);
+
+  // 베타 혜택 확인
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    
+    const fetchBetaFeatures = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/beta/features`, {
+          credentials: "include",
+          headers: { Accept: "application/json" },
+        });
+        const data = await res.json();
+        if (data.features) {
+          setBetaFeatures(data.features);
+        }
+      } catch (error) {
+        console.error("베타 혜택 확인 오류:", error);
+      }
+    };
+    
+    fetchBetaFeatures();
+  }, [isLoggedIn]);
 
   const getTodayCount = () => {
     if (typeof window === "undefined") return 128;
@@ -1331,6 +1354,33 @@ export default function HomePage({
           <span className="hd-logo-text">한양사주</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6, position: "relative" }}>
+          {/* 베타 테스터/관리자 배지 */}
+          {betaFeatures && (
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "4px 8px",
+              borderRadius: 999,
+              background: betaFeatures.is_admin 
+                ? "linear-gradient(135deg, #f59e0b, #d97706)" 
+                : "linear-gradient(135deg, #10b981, #059669)",
+              border: betaFeatures.is_admin ? "1px solid #d97706" : "1px solid #047857",
+              boxShadow: betaFeatures.is_admin 
+                ? "0 2px 8px rgba(245, 158, 11, 0.3)" 
+                : "0 2px 8px rgba(16, 185, 129, 0.3)",
+            }}>
+              <span style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: "white",
+                letterSpacing: "0.05em",
+              }}>
+                {betaFeatures.is_admin ? "👑 관리자" : "🎉 베타 테스터"}
+              </span>
+            </div>
+          )}
+          
           <div style={{ position: "relative" }}>
             <button
               type="button"
@@ -1492,14 +1542,14 @@ export default function HomePage({
               boxShadow: '0 4px 12px rgba(45, 90, 45, 0.1)'
             }}>
               <div style={{fontSize: 14, fontWeight: 700, color: '#2d5a2d', marginBottom: 8}}>
-                🎉 베타 테스터 모집
+                베타 테스터 모집
               </div>
               <h3 style={{fontSize: 18, fontWeight: 700, color: '#2d5a2d', marginBottom: 8}}>
-                채팅 + 기본 리포트 무료!
+                채팅 + 기본 리포트 무제한!
               </h3>
               <p style={{fontSize: 13, color: '#2d5a2d', marginBottom: 16, lineHeight: 1.5}}>
                 베타 테스터가 되어<br/>
-                AI 채팅과 기본 리포트를 무료로 이용하세요
+                AI 채팅과 기본 리포트를 무제한으로 이용하세요
               </p>
               <button 
                 onClick={() => router.push('/saju-mypage')}

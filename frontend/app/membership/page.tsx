@@ -70,7 +70,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
             사주를 가장<br />깊이 있게
           </h1>
           <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.8, marginBottom: 24 }}>
-            AI 채팅부터 분석 리포트까지<br />제한 없이, 월 4,900원
+            AI 채팅 무제한과<br />분석권 매월 3개, 월 3,900원
           </p>
           {status?.is_pro ? (
             <div style={{ background: "#E1DDCF", borderRadius: 12, padding: "14px 16px", fontSize: 13, color: "#3A3A3A", fontWeight: 700 }}>
@@ -80,7 +80,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
               </div>}
             </div>
           ) : (
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#3A3A3A" }}>월 4,900원</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "#3A3A3A" }}>월 3,900원</div>
           )}
         </section>
 
@@ -89,7 +89,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
           <h2 style={{ fontSize: 13, fontWeight: 700, color: "#6B6B6B", letterSpacing: "0.08em", marginBottom: 14 }}>PRO 혜택</h2>
           {[
             { icon: "mdi:chat-outline", label: "AI 채팅 무제한", desc: "하루 제한 없이 언제든 상담" },
-            { icon: "mdi:file-chart-outline", label: "분석 리포트 무제한", desc: "사주 리포트를 무제한으로 열람" },
+            { icon: "mdi:file-chart-outline", label: "분석권 매월 3개", desc: "기본/특화/심화 리포트 월 3회" },
             { icon: "mdi:timeline-outline", label: "대운·세운 심층 분석", desc: "운의 흐름을 더 깊게 분석" },
             { icon: "mdi:star-outline", label: "신기능 우선 이용", desc: "새 기능을 가장 먼저 체험" },
           ].map(f => (
@@ -118,7 +118,8 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
             {/* Rows */}
             {[
               ["AI 채팅", "3회/일", "3회/일", "무제한"],
-              ["분석 리포트", "❌", "1회", "무제한"],
+              ["분석권", "❌", "1회", "월 3회"],
+              ["특화/심화 리포트", "❌", "유료", "월 3회 할인"],
               ["가격", "무료", "1,900원", "3,900원/월"],
             ].map(([label, a, , c]) => (
               <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: "1px solid #E8E5DF" }}>
@@ -131,22 +132,6 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
           <p style={{ fontSize: 11, color: "#A0A0A0", textAlign: "center", marginTop: 8 }}>언제든 해지 가능 · 다음 결제 전까지 혜택 유지</p>
         </section>
 
-        {/* Also show 분석권 purchase option */}
-        <section style={{ paddingBottom: 32 }}>
-          <h2 style={{ fontSize: 13, fontWeight: 700, color: "#6B6B6B", letterSpacing: "0.08em", marginBottom: 14 }}>단건 구매도 가능해요</h2>
-          <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #E0DDCF", padding: "16px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#3A3A3A", marginBottom: 3 }}>분석권 1개</div>
-                <div style={{ fontSize: 12, color: "#6B6B6B" }}>리포트 1회 열람권 · 유효기간 없음</div>
-              </div>
-              <button type="button" className="tap" onClick={() => router.push("/seed-charge")}
-                style={{ padding: "8px 14px", borderRadius: 10, border: "1.5px solid #3A3A3A", background: "#fff", fontSize: 13, fontWeight: 700, color: "#3A3A3A" }}>
-                1,900원
-              </button>
-            </div>
-          </div>
-        </section>
 
         {error && <div style={{ color: "#e11d48", fontSize: 13, textAlign: "center", marginBottom: 12 }}>{error}</div>}
       </div>

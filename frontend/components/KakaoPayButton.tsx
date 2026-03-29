@@ -43,10 +43,21 @@ export default function KakaoPayButton({
         return;
       }
       const data = await res.json();
+      
+      // 무료 접근 처리 (베타 쿠폰/관리자 모드)
+      if (data.free_access) {
+        window.location.href = data.redirect_url;
+        return;
+      }
+      
+      // 결제 준비중 모달
       if (!data.next_redirect_mobile_url && !data.next_redirect_pc_url) {
+        // 결제 준비중 모달 표시
+        alert("결제 기능은 현재 준비 중입니다.\n베타 테스터 쿠폰을 입력하시면 무료로 이용할 수 있습니다.");
         onError?.("결제 준비에 실패했어요. 잠시 후 다시 시도해주세요.");
         return;
       }
+      
       const isMobile = /Mobi|Android/i.test(navigator.userAgent);
       window.location.href = isMobile
         ? (data.next_redirect_mobile_url || data.next_redirect_pc_url)

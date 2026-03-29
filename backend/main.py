@@ -40,24 +40,8 @@ load_dotenv(dotenv_path=env_path)
 
 # ==================== 2. 나머지 import ====================
 
-# ==================== 3. OpenAI 클라이언트 초기화 ====================
-api_key = os.getenv("OPENAI_API_KEY")
-if api_key:
-    print(f"🔑 API Key 로드됨: {api_key[:10]}...")
-    try:
-        from openai import OpenAI
-        client = OpenAI(
-            api_key=api_key,
-            timeout=30.0,
-            max_retries=2
-        )
-        print("✅ OpenAI 클라이언트 초기화 성공")
-    except Exception as e:
-        print(f"⚠️ OpenAI 클라이언트 초기화 실패: {e}")
-        client = None
-else:
-    print("⚠️  OPENAI_API_KEY 없음")
-    client = None
+# ==================== 3. AI 클라이언트 초기화 (Lazy Loading) ====================
+# Gemini 우선 사용, OpenAI는 fallback만을 위해 lazy loading
 
 # ==================== 3b. Gemini 클라이언트 초기화 ====================
 from google import genai as _genai_lib
@@ -69,7 +53,29 @@ if GEMINI_API_KEY:
     logger.warning("✅ Gemini 클라이언트 초기화 성공")
 else:
     gemini_client = None
-    logger.warning("⚠️ GEMINI_API_KEY 없음 - GPT-4o fallback 사용")
+    logger.warning("⚠️ GEMINI_API_KEY 없음")
+
+# OpenAI 클라이언트는 fallback을 위해 lazy loading
+client = None
+
+def get_openai_client():
+    """OpenAI 클라이언트 lazy loading"""
+    global client
+    if client is None:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if api_key:
+            try:
+                from openai import OpenAI
+                client = OpenAI(
+                    api_key=api_key,
+                    timeout=30.0,
+                    max_retries=2
+                )
+                print("✅ OpenAI 클라이언트 lazy loading 성공")
+            except Exception as e:
+                print(f"⚠️ OpenAI 클라이언트 초기화 실패: {e}")
+                client = None
+    return client
 
 # ==================== 4. FastAPI 앱 생성 ====================
 TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
@@ -942,18 +948,22 @@ async def api_chat(req: ChatRequest, request: Request):
                 yield "data: [DONE]\n\n"
             else:
                 # GPT-4o fallback
-                stream = client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=openai_messages,
-                    max_tokens=2000,
-                    temperature=0.6,
-                    stream=True,
-                )
-                for chunk in stream:
-                    delta = chunk.choices[0].delta if chunk.choices else None
-                    if delta and getattr(delta, "content", None):
-                        yield f"data: {json.dumps({'content': delta.content}, ensure_ascii=False)}\n\n"
-                yield "data: [DONE]\n\n"
+                openai_client = get_openai_client()
+                if openai_client:
+                    stream = openai_client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=openai_messages,
+                        max_tokens=2000,
+                        temperature=0.6,
+                        stream=True,
+                    )
+                    for chunk in stream:
+                        delta = chunk.choices[0].delta if chunk.choices else None
+                        if delta and getattr(delta, "content", None):
+                            yield f"data: {json.dumps({'content': delta.content}, ensure_ascii=False)}\n\n"
+                    yield "data: [DONE]\n\n"
+                else:
+                    yield f"data: {json.dumps({'error': 'AI 서비스를 사용할 수 없습니다.'}, ensure_ascii=False)}\n\n"
         except Exception as e:
             print(f"❌ /api/chat 스트리밍 오류: {e}")
             yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"

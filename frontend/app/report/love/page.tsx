@@ -63,7 +63,7 @@ function LoveAddonModal({
   const [payErr, setPayErr] = useState<string | null>(null);
   const saveReturn = () => {
     if (typeof window !== "undefined" && sajuId) {
-      sessionStorage.setItem("kakao_pay_report_return", `/report/love?saju_id=${encodeURIComponent(sajuId)}`);
+      localStorage.setItem("kakao_pay_report_return", `/report/love?saju_id=${encodeURIComponent(sajuId)}`);
     }
   };
   return (

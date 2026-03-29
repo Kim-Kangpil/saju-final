@@ -65,9 +65,9 @@ function PaymentSuccessInner() {
         const ot = data.order_type || order_type;
         setOrderType(ot);
         if (typeof window !== "undefined" && String(ot).includes("realistic")) {
-          const ret = sessionStorage.getItem("kakao_pay_report_return");
+          const ret = localStorage.getItem("kakao_pay_report_return");
           if (ret) {
-            sessionStorage.removeItem("kakao_pay_report_return");
+            localStorage.removeItem("kakao_pay_report_return");
             const sep = ret.includes("?") ? "&" : "?";
             setRedirectOverride(`${ret}${sep}variant=realistic`);
           }

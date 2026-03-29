@@ -155,7 +155,7 @@ export default function HomePage({
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/beta/features`, {
           credentials: "include",
-          headers: { Accept: "application/json" },
+          headers: { Accept: "application/json", ...getAuthHeaders() },
         });
         const data = await res.json();
         if (data.features) {

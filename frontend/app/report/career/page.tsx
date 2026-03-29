@@ -63,7 +63,7 @@ function CareerAddonModal({
   const [payErr, setPayErr] = useState<string | null>(null);
   const saveReturn = () => {
     if (typeof window !== "undefined" && sajuId) {
-      sessionStorage.setItem("kakao_pay_report_return", `/report/career?saju_id=${encodeURIComponent(sajuId)}`);
+      localStorage.setItem("kakao_pay_report_return", `/report/career?saju_id=${encodeURIComponent(sajuId)}`);
     }
   };
   return (

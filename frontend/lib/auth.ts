@@ -1,7 +1,9 @@
 /**
  * 모바일 크로스 도메인에서 쿠키가 안 붙을 때 사용하는 세션 토큰.
- * 로그인 성공 시 백엔드가 URL fragment로 전달한 토큰을 sessionStorage에 저장하고,
+ * 로그인 성공 시 백엔드가 URL fragment로 전달한 토큰을 localStorage에 저장하고,
  * API 호출 시 Authorization 헤더로 보냄.
+ * ※ sessionStorage는 iOS Safari / 카카오·인스타 인앱 브라우저에서
+ *   앱 전환(카카오페이 결제 등) 시 초기화되므로 localStorage 사용.
  */
 const TOKEN_KEY = "hsaju_token";
 
@@ -10,17 +12,17 @@ export const SAJU_CACHE_HYDRATED_KEY = "saju_cache_hydrated_session";
 
 export function getStoredToken(): string | null {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 export function setStoredToken(token: string): void {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(TOKEN_KEY, token);
 }
 
 export function clearStoredToken(): void {
   if (typeof window === "undefined") return;
-  sessionStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(SAJU_CACHE_HYDRATED_KEY);
 }
 

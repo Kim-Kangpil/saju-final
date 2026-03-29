@@ -735,7 +735,7 @@ class GPTInterpretationGenerator:
                 try:
                     full_prompt = f"{current_system}\n\n{user_prompt}"
                     response = _gclient.models.generate_content(
-                        model="gemini-3-flash-preview",
+                        model="gemini-2.5-flash",
                         contents=full_prompt,
                         config=_gcfg,
                     )

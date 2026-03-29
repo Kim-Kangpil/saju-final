@@ -849,10 +849,11 @@ def _build_saju_context(saju: Optional[dict]) -> str:
 @app.post("/api/chat")
 async def api_chat(req: ChatRequest, request: Request):
     """
-    사주 AI 채팅. TheoryRetriever로 질문 관련 이론 검색, 사주 context 포함, GPT-4o 스트리밍 응답.
+    사주 AI 채팅. TheoryRetriever로 질문 관련 이론 검색, 사주 context 포함, Gemini 3 Flash 스트리밍 응답.
     """
-    if not client:
-        raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
+    # Gemini 우선 사용, 없으면 GPT-4o fallback
+    if not gemini_client and not client:
+        raise HTTPException(status_code=503, detail="AI API not configured")
     if not req.messages or not any(m.role == "user" and (m.content or "").strip() for m in req.messages):
         raise HTTPException(status_code=400, detail="사용자 메시지가 필요합니다.")
 
@@ -919,18 +920,40 @@ async def api_chat(req: ChatRequest, request: Request):
 
     async def stream_generator():
         try:
-            stream = client.chat.completions.create(
-                model="gpt-4o",
-                messages=openai_messages,
-                max_tokens=2000,
-                temperature=0.6,
-                stream=True,
-            )
-            for chunk in stream:
-                delta = chunk.choices[0].delta if chunk.choices else None
-                if delta and getattr(delta, "content", None):
-                    yield f"data: {json.dumps({'content': delta.content}, ensure_ascii=False)}\n\n"
-            yield "data: [DONE]\n\n"
+            if gemini_client:
+                # Gemini 스트리밍 사용
+                import google.genai as _genai
+                from google.genai import types as _genai_types
+                
+                full_prompt = f"{system_content}\n\n{openai_messages[-1].get('content', '')}"
+                
+                response = await gemini_client.aio.models.generate_content_stream(
+                    model="gemini-2.5-flash",
+                    contents=full_prompt,
+                    config=_genai_types.GenerateContentConfig(
+                        max_output_tokens=4000,
+                        temperature=0.7,
+                    )
+                )
+                
+                async for chunk in response:
+                    if chunk.text:
+                        yield f"data: {json.dumps({'content': chunk.text}, ensure_ascii=False)}\n\n"
+                yield "data: [DONE]\n\n"
+            else:
+                # GPT-4o fallback
+                stream = client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=openai_messages,
+                    max_tokens=2000,
+                    temperature=0.6,
+                    stream=True,
+                )
+                for chunk in stream:
+                    delta = chunk.choices[0].delta if chunk.choices else None
+                    if delta and getattr(delta, "content", None):
+                        yield f"data: {json.dumps({'content': delta.content}, ensure_ascii=False)}\n\n"
+                yield "data: [DONE]\n\n"
         except Exception as e:
             print(f"❌ /api/chat 스트리밍 오류: {e}")
             yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
@@ -1363,7 +1386,7 @@ def _call_gpt_with_retry(
 async def _call_gemini_with_retry(
     system_prompt: str,
     user_prompt: str,
-    model: str = "gemini-3-flash-preview",
+    model: str = "gemini-2.5-flash",
     max_tokens: int = 8192,
     max_retries: int = 2,
     temperature: float = 0.7,
@@ -2685,6 +2708,123 @@ async def payment_create(req: Optional[PaymentCreateRequest] = None):
         "orderId": order_id,
         "orderName": product["orderName"],
         "amount": product["amount"],
+    }
+
+
+@app.post("/api/payment/inicis/ready")
+async def inicis_pay_ready(request: Request):
+    """KG이니시스 바로오픈 결제 준비."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    
+    _ORDER_PRICE_MAP = {
+        "pro_monthly":     ("한양사주 Pro (월간)", 3900),
+        "basic":           ("분석권 1개", 1900),
+        "analysis_ticket": ("분석권 1개", 1900),
+        "deep":            ("심화 리포트", 9900),
+        "money":           ("재물운 리포트", 5900),
+        "love":            ("연애운 리포트", 5900),
+        "career":          ("직업운 리포트", 5900),
+        "couple":          ("궁합 리포트", 13900),
+        "money_realistic": ("재물운 직설 분석", 990),
+        "love_realistic":  ("연애운 직설 분석", 990),
+        "career_realistic": ("직업운 직설 분석", 990),
+    }
+    
+    order_type = body.get("order_type", "basic")
+    if order_type not in _ORDER_PRICE_MAP:
+        order_type = "basic"
+    
+    item_name, amount = _ORDER_PRICE_MAP[order_type]
+    frontend_url = os.getenv("FRONTEND_URL", "https://hsaju.com")
+    
+    import uuid as _uuid
+    order_id = f"in_{_uuid.uuid4().hex[:16]}"
+    
+    # KG이니시스 결제 정보
+    from logic.payment_db import normalize_saju_id_from_client, save_pending_payment
+    
+    pending_saju_id = normalize_saju_id_from_client(body.get("saju_id"))
+    save_pending_payment(
+        order_id=order_id,
+        user_id=user_id,
+        order_type=order_type,
+        tid="",  # 이니시스는 tid가 필요 없음
+        saju_id=pending_saju_id,
+    )
+    
+    return {
+        "order_id": order_id,
+        "item_name": item_name,
+        "amount": amount,
+        "mid": "MOI5470692",  # KG이니시스 상점 ID
+        "currency": "KRW",
+        "return_url": f"{frontend_url}/payment/inicis/success",
+        "close_url": f"{frontend_url}/payment/close",
+    }
+
+
+@app.post("/api/payment/portone/ready")
+async def portone_pay_ready(request: Request):
+    """PortOne 결제 준비 — 간단한 테스트용."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    
+    _ORDER_PRICE_MAP = {
+        "pro_monthly":     ("한양사주 Pro (월간)", 3900),
+        "basic":           ("분석권 1개", 1900),
+        "analysis_ticket": ("분석권 1개", 1900),
+        "deep":            ("심화 리포트", 9900),
+        "money":           ("재물운 리포트", 5900),
+        "love":            ("연애운 리포트", 5900),
+        "career":          ("직업운 리포트", 5900),
+        "couple":          ("궁합 리포트", 13900),
+        "money_realistic": ("재물운 직설 분석", 990),
+        "love_realistic":  ("연애운 직설 분석", 990),
+        "career_realistic": ("직업운 직설 분석", 990),
+    }
+    
+    order_type = body.get("order_type", "basic")
+    if order_type not in _ORDER_PRICE_MAP:
+        order_type = "basic"
+    
+    item_name, amount = _ORDER_PRICE_MAP[order_type]
+    frontend_url = os.getenv("FRONTEND_URL", "https://hsaju.com")
+    
+    import uuid as _uuid
+    order_id = f"po_{_uuid.uuid4().hex[:16]}"
+    
+    # PortOne은 클라이언트에서 직접 결제를 처리하므로 간단한 정보만 반환
+    from logic.payment_db import normalize_saju_id_from_client, save_pending_payment
+    
+    pending_saju_id = normalize_saju_id_from_client(body.get("saju_id"))
+    save_pending_payment(
+        order_id=order_id,
+        user_id=user_id,
+        order_type=order_type,
+        tid="",  # PortOne은 tid가 필요 없음
+        saju_id=pending_saju_id,
+    )
+    
+    return {
+        "order_id": order_id,
+        "item_name": item_name,
+        "amount": amount,
+        "store_id": "store-1234",  # 포트원 상점 ID (테스트용)
+        "channel_key": "channel-key-1234",  # 포트원 채널 키 (테스트용)
+        "payment_method": "card",  # 카드 결제
     }
 
 

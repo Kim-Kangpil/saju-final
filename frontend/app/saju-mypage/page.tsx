@@ -190,7 +190,9 @@ export default function SajuMyPage({
 
       if (res.ok) {
         setBetaFeatures(data.features);
-        setCouponMessage("🎉 쿠폰이 적용되었습니다! 채팅과 기본 리포트를 무료로 이용할 수 있습니다.");
+        setCouponMessage(data.features?.is_admin
+          ? "👑 관리자 모드가 활성화되었습니다! 모든 기능을 바로 이용할 수 있습니다."
+          : "🎉 쿠폰이 적용되었습니다! 채팅과 기본 리포트를 무료로 이용할 수 있습니다.");
         setCouponCode("");
       } else {
         setCouponMessage(data.detail || "쿠폰 적용에 실패했습니다.");
@@ -283,18 +285,20 @@ export default function SajuMyPage({
         </section>
 
         {/* 베타 쿠폰 섹션 */}
-        {!betaFeatures && (
+        {(!betaFeatures || !betaFeatures.is_admin) && (
           <section style={{ margin: "20px -20px 0", background: "var(--bg-surface)", padding: "20px", borderRadius: 12, border: "1.5px solid var(--border-default)" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: textDark, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-              🎉 베타 테스터 쿠폰
+              {betaFeatures ? "👑 관리자 전환 코드" : "🎉 베타 테스터 쿠폰"}
             </div>
             <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.5 }}>
-              쿠폰을 입력하면 채팅과 기본 리포트를 무료로 이용할 수 있어요!
+              {betaFeatures
+                ? "관리자 코드를 입력하면 관리자 모드로 전환됩니다."
+                : "쿠폰을 입력하면 채팅과 기본 리포트를 무료로 이용할 수 있어요!"}
             </p>
             <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
               <input
                 type="text"
-                placeholder="쿠폰 코드 입력"
+                placeholder={betaFeatures ? "관리자 코드 입력" : "쿠폰 코드 입력"}
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleCouponApply()}
@@ -366,6 +370,43 @@ export default function SajuMyPage({
                   <div>📱 채팅과 기본 리포트를 무제한으로 이용하세요!</div>
                 </>
               )}
+            </div>
+            <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => router.push("/chat")}
+                style={{
+                  flex: 1,
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: betaFeatures.is_admin ? "1px solid #d97706" : "1px solid #4A6741",
+                  background: "white",
+                  color: betaFeatures.is_admin ? "#d97706" : "#4A6741",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {betaFeatures.is_admin ? "AI 채팅 바로가기" : "베타 AI 채팅"}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/report/basic")}
+                style={{
+                  flex: 1,
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: "none",
+                  background: betaFeatures.is_admin ? "#d97706" : "#4A6741",
+                  color: "#fff",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: betaFeatures.is_admin ? "0 6px 16px rgba(217, 119, 6, 0.22)" : "0 6px 16px rgba(74, 103, 65, 0.18)",
+                }}
+              >
+                {betaFeatures.is_admin ? "기본 리포트 바로가기" : "기본 리포트 열기"}
+              </button>
             </div>
             
             {/* 베타 테스터 관리 기능 */}

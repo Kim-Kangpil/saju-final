@@ -5,12 +5,16 @@ import sys
 
 logger = logging.getLogger(__name__)
 
+_RATE_LIMIT_BUCKETS: dict[str, deque[float]] = defaultdict(deque)
+
 if getattr(sys.stdout, "buffer", None):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 import openai
+import hmac
 import hashlib
 import re
+import time
 from logic.twelve_states import calculate_twelve_states, get_twelve_state
 from logic import test
 from logic import lunar_converter
@@ -27,12 +31,13 @@ from auth_google2 import router as google_router
 import os
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from typing import Optional, Any, Dict
 import json
 from datetime import datetime, date, timezone, timedelta
 import asyncio
+from collections import defaultdict, deque
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -292,6 +297,33 @@ def _get_guest_key(request: Request) -> str:
     return _compute_guest_key(request)
 
 
+def _rate_limit_or_raise(
+    request: Request,
+    *,
+    bucket: str,
+    limit: int,
+    window_seconds: int,
+    subject: Optional[str] = None,
+) -> None:
+    identity = (subject or "").strip()
+    if not identity:
+        user_id = get_user_id_from_request(request)
+        if user_id is not None:
+            identity = f"user:{user_id}"
+        else:
+            identity = f"ip:{_get_client_ip(request) or 'unknown'}"
+
+    key = f"{bucket}:{identity}"
+    now = time.time()
+    q = _RATE_LIMIT_BUCKETS[key]
+    cutoff = now - window_seconds
+    while q and q[0] < cutoff:
+        q.popleft()
+    if len(q) >= limit:
+        raise HTTPException(status_code=429, detail="요청이 너무 많아요. 잠시 후 다시 시도해주세요.")
+    q.append(now)
+
+
 def _compute_guest_key(request: Request) -> str:
     client_ip = _get_client_ip(request)
     user_agent = request.headers.get("user-agent", "")
@@ -314,7 +346,7 @@ def _is_chat_admin(request: Request) -> bool:
     if not secret:
         return False
     provided = (request.headers.get("x-chat-admin-secret") or request.headers.get("X-CHAT-ADMIN-SECRET") or "").strip()
-    return bool(provided) and provided == secret
+    return bool(provided) and hmac.compare_digest(provided, secret)
 
 
 @app.post("/api/guest-chat/consume")
@@ -382,7 +414,7 @@ async def membership_activate(request: Request, body: MembershipActivateRequest)
 
 
 @app.post("/api/chat-logs/save")
-async def chat_logs_save(req: Request, body: Any):
+async def chat_logs_save(req: Request, body: Dict[str, Any] = Body(default_factory=dict)):
     """
     채팅 저장용 엔드포인트
 
@@ -392,6 +424,8 @@ async def chat_logs_save(req: Request, body: Any):
     from logic.chat_logs_db import save_chat_session
 
     body_obj = body if isinstance(body, dict) else {}
+
+    _rate_limit_or_raise(req, bucket="chat_logs_save", limit=60, window_seconds=60)
 
     session_id = (body_obj.get("sessionId") or "").strip()
     if not session_id:
@@ -443,6 +477,8 @@ async def chat_logs_list_sessions(request: Request, limit: int = 20, offset: int
     """현재 요청자의 채팅 세션 목록 조회"""
     from logic.chat_logs_db import get_sessions_for_owner
 
+    _rate_limit_or_raise(request, bucket="chat_logs_list", limit=30, window_seconds=60)
+
     user_id = get_user_id_from_request(request)
     guest_key = None
     if user_id is None:
@@ -461,6 +497,8 @@ async def chat_logs_list_sessions(request: Request, limit: int = 20, offset: int
 async def chat_logs_get_session(session_id: str, request: Request):
     """현재 요청자의 특정 세션 메시지 조회"""
     from logic.chat_logs_db import get_messages_for_session
+
+    _rate_limit_or_raise(request, bucket="chat_logs_get", limit=60, window_seconds=60)
 
     target = (session_id or "").strip()
     if not target:
@@ -492,6 +530,8 @@ async def admin_chat_logs_list_sessions(
     """관리자용: 특정 유저의 세션 목록 조회 (X-CHAT-ADMIN-SECRET 필요)"""
     from logic.chat_logs_db import get_sessions_for_admin_user
 
+    _rate_limit_or_raise(request, bucket="admin_chat_logs_list", limit=20, window_seconds=60)
+
     if not _is_chat_admin(request):
         raise HTTPException(status_code=403, detail="admin secret missing")
 
@@ -512,6 +552,8 @@ async def admin_chat_logs_get_session(
     """관리자용: 특정 유저의 특정 세션 메시지 조회 (X-CHAT-ADMIN-SECRET 필요)"""
     from logic.chat_logs_db import get_messages_for_admin
 
+    _rate_limit_or_raise(request, bucket="admin_chat_logs_get", limit=30, window_seconds=60)
+
     if not _is_chat_admin(request):
         raise HTTPException(status_code=403, detail="admin secret missing")
 
@@ -529,6 +571,8 @@ async def admin_chat_logs_get_session(
 @app.get("/api/admin/chat-logs/me")
 async def admin_chat_logs_me(request: Request):
     """관리자 권한이 있는 요청자 자신의 user_id를 반환합니다."""
+    _rate_limit_or_raise(request, bucket="admin_chat_logs_me", limit=20, window_seconds=60)
+
     if not _is_chat_admin(request):
         raise HTTPException(status_code=403, detail="admin secret missing")
 
@@ -542,6 +586,8 @@ async def admin_chat_logs_me(request: Request):
 @app.get("/api/admin/users")
 async def admin_list_users(request: Request, limit: int = 50, offset: int = 0):
     """관리자용 유저 목록 조회 (개인정보 포함 가능)."""
+    _rate_limit_or_raise(request, bucket="admin_users", limit=10, window_seconds=60)
+
     if not _is_chat_admin(request):
         raise HTTPException(status_code=403, detail="admin secret missing")
 
@@ -3814,6 +3860,8 @@ BETA_COUPONS = {
     }
 }
 
+_BETA_COUPONS_NORMALIZED = {key.strip().upper(): value for key, value in BETA_COUPONS.items()}
+
 @app.post("/api/beta/apply-coupon")
 async def apply_beta_coupon(request: Request):
     """베타 쿠폰 적용 API"""
@@ -3825,7 +3873,8 @@ async def apply_beta_coupon(request: Request):
     
     try:
         body = await request.json()
-        coupon_code = body.get("coupon_code", "").strip().upper()
+        coupon_code = body.get("coupon_code", "").strip()
+        normalized_coupon_code = coupon_code.upper()
         print(f"[DEBUG] 요청된 쿠폰 코드: '{coupon_code}'")
     except Exception as e:
         print(f"[DEBUG] JSON 파싱 오류: {e}")
@@ -3837,25 +3886,22 @@ async def apply_beta_coupon(request: Request):
     print(f"[DEBUG] 등록된 쿠폰: {list(BETA_COUPONS.keys())}")
     
     # 쿠폰 유효성 확인
-    coupon = BETA_COUPONS.get(coupon_code)
+    coupon = _BETA_COUPONS_NORMALIZED.get(normalized_coupon_code)
     print(f"[DEBUG] 쿠폰 조회 결과: {coupon}")
     
     if not coupon:
         raise HTTPException(status_code=400, detail="유효하지 않은 쿠폰입니다.")
-    
-    if coupon["used_count"] >= coupon["max_uses"]:
-        raise HTTPException(status_code=400, detail="쿠폰 사용 횟수를 초과했습니다.")
-    
-    # 사용자 쿠폰 적용 (실제로는 데이터베이스에 저장)
-    # 여기서는 간단히 세션/캐시에 저장
-    import uuid
+
     coupon_key = f"beta_coupon_{user_id}"
-    
-    # 이미 적용된 쿠폰인지 확인
     existing_coupon = get_cached_data(coupon_key)
-    if existing_coupon:
-        raise HTTPException(status_code=400, detail="이미 쿠폰을 적용했습니다.")
+    existing_code = ((existing_coupon or {}).get("code") or "").strip().upper()
+
+    if existing_code == normalized_coupon_code:
+        raise HTTPException(status_code=400, detail="이미 적용된 쿠폰입니다.")
     
+    if coupon["used_count"] >= coupon["max_uses"] and normalized_coupon_code != "SEM101019":
+        raise HTTPException(status_code=400, detail="쿠폰 사용 횟수를 초과했습니다.")
+
     # 쿠폰 적용
     coupon_data = {
         "code": coupon_code,
@@ -3864,14 +3910,17 @@ async def apply_beta_coupon(request: Request):
             "free_basic_report": coupon["free_basic_report"],
             "free_special_report": coupon["free_special_report"],
             "free_deep_report": coupon["free_deep_report"],
+            "unlimited_basic": coupon.get("unlimited_basic", False),
+            "is_admin": coupon.get("is_admin", False),
         },
         "applied_at": datetime.now(timezone.utc).isoformat(),
     }
     
     set_cached_data(coupon_key, coupon_data, expire_hours=24*30)  # 30일 유효
     
-    # 사용 횟수 증가
-    coupon["used_count"] += 1
+    # 사용 횟수 증가 (동일 사용자의 덮어쓰기는 중복 증가 방지)
+    if existing_code != normalized_coupon_code and normalized_coupon_code != "SEM101019":
+        coupon["used_count"] += 1
     
     return {
         "success": True,

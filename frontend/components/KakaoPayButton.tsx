@@ -53,7 +53,7 @@ export default function KakaoPayButton({
       // 결제 준비중 모달
       if (!data.next_redirect_mobile_url && !data.next_redirect_pc_url) {
         // 결제 준비중 모달 표시
-        alert("결제 기능은 현재 준비 중입니다.\n베타 테스터 쿠폰을 입력하시면 무료로 이용할 수 있습니다.");
+        alert("이 리포트는 현재 준비 중입니다.\n베타테스터도 아직 무료로 이용할 수 없으며, 정식 오픈 때 공개될 예정입니다.");
         onError?.("결제 준비에 실패했어요. 잠시 후 다시 시도해주세요.");
         return;
       }

@@ -31,49 +31,36 @@ function BasicIntroContent() {
       .catch(() => {})
   }, [sajuId])
 
-  // 베타 테스터 여부 확인 (is_beta_tester, is_admin 또는 기타 베타 혜택)
+  // 베타테스터/관리자 여부 확인
   useEffect(() => {
-    // 1. localStorage 확인
-    const betaFeatures = localStorage.getItem('betaFeatures')
-    if (betaFeatures) {
+    // 1. localStorage 캐시 먼저 확인
+    const stored = localStorage.getItem('betaFeatures')
+    if (stored) {
       try {
-        const parsed = JSON.parse(betaFeatures)
-        // is_beta_tester, is_admin 또는 free_basic_report 등의 혜택이 있으면 베타로 간주
-        if (parsed?.is_beta_tester || parsed?.is_admin || 
-            parsed?.free_basic_report || parsed?.free_chat || parsed?.unlimited_basic) {
-          setIsBetaTester(true)
-        }
-        // 관리자 여부 확인
-        if (parsed?.is_admin) {
-          setIsAdmin(true)
-        }
+        const f = JSON.parse(stored)
+        if (f?.is_beta_tester === true) setIsBetaTester(true)
+        if (f?.is_admin === true) setIsAdmin(true)
       } catch {}
     }
-    
-    // 2. API에서 최신 정보 가져오기 (로그인된 경우)
-    const checkBetaFeatures = async () => {
+
+    // 2. API로 최신 정보 확인 (항상 덮어씀)
+    const checkFeatures = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/beta/features`, {
-          credentials: 'include',
-        })
+        const res = await fetch(`${API_BASE}/api/beta/features`, { credentials: 'include' })
         const data = await res.json()
-        if (data?.features) {
-          // localStorage 업데이트
-          localStorage.setItem('betaFeatures', JSON.stringify(data.features))
-          // 버튼 표시 여부 업데이트
-          const f = data.features
-          if (f?.is_beta_tester || f?.is_admin || 
-              f?.free_basic_report || f?.free_chat || f?.unlimited_basic) {
-            setIsBetaTester(true)
-          }
-          // 관리자 여부 확인
-          if (f?.is_admin) {
-            setIsAdmin(true)
-          }
+        const f = data?.features
+        if (f) {
+          localStorage.setItem('betaFeatures', JSON.stringify(f))
+          setIsBetaTester(f.is_beta_tester === true)
+          setIsAdmin(f.is_admin === true)
+        } else {
+          // 로그인 안 됐거나 혜택 없음
+          setIsBetaTester(false)
+          setIsAdmin(false)
         }
       } catch {}
     }
-    checkBetaFeatures()
+    checkFeatures()
   }, [])
 
   // 로딩 progress 애니메이션 (95%까지 증가, 이후 shimmer)
@@ -210,8 +197,8 @@ function BasicIntroContent() {
           sajuId={sajuId}
         />
         
-        {/* 베타테스터용 무료 버튼 */}
-        {isBetaTester && (
+        {/* 베타테스터용 무료 버튼 - 관리자 제외 */}
+        {isBetaTester && !isAdmin && (
           <button
             type="button"
             onClick={handleBetaViewReport}

@@ -97,7 +97,7 @@ export default function KakaoPayButton({
         fontWeight: 900,
         flexShrink: 0,
       }}>K</span>
-      {loading ? "결제 준비 중..." : `${label} · ${price.toLocaleString()}원`}
+      {loading ? "결제 준비 중..." : label}
     </button>
   );
 }

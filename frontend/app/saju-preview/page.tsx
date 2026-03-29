@@ -1091,18 +1091,30 @@ function SajuPreviewContent() {
             disabled={deducting}
             style={{
               width: "100%",
-              padding: "14px 16px",
+              padding: "16px",
               borderRadius: 14,
-              border: `1.5px solid ${PREVIEW_BORDER}`,
-              background: deducting ? "#c4b8a4" : PREVIEW_SURFACE,
-              fontSize: 14,
+              border: `2px solid #8B7355`,
+              background: deducting ? "#c4b8a4" : "linear-gradient(135deg, #F5EFE3 0%, #E8DCC8 100%)",
+              fontSize: 15,
               fontWeight: 700,
-              color: PREVIEW_TEXT,
+              color: "#3D3530",
               cursor: deducting ? "wait" : "pointer",
               fontFamily: "inherit",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              boxShadow: "0 2px 8px rgba(139, 115, 85, 0.15)",
             }}
           >
-            {deducting ? "확인 중..." : "사주 분석 시작하기 (분석권 1개)"}
+            {deducting ? (
+              "확인 중..."
+            ) : (
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <span aria-hidden>🔮</span>
+                <span>나의 사주 종합 리포트</span>
+              </span>
+            )}
           </button>
 
           <div
@@ -1115,7 +1127,7 @@ function SajuPreviewContent() {
             <button
               type="button"
               className="preview-tap"
-              onClick={() => goSpecialReport("/report/money")}
+              onClick={() => goSpecialReport("/report/money/intro")}
               style={{
                 borderRadius: 14,
                 border: `1.5px solid ${PREVIEW_BORDER}`,
@@ -1124,16 +1136,31 @@ function SajuPreviewContent() {
                 color: PREVIEW_TEXT,
                 fontFamily: "'Gmarket Sans', sans-serif",
                 textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
               }}
             >
               <div style={{ fontSize: 13, fontWeight: 700 }}>💰 재물운 리포트</div>
-              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>5,900원</div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginTop: 10,
+                }}
+              >
+                <Icon icon="mdi:arrow-right-circle-outline" width={17} style={{ color: "#9A7B52", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#8B7355", letterSpacing: "0.04em" }}>
+                  자세히 보러가기
+                </span>
+              </div>
             </button>
 
             <button
               type="button"
               className="preview-tap"
-              onClick={() => goSpecialReport("/report/love")}
+              onClick={() => goSpecialReport("/report/love/intro")}
               style={{
                 borderRadius: 14,
                 border: `1.5px solid ${PREVIEW_BORDER}`,
@@ -1142,16 +1169,31 @@ function SajuPreviewContent() {
                 color: PREVIEW_TEXT,
                 fontFamily: "'Gmarket Sans', sans-serif",
                 textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
               }}
             >
               <div style={{ fontSize: 13, fontWeight: 700 }}>❤️ 연애운 리포트</div>
-              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>5,900원</div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginTop: 10,
+                }}
+              >
+                <Icon icon="mdi:arrow-right-circle-outline" width={17} style={{ color: "#9A7B52", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#8B7355", letterSpacing: "0.04em" }}>
+                  자세히 보러가기
+                </span>
+              </div>
             </button>
 
             <button
               type="button"
               className="preview-tap"
-              onClick={() => goSpecialReport("/report/career")}
+              onClick={() => goSpecialReport("/report/career/intro")}
               style={{
                 borderRadius: 14,
                 border: `1.5px solid ${PREVIEW_BORDER}`,
@@ -1160,16 +1202,31 @@ function SajuPreviewContent() {
                 color: PREVIEW_TEXT,
                 fontFamily: "'Gmarket Sans', sans-serif",
                 textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
               }}
             >
               <div style={{ fontSize: 13, fontWeight: 700 }}>💼 직업운 리포트</div>
-              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>5,900원</div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginTop: 10,
+                }}
+              >
+                <Icon icon="mdi:arrow-right-circle-outline" width={17} style={{ color: "#9A7B52", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#8B7355", letterSpacing: "0.04em" }}>
+                  자세히 보러가기
+                </span>
+              </div>
             </button>
 
             <button
               type="button"
               className="preview-tap"
-              onClick={() => goSpecialReport("/add-v2")}
+              onClick={() => goSpecialReport("/report/deep/intro")}
               style={{
                 borderRadius: 14,
                 border: `1.5px solid #C9A66B`,
@@ -1178,10 +1235,25 @@ function SajuPreviewContent() {
                 color: PREVIEW_TEXT,
                 fontFamily: "'Gmarket Sans', sans-serif",
                 textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
               }}
             >
-              <div style={{ fontSize: 13, fontWeight: 700 }}>🔮 심화 분석 리포트</div>
-              <div style={{ fontSize: 11, marginTop: 4, color: "#7A6040" }}>9,900원</div>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>📜 심화 분석 리포트</div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  marginTop: 10,
+                }}
+              >
+                <Icon icon="mdi:arrow-right-circle-outline" width={17} style={{ color: "#9A7B52", flexShrink: 0 }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#8B7355", letterSpacing: "0.04em" }}>
+                  자세히 보러가기
+                </span>
+              </div>
             </button>
           </div>
 

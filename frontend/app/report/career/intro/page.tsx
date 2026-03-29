@@ -1,16 +1,33 @@
 "use client"
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import KakaoPayButton from '@/components/KakaoPayButton'
+import { ReportIntroHeader } from '@/components/ReportIntroHeader'
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://saju-backend-eqd6.onrender.com'
 
 function CareerIntroContent() {
   const searchParams = useSearchParams()
   const sajuId = searchParams.get('saju_id') || ''
+  const [sajuInfo, setSajuInfo] = useState<{ name?: string; birth_ymd?: string } | null>(null)
+
+  useEffect(() => {
+    if (!sajuId) return
+    fetch(`${API_BASE}/api/saju/${sajuId}`, { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (data?.name || data?.birthdate) {
+          const ymd = data.birthdate ? data.birthdate.replace(/-/g, '') : ''
+          setSajuInfo({ name: data.name, birth_ymd: ymd })
+        }
+      })
+      .catch(() => {})
+  }, [sajuId])
 
   return (
-    <div style={{maxWidth: 480, margin: '0 auto', padding: '24px 20px', fontFamily: 'var(--font-sans)', background: '#F5F1EA', minHeight: '100vh'}}>
-      
-      {/* 헤더 */}
+    <div style={{maxWidth: 480, margin: '0 auto', padding: '12px 20px 24px', fontFamily: 'var(--font-sans)', background: '#F5F1EA', minHeight: '100vh'}}>
+      <ReportIntroHeader title="직업운 리포트" />
+
       <div style={{textAlign: 'center', marginBottom: 32}}>
         <div style={{fontSize: 48, marginBottom: 12}}>💼</div>
         <h1 style={{fontSize: 22, fontWeight: 700, color: '#3D3530', marginBottom: 8}}>
@@ -77,14 +94,33 @@ function CareerIntroContent() {
 
       {/* CTA */}
       <div style={{textAlign: 'center'}}>
+        <p style={{fontSize: 13, color: '#6B5F4E', marginBottom: 12, fontWeight: 600}}>
+          {sajuInfo?.name && sajuInfo?.birth_ymd
+            ? `${sajuInfo.name}님 (${sajuInfo.birth_ymd.slice(0, 4)}.${sajuInfo.birth_ymd.slice(4, 6)}.${sajuInfo.birth_ymd.slice(6, 8)}) 맞춤 리포트`
+            : '맞춤 리포트'}
+        </p>
+        <p style={{fontSize: 12, color: '#8B7355', marginBottom: 14, fontWeight: 700}}>
+          내 커리어 방향을 알면 선택이 명확해져요
+        </p>
+        <div style={{marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
+          <span style={{fontSize: 16, color: '#C4B5A0', textDecoration: 'line-through'}}>
+            9,900원
+          </span>
+          <span style={{fontSize: 26, fontWeight: 700, color: '#3D3530'}}>
+            5,900원
+          </span>
+          <span style={{fontSize: 12, fontWeight: 700, color: '#fff', background: '#DC2626', padding: '3px 8px', borderRadius: 6}}>
+            40%
+          </span>
+        </div>
         <KakaoPayButton
           orderType="career"
           price={5900}
-          label="직업운 리포트 보기 — 5,900원"
+          label="직업운 리포트 확인하기"
           sajuId={sajuId}
         />
-        <p style={{fontSize: 12, color: '#B0A090', marginTop: 8}}>
-          유효기간 없음 · 한 번 구매로 영구 열람
+        <p style={{fontSize: 10, color: '#C4B5A0', marginTop: 6}}>
+          한 번 구매로 영구 열람 가능
         </p>
       </div>
 

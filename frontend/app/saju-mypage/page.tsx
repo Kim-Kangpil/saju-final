@@ -391,7 +391,7 @@ export default function SajuMyPage({
               </button>
               <button
                 type="button"
-                onClick={() => router.push("/report/basic")}
+                onClick={() => router.push("/report/basic/intro")}
                 style={{
                   flex: 1,
                   padding: "12px 14px",

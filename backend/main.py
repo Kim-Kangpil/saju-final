@@ -3915,6 +3915,7 @@ async def apply_beta_coupon(request: Request):
             "free_deep_report": coupon["free_deep_report"],
             "unlimited_basic": coupon.get("unlimited_basic", False),
             "is_admin": coupon.get("is_admin", False),
+            "is_beta_tester": True,  # 베타 테스터 표시용
         },
         "applied_at": datetime.now(timezone.utc).isoformat(),
     }

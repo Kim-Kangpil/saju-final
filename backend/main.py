@@ -29,6 +29,7 @@ from logic.feature_flags import use_new_saju_engine, get_engine_version_label
 from logic.theory_retriever import TheoryRetriever
 from auth_kakao import router as kakao_router
 from auth_google2 import router as google_router
+from auth_naver import router as naver_router
 import os
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
@@ -97,6 +98,7 @@ if not TEST_MODE:
 app = FastAPI(title="Saju API", version="0.1.0")
 app.include_router(kakao_router)
 app.include_router(google_router)
+app.include_router(naver_router)
 
 # ... 나머지 코드 그대로 ...
 

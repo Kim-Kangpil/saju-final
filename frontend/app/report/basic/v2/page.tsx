@@ -81,21 +81,70 @@ function MarkdownBody({ text, style }: { text: string; style?: React.CSSProperti
   );
 }
 
-const hanjaToElement = (h: string): "wood" | "fire" | "earth" | "metal" | "water" | "none" => {
-  const map: Record<string, "wood" | "fire" | "earth" | "metal" | "water"> = {
-    甲: "wood", 乙: "wood",
-    丙: "fire", 丁: "fire",
-    戊: "earth", 己: "earth",
-    庚: "metal", 辛: "metal",
-    壬: "water", 癸: "water",
-    寅: "wood", 卯: "wood",
-    巳: "fire", 午: "fire",
-    辰: "earth", 戌: "earth", 丑: "earth", 未: "earth",
-    申: "metal", 酉: "metal",
-    子: "water", 亥: "water",
-  };
-  return map[h] || "none";
+const HANJA_TO_HANGUL: Record<string, string> = {
+  甲: "갑", 乙: "을", 丙: "병", 丁: "정", 戊: "무", 己: "기",
+  庚: "경", 辛: "신", 壬: "임", 癸: "계",
+  子: "자", 丑: "축", 寅: "인", 卯: "묘", 辰: "진", 巳: "사",
+  午: "오", 未: "미", 申: "신", 酉: "유", 戌: "술", 亥: "해",
 };
+function hanjaToHangul(h: string) { return HANJA_TO_HANGUL[h] ?? ""; }
+
+type Element = "wood" | "fire" | "earth" | "metal" | "water";
+type Polarity = "yang" | "yin";
+
+function hanjaToElement(h: string): Element | "none" {
+  const wood = new Set(["甲","乙","寅","卯"]);
+  const fire = new Set(["丙","丁","巳","午"]);
+  const earth = new Set(["戊","己","辰","戌","丑","未"]);
+  const metal = new Set(["庚","辛","申","酉"]);
+  const water = new Set(["壬","癸","子","亥"]);
+  if (wood.has(h)) return "wood";
+  if (fire.has(h)) return "fire";
+  if (earth.has(h)) return "earth";
+  if (metal.has(h)) return "metal";
+  if (water.has(h)) return "water";
+  return "none";
+}
+
+const ELEMENT_PALETTE: Record<string, { text: string; bg: string; border: string }> = {
+  wood:  { text: "#27500A", bg: "#C0DD97", border: "#3B6D11" },
+  fire:  { text: "#712B13", bg: "#F0997B", border: "#993C1D" },
+  earth: { text: "#633806", bg: "#FAC775", border: "#854F0B" },
+  metal: { text: "#444441", bg: "#FFFFFF", border: "#D4C9B8" },
+  water: { text: "#444441", bg: "#B4B2A9", border: "#5F5E5A" },
+  none:  { text: "#2C2417", bg: "#EDE7DB", border: "#D4C9B8" },
+};
+
+function stemMeta(stem: string): { el: Element; pol: Polarity } | null {
+  const map: Record<string, { el: Element; pol: Polarity }> = {
+    甲:{el:"wood",pol:"yang"},乙:{el:"wood",pol:"yin"},
+    丙:{el:"fire",pol:"yang"},丁:{el:"fire",pol:"yin"},
+    戊:{el:"earth",pol:"yang"},己:{el:"earth",pol:"yin"},
+    庚:{el:"metal",pol:"yang"},辛:{el:"metal",pol:"yin"},
+    壬:{el:"water",pol:"yang"},癸:{el:"water",pol:"yin"},
+  };
+  return map[stem] ?? null;
+}
+function produces(a: Element, b: Element) {
+  return ({wood:"fire",fire:"earth",earth:"metal",metal:"water",water:"wood"} as Record<Element,Element>)[a] === b;
+}
+function controls(a: Element, b: Element) {
+  return ({wood:"earth",fire:"metal",earth:"water",metal:"wood",water:"fire"} as Record<Element,Element>)[a] === b;
+}
+function tenGod(dayStem: string, target: string): string {
+  const dm = stemMeta(dayStem), tm = stemMeta(target);
+  if (!dm || !tm) return "";
+  const same = dm.pol === tm.pol;
+  if (dm.el === tm.el) return same ? "비견" : "겁재";
+  if (produces(dm.el, tm.el)) return same ? "식신" : "상관";
+  if (produces(tm.el, dm.el)) return same ? "편인" : "정인";
+  if (controls(dm.el, tm.el)) return same ? "편재" : "정재";
+  if (controls(tm.el, dm.el)) return same ? "편관" : "정관";
+  return "";
+}
+function branchMainStem(branch: string): string {
+  return ({子:"癸",丑:"己",寅:"甲",卯:"乙",辰:"戊",巳:"丙",午:"丁",未:"己",申:"庚",酉:"辛",戌:"戊",亥:"壬"} as Record<string,string>)[branch] ?? "";
+}
 
 interface SajuResult {
   year: { cheongan: { hanja: string; hangul: string }; jiji: { hanja: string; hangul: string } };
@@ -256,6 +305,7 @@ function BasicV2ReportContent() {
   } | null>(null);
   const [result, setResult] = useState<SajuResult | null>(null);
   const [v2Result, setV2Result] = useState<V2Result | null>(null);
+  const [pillarStrings, setPillarStrings] = useState<{ hour: string; day: string; month: string; year: string } | null>(null);
   const [basicInfoOpen, setBasicInfoOpen] = useState(false);
   const [sajuTableOpen, setSajuTableOpen] = useState(false);
   const [fakeProgress, setFakeProgress] = useState(0);
@@ -321,6 +371,7 @@ function BasicV2ReportContent() {
         const monthPillar = (raw.month_pillar as string) || `${fullData.month?.cheongan?.hanja || ""}${fullData.month?.jiji?.hanja || ""}`;
         const dayPillar = (raw.day_pillar as string) || `${fullData.day?.cheongan?.hanja || ""}${fullData.day?.jiji?.hanja || ""}`;
         const hourPillar = (raw.hour_pillar as string) || `${fullData.hour?.cheongan?.hanja || ""}${fullData.hour?.jiji?.hanja || ""}`;
+        setPillarStrings({ hour: hourPillar, day: dayPillar, month: monthPillar, year: yearPillar });
 
         const v2Res = await fetch(`${API_BASE}/saju/analyze-v2`, {
           method: "POST",
@@ -356,11 +407,6 @@ function BasicV2ReportContent() {
     loadAndAnalyze();
   }, [sajuId]);
 
-  const pillars = result
-    ? [result.hour, result.day, result.month, result.year].filter(
-        (p) => p?.cheongan?.hanja && p?.jiji?.hanja
-      )
-    : [];
   const birthYmd = sajuInfo?.birthdate?.replace(/-/g, "");
   const birthHm = sajuInfo?.birth_time?.replace(":", "") || "1200";
   const gender = sajuInfo?.gender === "남자" ? "M" : "F";
@@ -505,7 +551,7 @@ function BasicV2ReportContent() {
           </div>
 
           {/* 사주팔자 아코디언 */}
-          {result && (
+          {pillarStrings && (
             <div style={{ border: `1px solid ${S.beige}`, borderRadius: 12, overflow: "hidden", background: "#fff", marginBottom: 20, boxShadow: "0 1px 4px rgba(44,36,23,0.05)" }}>
               <button
                 type="button"
@@ -518,71 +564,79 @@ function BasicV2ReportContent() {
                 </motion.span>
               </button>
               <AnimatePresence initial={false}>
-                {sajuTableOpen && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} style={{ overflow: "hidden" }}>
-                    <div style={{ padding: "12px 12px 14px", borderTop: `1px solid ${S.cream3}`, overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
-                        <thead>
-                          <tr>
-                            <th style={{ width: 56, background: S.cream2, border: `1px solid ${S.beige}`, padding: "7px 4px", fontSize: 11, fontWeight: 700, color: S.ink }} />
-                            {(pillars.length === 4
-                              ? ["시주", "일주", "월주", "년주"]
-                              : ["일주", "월주", "년주"]
-                            ).map((h) => (
-                              <th key={h} style={{ background: S.cream2, border: `1px solid ${S.beige}`, padding: "7px 4px", textAlign: "center", fontSize: 11, fontWeight: 700, color: S.ink }}>{h}</th>
-                            ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr>
-                            <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>천간</td>
-                            {pillars.map((p, i) => {
-                              const el = hanjaToElement(p.cheongan.hanja);
-                              const palette: any = {
-                                wood:  { text: "#27500A", bg: "#C0DD97" },
-                                fire:  { text: "#712B13", bg: "#F0997B" },
-                                earth: { text: "#633806", bg: "#FAC775" },
-                                metal: { text: "#444441", bg: "#FFFFFF" },
-                                water: { text: "#444441", bg: "#B4B2A9" },
-                                none:  { text: S.ink,    bg: S.cream2   },
-                              };
-                              const col = palette[el] || palette.none;
-                              return (
-                                <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
-                                  <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
-                                    {p.cheongan.hanja}{p.cheongan.hangul}
-                                  </div>
-                                </td>
-                              );
-                            })}
-                          </tr>
-                          <tr>
-                            <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>지지</td>
-                            {pillars.map((p, i) => {
-                              const el = hanjaToElement(p.jiji.hanja);
-                              const palette: any = {
-                                wood:  { text: "#27500A", bg: "#C0DD97" },
-                                fire:  { text: "#712B13", bg: "#F0997B" },
-                                earth: { text: "#633806", bg: "#FAC775" },
-                                metal: { text: "#444441", bg: "#FFFFFF" },
-                                water: { text: "#444441", bg: "#B4B2A9" },
-                                none:  { text: S.ink,    bg: S.cream2   },
-                              };
-                              const col = palette[el] || palette.none;
-                              return (
-                                <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
-                                  <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
-                                    {p.jiji.hanja}{p.jiji.hangul}
-                                  </div>
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </motion.div>
-                )}
+                {sajuTableOpen && (() => {
+                  const blocks = [
+                    { label: "시주", val: pillarStrings.hour },
+                    { label: "일주", val: pillarStrings.day },
+                    { label: "월주", val: pillarStrings.month },
+                    { label: "년주", val: pillarStrings.year },
+                  ].filter(b => b.val && b.val.length >= 2);
+                  const dayStem = pillarStrings.day[0] ?? "";
+                  const tdBase: React.CSSProperties = { fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" };
+                  const thBase: React.CSSProperties = { background: S.cream2, border: `1px solid ${S.beige}`, padding: "7px 4px", textAlign: "center", fontSize: 11, fontWeight: 700, color: S.ink };
+                  return (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} style={{ overflow: "hidden" }}>
+                      <div style={{ padding: "12px 12px 14px", borderTop: `1px solid ${S.cream3}`, overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
+                          <thead>
+                            <tr>
+                              <th style={{ ...thBase, width: 64 }} />
+                              {blocks.map(b => <th key={b.label} style={thBase}>{b.label}</th>)}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {/* 십성(천간) */}
+                            <tr>
+                              <td style={tdBase}>십성</td>
+                              {blocks.map(b => {
+                                const stem = b.val[0] ?? "";
+                                return <td key={b.label} style={{ ...tdBase, fontWeight: 600, fontSize: 12 }}>{tenGod(dayStem, stem)}</td>;
+                              })}
+                            </tr>
+                            {/* 천간 */}
+                            <tr>
+                              <td style={tdBase}>천간</td>
+                              {blocks.map(b => {
+                                const stem = b.val[0] ?? "";
+                                const col = ELEMENT_PALETTE[hanjaToElement(stem)] ?? ELEMENT_PALETTE.none;
+                                return (
+                                  <td key={b.label} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                    <div style={{ padding: "10px 6px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700, border: `1px solid ${col.border}` }}>
+                                      {stem}{hanjaToHangul(stem)}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                            {/* 지지 */}
+                            <tr>
+                              <td style={tdBase}>지지</td>
+                              {blocks.map(b => {
+                                const branch = b.val[1] ?? "";
+                                const col = ELEMENT_PALETTE[hanjaToElement(branch)] ?? ELEMENT_PALETTE.none;
+                                return (
+                                  <td key={b.label} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                    <div style={{ padding: "10px 6px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700, border: `1px solid ${col.border}` }}>
+                                      {branch}{hanjaToHangul(branch)}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                            {/* 십성(지지) */}
+                            <tr>
+                              <td style={tdBase}>십성(지지)</td>
+                              {blocks.map(b => {
+                                const ms = branchMainStem(b.val[1] ?? "");
+                                return <td key={b.label} style={{ ...tdBase, fontWeight: 600, fontSize: 12 }}>{ms ? tenGod(dayStem, ms) : ""}</td>;
+                              })}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
               </AnimatePresence>
             </div>
           )}

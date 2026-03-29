@@ -1428,7 +1428,7 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
     bigyeob_count = sum(1 for tg in tg_values if tg in ("비견", "겁재"))
     
     # 역마·도화 체크
-    yeokma_count = len(sinsal.get("역마") or [])
+    yeokma_count = len(sinsal.get("yeokma") or sinsal.get("역마") or [])
     
     # 십이운성 체크
     sibiun_data = saju_data.get("twelve_states") or {}
@@ -1509,7 +1509,7 @@ def calculate_problem_loop(saju_data: dict, personality_result: dict, money_resu
     jae_count = sum(1 for tg in tg_values if tg in ("편재", "정재"))
     siksang_count = sum(1 for tg in tg_values if tg in ("식신", "상관"))
     in_count = sum(1 for tg in tg_values if tg in ("편인", "정인"))
-    yeokma_count = len(sinsal.get("역마") or [])
+    yeokma_count = len(sinsal.get("yeokma") or sinsal.get("역마") or [])
     
     # 우선순위 기반 패턴 결정
     # 1순위: 신약 + 관살多

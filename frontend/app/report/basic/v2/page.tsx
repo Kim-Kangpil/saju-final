@@ -293,6 +293,8 @@ function BasicV2ReportContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("saju_id") || "";
+  const shareToken = searchParams.get("share_token") || "";
+  const isSharedView = !!shareToken && !sajuId;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -334,7 +336,7 @@ function BasicV2ReportContent() {
 
   // 데이터 로드 및 v2 분석
   useEffect(() => {
-    if (!sajuId) {
+    if (!sajuId && !shareToken) {
       setError("사주 ID가 필요합니다.");
       setLoading(false);
       return;
@@ -342,13 +344,23 @@ function BasicV2ReportContent() {
 
     const loadAndAnalyze = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, { credentials: "include", headers: getAuthHeaders() });
-        if (!res.ok) throw new Error("사주 데이터를 불러올 수 없습니다.");
-        const sajuData = await res.json();
+        // 공유 토큰으로 접근하는 경우 (인증 불필요)
+        let resolvedSajuId = sajuId;
+        let sajuData: Record<string, unknown>;
+        if (isSharedView) {
+          const sharedRes = await fetch(`${API_BASE}/api/saju/shared/${shareToken}`);
+          if (!sharedRes.ok) throw new Error("유효하지 않은 공유 링크입니다.");
+          sajuData = await sharedRes.json();
+          resolvedSajuId = String(sajuData.id);
+        } else {
+          const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, { credentials: "include", headers: getAuthHeaders() });
+          if (!res.ok) throw new Error("사주 데이터를 불러올 수 없습니다.");
+          sajuData = await res.json();
+        }
         setSajuInfo(sajuData);
 
-        const [y, m, d] = (sajuData.birthdate || "").split("-").map(Number);
-        const timePart = (sajuData.birth_time || "").trim();
+        const [y, m, d] = (sajuData.birthdate as string || "").split("-").map(Number);
+        const timePart = ((sajuData.birth_time as string) || "").trim();
         let hour = 12, minute = 0;
         if (timePart && /^\d{1,2}:\d{1,2}$/.test(timePart)) {
           const [h, mi] = timePart.split(":").map(Number);
@@ -373,6 +385,35 @@ function BasicV2ReportContent() {
         const hourPillar = (raw.hour_pillar as string) || `${fullData.hour?.cheongan?.hanja || ""}${fullData.hour?.jiji?.hanja || ""}`;
         setPillarStrings({ hour: hourPillar, day: dayPillar, month: monthPillar, year: yearPillar });
 
+        // 공유 뷰: analyze-v2 호출 없이 캐시에서 직접 가져옴
+        if (isSharedView) {
+          const cacheKey = `v2_${resolvedSajuId}`;
+          const [mainRes, cvRes, sectRes] = await Promise.all([
+            fetch(`${API_BASE}/saju/report-cache?cache_key=${cacheKey}&section_key=v2_comprehensive`),
+            fetch(`${API_BASE}/saju/report-cache?cache_key=${cacheKey}&section_key=v2_core_values`),
+            fetch(`${API_BASE}/saju/report-cache?cache_key=${cacheKey}&section_key=v2_sections`),
+          ]);
+          const [mainData, cvData, sectData] = await Promise.all([mainRes.json(), cvRes.json(), sectRes.json()]);
+          if (!mainData.found) throw new Error("리포트가 아직 생성되지 않았어요.\n공유한 사람이 먼저 리포트를 열람한 뒤 공유해 주세요.");
+          let sections: Record<string, string> = {};
+          if (sectData.found && sectData.content) {
+            try { sections = JSON.parse(sectData.content); } catch {}
+          }
+          setV2Result({
+            comprehensive: mainData.content || "",
+            core_values: cvData.content || "",
+            section_personality: sections.section_personality || "",
+            section_strength: sections.section_strength || "",
+            section_problem: sections.section_problem || "",
+            section_money: sections.section_money || "",
+            section_career: sections.section_career || "",
+            section_relationship: sections.section_relationship || "",
+            section_current: sections.section_current || "",
+            rule_summary: {},
+          });
+          return;
+        }
+
         const v2Res = await fetch(`${API_BASE}/saju/analyze-v2`, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...getAuthHeaders() },
@@ -390,6 +431,7 @@ function BasicV2ReportContent() {
             strength: raw.strength !== undefined ? raw.strength : {},
             harmony_clash: raw.harmony_clash && typeof raw.harmony_clash === "object" ? raw.harmony_clash : {},
             sinsal: raw.sinsal && typeof raw.sinsal === "object" ? raw.sinsal : {},
+            twelve_states: raw.twelve_states && typeof raw.twelve_states === "object" ? raw.twelve_states : {},
             tone: "empathy",
             cache_key: `v2_${sajuId}`,
           }),
@@ -405,7 +447,7 @@ function BasicV2ReportContent() {
     };
 
     loadAndAnalyze();
-  }, [sajuId]);
+  }, [sajuId, shareToken]);
 
   const birthYmd = sajuInfo?.birthdate?.replace(/-/g, "");
   const birthHm = sajuInfo?.birth_time?.replace(":", "") || "1200";
@@ -414,12 +456,24 @@ function BasicV2ReportContent() {
   const timeUnknown = !sajuInfo?.birth_time;
 
   const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      try { await navigator.share({ title: '사주 기본 분석 리포트', url }); } catch {}
-    } else {
-      await navigator.clipboard.writeText(url).catch(() => {});
-      alert('링크가 복사됐어요!');
+    if (isSharedView) return; // 공유 뷰에서는 재공유 불가
+    try {
+      const res = await fetch(`${API_BASE}/api/saju/${sajuId}/share`, {
+        method: "POST",
+        credentials: "include",
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error("share_failed");
+      const { share_token } = await res.json();
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const shareUrl = `${origin}/report/basic/v2?share_token=${share_token}`;
+      if (navigator.share) {
+        try { await navigator.share({ title: "사주 기본 분석 리포트", url: shareUrl }); return; } catch {}
+      }
+      await navigator.clipboard.writeText(shareUrl).catch(() => {});
+      alert("공유 링크가 복사됐어요!\n누구나 열람할 수 있어요.");
+    } catch {
+      alert("공유 링크 생성에 실패했어요. 다시 시도해 주세요.");
     }
   };
 
@@ -448,6 +502,9 @@ function BasicV2ReportContent() {
           <Icon icon="mdi:chevron-left" width={24} color={S.ink} />
         </button>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: S.ink, flex: 1 }}>✨ 기본 분석 리포트</h1>
+        {isSharedView && (
+          <span style={{ fontSize: 11, color: S.gold, border: `1px solid ${S.gold}`, borderRadius: 6, padding: "2px 8px", flexShrink: 0 }}>공유됨</span>
+        )}
       </header>
 
       {loading ? (

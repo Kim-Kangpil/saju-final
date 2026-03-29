@@ -156,6 +156,7 @@ DB = test.load_db(str(DB_PATH))
 if DB is None:
     raise RuntimeError(f"solar_terms_db.json 로드 실패: {DB_PATH}")
 
+import uuid as _uuid_mod
 from logic.saju_db import (
     init_saju_db,
     get_saju_count_for_user,
@@ -163,6 +164,8 @@ from logic.saju_db import (
     get_saju_list_for_user,
     save_saju_for_user,
     delete_saju_for_user,
+    get_saju_by_share_token,
+    set_saju_share_token,
     get_report_cache,
     save_report_cache,
     clear_all_report_cache,
@@ -3237,6 +3240,39 @@ def delete_saju(saju_id: int, request: Request):
     return {"success": True}
 
 
+@app.post("/api/saju/{saju_id}/share")
+def create_saju_share_token(saju_id: int, request: Request):
+    """공유 토큰 생성 (소유자 인증 필요). 이미 토큰이 있으면 재사용."""
+    user_id = get_user_id_from_request(request)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    # 기존 토큰이 있으면 그대로 반환
+    row = get_saju_by_id(saju_id, user_id)
+    if not row:
+        raise HTTPException(status_code=404, detail="해당 사주를 찾을 수 없습니다.")
+    token = str(_uuid_mod.uuid4()).replace("-", "")
+    set_saju_share_token(saju_id, user_id, token)
+    return {"share_token": token}
+
+
+@app.get("/api/saju/shared/{share_token}")
+def get_shared_saju(share_token: str):
+    """공유 토큰으로 사주 데이터 조회 (인증 불필요)."""
+    row = get_saju_by_share_token(share_token)
+    if not row:
+        raise HTTPException(status_code=404, detail="유효하지 않은 공유 링크입니다.")
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "relation": row.get("relation"),
+        "birthdate": row["birthdate"],
+        "birth_time": row.get("birth_time"),
+        "calendar_type": row["calendar_type"],
+        "gender": row["gender"],
+        "iana_timezone": row.get("iana_timezone"),
+    }
+
+
 @app.post("/saju/summary-gpt")
 async def summary_gpt(req: SummaryGPTRequest, request: Request):
     """종합 요약 GPT — Pro 또는 분析권 1개 차감 후 허용."""
@@ -3614,6 +3650,7 @@ class AnalyzeV2Request(BaseModel):
     strength: Optional[Any] = None
     harmony_clash: Optional[dict] = None
     sinsal: Optional[dict] = None
+    twelve_states: Optional[dict] = None
     tone: str = "empathy"
     cache_key: Optional[str] = None
 
@@ -3650,6 +3687,7 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
         ) or "알 수 없음",
         "harmony_clash":   req.harmony_clash or {},
         "sinsal":          req.sinsal or {},
+        "twelve_states":   req.twelve_states or {},
         "daeun_list":      req.daeun_list or [],
         "daeun_direction": req.daeun_direction or "순행",
     }

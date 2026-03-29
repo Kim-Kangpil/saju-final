@@ -23,6 +23,19 @@ export default function StartPage({
     process.env.NEXT_PUBLIC_BACKEND_URL ||
     "https://saju-backend-eqd6.onrender.com";
 
+  // 이미 로그인된 경우 자동 이동
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const token = localStorage.getItem("hsaju_token");
+    if (!token) return;
+    fetch(`${backend}/api/saju/list`, {
+      credentials: "include",
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(r => {
+      if (r.ok) router.replace("/home");
+    }).catch(() => {});
+  }, []);
+
   const goKakao = () => {
     if (typeof window !== "undefined") {
       window.location.href = `${backend}/auth/kakao/login`;

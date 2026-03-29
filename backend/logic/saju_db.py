@@ -29,11 +29,15 @@ def init_saju_db():
                     calendar_type TEXT NOT NULL,
                     gender TEXT NOT NULL,
                     created_at TEXT NOT NULL,
-                    iana_timezone TEXT
+                    iana_timezone TEXT,
+                    share_token TEXT
                 )
             """)
             cur.execute(
                 "ALTER TABLE saju ADD COLUMN IF NOT EXISTS iana_timezone TEXT"
+            )
+            cur.execute(
+                "ALTER TABLE saju ADD COLUMN IF NOT EXISTS share_token TEXT"
             )
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS report_cache (
@@ -56,11 +60,16 @@ def init_saju_db():
                     calendar_type TEXT NOT NULL,
                     gender TEXT NOT NULL,
                     created_at TEXT NOT NULL,
-                    iana_timezone TEXT
+                    iana_timezone TEXT,
+                    share_token TEXT
                 )
             """)
             try:
                 cur.execute("ALTER TABLE saju ADD COLUMN iana_timezone TEXT")
+            except Exception:
+                pass
+            try:
+                cur.execute("ALTER TABLE saju ADD COLUMN share_token TEXT")
             except Exception:
                 pass
             cur.execute("""
@@ -75,6 +84,9 @@ def init_saju_db():
 
         cur.execute(
             "CREATE INDEX IF NOT EXISTS idx_saju_user_id ON saju(user_id)"
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_saju_share_token ON saju(share_token)"
         )
         conn.commit()
     finally:
@@ -185,6 +197,40 @@ def save_saju_for_user(
         new_id = cur.fetchone()[0] if USE_PG else cur.lastrowid
         conn.commit()
         return int(new_id)
+    finally:
+        conn.close()
+
+
+def get_saju_by_share_token(share_token: str) -> Optional[dict]:
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("SELECT id, user_id, name, relation, birthdate, birth_time, calendar_type, gender, created_at, iana_timezone FROM saju WHERE share_token = ?"),
+            (share_token,),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            "id": row[0], "user_id": row[1], "name": row[2], "relation": row[3],
+            "birthdate": row[4], "birth_time": row[5], "calendar_type": row[6],
+            "gender": row[7], "created_at": row[8], "iana_timezone": row[9],
+        }
+    finally:
+        conn.close()
+
+
+def set_saju_share_token(saju_id: int, user_id: int, share_token: str) -> bool:
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("UPDATE saju SET share_token = ? WHERE id = ? AND user_id = ?"),
+            (share_token, saju_id, user_id),
+        )
+        conn.commit()
+        return (cur.rowcount or 0) > 0
     finally:
         conn.close()
 

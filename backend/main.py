@@ -912,6 +912,10 @@ async def api_chat(req: ChatRequest, request: Request):
     system_parts = [
         "당신은 한양사주의 AI 상담사입니다. 사주, 운세, 고민 상담 등에 대해 친절하고 쉽게 답변합니다.",
         "전문 용어(일간, 십성, 오행 등)는 가능한 한 쓰지 않고, 일상적인 말로 풀어서 설명해 주세요.",
+        "\n【응답 길이 규칙 — 반드시 준수】",
+        "- 답변은 **1-2줄 이내**로 짧고 간결하게 작성하세요.",
+        "- 핵심만 전달하고, 불필요한 설명은 생략하세요.",
+        "- 사용자가 '자세히', '더', '구체적으로' 등을 요청할 때만 3-4줄로 답변하세요.",
         ten_gods_rule,
         month_branch_rule,
         "【중요】 사용자의 만세력/사주를 물을 때:",
@@ -947,7 +951,7 @@ async def api_chat(req: ChatRequest, request: Request):
                     model="gemini-2.5-flash",
                     contents=conversation,
                     config=_genai_types.GenerateContentConfig(
-                        max_output_tokens=4000,
+                        max_output_tokens=300,  # 짧은 응답 (1-2줄)
                         temperature=0.7,
                     )
                 )

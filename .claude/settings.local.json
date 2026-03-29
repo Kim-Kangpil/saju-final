@@ -24,7 +24,8 @@
       "Bash(pip check:*)",
       "Bash(pip index:*)",
       "Bash(pip download:*)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(find C:Usersksh00OneDriveDesktopsaju-project-tempfrontend -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\) ! -path */.next/* ! -path */node_modules/* ! -path */dist/*)"
     ]
   }
 }

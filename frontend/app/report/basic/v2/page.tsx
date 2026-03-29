@@ -186,13 +186,32 @@ function BasicV2ReportContent() {
         setResult(fullData);
 
         // 3. v2 AI 분석
+        const raw = fullData as Record<string, unknown>;
+        // fullData에서 기둥 정보 추출 (result가 아직 설정되지 않았을 수 있음)
+        const yearPillar = raw.year_pillar as string || `${fullData.year?.cheongan?.hanja || ''}${fullData.year?.jiji?.hanja || ''}`;
+        const monthPillar = raw.month_pillar as string || `${fullData.month?.cheongan?.hanja || ''}${fullData.month?.jiji?.hanja || ''}`;
+        const dayPillar = raw.day_pillar as string || `${fullData.day?.cheongan?.hanja || ''}${fullData.day?.jiji?.hanja || ''}`;
+        const hourPillar = raw.hour_pillar as string || `${fullData.hour?.cheongan?.hanja || ''}${fullData.hour?.jiji?.hanja || ''}`;
+        
         const v2Res = await fetch(`${API_BASE}/saju/analyze-v2`, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           credentials: "include",
           body: JSON.stringify({
-            saju_data: fullData,
+            year_pillar: yearPillar,
+            month_pillar: monthPillar,
+            day_pillar: dayPillar,
+            hour_pillar: hourPillar,
+            gender: gender,
+            birthdate: sajuInfo?.birthdate,
+            daeun_list: Array.isArray(raw.daeun_list) ? raw.daeun_list : [],
+            daeun_direction: typeof raw.daeun_direction === "string" ? raw.daeun_direction : "순행",
+            ten_gods: raw.ten_gods && typeof raw.ten_gods === "object" ? raw.ten_gods : {},
+            strength: raw.strength !== undefined && raw.strength !== null ? raw.strength : {},
+            harmony_clash: raw.harmony_clash && typeof raw.harmony_clash === "object" ? raw.harmony_clash : {},
+            sinsal: raw.sinsal && typeof raw.sinsal === "object" ? raw.sinsal : {},
             tone: "empathy",
+            cache_key: `v2_${Date.now()}`,
           }),
         });
         if (!v2Res.ok) throw new Error("AI 분석에 실패했습니다.");

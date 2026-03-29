@@ -186,7 +186,7 @@ function BasicV2ReportContent() {
         setResult(fullData);
 
         // 3. v2 AI 분석
-        const v2Res = await fetch(`${API_BASE}/saju/v2-analysis`, {
+        const v2Res = await fetch(`${API_BASE}/saju/analyze-v2`, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           credentials: "include",

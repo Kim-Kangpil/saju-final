@@ -103,6 +103,12 @@ if _cors_origins_str:
         o = o.strip().rstrip("/")
         if o and o not in _cors_origins:
             _cors_origins.append(o)
+
+# Railway URL 추가 (Railway 배포 시 자동으로 인식)
+railway_url = os.getenv("RAILWAY_PUBLIC_URL", "").strip().rstrip("/")
+if railway_url and railway_url not in _cors_origins:
+    _cors_origins.append(railway_url)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
@@ -931,11 +937,15 @@ async def api_chat(req: ChatRequest, request: Request):
                 import google.genai as _genai
                 from google.genai import types as _genai_types
                 
-                full_prompt = f"{system_content}\n\n{openai_messages[-1].get('content', '')}"
+                # 전체 대화 히스토리를 포함한 프롬프트 구성
+                conversation = system_content + "\n\n[대화 기록]\n"
+                for msg in openai_messages[1:]:  # system 메시지 제외
+                    role_label = "사용자" if msg["role"] == "user" else "AI 상담사"
+                    conversation += f"\n{role_label}: {msg['content']}\n"
                 
                 response = await gemini_client.aio.models.generate_content_stream(
                     model="gemini-2.5-flash",
-                    contents=full_prompt,
+                    contents=conversation,
                     config=_genai_types.GenerateContentConfig(
                         max_output_tokens=4000,
                         temperature=0.7,

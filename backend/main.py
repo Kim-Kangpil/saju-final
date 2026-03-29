@@ -845,6 +845,50 @@ def _build_saju_context(saju: Optional[dict]) -> str:
         patterns = result.get("patterns") or []
         if patterns:
             parts.append("패턴/특징: " + ", ".join(str(p) for p in patterns[:15]))
+        
+        # 시기 분석 정보 추가
+        daeun = result.get("daeun") if isinstance(result.get("daeun"), dict) else {}
+        if daeun:
+            current_daeun = daeun.get("current") or {}
+            if current_daeun:
+                daeun_name = current_daeun.get("name", "")
+                daeun_effect = current_daeun.get("effect", "")
+                if daeun_name:
+                    parts.append(f"현재 대운: {daeun_name}")
+                if daeun_effect:
+                    parts.append(f"대운 영향: {daeun_effect}")
+        
+        seun = result.get("seun") if isinstance(result.get("seun"), dict) else {}
+        if seun:
+            current_seun = seun.get("current") or {}
+            if current_seun:
+                seun_name = current_seun.get("name", "")
+                seun_effect = current_seun.get("effect", "")
+                if seun_name:
+                    parts.append(f"올해 세운: {seun_name}")
+                if seun_effect:
+                    parts.append(f"세운 영향: {seun_effect}")
+        
+        # 다음 유리한 시기 정보 (summary_for_gpt에서 가져오기)
+        summary = result.get("summary") if isinstance(result.get("summary"), dict) else {}
+        timing = summary.get("timing") if isinstance(summary.get("timing"), dict) else {}
+        if timing:
+            current_status = timing.get("current_status", "")
+            next_favorable = timing.get("next_favorable", {})
+            confidence = timing.get("confidence", "low")
+            
+            if current_status:
+                parts.append(f"현재 상태: {current_status}")
+            
+            if next_favorable:
+                period = next_favorable.get("period", "")
+                reason = next_favorable.get("reason", "")
+                if period:
+                    parts.append(f"다음 유리한 시기: {period}")
+                if reason:
+                    parts.append(f"근거: {reason}")
+                if confidence:
+                    parts.append(f"예측 신뢰도: {confidence}")
 
     # 월지 기준 계절 요약(있을 때만)
     if season:
@@ -918,6 +962,13 @@ async def api_chat(req: ChatRequest, request: Request):
         "- 사용자가 '자세히', '더', '구체적으로' 등을 요청할 때만 3-4줄로 답변하세요.",
         ten_gods_rule,
         month_branch_rule,
+        "\n【시기 질문 처리 규칙 — 매우 중요】",
+        "- 사용자가 '언제', '시기', '때', '타이밍' 등을 물어보면 현재 시점에서 가장 가까운 유리한 시기를 찾아주세요.",
+        "- '재물운 언제 좋아져?' 같은 질문에 현재 대운/세운 상태를 먼저 말하고, 다음 유리한 시기를 구체적으로 알려주세요.",
+        "- 년운, 월운을 모두 고려해서 십성, 십이운성, 오행 관계를 분석하고 유리한 때를 정확히 짚어주세요.",
+        "- 절대 현재 상태만 설명하지 말고, '다음 OO월에 OO해질 기운이 있어요', 'OO년에 기회가 와요' 같은 구체적인 시기를 제시하세요.",
+        "- 희망적인 전망은 규칙 엔진 데이터에 근거가 있을 때만 제시하고, 환상은 절대 금지하세요.",
+        "- 시기 답변 구조: 1) 현재 상태 간단 설명 2) 다음 유리한 시기 구체적 제시 3) 그 이유(십성/오행 근거)",
         "【중요】 사용자의 만세력/사주를 물을 때:",
         "- 아래 [이 사용자의 만세력 / 사주 컨텍스트]가 있으면, **그 안의 데이터만** 사용해서 답하세요. 생년월일·사주팔자·생시 등은 컨텍스트에 적힌 그대로만 말하세요. 지어내지 마세요.",
         "- 컨텍스트가 없거나 비어 있으면, '저장된 사주가 없어요. 먼저 사주를 등록해 주시면 정확히 말씀드릴 수 있어요.'라고 안내하세요.",
@@ -2430,18 +2481,31 @@ async def payment_status_api(request: Request):
     credits = get_report_credits(user_id)
     daily_count = get_daily_chat_count(str(user_id))
     is_pro = bool(status.get("is_member"))
+    
+    # 베타 쿠폰 확인
+    coupon_key = f"beta_coupon_{user_id}"
+    coupon_data = get_cached_data(coupon_key)
+    beta_features = coupon_data.get("features") if coupon_data else None
+    
+    # 채팅 제한: Pro 무제한, 베타 무제한, 일반 5회
+    if is_pro or (beta_features and beta_features.get("free_chat")):
+        chat_limit = 999
+    else:
+        chat_limit = 5
+    
     return {
         "is_pro": is_pro,
         "pro_expires_at": status.get("membership_expires_at"),
         "report_credits": credits,
         "daily_chat_count": daily_count,
-        "chat_limit": 999 if is_pro else 5,  # Pro: 무제한(999), 일반: 5회
+        "chat_limit": chat_limit,
+        "beta_features": beta_features,
     }
 
 
 @app.get("/api/payment/report-access/{report_type}")
 async def report_access_check(report_type: str, request: Request):
-    """리포트 접근 권한 확인 — Pro·구매·분析권 여부에 따라 has_access 반환."""
+    """리포트 접근 권한 확인 — Pro·구매·분析券·베타쿠폰 여부에 따라 has_access 반환."""
     _price_map = {
         "basic": 990, "deep": 4900,
         "money": 2900, "love": 2900, "career": 2900, "couple": 2900,
@@ -2462,6 +2526,13 @@ async def report_access_check(report_type: str, request: Request):
             out["has_direct_addon"] = True
         return out
 
+    # 베타 쿠폰 확인
+    beta_features = None
+    if user_id:
+        coupon_key = f"beta_coupon_{user_id}"
+        coupon_data = get_cached_data(coupon_key)
+        beta_features = coupon_data.get("features") if coupon_data else None
+
     if TEST_MODE:
         base = {"has_access": True, "reason": "test_mode"}
         base.update(_addon_fields(user_id, True))
@@ -2471,21 +2542,41 @@ async def report_access_check(report_type: str, request: Request):
         base = {"has_access": False, "reason": "not_logged_in", "price": _price_map.get(report_type, 2900)}
         base.update(_addon_fields(None, False))
         return base
+    
     mst = refresh_and_get_membership_status(user_id)
     is_member = bool(mst.get("is_member"))
+    
+    # Pro 멤버십 확인
     if is_member:
         base = {"has_access": True, "reason": "pro"}
         base.update(_addon_fields(user_id, True))
         return base
+    
+    # 베타 쿠폰 확인
+    if beta_features:
+        if report_type == "basic" and beta_features.get("free_basic_report"):
+            base = {"has_access": True, "reason": "beta_coupon"}
+            base.update(_addon_fields(user_id, False))
+            return base
+        if report_type in ("deep", "money", "love", "career", "couple") and beta_features.get(f"free_{report_type}_report"):
+            base = {"has_access": True, "reason": "beta_coupon"}
+            base.update(_addon_fields(user_id, False))
+            return base
+    
+    # 기존 로직: 구매 확인
     from logic.payment_db import has_purchased_report
     if has_purchased_report(user_id, report_type):
         base = {"has_access": True, "reason": "purchased"}
         base.update(_addon_fields(user_id, False))
         return base
+    
+    # 분석권 확인
     if report_type in ("basic", "analysis_ticket") and get_report_credits(user_id) > 0:
         base = {"has_access": True, "reason": "credits"}
         base.update(_addon_fields(user_id, False))
         return base
+    
+    # 구매 필요
     base = {"has_access": False, "reason": "purchase_required", "price": _price_map.get(report_type, 2900)}
     base.update(_addon_fields(user_id, False))
     return base
@@ -2565,6 +2656,12 @@ async def kakao_pay_ready(request: Request):
         body = await request.json()
     except Exception:
         body = {}
+    
+    # 베타 쿠폰 확인
+    coupon_key = f"beta_coupon_{user_id}"
+    coupon_data = get_cached_data(coupon_key)
+    beta_features = coupon_data.get("features") if coupon_data else None
+    
     _ORDER_PRICE_MAP = {
         "pro_monthly":     ("한양사주 Pro (월간)", 4900),
         "basic":           ("분석권 1개", 990),
@@ -2581,6 +2678,27 @@ async def kakao_pay_ready(request: Request):
     order_type = body.get("order_type", "basic")
     if order_type not in _ORDER_PRICE_MAP:
         order_type = "basic"
+    
+    # 베타 쿠폰 무료 처리
+    if beta_features:
+        if order_type == "basic" and beta_features.get("free_basic_report"):
+            # 기본 리포트 무료 처리
+            add_report_credits(user_id, 1)
+            return {
+                "free_access": True,
+                "redirect_url": f"{os.getenv('FRONTEND_URL', 'https://hsaju.com')}/report/basic?payment=beta_success",
+                "message": "베타 쿠폰으로 기본 리포트가 무료로 제공됩니다."
+            }
+        elif order_type in ("deep", "money", "love", "career", "couple") and beta_features.get(f"free_{order_type}_report"):
+            # 특화/심화 리포트 무료 처리
+            from logic.payment_db import save_purchase_record
+            save_purchase_record(user_id, order_type, 0, "beta_coupon")
+            return {
+                "free_access": True,
+                "redirect_url": f"{os.getenv('FRONTEND_URL', 'https://hsaju.com')}/report/{order_type}?payment=beta_success",
+                "message": f"베타 쿠폰으로 {order_type} 리포트가 무료로 제공됩니다."
+            }
+    
     item_name, amount = _ORDER_PRICE_MAP[order_type]
     cid = os.getenv("KAKAO_PAY_CID", "TC0ONETIME")
     secret_key = os.getenv("KAKAO_PAY_SECRET_KEY", "")
@@ -3588,6 +3706,111 @@ section_personality, section_strength, section_problem, section_money, section_c
         "rule_summary": rule_summary_data,
     }
 
+
+# ==================== 베타 쿠폰 API ====================
+
+# 간단한 메모리 캐시 (실제로는 Redis/DB 사용 권장)
+_beta_coupon_cache = {}
+
+def get_cached_data(key: str):
+    """간단한 메모리 캐시에서 데이터 가져오기"""
+    return _beta_coupon_cache.get(key)
+
+def set_cached_data(key: str, data: dict, expire_hours: int = 24):
+    """간단한 메모리 캐시에 데이터 저장"""
+    _beta_coupon_cache[key] = data
+    # 실제로는 만료 시간 처리 필요
+
+BETA_COUPONS = {
+    "BETA2024": {
+        "free_chat": True,
+        "free_basic_report": True,
+        "free_special_report": False,
+        "free_deep_report": False,
+        "max_uses": 100,
+        "used_count": 0,
+    }
+}
+
+@app.post("/api/beta/apply-coupon")
+async def apply_beta_coupon(request: Request):
+    """베타 쿠폰 적용 API"""
+    user_id = get_user_id_from_request(request)
+    print(f"[DEBUG] 베타 쿠폰 API - user_id: {user_id}")
+    
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    
+    try:
+        body = await request.json()
+        coupon_code = body.get("coupon_code", "").strip().upper()
+        print(f"[DEBUG] 요청된 쿠폰 코드: '{coupon_code}'")
+    except Exception as e:
+        print(f"[DEBUG] JSON 파싱 오류: {e}")
+        raise HTTPException(status_code=400, detail="잘못된 요청입니다.")
+    
+    if not coupon_code:
+        raise HTTPException(status_code=400, detail="쿠폰 코드를 입력해주세요.")
+    
+    print(f"[DEBUG] 등록된 쿠폰: {list(BETA_COUPONS.keys())}")
+    
+    # 쿠폰 유효성 확인
+    coupon = BETA_COUPONS.get(coupon_code)
+    print(f"[DEBUG] 쿠폰 조회 결과: {coupon}")
+    
+    if not coupon:
+        raise HTTPException(status_code=400, detail="유효하지 않은 쿠폰입니다.")
+    
+    if coupon["used_count"] >= coupon["max_uses"]:
+        raise HTTPException(status_code=400, detail="쿠폰 사용 횟수를 초과했습니다.")
+    
+    # 사용자 쿠폰 적용 (실제로는 데이터베이스에 저장)
+    # 여기서는 간단히 세션/캐시에 저장
+    import uuid
+    coupon_key = f"beta_coupon_{user_id}"
+    
+    # 이미 적용된 쿠폰인지 확인
+    existing_coupon = get_cached_data(coupon_key)
+    if existing_coupon:
+        raise HTTPException(status_code=400, detail="이미 쿠폰을 적용했습니다.")
+    
+    # 쿠폰 적용
+    coupon_data = {
+        "code": coupon_code,
+        "features": {
+            "free_chat": coupon["free_chat"],
+            "free_basic_report": coupon["free_basic_report"],
+            "free_special_report": coupon["free_special_report"],
+            "free_deep_report": coupon["free_deep_report"],
+        },
+        "applied_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    set_cached_data(coupon_key, coupon_data, expire_hours=24*30)  # 30일 유효
+    
+    # 사용 횟수 증가
+    coupon["used_count"] += 1
+    
+    return {
+        "success": True,
+        "features": coupon_data["features"],
+        "message": "쿠폰이 성공적으로 적용되었습니다."
+    }
+
+@app.get("/api/beta/features")
+async def get_beta_features(request: Request):
+    """사용자 베타 혜택 확인 API"""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        return {"features": None}
+    
+    coupon_key = f"beta_coupon_{user_id}"
+    coupon_data = get_cached_data(coupon_key)
+    
+    if coupon_data:
+        return {"features": coupon_data.get("features")}
+    
+    return {"features": None}
 
 if __name__ == "__main__":
     import uvicorn

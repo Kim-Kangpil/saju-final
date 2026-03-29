@@ -6,7 +6,7 @@ import { Icon } from "@iconify/react";
 import { getAuthHeaders, clearStoredToken } from "@/lib/auth";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const textDark = "var(--text-primary)";
 const borderField = "#B4A292";
 

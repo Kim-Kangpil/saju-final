@@ -100,10 +100,21 @@ function BasicIntroContent() {
         <p style={{fontSize: 12, color: '#8B7355', marginBottom: 14, fontWeight: 700}}>
           내 사주 전체 그림을 한눈에 파악하세요.
         </p>
+        <div style={{marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
+          <span style={{fontSize: 16, color: '#C4B5A0', textDecoration: 'line-through'}}>
+            1,900원
+          </span>
+          <span style={{fontSize: 26, fontWeight: 700, color: '#3D3530'}}>
+            990원
+          </span>
+          <span style={{fontSize: 12, fontWeight: 700, color: '#fff', background: '#DC2626', padding: '3px 8px', borderRadius: 6}}>
+            48%
+          </span>
+        </div>
         <KakaoPayButton
           orderType="basic"
           price={990}
-          label="기본 리포트 확인하기 · 990원"
+          label="기본 리포트 확인하기"
           sajuId={sajuId}
         />
         <p style={{fontSize: 10, color: '#C4B5A0', marginTop: 6}}>

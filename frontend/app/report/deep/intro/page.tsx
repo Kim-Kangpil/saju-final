@@ -134,10 +134,21 @@ function DeepIntroContent() {
         <p style={{ fontSize: 11, color: "#A8946A", marginBottom: 10, fontWeight: 600 }}>
           전체 그림을 보면 지금 해야 할 것이 보여요
         </p>
+        <div style={{marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
+          <span style={{fontSize: 16, color: '#C4B5A0', textDecoration: 'line-through'}}>
+            9,900원
+          </span>
+          <span style={{fontSize: 26, fontWeight: 700, color: '#3D3530'}}>
+            4,900원
+          </span>
+          <span style={{fontSize: 12, fontWeight: 700, color: '#fff', background: '#DC2626', padding: '3px 8px', borderRadius: 6}}>
+            51%
+          </span>
+        </div>
         <KakaoPayButton
           orderType="deep"
           price={4900}
-          label="심화 리포트 확인하기 · 4,900원"
+          label="심화 리포트 확인하기"
           sajuId={sajuId}
         />
         <p style={{ fontSize: 10, color: "#C4B5A0", marginTop: 6 }}>

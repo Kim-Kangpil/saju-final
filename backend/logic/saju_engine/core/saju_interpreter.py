@@ -1648,6 +1648,67 @@ def calculate_money_flow(saju_data: dict, money_result: dict) -> dict:
 # 전체 통합
 # ─────────────────────────────────────────────────────────────
 
+def analyze_timing_for_chat(saju_data: dict) -> dict:
+    """
+    채팅용 시기 분석 - 다음 유리한 시기 예측
+    """
+    try:
+        period_data = interpret_current_period(saju_data)
+        seun_data = analyze_seun(saju_data) if hasattr(saju_data, 'get') else {}
+        
+        # 현재 상태 파악
+        current_status = period_data.get("language_points", [])
+        current_summary = ". ".join(current_status[:2]) if current_status else "현재 안정적인 시기"
+        
+        # 다음 유리한 시기 계산
+        next_favorable = {}
+        
+        # 세운 기반 분석
+        if seun_data:
+            seun_effect = seun_data.get("effect", "")
+            seun_name = seun_data.get("name", "")
+            if "유리" in seun_effect or "길" in seun_effect:
+                next_favorable = {
+                    "period": f"올해 {seun_name} 시기",
+                    "reason": "세운이 유리한 방향으로 작용하여 기회가 열립니다."
+                }
+        
+        # 대운 기반 분석
+        if not next_favorable and period_data:
+            patterns = period_data.get("patterns", [])
+            for pattern in patterns:
+                if "기회" in str(pattern) or "전환" in str(pattern):
+                    next_favorable = {
+                        "period": "다음 대운 전환기",
+                        "reason": "대운 전환으로 새로운 기운이 들어옵니다."
+                    }
+                    break
+        
+        # 기본 예측
+        if not next_favorable:
+            next_favorable = {
+                "period": "향후 6개월 내",
+                "reason": "꾸준한 노력으로 기회를 만들어야 하는 시기입니다."
+            }
+        
+        return {
+            "current_status": current_summary,
+            "next_favorable": next_favorable,
+            "confidence": "medium" if seun_data else "low"
+        }
+        
+    except Exception as e:
+        print(f"시기 분석 오류: {e}")
+        return {
+            "current_status": "현재 안정적인 시기",
+            "next_favorable": {
+                "period": "향후 6개월 내",
+                "reason": "꾸준한 노력이 필요한 시기입니다."
+            },
+            "confidence": "low"
+        }
+
+
 def interpret_all(saju_data: dict) -> dict:
     """
     5개 영역 전체 해석 통합.
@@ -1659,6 +1720,9 @@ def interpret_all(saju_data: dict) -> dict:
     career      = interpret_career(saju_data)
     personality = interpret_personality(saju_data)
     period      = interpret_current_period(saju_data)
+    
+    # 시기 분석 추가
+    timing = analyze_timing_for_chat(saju_data)
 
     from logic.saju_engine.core.tonggeun import calculate_tonggeun, format_tonggeun_for_prompt
     from logic.saju_engine.core.geunmyo import analyze_geunmyo, format_geunmyo_for_prompt
@@ -1707,6 +1771,7 @@ def interpret_all(saju_data: dict) -> dict:
             + period["patterns"]
         ),
         "visual_data": visual_data,
+        "timing": timing,  # 시기 분석 정보 추가
     }
 
     return {

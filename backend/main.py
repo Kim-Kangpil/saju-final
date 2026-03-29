@@ -1875,7 +1875,7 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
             if not _is_pro:
                 from logic.payment_db import has_purchased_report as _has_pr
                 if not _has_pr(_uid, "deep"):
-                    raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 9900}, ensure_ascii=False))
+                    raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 4900}, ensure_ascii=False))
         else:
             if not _is_pro:
                 if get_report_credits(_uid) <= 0:
@@ -2178,7 +2178,7 @@ async def _generate_deep_topic_report(
         if not is_pro:
             from logic.payment_db import has_purchased_report as _has_pr
             if not _has_pr(_uid, topic_key) and get_report_credits(_uid) <= 0:
-                raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 5900}, ensure_ascii=False))
+                raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 2900}, ensure_ascii=False))
             if (report_tone or "").strip().lower() == "realistic":
                 if not _has_pr(_uid, f"{topic_key}_realistic"):
                     raise HTTPException(
@@ -2429,12 +2429,13 @@ async def payment_status_api(request: Request):
     status = refresh_and_get_membership_status(user_id)
     credits = get_report_credits(user_id)
     daily_count = get_daily_chat_count(str(user_id))
+    is_pro = bool(status.get("is_member"))
     return {
-        "is_pro": bool(status.get("is_member")),
+        "is_pro": is_pro,
         "pro_expires_at": status.get("membership_expires_at"),
         "report_credits": credits,
         "daily_chat_count": daily_count,
-        "chat_limit": 3,
+        "chat_limit": 999 if is_pro else 5,  # Pro: 무제한(999), 일반: 5회
     }
 
 
@@ -2442,8 +2443,8 @@ async def payment_status_api(request: Request):
 async def report_access_check(report_type: str, request: Request):
     """리포트 접근 권한 확인 — Pro·구매·분析권 여부에 따라 has_access 반환."""
     _price_map = {
-        "basic": 1900, "deep": 9900,
-        "money": 5900, "love": 5900, "career": 5900, "couple": 13900,
+        "basic": 990, "deep": 4900,
+        "money": 2900, "love": 2900, "career": 2900, "couple": 2900,
     }
     user_id = get_user_id_from_request(request)
 
@@ -2467,7 +2468,7 @@ async def report_access_check(report_type: str, request: Request):
         return base
 
     if not user_id:
-        base = {"has_access": False, "reason": "not_logged_in", "price": _price_map.get(report_type, 5900)}
+        base = {"has_access": False, "reason": "not_logged_in", "price": _price_map.get(report_type, 2900)}
         base.update(_addon_fields(None, False))
         return base
     mst = refresh_and_get_membership_status(user_id)
@@ -2485,7 +2486,7 @@ async def report_access_check(report_type: str, request: Request):
         base = {"has_access": True, "reason": "credits"}
         base.update(_addon_fields(user_id, False))
         return base
-    base = {"has_access": False, "reason": "purchase_required", "price": _price_map.get(report_type, 5900)}
+    base = {"has_access": False, "reason": "purchase_required", "price": _price_map.get(report_type, 2900)}
     base.update(_addon_fields(user_id, False))
     return base
 
@@ -2565,14 +2566,14 @@ async def kakao_pay_ready(request: Request):
     except Exception:
         body = {}
     _ORDER_PRICE_MAP = {
-        "pro_monthly":     ("한양사주 Pro (월간)", 3900),
-        "basic":           ("분석권 1개", 1900),
-        "analysis_ticket": ("분석권 1개", 1900),
-        "deep":            ("심화 리포트", 9900),
-        "money":           ("재물운 리포트", 5900),
-        "love":            ("연애운 리포트", 5900),
-        "career":          ("직업운 리포트", 5900),
-        "couple":          ("궁합 리포트", 13900),
+        "pro_monthly":     ("한양사주 Pro (월간)", 4900),
+        "basic":           ("분석권 1개", 990),
+        "analysis_ticket": ("분석권 1개", 990),
+        "deep":            ("심화 리포트", 4900),
+        "money":           ("재물운 리포트", 2900),
+        "love":            ("연애운 리포트", 2900),
+        "career":          ("직업운 리포트", 2900),
+        "couple":          ("궁합 리포트", 2900),
         "money_realistic": ("재물운 직설 분석", 990),
         "love_realistic":  ("연애운 직설 분석", 990),
         "career_realistic": ("직업운 직설 분석", 990),
@@ -2678,11 +2679,11 @@ async def kakao_pay_approve(request: Request):
         raise HTTPException(status_code=502, detail=f"KakaoPay approve 실패: {resp.text}")
     # 혜택 지급
     _SINGLE_REPORT_PRICES = {
-        "deep": 9900,
-        "money": 5900,
-        "love": 5900,
-        "career": 5900,
-        "couple": 13900,
+        "deep": 4900,
+        "money": 2900,
+        "love": 2900,
+        "career": 2900,
+        "couple": 2900,
         "money_realistic": 990,
         "love_realistic": 990,
         "career_realistic": 990,
@@ -2748,14 +2749,14 @@ async def inicis_pay_ready(request: Request):
         body = {}
     
     _ORDER_PRICE_MAP = {
-        "pro_monthly":     ("한양사주 Pro (월간)", 3900),
-        "basic":           ("분석권 1개", 1900),
-        "analysis_ticket": ("분석권 1개", 1900),
-        "deep":            ("심화 리포트", 9900),
-        "money":           ("재물운 리포트", 5900),
-        "love":            ("연애운 리포트", 5900),
-        "career":          ("직업운 리포트", 5900),
-        "couple":          ("궁합 리포트", 13900),
+        "pro_monthly":     ("한양사주 Pro (월간)", 4900),
+        "basic":           ("분석권 1개", 990),
+        "analysis_ticket": ("분석권 1개", 990),
+        "deep":            ("심화 리포트", 4900),
+        "money":           ("재물운 리포트", 2900),
+        "love":            ("연애운 리포트", 2900),
+        "career":          ("직업운 리포트", 2900),
+        "couple":          ("궁합 리포트", 2900),
         "money_realistic": ("재물운 직설 분석", 990),
         "love_realistic":  ("연애운 직설 분석", 990),
         "career_realistic": ("직업운 직설 분석", 990),
@@ -2796,7 +2797,7 @@ async def inicis_pay_ready(request: Request):
 
 @app.post("/api/payment/portone/ready")
 async def portone_pay_ready(request: Request):
-    """PortOne 결제 준비 — 간단한 테스트용."""
+    """포트원 결제 준비 — 간단한 테스트용."""
     user_id = get_user_id_from_request(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
@@ -2807,14 +2808,14 @@ async def portone_pay_ready(request: Request):
         body = {}
     
     _ORDER_PRICE_MAP = {
-        "pro_monthly":     ("한양사주 Pro (월간)", 3900),
-        "basic":           ("분석권 1개", 1900),
-        "analysis_ticket": ("분석권 1개", 1900),
-        "deep":            ("심화 리포트", 9900),
-        "money":           ("재물운 리포트", 5900),
-        "love":            ("연애운 리포트", 5900),
-        "career":          ("직업운 리포트", 5900),
-        "couple":          ("궁합 리포트", 13900),
+        "pro_monthly":     ("한양사주 Pro (월간)", 4900),
+        "basic":           ("분석권 1개", 990),
+        "analysis_ticket": ("분석권 1개", 990),
+        "deep":            ("심화 리포트", 4900),
+        "money":           ("재물운 리포트", 2900),
+        "love":            ("연애운 리포트", 2900),
+        "career":          ("직업운 리포트", 2900),
+        "couple":          ("궁합 리포트", 2900),
         "money_realistic": ("재물운 직설 분석", 990),
         "love_realistic":  ("연애운 직설 분석", 990),
         "career_realistic": ("직업운 직설 분석", 990),

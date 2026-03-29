@@ -142,6 +142,7 @@ export default function SajuMyPage({
         const data = await res.json();
         if (data.features) {
           setBetaFeatures(data.features);
+          localStorage.setItem('betaFeatures', JSON.stringify(data.features));
         }
       } catch (error) {
         console.error("베타 혜택 확인 오류:", error);
@@ -190,6 +191,8 @@ export default function SajuMyPage({
 
       if (res.ok) {
         setBetaFeatures(data.features);
+        // localStorage에 저장 (report/basic/intro 페이지에서 확인용)
+        localStorage.setItem('betaFeatures', JSON.stringify(data.features));
         setCouponMessage(data.features?.is_admin
           ? "👑 관리자 모드가 활성화되었습니다! 모든 기능을 바로 이용할 수 있습니다."
           : "🎉 쿠폰이 적용되었습니다! 채팅과 기본 리포트를 무료로 이용할 수 있습니다.");
@@ -433,6 +436,7 @@ export default function SajuMyPage({
                         
                         if (res.ok && data.success) {
                           setBetaFeatures(null);
+                          localStorage.removeItem('betaFeatures');
                           setCouponMessage("🔄 베타 혜택이 초기화되었습니다.");
                         } else {
                           setCouponMessage(data.message || "초기화에 실패했습니다.");

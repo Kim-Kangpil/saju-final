@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/ksh00/OneDrive/Desktop/saju-project-temp/frontend/app/page.tsx"],"sourcesContent":["\"use client\";\r\nimport { use, useEffect } from \"react\";\r\nimport { useRouter } from \"next/navigation\";\r\n\r\nexport default function RootPage({\r\n  params,\r\n}: {\r\n  params?: Promise<Record<string, string | string[]>>;\r\n}) {\r\n  use(params ?? Promise.resolve({}));\r\n  const router = useRouter();\r\n\r\n    useEffect(() => {\r\n        router.replace('/home');\r\n    }, [router]);\r\n\r\n    return null;\r\n}"],"names":[],"mappings":";;;;AACA;AACA;;AAFA;;;AAIe,SAAS,SAAS,EAC/B,MAAM,EAGP;;IACC,IAAA,kOAAG,EAAC,UAAU,QAAQ,OAAO,CAAC,CAAC;IAC/B,MAAM,SAAS,IAAA,gNAAS;IAEtB,IAAA,wOAAS;8BAAC;YACN,OAAO,OAAO,CAAC;QACnB;6BAAG;QAAC;KAAO;IAEX,OAAO;AACX;GAbwB;;QAMP,gNAAS;;;KANF"}}]
+}

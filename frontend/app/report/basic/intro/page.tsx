@@ -134,65 +134,33 @@ function BasicIntroContent() {
           리포트에 담긴 것
         </h2>
         {[
-          '🧭 나의 성향 분석 — 5가지 축 레이더 차트',
-          '🔁 반복되는 문제 패턴 — 4단계 순환 구조',
-          '💰 재물 흐름 — 돈이 들어오고 나가는 방식',
-          '💼 일과 직업 — 내게 맞는 방향',
-          '🤝 관계와 인연 — 사람을 대하는 방식',
-          '📝 종합 조언 — 지금 해야 할 것',
+          '🔮 인생 요약 — 사주로 본 나의 전체 그림',
+          '🧠 타고난 성향 — 나는 어떤 사람인가',
+          '💪 나의 무기 — 타고난 강점과 재능',
+          '🔁 반복 패턴 — 계속 되풀이되는 상황의 원인',
+          '💰 돈과 재물 — 돈이 들어오고 나가는 구조',
+          '🧭 일과 진로 — 나에게 맞는 방향',
+          '❤️ 관계와 인연 — 사람을 대하는 방식',
+          '⏰ 지금 이 시기 — 현재 대운·세운 흐름',
+          '✅ 지금 할 것 — 실천 조언',
         ].map((text, i) => (
-          <div key={i} style={{fontSize: 14, color: '#3D3530', marginBottom: 8, paddingBottom: 8, borderBottom: i < 5 ? '1px solid #F5F1EA' : 'none'}}>
+          <div key={i} style={{fontSize: 14, color: '#3D3530', marginBottom: 8, paddingBottom: 8, borderBottom: i < 8 ? '1px solid #F5F1EA' : 'none'}}>
             {text}
           </div>
         ))}
       </div>
 
-      {/* 미리보기 */}
-      <div style={{background: 'white', borderRadius: 16, padding: '18px 18px 0', marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
-        <div style={{display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14}}>
-          <span style={{fontSize: 13, fontWeight: 700, color: '#3D3530'}}>미리보기</span>
-          <span style={{fontSize: 11, color: '#8B7355', background: '#F5F1EA', padding: '2px 8px', borderRadius: 20}}>구매 후 전체 열람</span>
-        </div>
-
-        {/* 섹션 1: 첫 줄 선명 */}
-        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA'}}>
-          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🧠 타고난 성향</p>
-          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, marginBottom: 6}}>
-            당신은 감정보다 구조와 논리를 먼저 읽는 편입니다. 결정할 때 속도보다 정확성을 택하고,
-          </p>
-          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, filter: 'blur(4px)', userSelect: 'none'}}>
-            주변 사람들은 당신을 침착하다고 보지만 내면에는 강한 감정의 흐름이 있습니다. 이 간극이 종종 오해를 만들고...
-          </p>
-        </div>
-
-        {/* 섹션 2: 제목만 선명, 내용 흐림 */}
-        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA', filter: 'blur(3px)', userSelect: 'none'}}>
-          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🔁 반복되는 문제 패턴</p>
-          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
-            높은 기대 → 과도한 몰입 → 에너지 소진 → 회복 기간이 반복됩니다. 이 순환이 생기는 이유는 사주 구조상 의지력이 감정보다 먼저 소모되기 때문이고, 이를 인식하는 것만으로도 패턴이 달라집니다...
-          </p>
-        </div>
-
-        {/* 섹션 3: 완전 흐림 */}
-        <div style={{marginBottom: 0, filter: 'blur(5px)', userSelect: 'none'}}>
-          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>💰 돈 흐름 구조</p>
-          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
-            수입 구조는 꾸준한 축적형이지만 특정 시기에 큰 지출이 몰리는 패턴이 있습니다. 재물이 새는 포인트와 올해 재물운의 방향은...
-          </p>
-        </div>
-
-        {/* 잠금 오버레이 */}
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,
-          background: 'linear-gradient(transparent, white 60%)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 16,
-        }}>
-          <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
-            <span style={{fontSize: 14}}>🔒</span>
-            <span style={{fontSize: 12, color: '#8B7355', fontWeight: 600}}>구매 후 전체 내용 확인</span>
+      {/* 분량 안내 */}
+      <div style={{background: 'white', borderRadius: 16, padding: 20, marginBottom: 24}}>
+        <div style={{display: 'flex', alignItems: 'flex-start', gap: 12}}>
+          <span style={{fontSize: 24, flexShrink: 0}}>📄</span>
+          <div>
+            <p style={{fontSize: 14, fontWeight: 700, color: '#3D3530', marginBottom: 6}}>약 5,000자 분량</p>
+            <p style={{fontSize: 13, color: '#6B5F4E', lineHeight: 1.7}}>
+              9개 섹션에 걸쳐 내 사주의 전체 그림을 풀어드려요. 섹션마다 아코디언으로 펼쳐볼 수 있고, 성향·패턴·돈 흐름은 시각 차트도 함께 제공돼요.
+            </p>
           </div>
         </div>
-        <div style={{height: 60}} />
       </div>
 
       <div style={{textAlign: 'center'}}>

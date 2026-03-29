@@ -278,6 +278,45 @@ function CareerReportContent() {
               }}>더 직설적인 분석 · +{addonPrice.toLocaleString()}원</button>
           </section>
         )}
+
+        {/* 공유/저장 */}
+        {!showPurchase && !loading && !error && (
+          <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                type="button"
+                onClick={async () => {
+                  const url = window.location.href;
+                  if (navigator.share) {
+                    try { await navigator.share({ title: '직업운 분석 리포트', url }); } catch {}
+                  } else {
+                    await navigator.clipboard.writeText(url).catch(() => {});
+                    alert('링크가 복사됐어요!');
+                  }
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '10px 20px', borderRadius: 10,
+                  border: '1.5px solid #E8E0D4', background: '#FBF8F3',
+                  color: '#4A3F30', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                📤 공유하기
+              </button>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '10px 20px', borderRadius: 10,
+                border: '1.5px solid #bbf7d0', background: '#f0fdf4',
+                color: '#166534', fontSize: 13, fontWeight: 600,
+              }}>
+                ✅ 저장됨
+              </div>
+            </div>
+            <p style={{ fontSize: 11, color: '#A8946A', textAlign: 'center' }}>
+              리포트는 자동 저장돼요. 언제든 다시 열람 가능해요.
+            </p>
+          </div>
+        )}
       </div>
     </main>
   );

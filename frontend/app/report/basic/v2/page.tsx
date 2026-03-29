@@ -413,6 +413,16 @@ function BasicV2ReportContent() {
   const calendar = sajuInfo?.calendar_type === "음력" ? "lunar" : "solar";
   const timeUnknown = !sajuInfo?.birth_time;
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try { await navigator.share({ title: '사주 기본 분석 리포트', url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(url).catch(() => {});
+      alert('링크가 복사됐어요!');
+    }
+  };
+
   if (error) {
     return (
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "40px 20px", textAlign: "center", background: S.cream, minHeight: "100vh" }}>
@@ -437,7 +447,7 @@ function BasicV2ReportContent() {
         <button onClick={() => router.back()} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
           <Icon icon="mdi:chevron-left" width={24} color={S.ink} />
         </button>
-        <h1 style={{ fontSize: 16, fontWeight: 700, color: S.ink, flex: 1 }}>기본 분석 리포트</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: S.ink, flex: 1 }}>✨ 기본 분석 리포트</h1>
       </header>
 
       {loading ? (
@@ -668,7 +678,38 @@ function BasicV2ReportContent() {
             );
           })()}
 
-          <div style={{ height: 48 }} />
+          {/* 공유/저장 */}
+          {v2Result && (
+            <div style={{ marginTop: 24, marginBottom: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '10px 20px', borderRadius: 10,
+                    border: `1.5px solid ${S.beige}`, background: '#fff',
+                    color: S.ink2, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  }}
+                >
+                  📤 공유하기
+                </button>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '10px 20px', borderRadius: 10,
+                  border: '1.5px solid #bbf7d0', background: '#f0fdf4',
+                  color: '#166534', fontSize: 13, fontWeight: 600,
+                }}>
+                  ✅ 저장됨
+                </div>
+              </div>
+              <p style={{ fontSize: 11, color: S.gold, textAlign: 'center' }}>
+                리포트는 자동 저장돼요. 언제든 다시 열람 가능해요.
+              </p>
+            </div>
+          )}
+
+          <div style={{ height: 32 }} />
         </div>
       )}
     </div>

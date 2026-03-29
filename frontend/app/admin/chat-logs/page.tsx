@@ -59,23 +59,6 @@ export default function AdminChatLogsPage() {
   };
 
   useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem("chat_logs_admin_secret") || "";
-      setAdminSecret(saved);
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  useEffect(() => {
-    try {
-      sessionStorage.setItem("chat_logs_admin_secret", adminSecret);
-    } catch {
-      // ignore
-    }
-  }, [adminSecret]);
-
-  useEffect(() => {
     // 내 userId 자동 채우기(관리자 권한인 경우에만 동작)
     if (authLoading) return;
     if (!isLoggedIn) return;

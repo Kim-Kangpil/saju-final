@@ -1,6 +1,52 @@
 const STORAGE_KEY = "hanyang_chat_sessions";
 const MAX_SESSIONS = 100;
 
+ const GUEST_KEY_STORAGE_KEY = "hanyang_chat_guest_key";
+
+ function readTokenPayload(): Record<string, unknown> | null {
+   if (!isBrowser()) return null;
+   try {
+     const token = window.localStorage.getItem("token");
+     if (!token) return null;
+     const parts = token.split(".");
+     if (parts.length < 2) return null;
+     return JSON.parse(atob(parts[1]));
+   } catch {
+     return null;
+   }
+ }
+
+ function getCurrentOwnerKey(): string {
+   const payload = readTokenPayload();
+   const userKey = payload?.email || payload?.sub || payload?.user_id;
+   if (typeof userKey === "string" && userKey.trim()) {
+     return `user:${userKey.trim()}`;
+   }
+   if (typeof userKey === "number") {
+     return `user:${String(userKey)}`;
+   }
+   return `guest:${getOrCreateGuestKey()}`;
+ }
+
+ export function getOrCreateGuestKey(): string {
+   if (!isBrowser()) return "guest-server";
+   try {
+     const existing = window.localStorage.getItem(GUEST_KEY_STORAGE_KEY);
+     if (existing && existing.trim()) return existing;
+     const next = typeof crypto !== "undefined" && crypto.randomUUID
+       ? crypto.randomUUID()
+       : `guest-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+     window.localStorage.setItem(GUEST_KEY_STORAGE_KEY, next);
+     return next;
+   } catch {
+     return `guest-${Date.now()}`;
+   }
+ }
+
+ function getScopedStorageKey(): string {
+   return `${STORAGE_KEY}:${getCurrentOwnerKey()}`;
+ }
+
 export type Message = {
   id: string;
   role: "user" | "assistant";
@@ -23,7 +69,7 @@ function isBrowser() {
 function loadRaw(): ChatSession[] {
   if (!isBrowser()) return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(getScopedStorageKey());
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ChatSession[];
     if (!Array.isArray(parsed)) return [];
@@ -36,7 +82,7 @@ function loadRaw(): ChatSession[] {
 function saveRaw(sessions: ChatSession[]) {
   if (!isBrowser()) return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    window.localStorage.setItem(getScopedStorageKey(), JSON.stringify(sessions));
   } catch {
     // ignore
   }
@@ -152,9 +198,22 @@ export function setSessionMessages(sessionId: string, messages: Message[]): void
 
 export function deleteSession(id: string): void {
   if (!isBrowser()) return;
-  const sessions = loadRaw();
-  const next = sessions.filter((s) => s.id !== id);
-  saveRaw(sortSessions(next).slice(0, MAX_SESSIONS));
+  try {
+    const sessions = loadRaw();
+    const filtered = sessions.filter((s) => s.id !== id);
+    saveRaw(filtered);
+  } catch {
+    // ignore
+  }
+}
+
+export function clearChatSessions(): void {
+  if (!isBrowser()) return;
+  try {
+    window.localStorage.removeItem(getScopedStorageKey());
+  } catch {
+    // ignore
+  }
 }
 
 export function searchSessions(query: string): ChatSession[] {
@@ -172,5 +231,4 @@ export function searchSessions(query: string): ChatSession[] {
   return sortSessions(filtered);
 }
 
-export { STORAGE_KEY, MAX_SESSIONS };
-
+export { STORAGE_KEY, MAX_SESSIONS, GUEST_KEY_STORAGE_KEY };

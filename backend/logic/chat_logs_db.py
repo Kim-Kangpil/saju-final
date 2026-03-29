@@ -7,6 +7,7 @@ from typing import Optional, Any
 from logic._db import USE_PG, get_conn, adapt
 
 DB_PATH = Path(__file__).resolve().parent / "chat_logs.db"
+MAX_MESSAGES_PER_SESSION = 1000
 
 
 def _conn():
@@ -64,6 +65,12 @@ def init_chat_logs_db() -> None:
         cur.execute(
             "CREATE INDEX IF NOT EXISTS idx_chat_messages_session_idx ON chat_messages(session_id, idx)"
         )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_updated ON chat_sessions(user_id, updated_at)"
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_chat_sessions_guest_updated ON chat_sessions(guest_key, updated_at)"
+        )
         conn.commit()
     finally:
         conn.close()
@@ -103,6 +110,14 @@ def save_chat_session(
         normalized.append({"idx": idx, "role": role, "content": content})
 
     normalized.sort(key=lambda x: x["idx"])
+    deduped_by_idx: dict[int, dict[str, Any]] = {}
+    for item in normalized:
+        deduped_by_idx[int(item["idx"])] = item
+    normalized = [deduped_by_idx[idx] for idx in sorted(deduped_by_idx.keys())]
+    if len(normalized) > MAX_MESSAGES_PER_SESSION:
+        normalized = normalized[-MAX_MESSAGES_PER_SESSION:]
+        for new_idx, item in enumerate(normalized):
+            item["idx"] = new_idx
 
     conn = _conn()
     try:

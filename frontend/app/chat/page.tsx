@@ -17,7 +17,7 @@ import {
 import MarkdownMessage from "../../components/MarkdownMessage";
 import { useLang } from "@/contexts/LangContext";
 import { useChatSessions } from "@/hooks/useChatSessions";
-import type { Message as SessionMessage } from "@/lib/chatStorage";
+import { getOrCreateGuestKey, type Message as SessionMessage } from "@/lib/chatStorage";
 import { clearStoredToken, getAuthHeaders, getStoredToken } from "@/lib/auth";
 import { useAuthStatus } from "@/hooks/useAuthStatus";
 
@@ -1658,6 +1658,7 @@ function ChatContent({
   // 서버(DB)에 채팅 로그 저장 (스트리밍 완료 후 best-effort)
   const lastRemoteSnapshotRef = useRef<string>("");
   const prevIsLoadingRef = useRef<boolean>(false);
+  const lastSaveErrorSnapshotRef = useRef<string>("");
   useEffect(() => {
     if (!sessionId) return;
 
@@ -1697,13 +1698,29 @@ function ChatContent({
 
     fetch(`${BACKEND_API_BASE}/api/chat-logs/save`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(isLoggedIn ? {} : { "x-guest-key": getOrCreateGuestKey() }),
+      },
       credentials: "include",
       body: JSON.stringify(payload),
-    }).catch(() => {
-      // 로그 저장은 UX에 영향을 주지 않게 best-effort로 처리
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data?.success === false) {
+          if (lastSaveErrorSnapshotRef.current !== snapshot) {
+            lastSaveErrorSnapshotRef.current = snapshot;
+            onError("최근 대화 저장에 실패했어요. 새로고침 전까지는 현재 화면에서만 유지될 수 있어요.");
+          }
+        }
+      })
+      .catch(() => {
+        if (lastSaveErrorSnapshotRef.current !== snapshot) {
+          lastSaveErrorSnapshotRef.current = snapshot;
+          onError("최근 대화 저장에 실패했어요. 새로고침 전까지는 현재 화면에서만 유지될 수 있어요.");
+        }
     });
-  }, [isLoading, messages, sessionId, sessionTitle]);
+  }, [isLoading, isLoggedIn, messages, onError, sessionId, sessionTitle]);
 
   // 스크롤 이벤트 핸들러
   const handleScroll = () => {

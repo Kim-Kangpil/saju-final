@@ -10,7 +10,23 @@ import {
   searchSessions as storageSearchSessions,
   setSessionMessages,
   setSessionTitle,
+  clearChatSessions,
 } from "@/lib/chatStorage";
+import { getStoredToken } from "@/lib/auth";
+
+// 현재 로그인한 사용자 ID 확인
+function getCurrentUserId(): string | null {
+  try {
+    const token = getStoredToken();
+    if (!token) return null;
+    
+    // 토큰에서 사용자 정보 추출 (간단한 방법)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.email || payload.sub || null;
+  } catch {
+    return null;
+  }
+}
 
 export function useChatSessions() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -19,24 +35,38 @@ export function useChatSessions() {
   const [searchResults, setSearchResults] = useState<ChatSession[]>([]);
 
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastUserIdRef = useRef<string | null>(null);
 
   /** localStorage에서 세션 목록 다시 읽기 (페이지 진입·포커스 등) */
   const refreshSessionsFromStorage = useCallback(() => {
     try {
+      // 로그인한 사용자 ID 확인
+      const currentUserId = getCurrentUserId();
+      
+      // 사용자가 변경되었으면 localStorage 초기화
+      if (lastUserIdRef.current && lastUserIdRef.current !== currentUserId) {
+        clearChatSessions();
+        console.log("[DEBUG] 사용자 변경으로 인해 채팅 세션 초기화:", {
+          from: lastUserIdRef.current,
+          to: currentUserId
+        });
+      }
+      
+      lastUserIdRef.current = currentUserId;
+      
       let all = getChatSessions();
       if (all.length === 0) {
         const s = createChatSession();
         all = [s];
       }
       setSessions(all);
-      setCurrentId((prev) => {
-        if (prev && all.some((x) => x.id === prev)) return prev;
-        return all[0]?.id ?? null;
-      });
+      if (!currentId && all.length > 0) {
+        setCurrentId(all[0].id);
+      }
     } catch {
       // ignore
     }
-  }, []);
+  }, [currentId]);
 
   // 마운트 시·채팅 페이지 재진입 시 목록 동기화 (React Strict Mode에서도 storage 기준으로 일관됨)
   useEffect(() => {

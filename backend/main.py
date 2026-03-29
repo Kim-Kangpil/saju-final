@@ -10,6 +10,7 @@ if getattr(sys.stdout, "buffer", None):
 
 import openai
 import hashlib
+import re
 from logic.twelve_states import calculate_twelve_states, get_twelve_state
 from logic import test
 from logic import lunar_converter
@@ -81,6 +82,13 @@ def get_openai_client():
 TEST_MODE = os.getenv("TEST_MODE", "false").lower() == "true"
 print(f"TEST_MODE: {TEST_MODE}")
 
+_session_token_secret = (os.getenv("SESSION_TOKEN_SECRET") or os.getenv("SECRET_KEY") or "").strip()
+if not TEST_MODE:
+    if not _session_token_secret:
+        raise RuntimeError("SESSION_TOKEN_SECRET 또는 SECRET_KEY가 필요합니다.")
+    if _session_token_secret == "hsaju-fallback-secret-change-in-production":
+        raise RuntimeError("기본 SESSION_TOKEN_SECRET는 프로덕션에서 사용할 수 없습니다.")
+
 app = FastAPI(title="Saju API", version="0.1.0")
 app.include_router(kakao_router)
 app.include_router(google_router)
@@ -117,6 +125,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 print(f"🌐 CORS 허용 origin: {_cors_origins}")
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Permissions-Policy",
+        "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+    )
+    response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
+    response.headers.setdefault("Cross-Origin-Resource-Policy", "same-site")
+    if request.url.scheme == "https":
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
 
 # DB 로드
 DB_PATH = Path(__file__).resolve().parent / "logic" / "solar_terms_db.json"
@@ -260,6 +285,13 @@ def _get_client_ip(request: Request) -> str:
     return ""
 
 
+def _get_guest_key(request: Request) -> str:
+    provided = (request.headers.get("x-guest-key") or "").strip()
+    if provided and len(provided) <= 128 and re.fullmatch(r"[A-Za-z0-9:_\-.]+", provided):
+        return provided
+    return _compute_guest_key(request)
+
+
 def _compute_guest_key(request: Request) -> str:
     client_ip = _get_client_ip(request)
     user_agent = request.headers.get("user-agent", "")
@@ -389,7 +421,7 @@ async def chat_logs_save(req: Request, body: Any):
     user_id = get_user_id_from_request(req)
     guest_key = None
     if user_id is None:
-        guest_key = _compute_guest_key(req)
+        guest_key = _get_guest_key(req)
 
     # 저장은 실패해도 채팅 UX가 깨지지 않도록 200을 유지(프론트는 best-effort로 처리)
     try:
@@ -414,7 +446,7 @@ async def chat_logs_list_sessions(request: Request, limit: int = 20, offset: int
     user_id = get_user_id_from_request(request)
     guest_key = None
     if user_id is None:
-        guest_key = _compute_guest_key(request)
+        guest_key = _get_guest_key(request)
 
     sessions = get_sessions_for_owner(
         user_id=user_id,
@@ -437,7 +469,7 @@ async def chat_logs_get_session(session_id: str, request: Request):
     user_id = get_user_id_from_request(request)
     guest_key = None
     if user_id is None:
-        guest_key = _compute_guest_key(request)
+        guest_key = _get_guest_key(request)
 
     messages = get_messages_for_session(
         session_id=target,

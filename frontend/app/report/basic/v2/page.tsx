@@ -342,7 +342,7 @@ function BasicV2ReportContent() {
 
     const loadAndAnalyze = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, { credentials: "include" });
+        const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, { credentials: "include", headers: getAuthHeaders() });
         if (!res.ok) throw new Error("사주 데이터를 불러올 수 없습니다.");
         const sajuData = await res.json();
         setSajuInfo(sajuData);

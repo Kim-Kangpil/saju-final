@@ -94,65 +94,15 @@ function BasicIntroContent() {
     }
   }, [loading])
 
-  // 베타테스터용: 결제 건너뛰고 바로 리포트 보기
+  // 베타테스터용: 결제 건너뛰고 바로 v2 리포트 보기
   const handleBetaViewReport = async () => {
+    console.log('[Beta] 버튼 클릭됨, sajuId:', sajuId)
     if (!sajuId) {
       alert('사주 정보를 찾을 수 없습니다.')
       return
     }
-    setLoading(true)
-    try {
-      // 사주 데이터를 가져와서 sessionStorage에 저장
-      const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, { credentials: 'include' })
-      if (!res.ok) throw new Error('Failed to fetch saju data')
-      const data = await res.json()
-      
-      // 생년월일 파싱
-      const [y, m, d] = (data.birthdate || "").split("-").map(Number)
-      const timePart = (data.birth_time || "").trim()
-      let hour = 12, minute = 0
-      if (timePart && /^\d{1,2}:\d{1,2}$/.test(timePart)) {
-        const [h, mi] = timePart.split(":").map(Number)
-        hour = h
-        minute = mi ?? 0
-      }
-      const calendar = data.calendar_type === "음력" ? "lunar" : "solar"
-      const gender = data.gender === "남자" ? "M" : "F"
-
-      // full 사주 데이터 가져오기
-      const fullRes = await fetch(`${API_BASE}/saju/full`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          calendar_type: calendar,
-          year: y,
-          month: m,
-          day: d,
-          hour,
-          minute,
-          gender,
-        }),
-      })
-      if (!fullRes.ok) throw new Error('Failed to fetch full saju data')
-      const fullData = await fullRes.json()
-
-      // sessionStorage에 저장 (add 페이지에서 사용)
-      const loadedSaju = {
-        birthYmd: data.birthdate?.replace(/-/g, ''),
-        birthHm: timePart?.replace(':', '') || '1200',
-        gender,
-        calendar,
-        timeUnknown: !timePart,
-        result: fullData,
-      }
-      sessionStorage.setItem('loadedSaju', JSON.stringify(loadedSaju))
-      
-      // add 페이지로 이동
-      router.push(`/add?loaded=${sajuId}`)
-    } catch (err) {
-      alert('리포트를 불러오는 중 오류가 발생했습니다.')
-      setLoading(false)
-    }
+    // 바로 v2 리포트 페이지로 이동
+    router.push(`/report/basic/v2?saju_id=${sajuId}`)
   }
 
   return (

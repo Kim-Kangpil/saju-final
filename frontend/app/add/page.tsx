@@ -855,10 +855,13 @@ export default function Page({
     }
 
     if (loadedId) {
+      console.log('[Add] loadedId:', loadedId)
       const loadedSajuStr = sessionStorage.getItem("loadedSaju");
+      console.log('[Add] sessionStorage loadedSaju:', loadedSajuStr ? '존재' : '없음')
       if (loadedSajuStr) {
         try {
           const loadedSaju = JSON.parse(loadedSajuStr);
+          console.log('[Add] 파싱된 데이터:', { birthYmd: loadedSaju.birthYmd, gender: loadedSaju.gender })
 
           setBirthYmd(loadedSaju.birthYmd);
           setBirthHm(loadedSaju.birthHm);
@@ -877,11 +880,12 @@ export default function Page({
           }, 500);
           return;
         } catch (e) {
-          console.error("사주 불러오기 실패:", e);
+          console.error("[Add] 사주 불러오기 실패:", e);
           router.replace("/saju-list");
           return;
         }
       }
+      console.log('[Add] loadedSaju 없음 → saju-list로 이동')
       router.replace("/saju-list");
       return;
     }

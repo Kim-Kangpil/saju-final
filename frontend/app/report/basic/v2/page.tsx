@@ -1,0 +1,465 @@
+"use client";
+
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Icon } from "@iconify/react";
+import { PersonalityRadarCard } from "../../../../components/PersonalityRadarCard";
+import { ProblemLoopCard } from "../../../../components/ProblemLoopCard";
+import { MoneyFlowCard } from "../../../../components/MoneyFlowCard";
+import { getAuthHeaders } from "@/lib/auth";
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "https://saju-backend-eqd6.onrender.com";
+
+// 디자인 토큰
+const S = {
+  cream: "#F5F1EA",
+  cream2: "#EDE7DB",
+  cream3: "#E3D9CB",
+  beige: "#D4C9B8",
+  beige2: "#C4B8A4",
+  ink: "#2C2417",
+  ink2: "#4A3F30",
+  ink3: "#6B5F4E",
+  gold: "#8B7355",
+  goldLight: "#A8946A",
+};
+
+// 한자 → 오행 변환
+const hanjaToElement = (h: string): "wood" | "fire" | "earth" | "metal" | "water" | "none" => {
+  const map: Record<string, "wood" | "fire" | "earth" | "metal" | "water"> = {
+    甲: "wood", 乙: "wood",
+    丙: "fire", 丁: "fire",
+    戊: "earth", 己: "earth",
+    庚: "metal", 辛: "metal",
+    壬: "water", 癸: "water",
+    寅: "wood", 卯: "wood",
+    巳: "fire", 午: "fire",
+    辰: "earth", 戌: "earth", 丑: "earth", 未: "earth",
+    申: "metal", 酉: "metal",
+    子: "water", 亥: "water",
+  };
+  return map[h] || "none";
+};
+
+// 십성 계산 (간단 버전)
+const tenGod = (dayStem: string, target: string): string => {
+  const dayEl = hanjaToElement(dayStem);
+  const targetEl = hanjaToElement(target);
+  const isSame = dayEl === targetEl;
+  const isYin = "乙丁己辛癸卯酉丑未亥子".includes(target);
+  
+  if (isSame) return isYin ? "겁재" : "비견";
+  // 간단한 매핑만 반환
+  return "-";
+};
+
+// 지지 본기 (간단 버전)
+const branchMainStem = (branch: string): string => {
+  const map: Record<string, string> = {
+    子: "癸", 丑: "己", 寅: "甲", 卯: "乙",
+    辰: "戊", 巳: "丙", 午: "丁", 未: "己",
+    申: "庚", 酉: "辛", 戌: "戊", 亥: "壬",
+  };
+  return map[branch] || "";
+};
+
+interface SajuResult {
+  year: { cheongan: { hanja: string; hangul: string }; jiji: { hanja: string; hangul: string } };
+  month: { cheongan: { hanja: string; hangul: string }; jiji: { hanja: string; hangul: string } };
+  day: { cheongan: { hanja: string; hangul: string }; jiji: { hanja: string; hangul: string } };
+  hour: { cheongan: { hanja: string; hangul: string }; jiji: { hanja: string; hangul: string } };
+  twelve_states?: { hour: string; day: string; month: string; year: string };
+  jijanggan?: { hour: any[]; day: any[]; month: any[]; year: any[] };
+}
+
+interface V2Result {
+  comprehensive: string;
+  core_values: string;
+  section_personality: string;
+  section_strength: string;
+  section_problem: string;
+  section_money: string;
+  section_career: string;
+  section_relationship: string;
+  section_current: string;
+  rule_summary: Record<string, any>;
+}
+
+function parseV2ComprehensiveSections(text: string): { title: string; body: string }[] {
+  if (!text) return [];
+  const lines = text.split("\n");
+  const sections: { title: string; body: string }[] = [];
+  let current: { title: string; body: string } | null = null;
+  
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    
+    // 섹션 헤더 패턴: 🧠, 🔁, 💰 등으로 시작
+    if (/^[🧠🔁💰💼🤝📝📊]/.test(trimmed)) {
+      if (current) sections.push(current);
+      current = { title: trimmed, body: "" };
+    } else if (current) {
+      current.body += (current.body ? "\n" : "") + trimmed;
+    }
+  }
+  if (current) sections.push(current);
+  return sections;
+}
+
+function BasicV2ReportContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const sajuId = searchParams.get("saju_id") || "";
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [sajuInfo, setSajuInfo] = useState<{ name?: string; birthdate?: string; birth_time?: string; gender?: string; calendar_type?: string } | null>(null);
+  const [result, setResult] = useState<SajuResult | null>(null);
+  const [v2Result, setV2Result] = useState<V2Result | null>(null);
+  const [basicInfoOpen, setBasicInfoOpen] = useState(false);
+  const [sajuTableOpen, setSajuTableOpen] = useState(false);
+  const [fakeProgress, setFakeProgress] = useState(0);
+  
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 로딩 progress
+  useEffect(() => {
+    if (!loading) {
+      setFakeProgress(0);
+      return;
+    }
+    setFakeProgress(0);
+    progressIntervalRef.current = setInterval(() => {
+      setFakeProgress(prev => {
+        if (prev >= 95) return prev;
+        const inc = prev < 40 ? 2.5 : prev < 70 ? 1.5 : prev < 85 ? 0.8 : 0.3;
+        return Math.min(95, prev + inc);
+      });
+    }, 150);
+    return () => {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    };
+  }, [loading]);
+
+  // 데이터 로드 및 v2 분석 실행
+  useEffect(() => {
+    if (!sajuId) {
+      setError("사주 ID가 필요합니다.");
+      setLoading(false);
+      return;
+    }
+
+    const loadAndAnalyze = async () => {
+      try {
+        // 1. 사주 데이터 조회
+        const res = await fetch(`${API_BASE}/api/saju/${sajuId}`, { credentials: "include" });
+        if (!res.ok) throw new Error("사주 데이터를 불러올 수 없습니다.");
+        const sajuData = await res.json();
+        setSajuInfo(sajuData);
+
+        // 2. full 사주 계산
+        const [y, m, d] = (sajuData.birthdate || "").split("-").map(Number);
+        const timePart = (sajuData.birth_time || "").trim();
+        let hour = 12, minute = 0;
+        if (timePart && /^\d{1,2}:\d{1,2}$/.test(timePart)) {
+          const [h, mi] = timePart.split(":").map(Number);
+          hour = h; minute = mi ?? 0;
+        }
+        const calendar = sajuData.calendar_type === "음력" ? "lunar" : "solar";
+        const gender = sajuData.gender === "남자" ? "M" : "F";
+
+        const fullRes = await fetch(`${API_BASE}/saju/full`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            calendar_type: calendar,
+            year: y, month: m, day: d,
+            hour, minute, gender,
+          }),
+        });
+        if (!fullRes.ok) throw new Error("사주 계산에 실패했습니다.");
+        const fullData = await fullRes.json();
+        setResult(fullData);
+
+        // 3. v2 AI 분석
+        const v2Res = await fetch(`${API_BASE}/saju/v2-analysis`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+          credentials: "include",
+          body: JSON.stringify({
+            saju_data: fullData,
+            tone: "empathy",
+          }),
+        });
+        if (!v2Res.ok) throw new Error("AI 분석에 실패했습니다.");
+        const v2Data = await v2Res.json();
+        setV2Result(v2Data);
+
+      } catch (err) {
+        console.error("[BasicV2] Error:", err);
+        setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAndAnalyze();
+  }, [sajuId]);
+
+  const pillars = result ? [result.hour, result.day, result.month, result.year] : [];
+  const birthYmd = sajuInfo?.birthdate?.replace(/-/g, "");
+  const birthHm = sajuInfo?.birth_time?.replace(":", "") || "1200";
+  const gender = sajuInfo?.gender === "남자" ? "M" : "F";
+  const calendar = sajuInfo?.calendar_type === "음력" ? "lunar" : "solar";
+  const timeUnknown = !sajuInfo?.birth_time;
+
+  // 섹션 파싱
+  const sections = v2Result ? parseV2ComprehensiveSections(v2Result.comprehensive) : [];
+
+  if (error) {
+    return (
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "40px 20px", textAlign: "center", background: S.cream, minHeight: "100vh" }}>
+        <p style={{ fontSize: 48, marginBottom: 16 }}>⚠️</p>
+        <p style={{ fontSize: 16, color: S.ink, marginBottom: 20 }}>{error}</p>
+        <button
+          onClick={() => router.push("/saju-list")}
+          style={{ padding: "12px 24px", background: S.gold, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+        >
+          사주 목록으로
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ maxWidth: 520, margin: "0 auto", background: S.cream, minHeight: "100vh", fontFamily: "'Gmarket Sans', sans-serif" }}>
+      {/* 헤더 */}
+      <header style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${S.beige}` }}>
+        <button onClick={() => router.back()} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+          <Icon icon="mdi:chevron-left" width={24} color={S.ink} />
+        </button>
+        <h1 style={{ fontSize: 16, fontWeight: 700, color: S.ink, flex: 1 }}>기본 분석 리포트</h1>
+      </header>
+
+      {loading ? (
+        /* 로딩 UI */
+        <div style={{ padding: "60px 24px", textAlign: "center" }}>
+          <div style={{ marginBottom: 32 }}>
+            {fakeProgress < 95 ? (
+              <p style={{ fontSize: 13, fontWeight: 600, color: S.ink3, letterSpacing: "0.1em", marginBottom: 24 }}>
+                AI가 분석하고 있어요
+              </p>
+            ) : (
+              <motion.p
+                style={{ fontSize: 13, fontWeight: 600, color: S.ink3, letterSpacing: "0.1em", marginBottom: 24 }}
+                animate={{ opacity: [1, 0.4, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                거의 다 됐어요
+              </motion.p>
+            )}
+            <div style={{ height: 8, background: S.cream3, borderRadius: 99, overflow: "hidden", maxWidth: 320, margin: "0 auto 16px" }}>
+              {fakeProgress < 95 ? (
+                <motion.div
+                  style={{ height: "100%", background: `linear-gradient(90deg, ${S.gold}, ${S.goldLight})`, borderRadius: 99 }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${fakeProgress}%` }}
+                  transition={{ duration: 0.3 }}
+                />
+              ) : (
+                <div style={{ position: "relative", height: "100%" }}>
+                  <div style={{ position: "absolute", inset: 0, width: "95%", background: `linear-gradient(90deg, ${S.gold}, ${S.goldLight})`, borderRadius: 99 }} />
+                  <motion.div
+                    style={{ position: "absolute", top: 0, height: "100%", width: "35%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)", borderRadius: 99 }}
+                    animate={{ x: ["-100%", "200%"] }}
+                    transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                  />
+                </div>
+              )}
+            </div>
+            <p style={{ fontSize: 12, color: S.ink3 }}>{Math.floor(fakeProgress)}%</p>
+          </div>
+        </div>
+      ) : (
+        /* 결과 UI */
+        <div style={{ padding: "20px 16px" }}>
+          {/* 기본 정보 아코디언 */}
+          <div style={{ border: `1px solid ${S.beige}`, borderRadius: 12, overflow: "hidden", background: "#fff", marginBottom: 12, boxShadow: "0 1px 6px rgba(44,36,23,0.05)" }}>
+            <button
+              type="button"
+              onClick={() => setBasicInfoOpen(v => !v)}
+              style={{ width: "100%", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer" }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>기본 정보</span>
+              <motion.span animate={{ rotate: basicInfoOpen ? 180 : 0 }} transition={{ duration: 0.15 }} style={{ color: S.ink3 }}>
+                <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </motion.span>
+            </button>
+            <AnimatePresence initial={false}>
+              {basicInfoOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.18 }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <div style={{ padding: "0 16px 14px", borderTop: `1px solid ${S.cream3}` }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 12 }}>
+                      {[
+                        { label: "생년월일", value: birthYmd ? `${birthYmd.slice(0, 4)}.${birthYmd.slice(4, 6)}.${birthYmd.slice(6, 8)}` : "—" },
+                        { label: "시각", value: timeUnknown ? "미상" : birthHm ? `${birthHm.slice(0, 2)}:${birthHm.slice(2, 4)}` : "—" },
+                        { label: "성별", value: gender === "M" ? "남자" : "여자" },
+                        { label: "달력", value: calendar === "solar" ? "양력" : "음력" },
+                      ].map(row => (
+                        <div key={row.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: 8, borderBottom: `1px solid ${S.cream3}` }}>
+                          <span style={{ fontSize: 12, color: S.ink3 }}>{row.label}</span>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{row.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* 사주팔자 아코디언 */}
+          {result && (
+            <div style={{ border: `1px solid ${S.beige}`, borderRadius: 12, overflow: "hidden", background: "#fff", marginBottom: 24, boxShadow: "0 1px 6px rgba(44,36,23,0.05)" }}>
+              <button
+                type="button"
+                onClick={() => setSajuTableOpen(v => !v)}
+                style={{ width: "100%", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer" }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 700, color: S.ink }}>내 사주팔자</span>
+                <motion.span animate={{ rotate: sajuTableOpen ? 180 : 0 }} transition={{ duration: 0.15 }} style={{ color: S.ink3 }}>
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </motion.span>
+              </button>
+              <AnimatePresence initial={false}>
+                {sajuTableOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.18 }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div style={{ padding: "0 16px 14px", borderTop: `1px solid ${S.cream3}` }}>
+                      <div style={{ overflowX: "auto", paddingTop: 14 }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, background: "#fff", borderRadius: 10, tableLayout: "fixed" }}>
+                          <thead>
+                            <tr>
+                              <th style={{ width: 80, background: S.cream2, border: `1px solid ${S.beige}`, padding: "8px 6px", textAlign: "center", fontSize: 11, fontWeight: 700, color: S.ink }} />
+                              {["시주", "일주", "월주", "년주"].map((h) => (
+                                <th key={h} style={{ background: S.cream2, border: `1px solid ${S.beige}`, padding: "8px 6px", textAlign: "center", fontSize: 11, fontWeight: 700, color: S.ink }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>천간</td>
+                              {pillars.map((p, i) => {
+                                const el = hanjaToElement(p.cheongan.hanja);
+                                const palette: any = {
+                                  wood: { text: "#27500A", bg: "#C0DD97" },
+                                  fire: { text: "#712B13", bg: "#F0997B" },
+                                  earth: { text: "#633806", bg: "#FAC775" },
+                                  metal: { text: "#444441", bg: "#FFFFFF" },
+                                  water: { text: "#444441", bg: "#B4B2A9" },
+                                  none: { text: S.ink, bg: S.cream2 },
+                                };
+                                const col = palette[el] || palette.none;
+                                return (
+                                  <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                    <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
+                                      {p.cheongan.hanja}{p.cheongan.hangul}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                            <tr>
+                              <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>지지</td>
+                              {pillars.map((p, i) => {
+                                const el = hanjaToElement(p.jiji.hanja);
+                                const palette: any = {
+                                  wood: { text: "#27500A", bg: "#C0DD97" },
+                                  fire: { text: "#712B13", bg: "#F0997B" },
+                                  earth: { text: "#633806", bg: "#FAC775" },
+                                  metal: { text: "#444441", bg: "#FFFFFF" },
+                                  water: { text: "#444441", bg: "#B4B2A9" },
+                                  none: { text: S.ink, bg: S.cream2 },
+                                };
+                                const col = palette[el] || palette.none;
+                                return (
+                                  <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                    <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
+                                      {p.jiji.hanja}{p.jiji.hangul}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* v2 AI 분석 결과 */}
+          {v2Result && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {sections.map((sec) => (
+                <div key={sec.title} style={{ background: "#fff", borderRadius: 16, border: `1px solid ${S.beige}`, padding: "20px 18px", boxShadow: "0 2px 10px rgba(44,36,23,0.05)" }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: S.gold, marginBottom: 12, letterSpacing: "0.04em" }}>
+                    {sec.title}
+                  </p>
+                  <div
+                    style={{ fontSize: 14, color: S.ink2, lineHeight: 1.9, wordBreak: "keep-all" }}
+                    dangerouslySetInnerHTML={{ __html: sec.body.replace(/\n/g, "<br />") }}
+                  />
+                  {sec.title === "🧠 타고난 성향과 사고방식" && v2Result.rule_summary && (
+                    <div style={{ marginTop: 16 }}>
+                      <PersonalityRadarCard ruleSummary={v2Result.rule_summary} />
+                    </div>
+                  )}
+                  {sec.title === "🔁 반복되는 문제 패턴" && v2Result.rule_summary && (
+                    <div style={{ marginTop: 16 }}>
+                      <ProblemLoopCard ruleSummary={v2Result.rule_summary} />
+                    </div>
+                  )}
+                  {sec.title === "💰 돈 흐름 구조" && v2Result.rule_summary && (
+                    <div style={{ marginTop: 16 }}>
+                      <MoneyFlowCard ruleSummary={v2Result.rule_summary} />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 하단 여백 */}
+          <div style={{ height: 40 }} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function BasicV2ReportPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 40, textAlign: "center" }}>로딩 중...</div>}>
+      <BasicV2ReportContent />
+    </Suspense>
+  );
+}

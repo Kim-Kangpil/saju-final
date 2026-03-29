@@ -117,20 +117,32 @@ interface V2Result {
   rule_summary: Record<string, any>;
 }
 
-const SECTION_DEFS: {
-  key: keyof V2Result;
-  icon: string;
-  title: string;
-  visualCard?: "personality" | "problem" | "money";
-}[] = [
-  { key: "section_personality", icon: "🧠", title: "타고난 성향", visualCard: "personality" },
-  { key: "section_strength",    icon: "✨", title: "강점과 재능" },
-  { key: "section_problem",     icon: "🔁", title: "반복되는 문제 패턴", visualCard: "problem" },
-  { key: "section_money",       icon: "💰", title: "돈 흐름 구조", visualCard: "money" },
-  { key: "section_career",      icon: "💼", title: "일과 직업 방향" },
-  { key: "section_relationship",icon: "🤝", title: "관계와 인연 구조" },
-  { key: "section_current",     icon: "📊", title: "지금 이 시기" },
-];
+// comprehensive 텍스트 → 섹션 파싱 (이모지로 시작하는 줄이 섹션 제목)
+function parseV2ComprehensiveSections(text: string): { title: string; body: string }[] {
+  if (!text) return [];
+  const lines = text.split("\n");
+  const sections: { title: string; body: string }[] = [];
+  let current: { title: string; body: string } | null = null;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (/^[🧠🔁💰💼🤝📝📊✨🌊⚡🎯🌱]/u.test(trimmed)) {
+      if (current) sections.push(current);
+      current = { title: trimmed, body: "" };
+    } else if (current) {
+      current.body += (current.body ? "\n" : "") + trimmed;
+    }
+  }
+  if (current) sections.push(current);
+  return sections;
+}
+
+function getVisualCard(title: string): "personality" | "problem" | "money" | undefined {
+  if (/🧠/.test(title)) return "personality";
+  if (/🔁/.test(title)) return "problem";
+  if (/💰/.test(title)) return "money";
+  return undefined;
+}
 
 // 아코디언 한 섹션
 function SectionAccordion({
@@ -175,7 +187,7 @@ function SectionAccordion({
           textAlign: "left",
         }}
       >
-        <span style={{ fontSize: 18 }}>{icon}</span>
+        {icon && <span style={{ fontSize: 18 }}>{icon}</span>}
         <span style={{ fontSize: 14, fontWeight: 700, color: S.ink, flex: 1 }}>{title}</span>
         <motion.span
           animate={{ rotate: open ? 180 : 0 }}
@@ -531,9 +543,9 @@ function BasicV2ReportContent() {
                                 };
                                 const col = palette[el] || palette.none;
                                 return (
-                                  <td key={i} style={{ padding: 3, border: `1px solid ${S.beige}` }}>
-                                    <div style={{ padding: "9px 6px", borderRadius: 7, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700, fontSize: 13 }}>
-                                      {p[row].hanja}<br /><span style={{ fontSize: 10, fontWeight: 400 }}>{p[row].hangul}</span>
+                                  <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                    <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
+                                      {p[row].hanja}{p[row].hangul}
                                     </div>
                                   </td>
                                 );
@@ -550,28 +562,27 @@ function BasicV2ReportContent() {
           )}
 
           {/* AI 분석 섹션 */}
-          {v2Result && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <p style={{ fontSize: 11, color: S.ink3, textAlign: "center", marginBottom: 4, letterSpacing: "0.05em" }}>
-                AI 분석 결과 · 섹션을 탭해서 펼쳐보세요
-              </p>
-              {SECTION_DEFS.map((def, idx) => {
-                const body = (v2Result[def.key] as string) || "";
-                if (!body) return null;
-                return (
+          {v2Result && (() => {
+            const sections = parseV2ComprehensiveSections(v2Result.comprehensive);
+            return (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <p style={{ fontSize: 11, color: S.ink3, textAlign: "center", marginBottom: 4, letterSpacing: "0.05em" }}>
+                  AI 분석 결과 · 섹션을 탭해서 펼쳐보세요
+                </p>
+                {sections.map((sec, idx) => (
                   <SectionAccordion
-                    key={def.key}
-                    icon={def.icon}
-                    title={def.title}
-                    body={body}
+                    key={sec.title}
+                    icon=""
+                    title={sec.title}
+                    body={sec.body}
                     defaultOpen={idx < 2}
-                    visualCard={def.visualCard}
+                    visualCard={getVisualCard(sec.title)}
                     ruleSummary={v2Result.rule_summary}
                   />
-                );
-              })}
-            </div>
-          )}
+                ))}
+              </div>
+            );
+          })()}
 
           <div style={{ height: 48 }} />
         </div>

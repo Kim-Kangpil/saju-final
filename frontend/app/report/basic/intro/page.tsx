@@ -26,14 +26,14 @@ function BasicIntroContent() {
 
   return (
     <div style={{maxWidth: 480, margin: '0 auto', padding: '12px 20px 24px', fontFamily: 'var(--font-sans)', background: '#F5F1EA', minHeight: '100vh'}}>
-      <ReportIntroHeader title="종합 리포트" />
+      <ReportIntroHeader title="기본 리포트" />
 
       <div style={{textAlign: 'center', marginBottom: 32}}>
         <div style={{fontSize: 48, marginBottom: 12}}>✨</div>
         <h1 style={{fontSize: 22, fontWeight: 700, color: '#3D3530', marginBottom: 8}}>
-          사주 종합 분석 리포트
+          사주 기본 분석 리포트
         </h1>
-        <p style={{fontSize: 14, color: '#8B7355'}}>내 사주 기반 맞춤 종합 분석</p>
+        <p style={{fontSize: 14, color: '#8B7355'}}>내 사주 기반 맞춤 기본 분석</p>
       </div>
 
       <div style={{background: 'white', borderRadius: 16, padding: 20, marginBottom: 16}}>
@@ -103,7 +103,7 @@ function BasicIntroContent() {
         <KakaoPayButton
           orderType="basic"
           price={1900}
-          label="종합 리포트 확인하기 · 1,900원"
+          label="기본 리포트 확인하기 · 1,900원"
           sajuId={sajuId}
         />
         <p style={{fontSize: 10, color: '#C4B5A0', marginTop: 6}}>

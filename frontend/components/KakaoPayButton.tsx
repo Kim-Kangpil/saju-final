@@ -39,7 +39,7 @@ export default function KakaoPayButton({
         body: JSON.stringify({ order_type: orderType, ...(sajuId ? { saju_id: sajuId } : {}) }),
       });
       if (res.status === 401) {
-        window.location.href = "/login";
+        window.location.href = "/start";
         return;
       }
       const data = await res.json();

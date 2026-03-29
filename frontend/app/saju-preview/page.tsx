@@ -1108,7 +1108,7 @@ function SajuPreviewContent() {
               <div style={{ fontSize: 13, fontWeight: 700 }}>확인 중...</div>
             ) : (
               <>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>✨ 나의 사주 종합 리포트</div>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>✨ 나의 사주 기본 리포트</div>
                 <div
                   style={{
                     display: "flex",

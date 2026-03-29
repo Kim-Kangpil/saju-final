@@ -9,7 +9,7 @@ const STORE_ID = process.env.NEXT_PUBLIC_PORTONE_STORE_ID || "";
 const CHANNEL_KEY = process.env.NEXT_PUBLIC_PORTONE_CHANNEL_KEY || "";
 
 const ORDER_NAME = "고민분석";
-const AMOUNT = 3900;
+const AMOUNT = 4900;
 
 function getUserId(): string {
   if (typeof window === "undefined") return "";

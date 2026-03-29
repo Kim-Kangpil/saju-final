@@ -104,18 +104,18 @@ function MoneyIntroContent() {
         </p>
         <div style={{marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
           <span style={{fontSize: 16, color: '#C4B5A0', textDecoration: 'line-through'}}>
-            9,900원
-          </span>
-          <span style={{fontSize: 26, fontWeight: 700, color: '#3D3530'}}>
             5,900원
           </span>
+          <span style={{fontSize: 26, fontWeight: 700, color: '#3D3530'}}>
+            2,900원
+          </span>
           <span style={{fontSize: 12, fontWeight: 700, color: '#fff', background: '#DC2626', padding: '3px 8px', borderRadius: 6}}>
-            40%
+            51%
           </span>
         </div>
         <KakaoPayButton
           orderType="money"
-          price={5900}
+          price={2900}
           label="재물운 리포트 확인하기"
           sajuId={sajuId}
         />

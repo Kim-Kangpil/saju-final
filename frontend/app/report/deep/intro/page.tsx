@@ -136,8 +136,8 @@ function DeepIntroContent() {
         </p>
         <KakaoPayButton
           orderType="deep"
-          price={9900}
-          label="심화 리포트 확인하기 · 9,900원"
+          price={4900}
+          label="심화 리포트 확인하기 · 4,900원"
           sajuId={sajuId}
         />
         <p style={{ fontSize: 10, color: "#C4B5A0", marginTop: 6 }}>

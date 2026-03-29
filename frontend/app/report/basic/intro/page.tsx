@@ -102,8 +102,8 @@ function BasicIntroContent() {
         </p>
         <KakaoPayButton
           orderType="basic"
-          price={1900}
-          label="기본 리포트 확인하기 · 1,900원"
+          price={990}
+          label="기본 리포트 확인하기 · 990원"
           sajuId={sajuId}
         />
         <p style={{fontSize: 10, color: '#C4B5A0', marginTop: 6}}>

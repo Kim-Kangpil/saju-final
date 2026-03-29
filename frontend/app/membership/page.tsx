@@ -70,7 +70,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
             사주를 가장<br />깊이 있게
           </h1>
           <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.8, marginBottom: 24 }}>
-            AI 채팅부터 분석 리포트까지<br />제한 없이, 월 3,900원
+            AI 채팅부터 분석 리포트까지<br />제한 없이, 월 4,900원
           </p>
           {status?.is_pro ? (
             <div style={{ background: "#E1DDCF", borderRadius: 12, padding: "14px 16px", fontSize: 13, color: "#3A3A3A", fontWeight: 700 }}>
@@ -80,7 +80,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
               </div>}
             </div>
           ) : (
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#3A3A3A" }}>월 3,900원</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "#3A3A3A" }}>월 4,900원</div>
           )}
         </section>
 

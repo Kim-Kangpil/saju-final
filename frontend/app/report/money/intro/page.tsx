@@ -1,5 +1,5 @@
 "use client"
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import KakaoPayButton from '@/components/KakaoPayButton'
 import { ReportIntroHeader } from '@/components/ReportIntroHeader'
@@ -8,8 +8,10 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://saju-backend-eqd6.o
 
 function MoneyIntroContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const sajuId = searchParams.get('saju_id') || ''
   const [sajuInfo, setSajuInfo] = useState<{ name?: string; birth_ymd?: string } | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     if (!sajuId) return
@@ -23,6 +25,34 @@ function MoneyIntroContent() {
       })
       .catch(() => {})
   }, [sajuId])
+
+  // 관리자 여부 확인
+  useEffect(() => {
+    const betaFeatures = localStorage.getItem('betaFeatures')
+    if (betaFeatures) {
+      try {
+        const parsed = JSON.parse(betaFeatures)
+        if (parsed?.is_admin) setIsAdmin(true)
+      } catch {}
+    }
+
+    const checkAdminFeatures = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/beta/features`, { credentials: 'include' })
+        const data = await res.json()
+        if (data?.features?.is_admin) setIsAdmin(true)
+      } catch {}
+    }
+    checkAdminFeatures()
+  }, [])
+
+  const handleAdminViewReport = () => {
+    if (!sajuId) {
+      alert('사주 정보를 찾을 수 없습니다.')
+      return
+    }
+    router.push(`/report/money?saju_id=${sajuId}`)
+  }
 
   return (
     <div style={{maxWidth: 480, margin: '0 auto', padding: '12px 20px 24px', fontFamily: 'var(--font-sans)', background: '#F5F1EA', minHeight: '100vh'}}>
@@ -119,6 +149,34 @@ function MoneyIntroContent() {
           label="재물운 리포트 확인하기"
           sajuId={sajuId}
         />
+
+        {/* 관리자용 바로 보기 버튼 */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handleAdminViewReport}
+            style={{
+              marginTop: 12,
+              padding: '12px 24px',
+              borderRadius: 10,
+              border: '2px solid #dc2626',
+              background: '#fee2e2',
+              color: '#991b1b',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              margin: '12px auto 0',
+            }}
+          >
+            <span>👑</span>
+            관리자: 바로 보기
+          </button>
+        )}
+
         <p style={{fontSize: 10, color: '#C4B5A0', marginTop: 6}}>
           한 번 구매로 영구 열람 가능
         </p>

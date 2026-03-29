@@ -13,6 +13,7 @@ function BasicIntroContent() {
   const sajuId = searchParams.get('saju_id') || ''
   const [sajuInfo, setSajuInfo] = useState<{ name?: string; birth_ymd?: string } | null>(null)
   const [isBetaTester, setIsBetaTester] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [loading, setLoading] = useState(false)
   const [fakeProgress, setFakeProgress] = useState(0)
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -42,6 +43,10 @@ function BasicIntroContent() {
             parsed?.free_basic_report || parsed?.free_chat || parsed?.unlimited_basic) {
           setIsBetaTester(true)
         }
+        // 관리자 여부 확인
+        if (parsed?.is_admin) {
+          setIsAdmin(true)
+        }
       } catch {}
     }
     
@@ -60,6 +65,10 @@ function BasicIntroContent() {
           if (f?.is_beta_tester || f?.is_admin || 
               f?.free_basic_report || f?.free_chat || f?.unlimited_basic) {
             setIsBetaTester(true)
+          }
+          // 관리자 여부 확인
+          if (f?.is_admin) {
+            setIsAdmin(true)
           }
         }
       } catch {}
@@ -226,6 +235,34 @@ function BasicIntroContent() {
           >
             <span>⚡</span>
             {loading ? '리포트 불러오는 중...' : '베타테스터: 무료로 바로 보기'}
+          </button>
+        )}
+        
+        {/* 관리자용 바로 보기 버튼 */}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handleBetaViewReport}
+            disabled={loading}
+            style={{
+              marginTop: 12,
+              padding: '12px 24px',
+              borderRadius: 10,
+              border: '2px solid #dc2626',
+              background: loading ? '#f3f4f6' : '#fee2e2',
+              color: '#991b1b',
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: loading ? 'wait' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              margin: '12px auto 0',
+            }}
+          >
+            <span>👑</span>
+            {loading ? '리포트 불러오는 중...' : '관리자: 바로 보기'}
           </button>
         )}
         

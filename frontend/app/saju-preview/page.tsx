@@ -1091,29 +1091,28 @@ function SajuPreviewContent() {
             disabled={deducting}
             style={{
               width: "100%",
-              padding: "16px",
+              background: "#FFFDF9",
+              border: "1.5px solid #8B7355",
               borderRadius: 14,
-              border: `2px solid #8B7355`,
-              background: deducting ? "#c4b8a4" : "linear-gradient(135deg, #F5EFE3 0%, #E8DCC8 100%)",
-              fontSize: 15,
+              color: "#8B7355",
               fontWeight: 700,
-              color: "#3D3530",
+              fontSize: 15,
+              padding: "16px 18px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              boxShadow: "0 2px 8px rgba(139,115,85,0.12)",
               cursor: deducting ? "wait" : "pointer",
               fontFamily: "inherit",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              boxShadow: "0 2px 8px rgba(139, 115, 85, 0.15)",
             }}
           >
             {deducting ? (
               "확인 중..."
             ) : (
-              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                <span aria-hidden>🔮</span>
-                <span>나의 사주 종합 리포트</span>
-              </span>
+              <>
+                <span>✦ 나의 사주 종합 리포트</span>
+                <span aria-hidden>→</span>
+              </>
             )}
           </button>
 

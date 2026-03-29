@@ -54,6 +54,10 @@ export default function SajuMyPage({
   const [userInfoLoading, setUserInfoLoading] = useState(true);
   const [seedCount, setSeedCount] = useState<number>(0);
   const [showWithdrawConfirm, setShowWithdrawConfirm] = useState(false);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponMessage, setCouponMessage] = useState<string | null>(null);
+  const [betaFeatures, setBetaFeatures] = useState<any>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -136,6 +140,42 @@ export default function SajuMyPage({
     // 실제 탈퇴 로직 연동 예정
     setShowWithdrawConfirm(false);
     alert("회원탈퇴 처리가 완료되었습니다. (실제 로직 연동 예정)");
+  };
+
+  const handleCouponApply = async () => {
+    if (!couponCode.trim()) {
+      setCouponMessage("쿠폰 코드를 입력해주세요.");
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponMessage(null);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/beta/apply-coupon`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders(),
+        },
+        credentials: "include",
+        body: JSON.stringify({ coupon_code: couponCode.trim() }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setBetaFeatures(data.features);
+        setCouponMessage("🎉 쿠폰이 적용되었습니다! 채팅과 기본 리포트를 무료로 이용할 수 있습니다.");
+        setCouponCode("");
+      } else {
+        setCouponMessage(data.detail || "쿠폰 적용에 실패했습니다.");
+      }
+    } catch (error) {
+      setCouponMessage("쿠폰 적용 중 오류가 발생했습니다.");
+    } finally {
+      setCouponLoading(false);
+    }
   };
 
   const getProviderLabel = () => {
@@ -221,6 +261,82 @@ export default function SajuMyPage({
             </div>
           </div>
         </section>
+
+        {/* 베타 쿠폰 섹션 */}
+        {!betaFeatures && (
+          <section style={{ margin: "20px -20px 0", background: "var(--bg-surface)", padding: "20px", borderRadius: 12, border: "1.5px solid var(--border-default)" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: textDark, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+              🎉 베타 테스터 쿠폰
+            </div>
+            <p style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.5 }}>
+              쿠폰을 입력하면 채팅과 기본 리포트를 무료로 이용할 수 있어요!
+            </p>
+            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="쿠폰 코드 입력"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleCouponApply()}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  border: `1.5px solid ${borderField}`,
+                  borderRadius: 8,
+                  fontSize: 14,
+                  background: "var(--bg-input)",
+                  color: textDark,
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleCouponApply}
+                disabled={couponLoading}
+                className="tap"
+                style={{
+                  padding: "12px 20px",
+                  borderRadius: 8,
+                  border: "none",
+                  background: couponLoading ? "var(--text-placeholder)" : "#4A6741",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "white",
+                  cursor: couponLoading ? "not-allowed" : "pointer",
+                  minWidth: 80,
+                }}
+              >
+                {couponLoading ? "처리중..." : "적용"}
+              </button>
+            </div>
+            {couponMessage && (
+              <div style={{
+                fontSize: 13,
+                color: couponMessage.includes("🎉") ? "#4A6741" : "#ef4444",
+                padding: "8px 12px",
+                background: couponMessage.includes("🎉") ? "#f0f9f0" : "#fef2f2",
+                borderRadius: 6,
+                border: `1px solid ${couponMessage.includes("🎉") ? "#4A6741" : "#ef4444"}`,
+              }}>
+                {couponMessage}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* 베타 혜택 표시 */}
+        {betaFeatures && (
+          <section style={{ margin: "20px -20px 0", background: "#f0f9f0", padding: "20px", borderRadius: 12, border: "1.5px solid #4A6741" }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#4A6741", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+              🎉 베타 테스터 혜택
+            </div>
+            <div style={{ fontSize: 13, color: "#4A6741", lineHeight: 1.6 }}>
+              <div style={{ marginBottom: 8 }}>✅ AI 채팅 무제한 이용</div>
+              <div style={{ marginBottom: 8 }}>✅ 기본 리포트 무료 열람</div>
+              <div style={{ marginBottom: 8 }}>✅ 특화/심화 리포트 정상가 이용</div>
+              <div>📱 채팅 페이지와 리포트 페이지에서 혜택을 확인하세요!</div>
+            </div>
+          </section>
+        )}
 
         <section style={{ padding: "20px 0 0" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

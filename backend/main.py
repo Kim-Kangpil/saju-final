@@ -2,6 +2,7 @@
 import io
 import logging
 import sys
+from collections import defaultdict, deque
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,6 @@ from typing import Optional, Any, Dict
 import json
 from datetime import datetime, date, timezone, timedelta
 import asyncio
-from collections import defaultdict, deque
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -1107,6 +1107,7 @@ async def api_chat(req: ChatRequest, request: Request):
                     yield "data: [DONE]\n\n"
                 else:
                     yield f"data: {json.dumps({'error': 'AI 서비스를 사용할 수 없습니다.'}, ensure_ascii=False)}\n\n"
+
         except Exception as e:
             print(f"❌ /api/chat 스트리밍 오류: {e}")
             yield f"data: {json.dumps({'error': str(e)}, ensure_ascii=False)}\n\n"
@@ -1570,7 +1571,7 @@ async def _call_gemini_with_retry(
                 1 for marker in ["1.", "2.", "3.", "4.", "5.", "6."]
                 if marker in content
             )
-            logger.warning(f"[Gemini] attempt {attempt + 1}: {len(content)} chars, {section_count} sections")
+            logger.warning(f"[Gemini] attempt {attempt + 1}: {len(content)} chars, sections: {section_count}")
 
             if len(content) >= 2000 and section_count >= 6:
                 return content
@@ -1676,7 +1677,7 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str, tone: str 
       - 근거 없는 희망은 절대 금지
 
 3. 표현 변환 (사실 기반 + 공감 톤):
-   - 재성 없음 → "돈이 내 손에서 직접 만들어지진 않지만, 그 대신 사람·관계·기회를 통해 들어오는 구조예요. 혼자 벌려고 하면 힘들지만, 연결되면 오히려 더 잘 풀려요."
+   - 재성 없음 → "돈이 내 손에서 직접 만들어지진 않지만, 그 대신 사람·관계·기회를 통해 들어오는 구조예요. 혼자 벌려고 하면 오히려 더 힘들어지는 패턴이거든요."
    - 신약 → "에너지가 분산되기 쉬운 타입이에요. 그래서 '많이 하기'보다 '잘 고르기'가 중요하고, 환경을 잘 세팅하면 오히려 더 효율적으로 움직일 수 있어요."
    - 비겁 과다 → "형제·친구·동료와 나누는 일이 많은 사주예요. 혼자 쌓아두는 것보다, 함께 쓰면서 관계를 키우는 게 원래 방식이거든요. 다만 '자동으로 빠지는 구조'를 만들면 같은 수입으로도 2배는 더 모을 수 있어요."
    - 식상생재 → "재능과 표현이 수입으로 연결되는 구조예요. 내가 만든 것, 내가 한 말, 내 작품이 돈이 되는 방식이거든요."
@@ -1686,7 +1687,7 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str, tone: str 
    - "~할 수 없습니다" → "~하긴 어렵지만, 대신 ~가 더 잘 맞아요"
    - "~가 부족합니다" → "~보다는 ~가 강해요"
    - "~하세요" (명령) → "~하면 더 편해요" (제안)
-   - "제한적입니다" → "이 방식보다는 저 방식이 더 잘 맞아요"
+   - "제한적입니다" → "~보다 ~가 더 잘 맞아요"
 
 5. 주어는 항상 "당신은" 또는 "이 사주는" 사용
    "이런 사람들은", "이들은", "이러한 유형은" 절대 금지
@@ -1702,7 +1703,7 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str, tone: str 
 나쁜: "재성이 없기 때문에 재정적 기회가 제한적입니다"
 좋은: "돈이 들어와도 왜 이렇게 불안한지 모르겠죠? 벌어도 벌어도 통장에 안 남는 느낌.
       이 사주는 돈을 '내 손으로 만드는' 구조보다는, '사람·관계·기회를 통해 들어오는' 구조예요.
-      그래서 혼자 벌려고 하면 오히려 더 힘들어지고, 협업·소개·연결로 움직이면 훨씬 잘 풀려요."
+      그래서 혼자 벌겠다고 움직이면 오히려 더 힘들어지는 패턴이거든요."
 
 나쁜: "정관 대운이 진행 중이기 때문에 안정적인 흐름입니다"
 좋은: "지금은 급하게 뭔가 만들려 하기보다, 현재 자리에서 인정받는 게 더 유리한 시기예요.
@@ -3123,7 +3124,7 @@ async def payment_confirm(req: PaymentConfirmRequest):
         print(f"❌ payment/confirm 오류: {e}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="결제 처리 실패")
 
 
 @app.get("/api/saju/list")

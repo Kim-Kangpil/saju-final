@@ -248,7 +248,7 @@ def interpret_money(saju_data: dict) -> dict:
 
     pyeон_jae_count = _count_ten_god(ten_gods, "편재")
     jeong_jae_count = _count_ten_god(ten_gods, "정재")
-    jaeseong_total = pyeon_jae_count = pyeон_jae_count  # 별칭
+    jaeseong_total = pyeон_jae_count = pyeон_jae_count  # 별칭
     jaeseong_total = pyeон_jae_count + jeong_jae_count
 
     jaeseong_positions = _positions_with(ten_gods, "편재", "정재")
@@ -299,7 +299,7 @@ def interpret_money(saju_data: dict) -> dict:
     # ── 위치별 의미 ──
     if ilji_jae:
         patterns.append("일지 재성 → 배우자/파트너를 통한 재물 연결")
-        language_points.append("파트너나 가까운 관계를 통해 재물이 연결되는 경우가 많아요.")
+        language_points.append("파트너 복이 있는 구조예요. 함께 하는 사람이 삶에서 중요한 역할을 해요.")
     if wolji_jae:
         patterns.append("월지 재성 → 직업·본업을 통한 주된 수입")
         language_points.append("본업에서 재물이 나오는 구조예요. 직업이 수입과 직결돼 있어요.")
@@ -1056,8 +1056,9 @@ def interpret_love_deep(saju_data: dict) -> dict:
             continue
         stem = p[0]
         tg = calculate_ten_god(ilgan, stem)
-        if tg in yeonin_names and tong.get(f"{pos}_stem", {}).get("has_root"):
-            partner_root_stems.append(pos)
+        if tong.get(f"{pos}_stem", {}).get("has_root"):
+            if tg in yeonin_names:
+                partner_root_stems.append(pos)
 
     # 근묘화실 연인성 인생 단계
     STAGE_LABEL = {"year": "초년", "month": "청년기", "day": "중장년기", "hour": "말년"}
@@ -1408,7 +1409,7 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
     # 오행 분포 계산
     pillars = _get_pillars(saju_data)
     elements = {"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}
-    for pos in ["year", "month", "day", "hour"]:
+    for pos in ("year", "month", "day", "hour"):
         p = pillars.get(pos, "")
         if len(p) >= 2:
             stem_elem = get_element(p[0])
@@ -1658,7 +1659,7 @@ def analyze_timing_for_chat(saju_data: dict) -> dict:
         
         # 현재 상태 파악
         current_status = period_data.get("language_points", [])
-        current_summary = ". ".join(current_status[:2]) if current_status else "현재 안정적인 시기"
+        current_summary = ". ".join(current_status[:2]) if current_status else "현재 긍정적인 시기입니다."
         
         # 다음 유리한 시기 계산
         next_favorable = {}
@@ -1679,7 +1680,7 @@ def analyze_timing_for_chat(saju_data: dict) -> dict:
             for pattern in patterns:
                 if "기회" in str(pattern) or "전환" in str(pattern):
                     next_favorable = {
-                        "period": "다음 대운 전환기",
+                        "period": "다음 분기",
                         "reason": "대운 전환으로 새로운 기운이 들어옵니다."
                     }
                     break
@@ -1687,8 +1688,8 @@ def analyze_timing_for_chat(saju_data: dict) -> dict:
         # 기본 예측
         if not next_favorable:
             next_favorable = {
-                "period": "향후 6개월 내",
-                "reason": "꾸준한 노력으로 기회를 만들어야 하는 시기입니다."
+                "period": "향후 3개월 내",
+                "reason": "긍정적인 변화가 기대되는 시기입니다."
             }
         
         return {
@@ -1700,10 +1701,10 @@ def analyze_timing_for_chat(saju_data: dict) -> dict:
     except Exception as e:
         print(f"시기 분석 오류: {e}")
         return {
-            "current_status": "현재 안정적인 시기",
+            "current_status": "현재 긍정적인 시기입니다.",
             "next_favorable": {
-                "period": "향후 6개월 내",
-                "reason": "꾸준한 노력이 필요한 시기입니다."
+                "period": "향후 3개월 내",
+                "reason": "긍정적인 변화가 기대되는 시기입니다."
             },
             "confidence": "low"
         }

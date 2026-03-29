@@ -126,7 +126,7 @@ function parseV2ComprehensiveSections(text: string): { title: string; body: stri
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
-    if (/^[🧠🔁💰💼🤝📝📊✨🌊⚡🎯🌱]/u.test(trimmed)) {
+    if (/^[🧠💪🔁💰🧭❤️⏰✅💼🤝📝📊✨🌊⚡🎯🌱🔮🌟]/u.test(trimmed)) {
       if (current) sections.push(current);
       current = { title: trimmed, body: "" };
     } else if (current) {
@@ -528,30 +528,50 @@ function BasicV2ReportContent() {
                           </tr>
                         </thead>
                         <tbody>
-                          {(["cheongan", "jiji"] as const).map((row) => (
-                            <tr key={row}>
-                              <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "5px 2px" }}>{row === "cheongan" ? "천간" : "지지"}</td>
-                              {pillars.map((p, i) => {
-                                const el = hanjaToElement(p[row].hanja);
-                                const palette: any = {
-                                  wood:  { text: "#27500A", bg: "#C0DD97" },
-                                  fire:  { text: "#712B13", bg: "#F0997B" },
-                                  earth: { text: "#633806", bg: "#FAC775" },
-                                  metal: { text: "#444441", bg: "#FFFFFF" },
-                                  water: { text: "#444441", bg: "#B4B2A9" },
-                                  none:  { text: S.ink,    bg: S.cream2   },
-                                };
-                                const col = palette[el] || palette.none;
-                                return (
-                                  <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
-                                    <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
-                                      {p[row].hanja}{p[row].hangul}
-                                    </div>
-                                  </td>
-                                );
-                              })}
-                            </tr>
-                          ))}
+                          <tr>
+                            <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>천간</td>
+                            {pillars.map((p, i) => {
+                              const el = hanjaToElement(p.cheongan.hanja);
+                              const palette: any = {
+                                wood:  { text: "#27500A", bg: "#C0DD97" },
+                                fire:  { text: "#712B13", bg: "#F0997B" },
+                                earth: { text: "#633806", bg: "#FAC775" },
+                                metal: { text: "#444441", bg: "#FFFFFF" },
+                                water: { text: "#444441", bg: "#B4B2A9" },
+                                none:  { text: S.ink,    bg: S.cream2   },
+                              };
+                              const col = palette[el] || palette.none;
+                              return (
+                                <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                  <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
+                                    {p.cheongan.hanja}{p.cheongan.hangul}
+                                  </div>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                          <tr>
+                            <td style={{ fontSize: 11, color: S.ink2, textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" }}>지지</td>
+                            {pillars.map((p, i) => {
+                              const el = hanjaToElement(p.jiji.hanja);
+                              const palette: any = {
+                                wood:  { text: "#27500A", bg: "#C0DD97" },
+                                fire:  { text: "#712B13", bg: "#F0997B" },
+                                earth: { text: "#633806", bg: "#FAC775" },
+                                metal: { text: "#444441", bg: "#FFFFFF" },
+                                water: { text: "#444441", bg: "#B4B2A9" },
+                                none:  { text: S.ink,    bg: S.cream2   },
+                              };
+                              const col = palette[el] || palette.none;
+                              return (
+                                <td key={i} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                  <div style={{ padding: "10px 8px", borderRadius: 8, textAlign: "center", background: col.bg, color: col.text, fontWeight: 700 }}>
+                                    {p.jiji.hanja}{p.jiji.hangul}
+                                  </div>
+                                </td>
+                              );
+                            })}
+                          </tr>
                         </tbody>
                       </table>
                     </div>

@@ -126,7 +126,7 @@ function parseV2ComprehensiveSections(text: string): { title: string; body: stri
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
-    if (/^[🧠💪🔁💰🧭❤️⏰✅💼🤝📝📊✨🌊⚡🎯🌱🔮🌟]/u.test(trimmed)) {
+    if (/^[🔮🧠💪🔁💰🧭❤️⏰✅💼🤝📝📊✨🌊⚡🎯🌱🌟]/u.test(trimmed)) {
       if (current) sections.push(current);
       current = { title: trimmed, body: "" };
     } else if (current) {
@@ -142,6 +142,12 @@ function getVisualCard(title: string): "personality" | "problem" | "money" | und
   if (/🔁/.test(title)) return "problem";
   if (/💰/.test(title)) return "money";
   return undefined;
+}
+
+// 섹션 제목에서 이모지만 추출
+function extractIcon(title: string): string {
+  const match = title.match(/^(\S+)\s/);
+  return match ? match[1] : "";
 }
 
 // 아코디언 한 섹션
@@ -589,17 +595,21 @@ function BasicV2ReportContent() {
                 <p style={{ fontSize: 11, color: S.ink3, textAlign: "center", marginBottom: 4, letterSpacing: "0.05em" }}>
                   AI 분석 결과 · 섹션을 탭해서 펼쳐보세요
                 </p>
-                {sections.map((sec, idx) => (
-                  <SectionAccordion
-                    key={sec.title}
-                    icon=""
-                    title={sec.title}
-                    body={sec.body}
-                    defaultOpen={idx < 2}
-                    visualCard={getVisualCard(sec.title)}
-                    ruleSummary={v2Result.rule_summary}
-                  />
-                ))}
+                {sections.map((sec, idx) => {
+                  const icon = extractIcon(sec.title);
+                  const titleText = icon ? sec.title.replace(icon, "").trim() : sec.title;
+                  return (
+                    <SectionAccordion
+                      key={sec.title}
+                      icon={icon}
+                      title={titleText}
+                      body={sec.body}
+                      defaultOpen={idx < 2}
+                      visualCard={getVisualCard(sec.title)}
+                      ruleSummary={v2Result.rule_summary}
+                    />
+                  );
+                })}
               </div>
             );
           })()}

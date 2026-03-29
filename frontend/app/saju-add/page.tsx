@@ -1059,38 +1059,21 @@ export default function SajuAddPage({
             </p>
           )}
 
-          {/* 하단 버튼 – 시안: 만세력 불러오기, 저장하기 */}
+          {/* 하단 버튼 */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 24 }}>
-            <button
-              type="button"
-              onClick={goList}
-              className="tap sans"
-              style={{
-                width: "100%",
-                padding: "14px 16px",
-                borderRadius: radius,
-                border: `1.5px solid ${borderField}`,
-                background: inputBg,
-                fontSize: 14,
-                fontWeight: 700,
-                color: textDark,
-              }}
-            >
-              만세력 불러오기
-            </button>
             <button
               type="button"
               onClick={handleSave}
               className="tap sans"
               style={{
                 width: "100%",
-                padding: "14px 16px",
+                padding: "16px 16px",
                 borderRadius: radius,
                 border: `1.5px solid ${borderField}`,
-                background: inputBg,
-                fontSize: 14,
+                background: "#2C2417",
+                fontSize: 15,
                 fontWeight: 700,
-                color: textDark,
+                color: "#fff",
               }}
             >
               저장하기

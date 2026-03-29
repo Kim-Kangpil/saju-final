@@ -53,11 +53,8 @@ function BasicIntroContent() {
           localStorage.setItem('betaFeatures', JSON.stringify(f))
           setIsBetaTester(f.is_beta_tester === true)
           setIsAdmin(f.is_admin === true)
-        } else {
-          // 로그인 안 됐거나 혜택 없음
-          setIsBetaTester(false)
-          setIsAdmin(false)
         }
+        // API가 null 반환해도 localStorage 값 유지 (서버 재시작 등 일시적 상황 대응)
       } catch {}
     }
     checkFeatures()

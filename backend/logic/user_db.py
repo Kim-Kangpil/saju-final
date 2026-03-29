@@ -41,6 +41,7 @@ def init_user_db():
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_started_at TEXT",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_expires_at TEXT",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS report_credits INTEGER DEFAULT 0",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_coupon_data TEXT",
             ):
                 cur.execute(col_sql)
         else:
@@ -66,6 +67,7 @@ def init_user_db():
                 "ALTER TABLE users ADD COLUMN membership_started_at TEXT",
                 "ALTER TABLE users ADD COLUMN membership_expires_at TEXT",
                 "ALTER TABLE users ADD COLUMN report_credits INTEGER DEFAULT 0",
+                "ALTER TABLE users ADD COLUMN beta_coupon_data TEXT",
             ):
                 try:
                     cur.execute(col_sql)
@@ -389,5 +391,43 @@ def list_users(limit: int = 50, offset: int = 0) -> list[dict]:
             }
             for r in rows
         ]
+    finally:
+        conn.close()
+
+
+def save_beta_coupon(user_id: int, coupon_data: dict) -> None:
+    """베타 쿠폰 데이터를 DB에 저장 (서버 재시작해도 유지)."""
+    import json
+    if not user_id:
+        return
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("UPDATE users SET beta_coupon_data = ? WHERE id = ?"),
+            (json.dumps(coupon_data), user_id),
+        )
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
+
+def get_beta_coupon(user_id: int) -> dict | None:
+    """DB에서 베타 쿠폰 데이터 조회."""
+    import json
+    if not user_id:
+        return None
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(adapt("SELECT beta_coupon_data FROM users WHERE id = ?"), (user_id,))
+        row = cur.fetchone()
+        if not row or not row[0]:
+            return None
+        return json.loads(row[0])
+    except Exception:
+        return None
     finally:
         conn.close()

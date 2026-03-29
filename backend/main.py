@@ -3830,17 +3830,35 @@ section_personality, section_strength, section_problem, section_money, section_c
 
 # ==================== 베타 쿠폰 API ====================
 
-# 간단한 메모리 캐시 (실제로는 Redis/DB 사용 권장)
+# 메모리 캐시 (빠른 읽기용 보조 캐시, DB가 primary)
 _beta_coupon_cache = {}
 
 def get_cached_data(key: str):
-    """간단한 메모리 캐시에서 데이터 가져오기"""
-    return _beta_coupon_cache.get(key)
+    """베타 쿠폰 데이터 조회 - 메모리 캐시 → DB 순으로 조회"""
+    if key in _beta_coupon_cache:
+        return _beta_coupon_cache[key]
+    if key.startswith("beta_coupon_"):
+        try:
+            uid = int(key[len("beta_coupon_"):])
+            from logic.user_db import get_beta_coupon
+            data = get_beta_coupon(uid)
+            if data:
+                _beta_coupon_cache[key] = data
+                return data
+        except Exception:
+            pass
+    return None
 
 def set_cached_data(key: str, data: dict, expire_hours: int = 24):
-    """간단한 메모리 캐시에 데이터 저장"""
+    """베타 쿠폰 데이터 저장 - 메모리 캐시 + DB 모두 저장"""
     _beta_coupon_cache[key] = data
-    # 실제로는 만료 시간 처리 필요
+    if key.startswith("beta_coupon_"):
+        try:
+            uid = int(key[len("beta_coupon_"):])
+            from logic.user_db import save_beta_coupon
+            save_beta_coupon(uid, data)
+        except Exception:
+            pass
 
 BETA_COUPONS = {
     "BETA2024": {

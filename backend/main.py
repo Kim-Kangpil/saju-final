@@ -2512,10 +2512,7 @@ async def kakao_pay_ready(request: Request):
     """KakaoPay 결제 준비 — tid 및 redirect URL 반환."""
     user_id = get_user_id_from_request(request)
     if not user_id:
-        if TEST_MODE:
-            user_id = 9999
-        else:
-            raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
     try:
         body = await request.json()
     except Exception:
@@ -2556,6 +2553,7 @@ async def kakao_pay_ready(request: Request):
         "cancel_url": f"{frontend_url}/payment/cancel",
     }
     import httpx as _httpx
+    
     try:
         async with _httpx.AsyncClient() as hc:
             resp = await hc.post(

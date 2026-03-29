@@ -113,24 +113,51 @@ function CareerIntroContent() {
         ))}
       </div>
 
-      {/* 블러 미리보기 */}
-      <div style={{background: 'white', borderRadius: 16, padding: 20, marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
-        <h2 style={{fontSize: 15, fontWeight: 700, color: '#3D3530', marginBottom: 12}}>
-          미리보기
-        </h2>
-        <div style={{filter: 'blur(6px)', fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
-          당신의 직업 구조는 한 번에 크게 들어오기보다 꾸준히 쌓이는 타입입니다.
-          일이 들어오다 흩어지는 패턴이 반복되는 이유는 사주 구조상 직업보다
-          개인적인 성장이 먼저 작동하기 때문입니다. 지금 이 시기는 커리어의
-          방향을 만드는 것이 겉으로 드러나는 것보다 훨씬 중요한 시점입니다...
+      {/* 미리보기 */}
+      <div style={{background: 'white', borderRadius: 16, padding: '18px 18px 0', marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14}}>
+          <span style={{fontSize: 13, fontWeight: 700, color: '#3D3530'}}>미리보기</span>
+          <span style={{fontSize: 11, color: '#8B7355', background: '#F5F1EA', padding: '2px 8px', borderRadius: 20}}>구매 후 전체 열람</span>
         </div>
+
+        {/* 섹션 1: 첫 줄 선명 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🧭 나의 직업 DNA</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, marginBottom: 6}}>
+            당신은 조직보다 자율성이 보장된 환경에서 훨씬 높은 성과를 냅니다.
+          </p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, filter: 'blur(4px)', userSelect: 'none'}}>
+            타고난 강점이 드러나는 분야와 반대로 에너지가 빠르게 소모되는 환경이 명확히 구분됩니다. 지금 하는 일이 맞는지 안 맞는지의 이유는...
+          </p>
+        </div>
+
+        {/* 섹션 2 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA', filter: 'blur(3px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🔄 커리어 반복 패턴</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            열심히 하다가 갑자기 방향을 바꾸는 패턴이 반복됩니다. 이것이 우유부단함이 아닌 사주 구조상 에너지 전환 시기와 관련된 이유는...
+          </p>
+        </div>
+
+        {/* 섹션 3 */}
+        <div style={{marginBottom: 0, filter: 'blur(5px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>⏰ 지금 이 시기 직업운</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            현재 대운과 2026년 세운이 커리어에 미치는 영향, 지금 이직·창업·현직 유지 중 어떤 선택이 유리한지는...
+          </p>
+        </div>
+
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-          background: 'linear-gradient(transparent, white)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,
+          background: 'linear-gradient(transparent, white 60%)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 16,
         }}>
-          <span style={{fontSize: 13, color: '#8B7355'}}>구매 후 전체 내용 확인</span>
+          <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
+            <span style={{fontSize: 14}}>🔒</span>
+            <span style={{fontSize: 12, color: '#8B7355', fontWeight: 600}}>구매 후 전체 내용 확인</span>
+          </div>
         </div>
+        <div style={{height: 60}} />
       </div>
 
       {/* CTA */}

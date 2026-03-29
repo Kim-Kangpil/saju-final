@@ -102,24 +102,51 @@ function MoneyIntroContent() {
         ))}
       </div>
 
-      {/* 블러 미리보기 */}
-      <div style={{background: 'white', borderRadius: 16, padding: 20, marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
-        <h2 style={{fontSize: 15, fontWeight: 700, color: '#3D3530', marginBottom: 12}}>
-          미리보기
-        </h2>
-        <div style={{filter: 'blur(6px)', fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
-          당신의 재물 구조는 한 번에 크게 들어오기보다 꾸준히 쌓이는 타입입니다.
-          돈이 들어오다 흩어지는 패턴이 반복되는 이유는 사주 구조상 재성보다
-          식상이 먼저 작동하기 때문입니다. 지금 이 시기는 수입 구조를 만드는 것이
-          저축보다 훨씬 중요한 시점입니다...
+      {/* 미리보기 */}
+      <div style={{background: 'white', borderRadius: 16, padding: '18px 18px 0', marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14}}>
+          <span style={{fontSize: 13, fontWeight: 700, color: '#3D3530'}}>미리보기</span>
+          <span style={{fontSize: 11, color: '#8B7355', background: '#F5F1EA', padding: '2px 8px', borderRadius: 20}}>구매 후 전체 열람</span>
         </div>
+
+        {/* 섹션 1: 첫 줄 선명 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>💰 나의 재물 DNA</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, marginBottom: 6}}>
+            당신의 돈 흐름은 한 방보다 꾸준한 축적형에 가깝습니다. 수입이 들어오는 방식과
+          </p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, filter: 'blur(4px)', userSelect: 'none'}}>
+            지출이 몰리는 패턴이 반복되는 이유가 있습니다. 사주 구조상 재물을 모으는 방식과 새는 포인트가 명확하게 나타납니다...
+          </p>
+        </div>
+
+        {/* 섹션 2 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA', filter: 'blur(3px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🕳 돈이 새는 이유</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            버는 만큼 모이지 않는 이유가 사주에 있습니다. 특정 시기마다 큰 지출이 생기는 패턴, 충동 소비의 구조, 재물 누수의 근본 원인은...
+          </p>
+        </div>
+
+        {/* 섹션 3 */}
+        <div style={{marginBottom: 0, filter: 'blur(5px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>📈 올해 재물운 흐름</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            2026년 재물운의 방향성과 투자·이직 타이밍, 지금 이 시기에 집중해야 할 재물 전략은...
+          </p>
+        </div>
+
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-          background: 'linear-gradient(transparent, white)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,
+          background: 'linear-gradient(transparent, white 60%)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 16,
         }}>
-          <span style={{fontSize: 13, color: '#8B7355'}}>구매 후 전체 내용 확인</span>
+          <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
+            <span style={{fontSize: 14}}>🔒</span>
+            <span style={{fontSize: 12, color: '#8B7355', fontWeight: 600}}>구매 후 전체 내용 확인</span>
+          </div>
         </div>
+        <div style={{height: 60}} />
       </div>
 
       {/* CTA */}

@@ -113,24 +113,51 @@ function LoveIntroContent() {
         ))}
       </div>
 
-      {/* 블러 미리보기 */}
-      <div style={{background: 'white', borderRadius: 16, padding: 20, marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
-        <h2 style={{fontSize: 15, fontWeight: 700, color: '#3D3530', marginBottom: 12}}>
-          미리보기
-        </h2>
-        <div style={{filter: 'blur(6px)', fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
-          당신의 연애 구조는 한 번에 크게 들어오기보다 꾸준히 쌓이는 타입입니다.
-          인연이 들어오다 흩어지는 패턴이 반복되는 이유는 사주 구조상 연애보다
-          개인적인 성장이 먼저 작동하기 때문입니다. 지금 이 시기는 관계의
-          깊이를 만드는 것이 겉으로 드러나는 것보다 훨씬 중요한 시점입니다...
+      {/* 미리보기 */}
+      <div style={{background: 'white', borderRadius: 16, padding: '18px 18px 0', marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14}}>
+          <span style={{fontSize: 13, fontWeight: 700, color: '#3D3530'}}>미리보기</span>
+          <span style={{fontSize: 11, color: '#8B7355', background: '#F5F1EA', padding: '2px 8px', borderRadius: 20}}>구매 후 전체 열람</span>
         </div>
+
+        {/* 섹션 1: 첫 줄 선명 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>❤️ 나의 연애 DNA</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, marginBottom: 6}}>
+            당신은 감정이 충분히 쌓인 뒤에야 행동하는 타입입니다. 먼저 다가가기보다
+          </p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, filter: 'blur(4px)', userSelect: 'none'}}>
+            상대가 진심인지를 오랫동안 지켜보는 경향이 있고, 이 때문에 좋은 인연을 놓치는 경우가 생깁니다. 연애에서 반복되는 구조는...
+          </p>
+        </div>
+
+        {/* 섹션 2 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA', filter: 'blur(3px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🔄 반복되는 연애 패턴</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            깊어지면 멀어지는 패턴이 반복됩니다. 이것은 의지의 문제가 아니라 사주 구조상 관계 에너지의 흐름이 특정 시기마다 리셋되기 때문이고...
+          </p>
+        </div>
+
+        {/* 섹션 3 */}
+        <div style={{marginBottom: 0, filter: 'blur(5px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>💫 현재 인연 흐름</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            지금 이 시기 인연의 성격과 올해 연애운의 방향, 지금 만나는 사람 혹은 앞으로 들어올 인연의 유형은...
+          </p>
+        </div>
+
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-          background: 'linear-gradient(transparent, white)',
-          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,
+          background: 'linear-gradient(transparent, white 60%)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 16,
         }}>
-          <span style={{fontSize: 13, color: '#8B7355'}}>구매 후 전체 내용 확인</span>
+          <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
+            <span style={{fontSize: 14}}>🔒</span>
+            <span style={{fontSize: 12, color: '#8B7355', fontWeight: 600}}>구매 후 전체 내용 확인</span>
+          </div>
         </div>
+        <div style={{height: 60}} />
       </div>
 
       {/* CTA */}

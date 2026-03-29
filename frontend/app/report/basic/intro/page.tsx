@@ -147,25 +147,52 @@ function BasicIntroContent() {
         ))}
       </div>
 
-      <div style={{background: 'white', borderRadius: 16, padding: 20, marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
-        <h2 style={{fontSize: 15, fontWeight: 700, color: '#3D3530', marginBottom: 12}}>
-          미리보기
-        </h2>
-        <div style={{filter: 'blur(6px)', fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
-          <p style={{marginBottom: 12}}>
-            <strong>나의 성향 분석</strong><br/>
-            당신은 감정 표현이 풍부하고, 즉흥적인 결정보다는 신중한 판단을 선호하는 편입니다. 외향적 에너지가 강하며...
+      {/* 미리보기 */}
+      <div style={{background: 'white', borderRadius: 16, padding: '18px 18px 0', marginBottom: 24, position: 'relative', overflow: 'hidden'}}>
+        <div style={{display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14}}>
+          <span style={{fontSize: 13, fontWeight: 700, color: '#3D3530'}}>미리보기</span>
+          <span style={{fontSize: 11, color: '#8B7355', background: '#F5F1EA', padding: '2px 8px', borderRadius: 20}}>구매 후 전체 열람</span>
+        </div>
+
+        {/* 섹션 1: 첫 줄 선명 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🧠 타고난 성향</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, marginBottom: 6}}>
+            당신은 감정보다 구조와 논리를 먼저 읽는 편입니다. 결정할 때 속도보다 정확성을 택하고,
           </p>
-          <p style={{marginBottom: 12}}>
-            <strong>반복되는 문제 패턴</strong><br/>
-            높은 기대 → 과도한 몰입 → 에너지 소진 → 회복 기간의 순환 구조가 보입니다. 이 패턴을 인식하면...
-          </p>
-          <p>
-            <strong>재물 흐름</strong><br/>
-            수입은 안정적으로 들어오지만, 관계나 감정 소비로 인한 지출이 많은 편입니다. 재물 누수 포인트를...
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8, filter: 'blur(4px)', userSelect: 'none'}}>
+            주변 사람들은 당신을 침착하다고 보지만 내면에는 강한 감정의 흐름이 있습니다. 이 간극이 종종 오해를 만들고...
           </p>
         </div>
-        <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, white 90%)'}} />
+
+        {/* 섹션 2: 제목만 선명, 내용 흐림 */}
+        <div style={{marginBottom: 14, paddingBottom: 14, borderBottom: '1px solid #F5F1EA', filter: 'blur(3px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>🔁 반복되는 문제 패턴</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            높은 기대 → 과도한 몰입 → 에너지 소진 → 회복 기간이 반복됩니다. 이 순환이 생기는 이유는 사주 구조상 의지력이 감정보다 먼저 소모되기 때문이고, 이를 인식하는 것만으로도 패턴이 달라집니다...
+          </p>
+        </div>
+
+        {/* 섹션 3: 완전 흐림 */}
+        <div style={{marginBottom: 0, filter: 'blur(5px)', userSelect: 'none'}}>
+          <p style={{fontSize: 12, fontWeight: 700, color: '#8B7355', marginBottom: 6}}>💰 돈 흐름 구조</p>
+          <p style={{fontSize: 13, color: '#3D3530', lineHeight: 1.8}}>
+            수입 구조는 꾸준한 축적형이지만 특정 시기에 큰 지출이 몰리는 패턴이 있습니다. 재물이 새는 포인트와 올해 재물운의 방향은...
+          </p>
+        </div>
+
+        {/* 잠금 오버레이 */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: 120,
+          background: 'linear-gradient(transparent, white 60%)',
+          display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 16,
+        }}>
+          <div style={{display: 'flex', alignItems: 'center', gap: 6}}>
+            <span style={{fontSize: 14}}>🔒</span>
+            <span style={{fontSize: 12, color: '#8B7355', fontWeight: 600}}>구매 후 전체 내용 확인</span>
+          </div>
+        </div>
+        <div style={{height: 60}} />
       </div>
 
       <div style={{textAlign: 'center'}}>

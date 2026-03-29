@@ -3632,7 +3632,7 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
             detail=json.dumps({"error": "login_required"}, ensure_ascii=False),
         )
 
-    if not client:
+    if not get_openai_client():
         raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
 
     # ── saju_data 조립 ──────────────────────────────────

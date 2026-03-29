@@ -35,7 +35,7 @@
    [ ] 06_직업운리포트_안내.png
        - URL: /report/career/intro?saju_id=XXX
 
-   [ ] 07_기본리포트_안내.png
+   [ ] 07_종합리포트_안내.png
        - URL: /report/basic/intro?saju_id=XXX
        - 포함: 가격(1,900원)
 

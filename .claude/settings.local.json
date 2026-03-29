@@ -25,7 +25,8 @@
       "Bash(pip index:*)",
       "Bash(pip download:*)",
       "Bash(grep -v \"^$\")",
-      "Bash(find C:Usersksh00OneDriveDesktopsaju-project-tempfrontend -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\) ! -path */.next/* ! -path */node_modules/* ! -path */dist/*)"
+      "Bash(find C:Usersksh00OneDriveDesktopsaju-project-tempfrontend -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\) ! -path */.next/* ! -path */node_modules/* ! -path */dist/*)",
+      "Bash(grep -r \"transform\" app/**/*.tsx lib/**/*.tsx)"
     ]
   }
 }

@@ -1087,31 +1087,41 @@ function SajuPreviewContent() {
           <button
             type="button"
             className="preview-tap"
-            onClick={handleStartAnalysis}
+            onClick={() => goSpecialReport("/report/basic/intro")}
             disabled={deducting}
             style={{
               width: "100%",
-              background: "#FFFDF9",
-              border: "1.5px solid #8B7355",
               borderRadius: 14,
-              color: "#8B7355",
-              fontWeight: 700,
-              fontSize: 15,
-              padding: "16px 18px",
+              border: `1.5px solid ${PREVIEW_BORDER}`,
+              background: "#E4EBDF",
+              padding: "12px 10px",
+              color: PREVIEW_TEXT,
+              fontFamily: "'Gmarket Sans', sans-serif",
+              textAlign: "left",
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              boxShadow: "0 2px 8px rgba(139,115,85,0.12)",
+              flexDirection: "column",
+              alignItems: "flex-start",
               cursor: deducting ? "wait" : "pointer",
-              fontFamily: "inherit",
             }}
           >
             {deducting ? (
-              "확인 중..."
+              <div style={{ fontSize: 13, fontWeight: 700 }}>확인 중...</div>
             ) : (
               <>
-                <span>✦ 나의 사주 종합 리포트</span>
-                <span aria-hidden>→</span>
+                <div style={{ fontSize: 13, fontWeight: 700 }}>✨ 나의 사주 종합 리포트</div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    marginTop: 10,
+                  }}
+                >
+                  <Icon icon="mdi:arrow-right-circle-outline" width={17} style={{ color: "#9A7B52", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, fontWeight: 600, color: "#8B7355", letterSpacing: "0.04em" }}>
+                    자세히 보러가기
+                  </span>
+                </div>
               </>
             )}
           </button>

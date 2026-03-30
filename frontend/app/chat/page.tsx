@@ -1949,7 +1949,7 @@ function ChatContent({
                                   <span>
                                     {item.emoji} {item.label}
                                   </span>
-                                  <span style={{ fontSize: 13, color: "#8B7355" }}>{item.price} →</span>
+                                  <span style={{ fontSize: 13, color: "#8B7355" }}>→</span>
                                 </a>
                               ))}
                             </div>

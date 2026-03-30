@@ -34,7 +34,7 @@ import os
 from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Body, FastAPI, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from typing import Optional, Any, Dict
 import json
 from datetime import datetime, date, timezone, timedelta

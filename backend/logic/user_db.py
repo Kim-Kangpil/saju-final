@@ -2,9 +2,12 @@
 """사용자 저장용 DB — DATABASE_URL 있으면 PostgreSQL, 없으면 SQLite."""
 import sqlite3
 import hashlib
+import logging
 import os
 from pathlib import Path
 from datetime import datetime, timedelta
+
+logger = logging.getLogger(__name__)
 
 from logic._db import USE_PG, get_conn, adapt
 
@@ -494,14 +497,26 @@ def verify_email_login(email: str, password: str) -> int | None:
         )
         row = cur.fetchone()
         if not row:
+            # email provider 로 없는 경우 — 다른 provider로 가입했는지 확인
+            cur.execute(adapt("SELECT id, provider FROM users WHERE email = ?"), (email,))
+            other = cur.fetchone()
+            if other:
+                logger.warning("login_fail email=%s: email provider row 없음, 실제 provider=%s id=%s", email, other[1], other[0])
+            else:
+                logger.warning("login_fail email=%s: 계정 자체 없음", email)
             return None
         user_id, pw_hash = row[0], row[1]
-        if not pw_hash or not _verify_password(password, pw_hash):
+        if not pw_hash:
+            logger.warning("login_fail email=%s user_id=%s: password_hash NULL (OAuth 계정?)", email, user_id)
+            return None
+        if not _verify_password(password, pw_hash):
+            logger.warning("login_fail email=%s user_id=%s: 비밀번호 불일치", email, user_id)
             return None
         cur.execute(adapt("UPDATE users SET last_login = ? WHERE id = ?"), (now, user_id))
         conn.commit()
         return user_id
-    except Exception:
+    except Exception as e:
+        logger.error("verify_email_login DB 오류 email=%s: %s", email, e)
         return None
     finally:
         conn.close()

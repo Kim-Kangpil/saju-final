@@ -1,4 +1,4 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,19246,e=>{"use strict";var r=e.i(84256),t=e.i(23035),a=e.i(34357),i=e.i(24544),n=e.i(72441),o=e.i(98248),s=e.i(47890),l=e.i(416),c=e.i(75338);let d="#F5F1EA",p="#EDE7DB",x="#E3D9CB",g="#D4C9B8",m="#C4B8A4",h="#2C2417",b="#4A3F30",f="#6B5F4E",u="#8B7355",v="'Gmarket Sans'",y={wood:{text:"#27500A",bg:"#C0DD97",border:"#3B6D11"},fire:{text:"#712B13",bg:"#F0997B",border:"#993C1D"},earth:{text:"#633806",bg:"#FAC775",border:"#854F0B"},metal:{text:"#444441",bg:"#B4B2A9",border:"#5F5E5A"},water:{text:"#0C447C",bg:"#85B7EB",border:"#185FA5"}},j=["갑자","을축","병인","정묘","무진","기사","경오","신미","임신","계유","갑술","을해","병자","정축","무인","기묘","경진","신사","임오","계미","갑신","을유","병술","정해","무자","기축","경인","신묘","임진","계사","갑오","을미","병신","정유","무술","기해","경자","신축","임인","계묘","갑진","을사","병오","정미","무신","기유","경술","신해","임자","계축","갑인","을묘","병진","정사","무오","기미","경신","신유","임술","계해"],w=[{q:"나는 언제쯤 이직하면 좋을까?",a:"현재 경금 대운에서 편관이 강하게 작용 중이에요. 내년 을사년에 식신이 들어오는 시점이 변화에 유리합니다."},{q:"올해 재물운 어때?",a:"월지 편재가 세운과 삼합을 이루는 하반기가 재물 유입에 유리해요. 다만 겁재 충을 주의하세요."},{q:"나랑 맞는 사람 유형이 있어?",a:"일간 갑목 기준으로 기토 정재와 합이 잘 맞아요. 안정적이고 현실적인 분과 잘 어울립니다."}];function k(e){let[r,a]=(0,t.useState)(0),i=(0,t.useRef)(null),n=(0,t.useRef)(!1);return(0,t.useEffect)(()=>{let r=new IntersectionObserver(([r])=>{if(r.isIntersecting&&!n.current){n.current=!0;let r=performance.now(),t=i=>{let n=Math.min((i-r)/1400,1);a(Math.floor((1-Math.pow(1-n,3))*e)),n<1&&requestAnimationFrame(t)};requestAnimationFrame(t)}},{threshold:.4});return i.current&&r.observe(i.current),()=>r.disconnect()},[e]),{count:r,ref:i}}function N({params:e}){let N,z;(0,t.use)(e??Promise.resolve({}));let S=(0,a.useRouter)(),{isLoggedIn:A}=(0,s.useAuthStatus)(),[_,$]=(0,t.useState)([]),[C,F]=(0,t.useState)(0),[T,E]=(0,t.useState)(0),[B,I]=(0,t.useState)(0),L=(0,t.useRef)(null),{lang:R,setLang:W,t:D}=(0,n.useLang)(),M="ko"===R?l.default:c.default,[Y,H]=(0,t.useState)(!1),[O,U]=(0,t.useState)(null);(0,t.useEffect)(()=>{A&&(async()=>{try{let e=await fetch("http://localhost:8000/api/beta/features",{credentials:"include",headers:{Accept:"application/json",...(0,o.getAuthHeaders)()}}),r=await e.json();r.features&&U(r.features)}catch(e){}})()},[A]);let{count:q,ref:P}=k((0,t.useRef)((()=>{let e=new Date().toISOString().split("T")[0],r=localStorage.getItem("saju_daily_count");if(r)try{let{date:t,base:a}=JSON.parse(r);if(t===e)return a}catch{}let t=Math.floor(80*Math.random())+90;return localStorage.setItem("saju_daily_count",JSON.stringify({date:e,base:t})),t})()).current),{count:X,ref:G}=k(2847);function J(){if(!A)return void S.push("/start");let e=(0,i.getSavedSajuList)();S.push(e?.length>0?"/saju-list":"/saju-add")}return(0,t.useEffect)(()=>{$([...j].sort(()=>Math.random()-.5).slice(0,6))},[]),(0,t.useEffect)(()=>{let e=setInterval(()=>{$([...j].sort(()=>Math.random()-.5).slice(0,6)),F(e=>e+1)},3200);return()=>clearInterval(e)},[]),(0,t.useEffect)(()=>{let e=setInterval(()=>{E(e=>(e+1)%w.length)},5800);return()=>clearInterval(e)},[]),(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)("style",{children:`
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,19246,e=>{"use strict";var r=e.i(84256),t=e.i(23035),a=e.i(34357),i=e.i(24544),o=e.i(72441),n=e.i(98248),s=e.i(47890),l=e.i(416),c=e.i(75338);let d="#F5F1EA",p="#EDE7DB",x="#E3D9CB",g="#D4C9B8",m="#C4B8A4",h="#2C2417",b="#6B5F4E",f="#8B7355",u="'Gmarket Sans'",v={wood:{text:"#27500A",bg:"#C0DD97",border:"#3B6D11"},fire:{text:"#712B13",bg:"#F0997B",border:"#993C1D"},earth:{text:"#633806",bg:"#FAC775",border:"#854F0B"},metal:{text:"#444441",bg:"#B4B2A9",border:"#5F5E5A"},water:{text:"#0C447C",bg:"#85B7EB",border:"#185FA5"}},y=["갑자","을축","병인","정묘","무진","기사","경오","신미","임신","계유","갑술","을해","병자","정축","무인","기묘","경진","신사","임오","계미","갑신","을유","병술","정해","무자","기축","경인","신묘","임진","계사","갑오","을미","병신","정유","무술","기해","경자","신축","임인","계묘","갑진","을사","병오","정미","무신","기유","경술","신해","임자","계축","갑인","을묘","병진","정사","무오","기미","경신","신유","임술","계해"],j=[{q:"나는 언제쯤 이직하면 좋을까?",a:"현재 경금 대운에서 편관이 강하게 작용 중이에요. 내년 을사년에 식신이 들어오는 시점이 변화에 유리합니다."},{q:"올해 재물운 어때?",a:"월지 편재가 세운과 삼합을 이루는 하반기가 재물 유입에 유리해요. 다만 겁재 충을 주의하세요."},{q:"나랑 맞는 사람 유형이 있어?",a:"일간 갑목 기준으로 기토 정재와 합이 잘 맞아요. 안정적이고 현실적인 분과 잘 어울립니다."}];function w(e){let[r,a]=(0,t.useState)(0),i=(0,t.useRef)(null),o=(0,t.useRef)(!1);return(0,t.useEffect)(()=>{let r=new IntersectionObserver(([r])=>{if(r.isIntersecting&&!o.current){o.current=!0;let r=performance.now(),t=i=>{let o=Math.min((i-r)/1400,1);a(Math.floor((1-Math.pow(1-o,3))*e)),o<1&&requestAnimationFrame(t)};requestAnimationFrame(t)}},{threshold:.4});return i.current&&r.observe(i.current),()=>r.disconnect()},[e]),{count:r,ref:i}}function k({params:e}){let k,N,z,S;(0,t.use)(e??Promise.resolve({}));let A=(0,a.useRouter)(),{isLoggedIn:_}=(0,s.useAuthStatus)(),[$,C]=(0,t.useState)([]),[F,T]=(0,t.useState)(0),[E,B]=(0,t.useState)(0),[I,L]=(0,t.useState)(0),R=(0,t.useRef)(null),{lang:W,setLang:D,t:M}=(0,o.useLang)(),Y="ko"===W?l.default:c.default,[H,O]=(0,t.useState)(!1),[U,q]=(0,t.useState)(null);(0,t.useEffect)(()=>{_&&(async()=>{try{let e=await fetch("http://localhost:8000/api/beta/features",{credentials:"include",headers:{Accept:"application/json",...(0,n.getAuthHeaders)()}}),r=await e.json();r.features&&q(r.features)}catch(e){}})()},[_]);let{count:P,ref:X}=w((0,t.useRef)((()=>{let e=new Date().toISOString().split("T")[0],r=localStorage.getItem("saju_daily_count");if(r)try{let{date:t,base:a}=JSON.parse(r);if(t===e)return a}catch{}let t=Math.floor(80*Math.random())+90;return localStorage.setItem("saju_daily_count",JSON.stringify({date:e,base:t})),t})()).current),{count:G,ref:J}=w(2847);function K(){if(!_)return void A.push("/start");let e=(0,i.getSavedSajuList)();A.push(e?.length>0?"/saju-list":"/saju-add")}return(0,t.useEffect)(()=>{C([...y].sort(()=>Math.random()-.5).slice(0,6))},[]),(0,t.useEffect)(()=>{let e=setInterval(()=>{C([...y].sort(()=>Math.random()-.5).slice(0,6)),T(e=>e+1)},3200);return()=>clearInterval(e)},[]),(0,t.useEffect)(()=>{let e=setInterval(()=>{B(e=>(e+1)%j.length)},5800);return()=>clearInterval(e)},[]),(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)("style",{children:`
         :root {
           --cream:  ${d};
           --cream2: ${p};
@@ -6,9 +6,9 @@
           --beige:  ${g};
           --beige2: ${m};
           --ink:    ${h};
-          --ink2:   ${b};
-          --ink3:   ${f};
-          --gold:   ${u};
+          --ink2:   #4A3F30;
+          --ink3:   ${b};
+          --gold:   ${f};
           --goldL:  #A8946A;
         }
 
@@ -17,7 +17,7 @@
         html { scroll-behavior: smooth; }
 
         body {
-          font-family: ${v};
+          font-family: ${u};
           background: var(--cream) url('/images/texture_paper_6.png');
           background-repeat: repeat;
           background-size: auto;
@@ -25,7 +25,7 @@
           -webkit-font-smoothing: antialiased;
         }
 
-        .serif { font-family: ${v}; }
+        .serif { font-family: ${u}; }
 
         /* ── 공통 레이아웃 ── */
         .page {
@@ -97,7 +97,7 @@
         }
 
         .hd-logo-text {
-          font-family: ${v};
+          font-family: ${u};
           font-size: 16px;
           font-weight: 700;
           color: var(--ink);
@@ -109,7 +109,7 @@
           border-radius: 999px;
           border: 1px solid var(--beige2);
           background: transparent;
-          font-family: ${v};
+          font-family: ${u};
           font-size: 12px;
           font-weight: 700;
           color: var(--ink);
@@ -124,7 +124,7 @@
           border-radius: 999px;
           border: none;
           background: var(--gold);
-          font-family: ${v};
+          font-family: ${u};
           font-size: 12px;
           font-weight: 700;
           color: #fff;
@@ -166,7 +166,7 @@
         }
 
         .sec-title {
-          font-family: ${v};
+          font-family: ${u};
           font-size: clamp(1.45rem, 4.5vw, 1.75rem);
           font-weight: 900;
           color: var(--ink);
@@ -252,7 +252,7 @@
         }
 
         .hero-title {
-          font-family: ${v};
+          font-family: ${u};
           font-size: clamp(1.65rem, 5.5vw, 2.1rem);
           font-weight: 900;
           color: var(--ink);
@@ -289,7 +289,7 @@
         }
 
         .problem-main {
-          font-family: ${v};
+          font-family: ${u};
           font-size: clamp(1.35rem, 4.5vw, 1.65rem);
           font-weight: 900;
           color: var(--cream);
@@ -298,7 +298,7 @@
         }
 
         .problem-sub {
-          font-family: ${v};
+          font-family: ${u};
           font-size: clamp(1.35rem, 4.5vw, 1.65rem);
           font-weight: 900;
           color: var(--goldL);
@@ -328,7 +328,7 @@
         }
 
         .compare-title {
-          font-family: ${v};
+          font-family: ${u};
           font-size: clamp(1.3rem, 4vw, 1.55rem);
           font-weight: 900;
           color: var(--ink);
@@ -427,7 +427,7 @@
         }
 
         .compare-service-name {
-          font-family: ${v};
+          font-family: ${u};
           font-size: 14px;
           font-weight: 700;
           color: var(--cream);
@@ -459,7 +459,7 @@
         }
 
         .engine-row span {
-          font-family: ${v};
+          font-family: ${u};
           font-size: 13px;
           font-weight: 700;
           color: var(--ink);
@@ -502,7 +502,7 @@
           border: none;
           background: var(--ink);
           color: var(--cream);
-          font-family: ${v};
+          font-family: ${u};
           font-size: 15px;
           font-weight: 700;
           cursor: pointer;
@@ -518,7 +518,7 @@
           border: 1.5px solid var(--beige2);
           background: transparent;
           color: var(--ink3);
-          font-family: ${v};
+          font-family: ${u};
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
@@ -575,7 +575,7 @@
         }
 
         .first-band-text {
-          font-family: ${v};
+          font-family: ${u};
           font-size: 13px;
           font-weight: 700;
           color: var(--cream);
@@ -717,7 +717,7 @@
         }
 
         .msr-char {
-          font-family: ${v};
+          font-family: ${u};
           font-size: 22px;
           font-weight: 700;
         }
@@ -778,72 +778,110 @@
         }
 
         /* ── 리포트 카드 ── */
+        /* ── 리포트 안내 ── */
         .report-list {
+          margin-top: 20px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
-          margin-top: 18px;
+          gap: 12px;
         }
 
-        .report-card {
-          background: #fff;
-          border: 1px solid var(--beige);
-          border-radius: 13px;
-          overflow: hidden;
-          transition: box-shadow .15s;
+        /* 무료 카드 */
+        .report-card-free {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border: 1.5px solid #86efac;
+          border-radius: 16px;
+          padding: 16px;
         }
-
-        .report-card:hover {
-          box-shadow: 0 3px 14px rgba(44,36,23,0.07);
-        }
-
-        .report-card-header {
+        .report-card-free-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 13px 14px 10px;
-          border-bottom: 1px solid var(--beige);
+          margin-bottom: 12px;
         }
-
-        .report-card-header-left {
+        .report-card-free-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
         }
-
-        .report-card-icon { font-size: 18px; line-height: 1; }
-        .report-card-title { font-size: 13px; font-weight: 700; color: var(--ink); }
-
-        .report-card-price-free {
-          font-size: 11px;
-          font-weight: 700;
-          color: #059669;
-          background: #d1fae5;
-          padding: 3px 8px;
+        .report-card-free-icon {
+          width: 40px; height: 40px;
+          background: #fff;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .report-card-free-name {
+          font-size: 15px; font-weight: 800; color: #166534;
+        }
+        .report-card-free-sub {
+          font-size: 11px; color: #166534; opacity: 0.7; margin-top: 1px;
+        }
+        .report-card-free-badge {
+          background: #16a34a; color: #fff;
+          font-size: 12px; font-weight: 800;
+          padding: 5px 12px; border-radius: 999px;
+        }
+        .report-card-free-items {
+          display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .report-card-free-item {
+          background: rgba(255,255,255,0.7);
+          border: 1px solid #86efac;
           border-radius: 999px;
+          font-size: 11px; color: #166534; font-weight: 600;
+          padding: 4px 10px;
         }
 
-        .report-card-price-paid {
-          font-size: 11px;
-          font-weight: 700;
-          color: #4A3F30;
-          background: #F5F1EA;
-          padding: 3px 8px;
-          border-radius: 999px;
+        /* 유료 카드 가로 스크롤 */
+        .report-paid-scroll {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .report-paid-scroll::-webkit-scrollbar { display: none; }
+
+        .report-card-paid {
+          flex: 0 0 160px;
+          background: #fff;
+          border: 1px solid var(--beige);
+          border-radius: 14px;
+          padding: 14px 12px;
+          position: relative;
+          overflow: hidden;
+        }
+        .report-card-paid::before {
+          content: "";
+          position: absolute; top: 0; left: 0; right: 0;
+          height: 3px;
+          background: var(--accent-color, #8B7355);
+          border-radius: 14px 14px 0 0;
+        }
+        .report-card-paid-icon {
+          font-size: 24px; margin-bottom: 6px; display: block;
+        }
+        .report-card-paid-name {
+          font-size: 13px; font-weight: 700; color: var(--ink);
+          margin-bottom: 4px;
+        }
+        .report-card-paid-price {
+          font-size: 13px; font-weight: 800; color: var(--gold);
+          margin-bottom: 10px;
+        }
+        .report-card-paid-items {
+          display: flex; flex-direction: column; gap: 3px;
+        }
+        .report-card-paid-item {
+          font-size: 10px; color: var(--ink3); line-height: 1.5;
         }
 
-        .report-card-items {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0;
-          padding: 10px 14px 12px;
-        }
-
-        .report-card-item {
-          font-size: 11px;
-          color: var(--ink3);
-          line-height: 1.6;
-          padding: 2px 0;
+        .report-scroll-hint {
+          font-size: 11px; color: var(--ink3);
+          text-align: right; margin-top: 4px;
         }
 
         /* ── 동물 갤러리 ── */
@@ -959,7 +997,7 @@
         }
 
         .trust-num {
-          font-family: ${v};
+          font-family: ${u};
           font-size: 26px;
           font-weight: 900;
           color: var(--gold);
@@ -995,7 +1033,7 @@
         }
 
         .cta-title {
-          font-family: ${v};
+          font-family: ${u};
           font-size: clamp(1.4rem, 4.5vw, 1.7rem);
           font-weight: 900;
           color: var(--cream);
@@ -1019,7 +1057,7 @@
           border: none;
           background: var(--gold);
           color: #fff;
-          font-family: ${v};
+          font-family: ${u};
           font-size: 15px;
           font-weight: 700;
           cursor: pointer;
@@ -1040,7 +1078,7 @@
           border: 1.5px solid rgba(245,241,234,.3);
           background: transparent;
           color: rgba(245,241,234,.8);
-          font-family: ${v};
+          font-family: ${u};
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
@@ -1096,7 +1134,7 @@
           border: none;
           background: var(--ink);
           color: var(--cream);
-          font-family: ${v};
+          font-family: ${u};
           font-size: 14px;
           font-weight: 700;
           cursor: pointer;
@@ -1111,7 +1149,7 @@
           border: 1.5px solid var(--beige2);
           background: rgba(245,241,234,.95);
           color: var(--ink);
-          font-family: ${v};
+          font-family: ${u};
           font-size: 13px;
           font-weight: 700;
           cursor: pointer;
@@ -1163,4 +1201,4 @@
         .reveal:nth-child(3) { animation-delay: .15s; }
         .reveal:nth-child(4) { animation-delay: .2s; }
         .reveal:nth-child(5) { animation-delay: .25s; }
-      `}),(0,r.jsxs)("header",{className:"hd",children:[(0,r.jsxs)("div",{className:"hd-logo",children:[(0,r.jsx)("div",{className:"hd-logo-mark",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"태극",style:{width:"100%",height:"100%",objectFit:"cover"},onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})}),(0,r.jsx)("span",{className:"hd-logo-text",children:"한양사주"})]}),(0,r.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:6,position:"relative"},children:[O&&(0,r.jsx)("div",{style:{display:"flex",alignItems:"center",gap:4,padding:"4px 8px",borderRadius:999,background:O.is_admin?"linear-gradient(135deg, #f59e0b, #d97706)":"linear-gradient(135deg, #10b981, #059669)",border:O.is_admin?"1px solid #d97706":"1px solid #047857",boxShadow:O.is_admin?"0 2px 8px rgba(245, 158, 11, 0.3)":"0 2px 8px rgba(16, 185, 129, 0.3)"},children:(0,r.jsx)("span",{style:{fontSize:10,fontWeight:700,color:"white",letterSpacing:"0.05em"},children:O.is_admin?"👑 관리자":"🎉 베타 테스터"})}),(0,r.jsxs)("div",{style:{position:"relative"},children:[(0,r.jsx)("button",{type:"button",onClick:()=>H(e=>!e),style:{padding:"4px 9px",borderRadius:999,border:`1px solid ${m}`,background:"rgba(255,255,255,0.7)",fontFamily:v,fontSize:10,fontWeight:700,color:f,letterSpacing:"0.08em"},children:"ko"===R?"언어 ▾":"Language ▾"}),Y&&(0,r.jsxs)("div",{style:{position:"absolute",right:0,marginTop:4,minWidth:90,borderRadius:8,border:`1px solid ${m}`,background:"rgba(255,255,255,0.98)",boxShadow:"0 6px 18px rgba(0,0,0,0.12)",padding:4,zIndex:40},children:[(0,r.jsx)("button",{type:"button",onClick:()=>{W("ko"),H(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"ko"===R?"rgba(0,0,0,0.05)":"transparent",fontFamily:v,fontSize:12,color:h,cursor:"pointer"},children:"한국어"}),(0,r.jsx)("button",{type:"button",onClick:()=>{W("en"),H(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"en"===R?"rgba(0,0,0,0.05)":"transparent",fontFamily:v,fontSize:12,color:h,cursor:"pointer"},children:"English"})]})]}),A?(0,r.jsx)("button",{className:"hd-btn-fill",onClick:()=>S.push("/chat"),children:"채팅 시작"}):(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)("button",{className:"hd-btn",onClick:()=>S.push("/start"),children:"로그인"}),(0,r.jsx)("button",{className:"hd-btn-fill",onClick:()=>S.push("/start"),children:"무료 시작"})]})]})]}),(0,r.jsxs)("div",{className:"pc-layout",style:{display:"block"},children:[(0,r.jsx)("div",{className:"pc-sidebar",style:{display:"none"},children:(0,r.jsxs)("div",{className:"pc-sticky-cta",children:[(0,r.jsx)("p",{className:"serif",style:{fontSize:15,fontWeight:700,color:h,lineHeight:1.5,whiteSpace:"pre-line"},children:D("cta.title")}),(0,r.jsx)("button",{className:"btn-primary",onClick:J,children:D("cta.primary")}),(0,r.jsx)("button",{className:"btn-secondary",onClick:()=>S.push("/chat"),children:D("cta.secondary")})]})}),(0,r.jsxs)("div",{className:"pc-main",children:[(0,r.jsxs)("section",{className:"hero",children:[(0,r.jsxs)("div",{className:"hero-eyebrow",children:[(0,r.jsx)("span",{className:"hero-dot"}),D("hero.badge")]}),(0,r.jsx)("div",{className:"hero-logo",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})}),(0,r.jsx)("h1",{className:"hero-title reveal",style:{whiteSpace:"pre-line"},children:D("hero.title")}),(0,r.jsx)("p",{className:"hero-desc reveal",style:{whiteSpace:"pre-line"},children:D("hero.sub")}),(0,r.jsxs)("div",{className:"hero-btns reveal",children:[(0,r.jsx)("button",{className:"btn-primary",onClick:J,children:D("hero.cta_primary")}),(0,r.jsx)("button",{className:"btn-secondary",onClick:()=>S.push("/chat"),children:D("hero.cta_secondary")})]}),(0,r.jsxs)("div",{ref:P,className:"counter-row reveal",children:[(0,r.jsx)("div",{className:"counter-dot"}),(0,r.jsx)("span",{style:{fontSize:12,color:f,fontWeight:500},children:D("hero.counter",{count:q.toLocaleString()})})]})]}),(0,r.jsx)("section",{style:{padding:"20px",textAlign:"center"},children:(0,r.jsxs)("div",{style:{background:"linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%)",borderRadius:16,padding:24,maxWidth:400,margin:"0 auto",border:"2px solid #2d5a2d",boxShadow:"0 4px 12px rgba(45, 90, 45, 0.1)"},children:[(0,r.jsx)("div",{style:{fontSize:14,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"베타 테스터 모집"}),(0,r.jsx)("h3",{style:{fontSize:18,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"채팅 + 기본 리포트 무제한!"}),(0,r.jsxs)("p",{style:{fontSize:13,color:"#2d5a2d",marginBottom:16,lineHeight:1.5},children:["베타 테스터가 되어",(0,r.jsx)("br",{}),"AI 채팅과 기본 리포트를 무제한으로 이용하세요"]}),(0,r.jsx)("button",{onClick:()=>S.push("/saju-mypage"),style:{background:"#2d5a2d",color:"white",border:"none",padding:"12px 24px",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer",transition:"all 0.2s"},onMouseOver:e=>e.currentTarget.style.transform="scale(1.05)",onMouseOut:e=>e.currentTarget.style.transform="scale(1)",children:"쿠폰 받기"})]})}),(0,r.jsxs)("section",{className:"problem-sec",children:[(0,r.jsx)("div",{className:"problem-label",children:D("problem.eyebrow")}),(0,r.jsx)("h2",{className:"problem-main",style:{whiteSpace:"pre-line"},children:D("problem.title")}),(0,r.jsx)("h3",{className:"problem-sub",style:{whiteSpace:"pre-line"},children:D("problem.title_gold")}),(0,r.jsx)("div",{className:"problem-divider"}),(0,r.jsx)("p",{className:"problem-desc",style:{whiteSpace:"pre-line"},children:D("problem.body")})]}),(0,r.jsxs)("section",{className:"compare-sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:D("compare.badge")}),(0,r.jsx)("h2",{className:"compare-title",style:{whiteSpace:"pre-line"},children:D("compare.title")}),(0,r.jsxs)("div",{className:"compare-row",children:[(0,r.jsxs)("div",{className:"compare-card compare-left",children:[(0,r.jsx)("div",{className:"compare-label",children:D("compare.left_label")}),(0,r.jsxs)("div",{className:"compare-chip-col",children:[(0,r.jsx)("div",{className:"compare-chip",children:"ChatGPT"}),(0,r.jsx)("div",{className:"compare-chip",children:"Claude"}),(0,r.jsx)("div",{className:"compare-chip",children:"Gemini"})]}),(0,r.jsx)("p",{className:"compare-note",children:D("compare.left_note")})]}),(0,r.jsx)("div",{className:"compare-arrow",children:"→"}),(0,r.jsxs)("div",{className:"compare-card compare-right",children:[(0,r.jsx)("div",{className:"compare-label compare-label-right",children:D("compare.right_label")}),(0,r.jsx)("div",{className:"compare-logo-wrap",children:(0,r.jsx)("div",{className:"compare-logo",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})})}),(0,r.jsx)("div",{className:"compare-service-name",children:D("compare.right_name")}),(0,r.jsx)("p",{className:"compare-right-note",children:D("compare.right_note")})]})]}),(0,r.jsxs)("div",{className:"engine-card",children:[(0,r.jsxs)("div",{className:"engine-row",children:[(0,r.jsx)("span",{children:D("compare.engine_a")}),(0,r.jsx)("span",{className:"engine-x",children:"×"}),(0,r.jsx)("span",{children:D("compare.engine_b")})]}),(0,r.jsx)("p",{className:"engine-sub",children:D("compare.engine_sub")})]})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge badge-gold",style:{marginLeft:"auto",marginRight:"auto"},children:D("chat_preview.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:D("chat_preview.title")}),(0,r.jsx)("p",{className:"sec-sub",style:{marginBottom:18,whiteSpace:"pre-line"},children:D("chat_preview.sub")}),(0,r.jsxs)("div",{className:"chat-preview",children:[(0,r.jsxs)("div",{className:"chat-preview-hd",children:[(0,r.jsx)("div",{className:"chat-preview-avatar",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"",onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})}),(0,r.jsx)("span",{className:"chat-preview-name",children:D("chat_preview.ai_name")}),(0,r.jsx)("span",{style:{fontSize:10,color:f,marginLeft:"auto"},children:D("chat_preview.ai_status")})]}),(0,r.jsx)("div",{className:"chat-preview-body",children:(z=(N=M.chat_preview.bubbles)[T]||N[0],(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)("div",{className:"chat-bubble-user",children:z.q}),(0,r.jsx)("div",{className:"chat-bubble-ai",children:z.a})]}))},T),(0,r.jsx)("div",{style:{padding:"10px 14px",borderTop:`1px solid ${x}`},children:(0,r.jsx)("button",{onClick:()=>S.push("/chat"),style:{width:"100%",padding:"10px",borderRadius:8,border:`1px solid ${g}`,background:d,font:"inherit",fontSize:13,color:f,cursor:"pointer",fontFamily:v},children:D("chat_preview.cta")})})]})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:D("manseryeok.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:D("manseryeok.title")}),(0,r.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:D("manseryeok.sub")}),(0,r.jsx)("div",{className:"manseryeok-preview",style:{marginTop:16},children:(0,r.jsxs)("table",{className:"msr-table",children:[(0,r.jsx)("thead",{children:(0,r.jsxs)("tr",{children:[(0,r.jsx)("th",{style:{width:80}}),M.manseryeok.headers.map(e=>(0,r.jsx)("th",{children:e},e))]})}),(0,r.jsxs)("tbody",{children:[(0,r.jsxs)("tr",{className:"msr-row-label",children:[(0,r.jsx)("td",{style:{fontSize:11,color:f,textAlign:"center"},children:"십성(천간)"}),M.manseryeok.sipsung_top.map((e,t)=>(0,r.jsx)("td",{children:e},t))]}),(0,r.jsxs)("tr",{children:[(0,r.jsx)("td",{style:{fontSize:11,color:f,textAlign:"center"},children:"천간"}),[{char:"계癸",el:"water"},{char:"기己",el:"earth"},{char:"갑甲",el:"wood"},{char:"을乙",el:"wood"}].map((e,t)=>{let a=y[e.el];return(0,r.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,r.jsx)("div",{className:"msr-pillar-box",style:{background:a.bg,color:a.text,border:`1px solid ${a.border}`},children:e.char})},t)})]}),(0,r.jsxs)("tr",{children:[(0,r.jsx)("td",{style:{fontSize:11,color:f,textAlign:"center"},children:"지지"}),[{char:"유酉",el:"metal"},{char:"미未",el:"earth"},{char:"신申",el:"metal"},{char:"사巳",el:"fire"}].map((e,t)=>{let a=y[e.el];return(0,r.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,r.jsx)("div",{className:"msr-pillar-box",style:{background:a.bg,color:a.text,border:`1px solid ${a.border}`},children:e.char})},t)})]}),(0,r.jsxs)("tr",{className:"msr-row-label",children:[(0,r.jsx)("td",{style:{fontSize:11,color:f,textAlign:"center"},children:"십성(지지)"}),M.manseryeok.sipsung_bot.map((e,t)=>(0,r.jsx)("td",{children:e},t))]}),(0,r.jsxs)("tr",{children:[(0,r.jsx)("td",{style:{fontSize:11,color:f,textAlign:"center"},children:"지장간"}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:f},children:[(0,r.jsx)("div",{children:"경금 (상관)"}),(0,r.jsx)("div",{children:"신금 (식신)"})]}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:f},children:[(0,r.jsx)("div",{children:"정화 (편인)"}),(0,r.jsx)("div",{children:"을목 (편관)"}),(0,r.jsx)("div",{children:"기토 (비견)"})]}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:f},children:[(0,r.jsx)("div",{children:"무토 (겁재)"}),(0,r.jsx)("div",{children:"임수 (정재)"}),(0,r.jsx)("div",{children:"경금 (상관)"})]}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:f},children:[(0,r.jsx)("div",{children:"무토 (겁재)"}),(0,r.jsx)("div",{children:"경금 (상관)"}),(0,r.jsx)("div",{children:"병화 (정인)"})]})]}),(0,r.jsxs)("tr",{className:"msr-row-label",children:[(0,r.jsx)("td",{style:{fontSize:11,color:f,textAlign:"center"},children:"십이운성"}),M.manseryeok.twelve.map((e,t)=>(0,r.jsx)("td",{children:e},t))]})]})]})}),(0,r.jsx)("p",{style:{fontSize:11,color:f,marginTop:10,textAlign:"center"},children:D("manseryeok.note")})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:D("features.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:D("features.title")}),(0,r.jsx)("div",{className:"report-list",children:M.features.reports.map((e,t)=>(0,r.jsxs)("div",{className:"report-card",children:[(0,r.jsxs)("div",{className:"report-card-header",children:[(0,r.jsxs)("div",{className:"report-card-header-left",children:[(0,r.jsx)("span",{className:"report-card-icon",children:e.icon}),(0,r.jsx)("span",{className:"report-card-title",children:e.title})]}),(0,r.jsx)("span",{className:e.free?"report-card-price-free":"report-card-price-paid",children:e.price})]}),(0,r.jsx)("div",{className:"report-card-items",children:e.items.map((e,t)=>(0,r.jsxs)("div",{className:"report-card-item",children:["· ",e]},t))})]},t))}),(0,r.jsxs)("button",{onClick:()=>S.push("/store"),style:{marginTop:16,width:"100%",padding:"13px 0",borderRadius:12,border:`1.5px solid ${g}`,background:d,fontSize:13,fontWeight:700,color:b,cursor:"pointer",fontFamily:"'Gmarket Sans', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:6},children:[(0,r.jsx)("span",{children:"🛒"})," 스토어에서 리포트 구매하기"]})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:D("animals.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:D("animals.title")}),(0,r.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:D("animals.sub")}),(0,r.jsx)("div",{className:"animal-grid",children:_.map((e,t)=>(0,r.jsx)("div",{className:"animal-cell",children:(0,r.jsx)("div",{className:C>0?"animal-flip":"",style:{width:"100%",height:"100%",animationDelay:C>0?`${35*t}ms`:void 0},children:(0,r.jsx)("img",{src:`/images/day_pillars/${e}.png`,alt:e,loading:"lazy",decoding:"async",onError:e=>{e.currentTarget.style.display="none"}})},`${C}-${t}`)},t))}),(0,r.jsx)("p",{style:{fontSize:11,color:f,textAlign:"center",marginTop:10},children:D("animals.note")})]}),(0,r.jsxs)("section",{className:"sec",style:{background:p,textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:D("trust.badge")}),(0,r.jsx)("div",{className:"trust-grid",children:M.trust.items.map((e,t)=>(0,r.jsxs)("div",{className:"trust-card",children:[(0,r.jsx)("div",{className:"trust-num",children:0===t?X.toLocaleString()+"+":e.val}),(0,r.jsx)("div",{className:"trust-label",style:{whiteSpace:"pre-line"},children:e.lbl.replace("{count}",X.toLocaleString())})]},t))})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:D("reviews.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem"},children:D("reviews.title")}),(0,r.jsx)("div",{ref:L,className:"review-scroll",style:{marginTop:16},onMouseDown:e=>{let r=L.current;if(!r)return;let t=e.pageX-r.offsetLeft,a=r.scrollLeft,i=e=>{let i=(e.pageX-r.offsetLeft-t)*1.2;r.scrollLeft=a-i};document.addEventListener("mousemove",i),document.addEventListener("mouseup",()=>document.removeEventListener("mousemove",i),{once:!0})},children:M.reviews.items.map((e,t)=>(0,r.jsxs)("div",{className:"review-card",children:[(0,r.jsxs)("div",{className:"review-top",children:[(0,r.jsxs)("div",{children:[(0,r.jsx)("span",{className:"review-name",children:e.name}),(0,r.jsx)("span",{className:"review-age",children:e.age})]}),(0,r.jsx)("span",{className:"review-tag",children:e.tag})]}),(0,r.jsx)("div",{className:"review-stars",children:"★".repeat(5)}),(0,r.jsxs)("p",{className:"review-text",children:['"',e.text,'"']})]},t))}),(0,r.jsx)("p",{style:{fontSize:11,color:m,textAlign:"center",marginTop:6},children:D("reviews.hint")})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:D("core_features.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:D("core_features.title")}),(0,r.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18},children:M.core_features.items.slice(0,3).map((e,t)=>(0,r.jsxs)("div",{style:{background:"#fff",border:`1px solid ${g}`,borderRadius:13,padding:"18px 16px",display:"flex",gap:14,alignItems:"flex-start"},children:[(0,r.jsx)("div",{style:{width:42,height:42,borderRadius:10,background:p,border:`1px solid ${g}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0},children:e.icon}),(0,r.jsxs)("div",{style:{flex:1},children:[(0,r.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:7,marginBottom:5,flexWrap:"wrap"},children:[(0,r.jsx)("span",{style:{fontFamily:v,fontSize:14,fontWeight:700,color:h},children:e.title}),e.tag&&(0,r.jsx)("span",{style:{padding:"2px 8px",borderRadius:4,background:u,color:"#fff",fontSize:9,fontWeight:800,letterSpacing:"0.08em"},children:e.tag})]}),(0,r.jsx)("p",{style:{fontSize:12.5,color:f,lineHeight:1.75,wordBreak:"keep-all",textAlign:"left"},children:e.desc})]})]},t))})]}),(0,r.jsxs)("section",{className:"sec",style:{background:p,display:"none"},"aria-hidden":!0,children:[(0,r.jsx)("div",{className:"badge",children:D("pricing.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem",whiteSpace:"pre-line"},children:D("pricing.title")}),(0,r.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18}})]}),(0,r.jsxs)("section",{className:"cta-sec",children:[(0,r.jsx)("p",{style:{fontSize:11,color:"rgba(245,241,234,.5)",letterSpacing:"0.12em",marginBottom:14,fontWeight:700},children:D("cta.eyebrow")}),(0,r.jsx)("h2",{className:"cta-title",style:{whiteSpace:"pre-line"},children:D("cta.title")}),(0,r.jsx)("p",{className:"cta-sub",style:{whiteSpace:"pre-line"},children:D("cta.sub")}),(0,r.jsx)("button",{className:"cta-btn",onClick:J,children:D("cta.primary")}),(0,r.jsx)("button",{className:"cta-chat-btn",onClick:()=>S.push("/chat"),children:D("cta.secondary")})]}),(0,r.jsx)("footer",{className:"footer",children:(0,r.jsxs)("p",{className:"footer-text",style:{whiteSpace:"pre-line"},children:[D("footer.copy"),(0,r.jsx)("br",{}),D("footer.sub")]})})]})]}),(0,r.jsxs)("div",{className:"floating-cta",children:[(0,r.jsx)("button",{className:"floating-btn-main",onClick:J,children:"무료 사주 분석"}),(0,r.jsx)("button",{className:"floating-btn-chat",onClick:()=>S.push("/chat"),children:"AI 대화"})]})]})}e.s(["default",()=>N])}]);
+      `}),(0,r.jsxs)("header",{className:"hd",children:[(0,r.jsxs)("div",{className:"hd-logo",children:[(0,r.jsx)("div",{className:"hd-logo-mark",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"태극",style:{width:"100%",height:"100%",objectFit:"cover"},onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})}),(0,r.jsx)("span",{className:"hd-logo-text",children:"한양사주"})]}),(0,r.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:6,position:"relative"},children:[U&&(0,r.jsx)("div",{style:{display:"flex",alignItems:"center",gap:4,padding:"4px 8px",borderRadius:999,background:U.is_admin?"linear-gradient(135deg, #f59e0b, #d97706)":"linear-gradient(135deg, #10b981, #059669)",border:U.is_admin?"1px solid #d97706":"1px solid #047857",boxShadow:U.is_admin?"0 2px 8px rgba(245, 158, 11, 0.3)":"0 2px 8px rgba(16, 185, 129, 0.3)"},children:(0,r.jsx)("span",{style:{fontSize:10,fontWeight:700,color:"white",letterSpacing:"0.05em"},children:U.is_admin?"👑 관리자":"🎉 베타 테스터"})}),(0,r.jsxs)("div",{style:{position:"relative"},children:[(0,r.jsx)("button",{type:"button",onClick:()=>O(e=>!e),style:{padding:"4px 9px",borderRadius:999,border:`1px solid ${m}`,background:"rgba(255,255,255,0.7)",fontFamily:u,fontSize:10,fontWeight:700,color:b,letterSpacing:"0.08em"},children:"ko"===W?"언어 ▾":"Language ▾"}),H&&(0,r.jsxs)("div",{style:{position:"absolute",right:0,marginTop:4,minWidth:90,borderRadius:8,border:`1px solid ${m}`,background:"rgba(255,255,255,0.98)",boxShadow:"0 6px 18px rgba(0,0,0,0.12)",padding:4,zIndex:40},children:[(0,r.jsx)("button",{type:"button",onClick:()=>{D("ko"),O(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"ko"===W?"rgba(0,0,0,0.05)":"transparent",fontFamily:u,fontSize:12,color:h,cursor:"pointer"},children:"한국어"}),(0,r.jsx)("button",{type:"button",onClick:()=>{D("en"),O(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"en"===W?"rgba(0,0,0,0.05)":"transparent",fontFamily:u,fontSize:12,color:h,cursor:"pointer"},children:"English"})]})]}),_?(0,r.jsx)("button",{className:"hd-btn-fill",onClick:()=>A.push("/chat"),children:"채팅 시작"}):(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)("button",{className:"hd-btn",onClick:()=>A.push("/start"),children:"로그인"}),(0,r.jsx)("button",{className:"hd-btn-fill",onClick:()=>A.push("/start"),children:"무료 시작"})]})]})]}),(0,r.jsxs)("div",{className:"pc-layout",style:{display:"block"},children:[(0,r.jsx)("div",{className:"pc-sidebar",style:{display:"none"},children:(0,r.jsxs)("div",{className:"pc-sticky-cta",children:[(0,r.jsx)("p",{className:"serif",style:{fontSize:15,fontWeight:700,color:h,lineHeight:1.5,whiteSpace:"pre-line"},children:M("cta.title")}),(0,r.jsx)("button",{className:"btn-primary",onClick:K,children:M("cta.primary")}),(0,r.jsx)("button",{className:"btn-secondary",onClick:()=>A.push("/chat"),children:M("cta.secondary")})]})}),(0,r.jsxs)("div",{className:"pc-main",children:[(0,r.jsxs)("section",{className:"hero",children:[(0,r.jsxs)("div",{className:"hero-eyebrow",children:[(0,r.jsx)("span",{className:"hero-dot"}),M("hero.badge")]}),(0,r.jsx)("div",{className:"hero-logo",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})}),(0,r.jsx)("h1",{className:"hero-title reveal",style:{whiteSpace:"pre-line"},children:M("hero.title")}),(0,r.jsx)("p",{className:"hero-desc reveal",style:{whiteSpace:"pre-line"},children:M("hero.sub")}),(0,r.jsxs)("div",{className:"hero-btns reveal",children:[(0,r.jsx)("button",{className:"btn-primary",onClick:K,children:M("hero.cta_primary")}),(0,r.jsx)("button",{className:"btn-secondary",onClick:()=>A.push("/chat"),children:M("hero.cta_secondary")})]}),(0,r.jsxs)("div",{ref:X,className:"counter-row reveal",children:[(0,r.jsx)("div",{className:"counter-dot"}),(0,r.jsx)("span",{style:{fontSize:12,color:b,fontWeight:500},children:M("hero.counter",{count:P.toLocaleString()})})]})]}),(0,r.jsx)("section",{style:{padding:"20px",textAlign:"center"},children:(0,r.jsxs)("div",{style:{background:"linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%)",borderRadius:16,padding:24,maxWidth:400,margin:"0 auto",border:"2px solid #2d5a2d",boxShadow:"0 4px 12px rgba(45, 90, 45, 0.1)"},children:[(0,r.jsx)("div",{style:{fontSize:14,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"베타 테스터 모집"}),(0,r.jsx)("h3",{style:{fontSize:18,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"채팅 + 기본 리포트 무제한!"}),(0,r.jsxs)("p",{style:{fontSize:13,color:"#2d5a2d",marginBottom:16,lineHeight:1.5},children:["베타 테스터가 되어",(0,r.jsx)("br",{}),"AI 채팅과 기본 리포트를 무제한으로 이용하세요"]}),(0,r.jsx)("button",{onClick:()=>A.push("/saju-mypage"),style:{background:"#2d5a2d",color:"white",border:"none",padding:"12px 24px",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer",transition:"all 0.2s"},onMouseOver:e=>e.currentTarget.style.transform="scale(1.05)",onMouseOut:e=>e.currentTarget.style.transform="scale(1)",children:"쿠폰 받기"})]})}),(0,r.jsxs)("section",{className:"problem-sec",children:[(0,r.jsx)("div",{className:"problem-label",children:M("problem.eyebrow")}),(0,r.jsx)("h2",{className:"problem-main",style:{whiteSpace:"pre-line"},children:M("problem.title")}),(0,r.jsx)("h3",{className:"problem-sub",style:{whiteSpace:"pre-line"},children:M("problem.title_gold")}),(0,r.jsx)("div",{className:"problem-divider"}),(0,r.jsx)("p",{className:"problem-desc",style:{whiteSpace:"pre-line"},children:M("problem.body")})]}),(0,r.jsxs)("section",{className:"compare-sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:M("compare.badge")}),(0,r.jsx)("h2",{className:"compare-title",style:{whiteSpace:"pre-line"},children:M("compare.title")}),(0,r.jsxs)("div",{className:"compare-row",children:[(0,r.jsxs)("div",{className:"compare-card compare-left",children:[(0,r.jsx)("div",{className:"compare-label",children:M("compare.left_label")}),(0,r.jsxs)("div",{className:"compare-chip-col",children:[(0,r.jsx)("div",{className:"compare-chip",children:"ChatGPT"}),(0,r.jsx)("div",{className:"compare-chip",children:"Claude"}),(0,r.jsx)("div",{className:"compare-chip",children:"Gemini"})]}),(0,r.jsx)("p",{className:"compare-note",children:M("compare.left_note")})]}),(0,r.jsx)("div",{className:"compare-arrow",children:"→"}),(0,r.jsxs)("div",{className:"compare-card compare-right",children:[(0,r.jsx)("div",{className:"compare-label compare-label-right",children:M("compare.right_label")}),(0,r.jsx)("div",{className:"compare-logo-wrap",children:(0,r.jsx)("div",{className:"compare-logo",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})})}),(0,r.jsx)("div",{className:"compare-service-name",children:M("compare.right_name")}),(0,r.jsx)("p",{className:"compare-right-note",children:M("compare.right_note")})]})]}),(0,r.jsxs)("div",{className:"engine-card",children:[(0,r.jsxs)("div",{className:"engine-row",children:[(0,r.jsx)("span",{children:M("compare.engine_a")}),(0,r.jsx)("span",{className:"engine-x",children:"×"}),(0,r.jsx)("span",{children:M("compare.engine_b")})]}),(0,r.jsx)("p",{className:"engine-sub",children:M("compare.engine_sub")})]})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge badge-gold",style:{marginLeft:"auto",marginRight:"auto"},children:M("chat_preview.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:M("chat_preview.title")}),(0,r.jsx)("p",{className:"sec-sub",style:{marginBottom:18,whiteSpace:"pre-line"},children:M("chat_preview.sub")}),(0,r.jsxs)("div",{className:"chat-preview",children:[(0,r.jsxs)("div",{className:"chat-preview-hd",children:[(0,r.jsx)("div",{className:"chat-preview-avatar",children:(0,r.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"",onError:e=>{e.currentTarget.style.display="none",e.currentTarget.parentElement.textContent="☯"}})}),(0,r.jsx)("span",{className:"chat-preview-name",children:M("chat_preview.ai_name")}),(0,r.jsx)("span",{style:{fontSize:10,color:b,marginLeft:"auto"},children:M("chat_preview.ai_status")})]}),(0,r.jsx)("div",{className:"chat-preview-body",children:(N=(k=Y.chat_preview.bubbles)[E]||k[0],(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)("div",{className:"chat-bubble-user",children:N.q}),(0,r.jsx)("div",{className:"chat-bubble-ai",children:N.a})]}))},E),(0,r.jsx)("div",{style:{padding:"10px 14px",borderTop:`1px solid ${x}`},children:(0,r.jsx)("button",{onClick:()=>A.push("/chat"),style:{width:"100%",padding:"10px",borderRadius:8,border:`1px solid ${g}`,background:d,font:"inherit",fontSize:13,color:b,cursor:"pointer",fontFamily:u},children:M("chat_preview.cta")})})]})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:M("manseryeok.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:M("manseryeok.title")}),(0,r.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:M("manseryeok.sub")}),(0,r.jsx)("div",{className:"manseryeok-preview",style:{marginTop:16},children:(0,r.jsxs)("table",{className:"msr-table",children:[(0,r.jsx)("thead",{children:(0,r.jsxs)("tr",{children:[(0,r.jsx)("th",{style:{width:80}}),Y.manseryeok.headers.map(e=>(0,r.jsx)("th",{children:e},e))]})}),(0,r.jsxs)("tbody",{children:[(0,r.jsxs)("tr",{className:"msr-row-label",children:[(0,r.jsx)("td",{style:{fontSize:11,color:b,textAlign:"center"},children:"십성(천간)"}),Y.manseryeok.sipsung_top.map((e,t)=>(0,r.jsx)("td",{children:e},t))]}),(0,r.jsxs)("tr",{children:[(0,r.jsx)("td",{style:{fontSize:11,color:b,textAlign:"center"},children:"천간"}),[{char:"계癸",el:"water"},{char:"기己",el:"earth"},{char:"갑甲",el:"wood"},{char:"을乙",el:"wood"}].map((e,t)=>{let a=v[e.el];return(0,r.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,r.jsx)("div",{className:"msr-pillar-box",style:{background:a.bg,color:a.text,border:`1px solid ${a.border}`},children:e.char})},t)})]}),(0,r.jsxs)("tr",{children:[(0,r.jsx)("td",{style:{fontSize:11,color:b,textAlign:"center"},children:"지지"}),[{char:"유酉",el:"metal"},{char:"미未",el:"earth"},{char:"신申",el:"metal"},{char:"사巳",el:"fire"}].map((e,t)=>{let a=v[e.el];return(0,r.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,r.jsx)("div",{className:"msr-pillar-box",style:{background:a.bg,color:a.text,border:`1px solid ${a.border}`},children:e.char})},t)})]}),(0,r.jsxs)("tr",{className:"msr-row-label",children:[(0,r.jsx)("td",{style:{fontSize:11,color:b,textAlign:"center"},children:"십성(지지)"}),Y.manseryeok.sipsung_bot.map((e,t)=>(0,r.jsx)("td",{children:e},t))]}),(0,r.jsxs)("tr",{children:[(0,r.jsx)("td",{style:{fontSize:11,color:b,textAlign:"center"},children:"지장간"}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:b},children:[(0,r.jsx)("div",{children:"경금 (상관)"}),(0,r.jsx)("div",{children:"신금 (식신)"})]}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:b},children:[(0,r.jsx)("div",{children:"정화 (편인)"}),(0,r.jsx)("div",{children:"을목 (편관)"}),(0,r.jsx)("div",{children:"기토 (비견)"})]}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:b},children:[(0,r.jsx)("div",{children:"무토 (겁재)"}),(0,r.jsx)("div",{children:"임수 (정재)"}),(0,r.jsx)("div",{children:"경금 (상관)"})]}),(0,r.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:b},children:[(0,r.jsx)("div",{children:"무토 (겁재)"}),(0,r.jsx)("div",{children:"경금 (상관)"}),(0,r.jsx)("div",{children:"병화 (정인)"})]})]}),(0,r.jsxs)("tr",{className:"msr-row-label",children:[(0,r.jsx)("td",{style:{fontSize:11,color:b,textAlign:"center"},children:"십이운성"}),Y.manseryeok.twelve.map((e,t)=>(0,r.jsx)("td",{children:e},t))]})]})]})}),(0,r.jsx)("p",{style:{fontSize:11,color:b,marginTop:10,textAlign:"center"},children:M("manseryeok.note")})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:M("features.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:M("features.title")}),(0,r.jsxs)("div",{className:"report-list",children:[(z=Y.features.reports[0],(0,r.jsxs)("div",{className:"report-card-free",children:[(0,r.jsxs)("div",{className:"report-card-free-top",children:[(0,r.jsxs)("div",{className:"report-card-free-left",children:[(0,r.jsx)("div",{className:"report-card-free-icon",children:z.icon}),(0,r.jsxs)("div",{children:[(0,r.jsx)("div",{className:"report-card-free-name",children:z.title}),(0,r.jsx)("div",{className:"report-card-free-sub",children:"로그인 없이 바로 확인"})]})]}),(0,r.jsx)("div",{className:"report-card-free-badge",children:z.price})]}),(0,r.jsx)("div",{className:"report-card-free-items",children:z.items.map((e,t)=>(0,r.jsx)("span",{className:"report-card-free-item",children:e},t))})]})),(S=["#6366f1","#f43f5e","#f59e0b"],(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)("div",{className:"report-paid-scroll",children:Y.features.reports.slice(1).map((e,t)=>(0,r.jsxs)("div",{className:"report-card-paid",style:{"--accent-color":S[t]},children:[(0,r.jsx)("span",{className:"report-card-paid-icon",children:e.icon}),(0,r.jsx)("div",{className:"report-card-paid-name",children:e.title}),(0,r.jsx)("div",{className:"report-card-paid-price",children:e.price}),(0,r.jsx)("div",{className:"report-card-paid-items",children:e.items.map((e,t)=>(0,r.jsx)("div",{className:"report-card-paid-item",children:e},t))})]},t))}),(0,r.jsx)("p",{className:"report-scroll-hint",children:"← 옆으로 밀어서 더 보기"})]}))]}),(0,r.jsxs)("button",{onClick:()=>A.push("/store"),style:{marginTop:20,width:"100%",padding:"14px 0",borderRadius:14,border:"none",background:"linear-gradient(135deg, #2C2417 0%, #4A3F30 100%)",fontSize:14,fontWeight:700,color:"#F5F1EA",cursor:"pointer",fontFamily:"'Gmarket Sans', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 14px rgba(44,36,23,0.25)"},children:[(0,r.jsx)("span",{children:"🛒"})," 전체 리포트 보러가기"]})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:M("animals.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:M("animals.title")}),(0,r.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:M("animals.sub")}),(0,r.jsx)("div",{className:"animal-grid",children:$.map((e,t)=>(0,r.jsx)("div",{className:"animal-cell",children:(0,r.jsx)("div",{className:F>0?"animal-flip":"",style:{width:"100%",height:"100%",animationDelay:F>0?`${35*t}ms`:void 0},children:(0,r.jsx)("img",{src:`/images/day_pillars/${e}.png`,alt:e,loading:"lazy",decoding:"async",onError:e=>{e.currentTarget.style.display="none"}})},`${F}-${t}`)},t))}),(0,r.jsx)("p",{style:{fontSize:11,color:b,textAlign:"center",marginTop:10},children:M("animals.note")})]}),(0,r.jsxs)("section",{className:"sec",style:{background:p,textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:M("trust.badge")}),(0,r.jsx)("div",{className:"trust-grid",children:Y.trust.items.map((e,t)=>(0,r.jsxs)("div",{className:"trust-card",children:[(0,r.jsx)("div",{className:"trust-num",children:0===t?G.toLocaleString()+"+":e.val}),(0,r.jsx)("div",{className:"trust-label",style:{whiteSpace:"pre-line"},children:e.lbl.replace("{count}",G.toLocaleString())})]},t))})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:M("reviews.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem"},children:M("reviews.title")}),(0,r.jsx)("div",{ref:R,className:"review-scroll",style:{marginTop:16},onMouseDown:e=>{let r=R.current;if(!r)return;let t=e.pageX-r.offsetLeft,a=r.scrollLeft,i=e=>{let i=(e.pageX-r.offsetLeft-t)*1.2;r.scrollLeft=a-i};document.addEventListener("mousemove",i),document.addEventListener("mouseup",()=>document.removeEventListener("mousemove",i),{once:!0})},children:Y.reviews.items.map((e,t)=>(0,r.jsxs)("div",{className:"review-card",children:[(0,r.jsxs)("div",{className:"review-top",children:[(0,r.jsxs)("div",{children:[(0,r.jsx)("span",{className:"review-name",children:e.name}),(0,r.jsx)("span",{className:"review-age",children:e.age})]}),(0,r.jsx)("span",{className:"review-tag",children:e.tag})]}),(0,r.jsx)("div",{className:"review-stars",children:"★".repeat(5)}),(0,r.jsxs)("p",{className:"review-text",children:['"',e.text,'"']})]},t))}),(0,r.jsx)("p",{style:{fontSize:11,color:m,textAlign:"center",marginTop:6},children:M("reviews.hint")})]}),(0,r.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,r.jsx)("div",{className:"badge",children:M("core_features.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:M("core_features.title")}),(0,r.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18},children:Y.core_features.items.slice(0,3).map((e,t)=>(0,r.jsxs)("div",{style:{background:"#fff",border:`1px solid ${g}`,borderRadius:13,padding:"18px 16px",display:"flex",gap:14,alignItems:"flex-start"},children:[(0,r.jsx)("div",{style:{width:42,height:42,borderRadius:10,background:p,border:`1px solid ${g}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0},children:e.icon}),(0,r.jsxs)("div",{style:{flex:1},children:[(0,r.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:7,marginBottom:5,flexWrap:"wrap"},children:[(0,r.jsx)("span",{style:{fontFamily:u,fontSize:14,fontWeight:700,color:h},children:e.title}),e.tag&&(0,r.jsx)("span",{style:{padding:"2px 8px",borderRadius:4,background:f,color:"#fff",fontSize:9,fontWeight:800,letterSpacing:"0.08em"},children:e.tag})]}),(0,r.jsx)("p",{style:{fontSize:12.5,color:b,lineHeight:1.75,wordBreak:"keep-all",textAlign:"left"},children:e.desc})]})]},t))})]}),(0,r.jsxs)("section",{className:"sec",style:{background:p,display:"none"},"aria-hidden":!0,children:[(0,r.jsx)("div",{className:"badge",children:M("pricing.badge")}),(0,r.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem",whiteSpace:"pre-line"},children:M("pricing.title")}),(0,r.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18}})]}),(0,r.jsxs)("section",{className:"cta-sec",children:[(0,r.jsx)("p",{style:{fontSize:11,color:"rgba(245,241,234,.5)",letterSpacing:"0.12em",marginBottom:14,fontWeight:700},children:M("cta.eyebrow")}),(0,r.jsx)("h2",{className:"cta-title",style:{whiteSpace:"pre-line"},children:M("cta.title")}),(0,r.jsx)("p",{className:"cta-sub",style:{whiteSpace:"pre-line"},children:M("cta.sub")}),(0,r.jsx)("button",{className:"cta-btn",onClick:K,children:M("cta.primary")}),(0,r.jsx)("button",{className:"cta-chat-btn",onClick:()=>A.push("/chat"),children:M("cta.secondary")})]}),(0,r.jsx)("footer",{className:"footer",children:(0,r.jsxs)("p",{className:"footer-text",style:{whiteSpace:"pre-line"},children:[M("footer.copy"),(0,r.jsx)("br",{}),M("footer.sub")]})})]})]}),(0,r.jsxs)("div",{className:"floating-cta",children:[(0,r.jsx)("button",{className:"floating-btn-main",onClick:K,children:"무료 사주 분석"}),(0,r.jsx)("button",{className:"floating-btn-chat",onClick:()=>A.push("/chat"),children:"AI 대화"})]})]})}e.s(["default",()=>k])}]);

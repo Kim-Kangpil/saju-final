@@ -996,72 +996,110 @@ export default function HomePage({
         }
 
         /* ── 리포트 카드 ── */
+        /* ── 리포트 안내 ── */
         .report-list {
+          margin-top: 20px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
-          margin-top: 18px;
+          gap: 12px;
         }
 
-        .report-card {
-          background: #fff;
-          border: 1px solid var(--beige);
-          border-radius: 13px;
-          overflow: hidden;
-          transition: box-shadow .15s;
+        /* 무료 카드 */
+        .report-card-free {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border: 1.5px solid #86efac;
+          border-radius: 16px;
+          padding: 16px;
         }
-
-        .report-card:hover {
-          box-shadow: 0 3px 14px rgba(44,36,23,0.07);
-        }
-
-        .report-card-header {
+        .report-card-free-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 13px 14px 10px;
-          border-bottom: 1px solid var(--beige);
+          margin-bottom: 12px;
         }
-
-        .report-card-header-left {
+        .report-card-free-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
         }
-
-        .report-card-icon { font-size: 18px; line-height: 1; }
-        .report-card-title { font-size: 13px; font-weight: 700; color: var(--ink); }
-
-        .report-card-price-free {
-          font-size: 11px;
-          font-weight: 700;
-          color: #059669;
-          background: #d1fae5;
-          padding: 3px 8px;
+        .report-card-free-icon {
+          width: 40px; height: 40px;
+          background: #fff;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .report-card-free-name {
+          font-size: 15px; font-weight: 800; color: #166534;
+        }
+        .report-card-free-sub {
+          font-size: 11px; color: #166534; opacity: 0.7; margin-top: 1px;
+        }
+        .report-card-free-badge {
+          background: #16a34a; color: #fff;
+          font-size: 12px; font-weight: 800;
+          padding: 5px 12px; border-radius: 999px;
+        }
+        .report-card-free-items {
+          display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .report-card-free-item {
+          background: rgba(255,255,255,0.7);
+          border: 1px solid #86efac;
           border-radius: 999px;
+          font-size: 11px; color: #166534; font-weight: 600;
+          padding: 4px 10px;
         }
 
-        .report-card-price-paid {
-          font-size: 11px;
-          font-weight: 700;
-          color: #4A3F30;
-          background: #F5F1EA;
-          padding: 3px 8px;
-          border-radius: 999px;
+        /* 유료 카드 가로 스크롤 */
+        .report-paid-scroll {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .report-paid-scroll::-webkit-scrollbar { display: none; }
+
+        .report-card-paid {
+          flex: 0 0 160px;
+          background: #fff;
+          border: 1px solid var(--beige);
+          border-radius: 14px;
+          padding: 14px 12px;
+          position: relative;
+          overflow: hidden;
+        }
+        .report-card-paid::before {
+          content: "";
+          position: absolute; top: 0; left: 0; right: 0;
+          height: 3px;
+          background: var(--accent-color, #8B7355);
+          border-radius: 14px 14px 0 0;
+        }
+        .report-card-paid-icon {
+          font-size: 24px; margin-bottom: 6px; display: block;
+        }
+        .report-card-paid-name {
+          font-size: 13px; font-weight: 700; color: var(--ink);
+          margin-bottom: 4px;
+        }
+        .report-card-paid-price {
+          font-size: 13px; font-weight: 800; color: var(--gold);
+          margin-bottom: 10px;
+        }
+        .report-card-paid-items {
+          display: flex; flex-direction: column; gap: 3px;
+        }
+        .report-card-paid-item {
+          font-size: 10px; color: var(--ink3); line-height: 1.5;
         }
 
-        .report-card-items {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0;
-          padding: 10px 14px 12px;
-        }
-
-        .report-card-item {
-          font-size: 11px;
-          color: var(--ink3);
-          line-height: 1.6;
-          padding: 2px 0;
+        .report-scroll-hint {
+          font-size: 11px; color: var(--ink3);
+          text-align: right; margin-top: 4px;
         }
 
         /* ── 동물 갤러리 ── */
@@ -1871,32 +1909,70 @@ export default function HomePage({
             </h2>
 
             <div className="report-list">
-              {messages.features.reports.map((r, idx) => (
-                <div key={idx} className="report-card">
-                  <div className="report-card-header">
-                    <div className="report-card-header-left">
-                      <span className="report-card-icon">{r.icon}</span>
-                      <span className="report-card-title">{r.title}</span>
+              {/* 무료 카드 */}
+              {(() => { const r = messages.features.reports[0]; return (
+                <div className="report-card-free">
+                  <div className="report-card-free-top">
+                    <div className="report-card-free-left">
+                      <div className="report-card-free-icon">{r.icon}</div>
+                      <div>
+                        <div className="report-card-free-name">{r.title}</div>
+                        <div className="report-card-free-sub">로그인 없이 바로 확인</div>
+                      </div>
                     </div>
-                    <span className={r.free ? "report-card-price-free" : "report-card-price-paid"}>
-                      {r.price}
-                    </span>
+                    <div className="report-card-free-badge">{r.price}</div>
                   </div>
-                  <div className="report-card-items">
+                  <div className="report-card-free-items">
                     {r.items.map((item, i) => (
-                      <div key={i} className="report-card-item">· {item}</div>
+                      <span key={i} className="report-card-free-item">{item}</span>
                     ))}
                   </div>
                 </div>
-              ))}
+              ); })()}
+
+              {/* 유료 카드 가로 스크롤 */}
+              {(() => {
+                const colors = ["#6366f1", "#f43f5e", "#f59e0b"];
+                return (
+                  <>
+                    <div className="report-paid-scroll">
+                      {messages.features.reports.slice(1).map((r, idx) => (
+                        <div
+                          key={idx}
+                          className="report-card-paid"
+                          style={{ "--accent-color": colors[idx] } as React.CSSProperties}
+                        >
+                          <span className="report-card-paid-icon">{r.icon}</span>
+                          <div className="report-card-paid-name">{r.title}</div>
+                          <div className="report-card-paid-price">{r.price}</div>
+                          <div className="report-card-paid-items">
+                            {r.items.map((item, i) => (
+                              <div key={i} className="report-card-paid-item">{item}</div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="report-scroll-hint">← 옆으로 밀어서 더 보기</p>
+                  </>
+                );
+              })()}
             </div>
 
             {/* 스토어 바로가기 */}
             <button
               onClick={() => router.push("/store")}
-              style={{ marginTop: 16, width: "100%", padding: "13px 0", borderRadius: 12, border: `1.5px solid ${S.beige}`, background: S.cream, fontSize: 13, fontWeight: 700, color: S.ink2, cursor: "pointer", fontFamily: "'Gmarket Sans', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+              style={{
+                marginTop: 20, width: "100%", padding: "14px 0", borderRadius: 14,
+                border: "none",
+                background: "linear-gradient(135deg, #2C2417 0%, #4A3F30 100%)",
+                fontSize: 14, fontWeight: 700, color: "#F5F1EA",
+                cursor: "pointer", fontFamily: "'Gmarket Sans', sans-serif",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                boxShadow: "0 4px 14px rgba(44,36,23,0.25)",
+              }}
             >
-              <span>🛒</span> 스토어에서 리포트 구매하기
+              <span>🛒</span> 전체 리포트 보러가기
             </button>
           </section>
 

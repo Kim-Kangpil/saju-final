@@ -1,4 +1,4 @@
-module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856),e=a.i(63050),f=a.i(10539),g=a.i(82706),h=a.i(73316),i=a.i(80869),j=a.i(94197);let k="#F5F1EA",l="#EDE7DB",m="#E3D9CB",n="#D4C9B8",o="#C4B8A4",p="#2C2417",q="#4A3F30",r="#6B5F4E",s="#8B7355",t="'Gmarket Sans'",u={wood:{text:"#27500A",bg:"#C0DD97",border:"#3B6D11"},fire:{text:"#712B13",bg:"#F0997B",border:"#993C1D"},earth:{text:"#633806",bg:"#FAC775",border:"#854F0B"},metal:{text:"#444441",bg:"#B4B2A9",border:"#5F5E5A"},water:{text:"#0C447C",bg:"#85B7EB",border:"#185FA5"}},v=["갑자","을축","병인","정묘","무진","기사","경오","신미","임신","계유","갑술","을해","병자","정축","무인","기묘","경진","신사","임오","계미","갑신","을유","병술","정해","무자","기축","경인","신묘","임진","계사","갑오","을미","병신","정유","무술","기해","경자","신축","임인","계묘","갑진","을사","병오","정미","무신","기유","경술","신해","임자","계축","갑인","을묘","병진","정사","무오","기미","경신","신유","임술","계해"],w=[{q:"나는 언제쯤 이직하면 좋을까?",a:"현재 경금 대운에서 편관이 강하게 작용 중이에요. 내년 을사년에 식신이 들어오는 시점이 변화에 유리합니다."},{q:"올해 재물운 어때?",a:"월지 편재가 세운과 삼합을 이루는 하반기가 재물 유입에 유리해요. 다만 겁재 충을 주의하세요."},{q:"나랑 맞는 사람 유형이 있어?",a:"일간 갑목 기준으로 기토 정재와 합이 잘 맞아요. 안정적이고 현실적인 분과 잘 어울립니다."}];function x(a){let[b,d]=(0,c.useState)(0),e=(0,c.useRef)(null),f=(0,c.useRef)(!1);return(0,c.useEffect)(()=>{let b=new IntersectionObserver(([b])=>{if(b.isIntersecting&&!f.current){f.current=!0;let b=performance.now(),c=e=>{let f=Math.min((e-b)/1400,1);d(Math.floor((1-Math.pow(1-f,3))*a)),f<1&&requestAnimationFrame(c)};requestAnimationFrame(c)}},{threshold:.4});return e.current&&b.observe(e.current),()=>b.disconnect()},[a]),{count:b,ref:e}}function y({params:a}){let y,z;(0,c.use)(a??Promise.resolve({}));let A=(0,d.useRouter)(),{isLoggedIn:B}=(0,h.useAuthStatus)(),[C,D]=(0,c.useState)([]),[E,F]=(0,c.useState)(0),[G,H]=(0,c.useState)(0),[I,J]=(0,c.useState)(0),K=(0,c.useRef)(null),{lang:L,setLang:M,t:N}=(0,f.useLang)(),O="ko"===L?i.default:j.default,[P,Q]=(0,c.useState)(!1),[R,S]=(0,c.useState)(null);(0,c.useEffect)(()=>{B&&(async()=>{try{let a=await fetch("http://localhost:8000/api/beta/features",{credentials:"include",headers:{Accept:"application/json",...(0,g.getAuthHeaders)()}}),b=await a.json();b.features&&S(b.features)}catch(a){}})()},[B]);let{count:T,ref:U}=x((0,c.useRef)(128).current),{count:V,ref:W}=x(2847);function X(){if(!B)return void A.push("/start");let a=(0,e.getSavedSajuList)();A.push(a?.length>0?"/saju-list":"/saju-add")}return(0,c.useEffect)(()=>{D([...v].sort(()=>Math.random()-.5).slice(0,6))},[]),(0,c.useEffect)(()=>{let a=setInterval(()=>{D([...v].sort(()=>Math.random()-.5).slice(0,6)),F(a=>a+1)},3200);return()=>clearInterval(a)},[]),(0,c.useEffect)(()=>{let a=setInterval(()=>{H(a=>(a+1)%w.length)},5800);return()=>clearInterval(a)},[]),(0,b.jsxs)(b.Fragment,{children:[(0,b.jsx)("style",{children:`
+module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856),e=a.i(63050),f=a.i(10539),g=a.i(82706),h=a.i(73316),i=a.i(80869),j=a.i(94197);let k="#F5F1EA",l="#EDE7DB",m="#E3D9CB",n="#D4C9B8",o="#C4B8A4",p="#2C2417",q="#6B5F4E",r="#8B7355",s="'Gmarket Sans'",t={wood:{text:"#27500A",bg:"#C0DD97",border:"#3B6D11"},fire:{text:"#712B13",bg:"#F0997B",border:"#993C1D"},earth:{text:"#633806",bg:"#FAC775",border:"#854F0B"},metal:{text:"#444441",bg:"#B4B2A9",border:"#5F5E5A"},water:{text:"#0C447C",bg:"#85B7EB",border:"#185FA5"}},u=["갑자","을축","병인","정묘","무진","기사","경오","신미","임신","계유","갑술","을해","병자","정축","무인","기묘","경진","신사","임오","계미","갑신","을유","병술","정해","무자","기축","경인","신묘","임진","계사","갑오","을미","병신","정유","무술","기해","경자","신축","임인","계묘","갑진","을사","병오","정미","무신","기유","경술","신해","임자","계축","갑인","을묘","병진","정사","무오","기미","경신","신유","임술","계해"],v=[{q:"나는 언제쯤 이직하면 좋을까?",a:"현재 경금 대운에서 편관이 강하게 작용 중이에요. 내년 을사년에 식신이 들어오는 시점이 변화에 유리합니다."},{q:"올해 재물운 어때?",a:"월지 편재가 세운과 삼합을 이루는 하반기가 재물 유입에 유리해요. 다만 겁재 충을 주의하세요."},{q:"나랑 맞는 사람 유형이 있어?",a:"일간 갑목 기준으로 기토 정재와 합이 잘 맞아요. 안정적이고 현실적인 분과 잘 어울립니다."}];function w(a){let[b,d]=(0,c.useState)(0),e=(0,c.useRef)(null),f=(0,c.useRef)(!1);return(0,c.useEffect)(()=>{let b=new IntersectionObserver(([b])=>{if(b.isIntersecting&&!f.current){f.current=!0;let b=performance.now(),c=e=>{let f=Math.min((e-b)/1400,1);d(Math.floor((1-Math.pow(1-f,3))*a)),f<1&&requestAnimationFrame(c)};requestAnimationFrame(c)}},{threshold:.4});return e.current&&b.observe(e.current),()=>b.disconnect()},[a]),{count:b,ref:e}}function x({params:a}){let x,y,z,A;(0,c.use)(a??Promise.resolve({}));let B=(0,d.useRouter)(),{isLoggedIn:C}=(0,h.useAuthStatus)(),[D,E]=(0,c.useState)([]),[F,G]=(0,c.useState)(0),[H,I]=(0,c.useState)(0),[J,K]=(0,c.useState)(0),L=(0,c.useRef)(null),{lang:M,setLang:N,t:O}=(0,f.useLang)(),P="ko"===M?i.default:j.default,[Q,R]=(0,c.useState)(!1),[S,T]=(0,c.useState)(null);(0,c.useEffect)(()=>{C&&(async()=>{try{let a=await fetch("http://localhost:8000/api/beta/features",{credentials:"include",headers:{Accept:"application/json",...(0,g.getAuthHeaders)()}}),b=await a.json();b.features&&T(b.features)}catch(a){}})()},[C]);let{count:U,ref:V}=w((0,c.useRef)(128).current),{count:W,ref:X}=w(2847);function Y(){if(!C)return void B.push("/start");let a=(0,e.getSavedSajuList)();B.push(a?.length>0?"/saju-list":"/saju-add")}return(0,c.useEffect)(()=>{E([...u].sort(()=>Math.random()-.5).slice(0,6))},[]),(0,c.useEffect)(()=>{let a=setInterval(()=>{E([...u].sort(()=>Math.random()-.5).slice(0,6)),G(a=>a+1)},3200);return()=>clearInterval(a)},[]),(0,c.useEffect)(()=>{let a=setInterval(()=>{I(a=>(a+1)%v.length)},5800);return()=>clearInterval(a)},[]),(0,b.jsxs)(b.Fragment,{children:[(0,b.jsx)("style",{children:`
         :root {
           --cream:  ${k};
           --cream2: ${l};
@@ -6,9 +6,9 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           --beige:  ${n};
           --beige2: ${o};
           --ink:    ${p};
-          --ink2:   ${q};
-          --ink3:   ${r};
-          --gold:   ${s};
+          --ink2:   #4A3F30;
+          --ink3:   ${q};
+          --gold:   ${r};
           --goldL:  #A8946A;
         }
 
@@ -17,7 +17,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         html { scroll-behavior: smooth; }
 
         body {
-          font-family: ${t};
+          font-family: ${s};
           background: var(--cream) url('/images/texture_paper_6.png');
           background-repeat: repeat;
           background-size: auto;
@@ -25,7 +25,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           -webkit-font-smoothing: antialiased;
         }
 
-        .serif { font-family: ${t}; }
+        .serif { font-family: ${s}; }
 
         /* ── 공통 레이아웃 ── */
         .page {
@@ -97,7 +97,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .hd-logo-text {
-          font-family: ${t};
+          font-family: ${s};
           font-size: 16px;
           font-weight: 700;
           color: var(--ink);
@@ -109,7 +109,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border-radius: 999px;
           border: 1px solid var(--beige2);
           background: transparent;
-          font-family: ${t};
+          font-family: ${s};
           font-size: 12px;
           font-weight: 700;
           color: var(--ink);
@@ -124,7 +124,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border-radius: 999px;
           border: none;
           background: var(--gold);
-          font-family: ${t};
+          font-family: ${s};
           font-size: 12px;
           font-weight: 700;
           color: #fff;
@@ -166,7 +166,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .sec-title {
-          font-family: ${t};
+          font-family: ${s};
           font-size: clamp(1.45rem, 4.5vw, 1.75rem);
           font-weight: 900;
           color: var(--ink);
@@ -252,7 +252,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .hero-title {
-          font-family: ${t};
+          font-family: ${s};
           font-size: clamp(1.65rem, 5.5vw, 2.1rem);
           font-weight: 900;
           color: var(--ink);
@@ -289,7 +289,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .problem-main {
-          font-family: ${t};
+          font-family: ${s};
           font-size: clamp(1.35rem, 4.5vw, 1.65rem);
           font-weight: 900;
           color: var(--cream);
@@ -298,7 +298,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .problem-sub {
-          font-family: ${t};
+          font-family: ${s};
           font-size: clamp(1.35rem, 4.5vw, 1.65rem);
           font-weight: 900;
           color: var(--goldL);
@@ -328,7 +328,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .compare-title {
-          font-family: ${t};
+          font-family: ${s};
           font-size: clamp(1.3rem, 4vw, 1.55rem);
           font-weight: 900;
           color: var(--ink);
@@ -427,7 +427,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .compare-service-name {
-          font-family: ${t};
+          font-family: ${s};
           font-size: 14px;
           font-weight: 700;
           color: var(--cream);
@@ -459,7 +459,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .engine-row span {
-          font-family: ${t};
+          font-family: ${s};
           font-size: 13px;
           font-weight: 700;
           color: var(--ink);
@@ -502,7 +502,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border: none;
           background: var(--ink);
           color: var(--cream);
-          font-family: ${t};
+          font-family: ${s};
           font-size: 15px;
           font-weight: 700;
           cursor: pointer;
@@ -518,7 +518,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border: 1.5px solid var(--beige2);
           background: transparent;
           color: var(--ink3);
-          font-family: ${t};
+          font-family: ${s};
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
@@ -575,7 +575,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .first-band-text {
-          font-family: ${t};
+          font-family: ${s};
           font-size: 13px;
           font-weight: 700;
           color: var(--cream);
@@ -717,7 +717,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .msr-char {
-          font-family: ${t};
+          font-family: ${s};
           font-size: 22px;
           font-weight: 700;
         }
@@ -778,72 +778,110 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         /* ── 리포트 카드 ── */
+        /* ── 리포트 안내 ── */
         .report-list {
+          margin-top: 20px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
-          margin-top: 18px;
+          gap: 12px;
         }
 
-        .report-card {
-          background: #fff;
-          border: 1px solid var(--beige);
-          border-radius: 13px;
-          overflow: hidden;
-          transition: box-shadow .15s;
+        /* 무료 카드 */
+        .report-card-free {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border: 1.5px solid #86efac;
+          border-radius: 16px;
+          padding: 16px;
         }
-
-        .report-card:hover {
-          box-shadow: 0 3px 14px rgba(44,36,23,0.07);
-        }
-
-        .report-card-header {
+        .report-card-free-top {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 13px 14px 10px;
-          border-bottom: 1px solid var(--beige);
+          margin-bottom: 12px;
         }
-
-        .report-card-header-left {
+        .report-card-free-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
         }
-
-        .report-card-icon { font-size: 18px; line-height: 1; }
-        .report-card-title { font-size: 13px; font-weight: 700; color: var(--ink); }
-
-        .report-card-price-free {
-          font-size: 11px;
-          font-weight: 700;
-          color: #059669;
-          background: #d1fae5;
-          padding: 3px 8px;
+        .report-card-free-icon {
+          width: 40px; height: 40px;
+          background: #fff;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .report-card-free-name {
+          font-size: 15px; font-weight: 800; color: #166534;
+        }
+        .report-card-free-sub {
+          font-size: 11px; color: #166534; opacity: 0.7; margin-top: 1px;
+        }
+        .report-card-free-badge {
+          background: #16a34a; color: #fff;
+          font-size: 12px; font-weight: 800;
+          padding: 5px 12px; border-radius: 999px;
+        }
+        .report-card-free-items {
+          display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .report-card-free-item {
+          background: rgba(255,255,255,0.7);
+          border: 1px solid #86efac;
           border-radius: 999px;
+          font-size: 11px; color: #166534; font-weight: 600;
+          padding: 4px 10px;
         }
 
-        .report-card-price-paid {
-          font-size: 11px;
-          font-weight: 700;
-          color: #4A3F30;
-          background: #F5F1EA;
-          padding: 3px 8px;
-          border-radius: 999px;
+        /* 유료 카드 가로 스크롤 */
+        .report-paid-scroll {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding-bottom: 4px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .report-paid-scroll::-webkit-scrollbar { display: none; }
+
+        .report-card-paid {
+          flex: 0 0 160px;
+          background: #fff;
+          border: 1px solid var(--beige);
+          border-radius: 14px;
+          padding: 14px 12px;
+          position: relative;
+          overflow: hidden;
+        }
+        .report-card-paid::before {
+          content: "";
+          position: absolute; top: 0; left: 0; right: 0;
+          height: 3px;
+          background: var(--accent-color, #8B7355);
+          border-radius: 14px 14px 0 0;
+        }
+        .report-card-paid-icon {
+          font-size: 24px; margin-bottom: 6px; display: block;
+        }
+        .report-card-paid-name {
+          font-size: 13px; font-weight: 700; color: var(--ink);
+          margin-bottom: 4px;
+        }
+        .report-card-paid-price {
+          font-size: 13px; font-weight: 800; color: var(--gold);
+          margin-bottom: 10px;
+        }
+        .report-card-paid-items {
+          display: flex; flex-direction: column; gap: 3px;
+        }
+        .report-card-paid-item {
+          font-size: 10px; color: var(--ink3); line-height: 1.5;
         }
 
-        .report-card-items {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0;
-          padding: 10px 14px 12px;
-        }
-
-        .report-card-item {
-          font-size: 11px;
-          color: var(--ink3);
-          line-height: 1.6;
-          padding: 2px 0;
+        .report-scroll-hint {
+          font-size: 11px; color: var(--ink3);
+          text-align: right; margin-top: 4px;
         }
 
         /* ── 동물 갤러리 ── */
@@ -959,7 +997,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .trust-num {
-          font-family: ${t};
+          font-family: ${s};
           font-size: 26px;
           font-weight: 900;
           color: var(--gold);
@@ -995,7 +1033,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         }
 
         .cta-title {
-          font-family: ${t};
+          font-family: ${s};
           font-size: clamp(1.4rem, 4.5vw, 1.7rem);
           font-weight: 900;
           color: var(--cream);
@@ -1019,7 +1057,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border: none;
           background: var(--gold);
           color: #fff;
-          font-family: ${t};
+          font-family: ${s};
           font-size: 15px;
           font-weight: 700;
           cursor: pointer;
@@ -1040,7 +1078,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border: 1.5px solid rgba(245,241,234,.3);
           background: transparent;
           color: rgba(245,241,234,.8);
-          font-family: ${t};
+          font-family: ${s};
           font-size: 13px;
           font-weight: 600;
           cursor: pointer;
@@ -1096,7 +1134,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border: none;
           background: var(--ink);
           color: var(--cream);
-          font-family: ${t};
+          font-family: ${s};
           font-size: 14px;
           font-weight: 700;
           cursor: pointer;
@@ -1111,7 +1149,7 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
           border: 1.5px solid var(--beige2);
           background: rgba(245,241,234,.95);
           color: var(--ink);
-          font-family: ${t};
+          font-family: ${s};
           font-size: 13px;
           font-weight: 700;
           cursor: pointer;
@@ -1163,6 +1201,6 @@ module.exports=[66672,a=>{"use strict";var b=a.i(82134),c=a.i(70419),d=a.i(79856
         .reveal:nth-child(3) { animation-delay: .15s; }
         .reveal:nth-child(4) { animation-delay: .2s; }
         .reveal:nth-child(5) { animation-delay: .25s; }
-      `}),(0,b.jsxs)("header",{className:"hd",children:[(0,b.jsxs)("div",{className:"hd-logo",children:[(0,b.jsx)("div",{className:"hd-logo-mark",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"태극",style:{width:"100%",height:"100%",objectFit:"cover"},onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})}),(0,b.jsx)("span",{className:"hd-logo-text",children:"한양사주"})]}),(0,b.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:6,position:"relative"},children:[R&&(0,b.jsx)("div",{style:{display:"flex",alignItems:"center",gap:4,padding:"4px 8px",borderRadius:999,background:R.is_admin?"linear-gradient(135deg, #f59e0b, #d97706)":"linear-gradient(135deg, #10b981, #059669)",border:R.is_admin?"1px solid #d97706":"1px solid #047857",boxShadow:R.is_admin?"0 2px 8px rgba(245, 158, 11, 0.3)":"0 2px 8px rgba(16, 185, 129, 0.3)"},children:(0,b.jsx)("span",{style:{fontSize:10,fontWeight:700,color:"white",letterSpacing:"0.05em"},children:R.is_admin?"👑 관리자":"🎉 베타 테스터"})}),(0,b.jsxs)("div",{style:{position:"relative"},children:[(0,b.jsx)("button",{type:"button",onClick:()=>Q(a=>!a),style:{padding:"4px 9px",borderRadius:999,border:`1px solid ${o}`,background:"rgba(255,255,255,0.7)",fontFamily:t,fontSize:10,fontWeight:700,color:r,letterSpacing:"0.08em"},children:"ko"===L?"언어 ▾":"Language ▾"}),P&&(0,b.jsxs)("div",{style:{position:"absolute",right:0,marginTop:4,minWidth:90,borderRadius:8,border:`1px solid ${o}`,background:"rgba(255,255,255,0.98)",boxShadow:"0 6px 18px rgba(0,0,0,0.12)",padding:4,zIndex:40},children:[(0,b.jsx)("button",{type:"button",onClick:()=>{M("ko"),Q(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"ko"===L?"rgba(0,0,0,0.05)":"transparent",fontFamily:t,fontSize:12,color:p,cursor:"pointer"},children:"한국어"}),(0,b.jsx)("button",{type:"button",onClick:()=>{M("en"),Q(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"en"===L?"rgba(0,0,0,0.05)":"transparent",fontFamily:t,fontSize:12,color:p,cursor:"pointer"},children:"English"})]})]}),B?(0,b.jsx)("button",{className:"hd-btn-fill",onClick:()=>A.push("/chat"),children:"채팅 시작"}):(0,b.jsxs)(b.Fragment,{children:[(0,b.jsx)("button",{className:"hd-btn",onClick:()=>A.push("/start"),children:"로그인"}),(0,b.jsx)("button",{className:"hd-btn-fill",onClick:()=>A.push("/start"),children:"무료 시작"})]})]})]}),(0,b.jsxs)("div",{className:"pc-layout",style:{display:"block"},children:[(0,b.jsx)("div",{className:"pc-sidebar",style:{display:"none"},children:(0,b.jsxs)("div",{className:"pc-sticky-cta",children:[(0,b.jsx)("p",{className:"serif",style:{fontSize:15,fontWeight:700,color:p,lineHeight:1.5,whiteSpace:"pre-line"},children:N("cta.title")}),(0,b.jsx)("button",{className:"btn-primary",onClick:X,children:N("cta.primary")}),(0,b.jsx)("button",{className:"btn-secondary",onClick:()=>A.push("/chat"),children:N("cta.secondary")})]})}),(0,b.jsxs)("div",{className:"pc-main",children:[(0,b.jsxs)("section",{className:"hero",children:[(0,b.jsxs)("div",{className:"hero-eyebrow",children:[(0,b.jsx)("span",{className:"hero-dot"}),N("hero.badge")]}),(0,b.jsx)("div",{className:"hero-logo",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})}),(0,b.jsx)("h1",{className:"hero-title reveal",style:{whiteSpace:"pre-line"},children:N("hero.title")}),(0,b.jsx)("p",{className:"hero-desc reveal",style:{whiteSpace:"pre-line"},children:N("hero.sub")}),(0,b.jsxs)("div",{className:"hero-btns reveal",children:[(0,b.jsx)("button",{className:"btn-primary",onClick:X,children:N("hero.cta_primary")}),(0,b.jsx)("button",{className:"btn-secondary",onClick:()=>A.push("/chat"),children:N("hero.cta_secondary")})]}),(0,b.jsxs)("div",{ref:U,className:"counter-row reveal",children:[(0,b.jsx)("div",{className:"counter-dot"}),(0,b.jsx)("span",{style:{fontSize:12,color:r,fontWeight:500},children:N("hero.counter",{count:T.toLocaleString()})})]})]}),(0,b.jsx)("section",{style:{padding:"20px",textAlign:"center"},children:(0,b.jsxs)("div",{style:{background:"linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%)",borderRadius:16,padding:24,maxWidth:400,margin:"0 auto",border:"2px solid #2d5a2d",boxShadow:"0 4px 12px rgba(45, 90, 45, 0.1)"},children:[(0,b.jsx)("div",{style:{fontSize:14,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"베타 테스터 모집"}),(0,b.jsx)("h3",{style:{fontSize:18,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"채팅 + 기본 리포트 무제한!"}),(0,b.jsxs)("p",{style:{fontSize:13,color:"#2d5a2d",marginBottom:16,lineHeight:1.5},children:["베타 테스터가 되어",(0,b.jsx)("br",{}),"AI 채팅과 기본 리포트를 무제한으로 이용하세요"]}),(0,b.jsx)("button",{onClick:()=>A.push("/saju-mypage"),style:{background:"#2d5a2d",color:"white",border:"none",padding:"12px 24px",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer",transition:"all 0.2s"},onMouseOver:a=>a.currentTarget.style.transform="scale(1.05)",onMouseOut:a=>a.currentTarget.style.transform="scale(1)",children:"쿠폰 받기"})]})}),(0,b.jsxs)("section",{className:"problem-sec",children:[(0,b.jsx)("div",{className:"problem-label",children:N("problem.eyebrow")}),(0,b.jsx)("h2",{className:"problem-main",style:{whiteSpace:"pre-line"},children:N("problem.title")}),(0,b.jsx)("h3",{className:"problem-sub",style:{whiteSpace:"pre-line"},children:N("problem.title_gold")}),(0,b.jsx)("div",{className:"problem-divider"}),(0,b.jsx)("p",{className:"problem-desc",style:{whiteSpace:"pre-line"},children:N("problem.body")})]}),(0,b.jsxs)("section",{className:"compare-sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:N("compare.badge")}),(0,b.jsx)("h2",{className:"compare-title",style:{whiteSpace:"pre-line"},children:N("compare.title")}),(0,b.jsxs)("div",{className:"compare-row",children:[(0,b.jsxs)("div",{className:"compare-card compare-left",children:[(0,b.jsx)("div",{className:"compare-label",children:N("compare.left_label")}),(0,b.jsxs)("div",{className:"compare-chip-col",children:[(0,b.jsx)("div",{className:"compare-chip",children:"ChatGPT"}),(0,b.jsx)("div",{className:"compare-chip",children:"Claude"}),(0,b.jsx)("div",{className:"compare-chip",children:"Gemini"})]}),(0,b.jsx)("p",{className:"compare-note",children:N("compare.left_note")})]}),(0,b.jsx)("div",{className:"compare-arrow",children:"→"}),(0,b.jsxs)("div",{className:"compare-card compare-right",children:[(0,b.jsx)("div",{className:"compare-label compare-label-right",children:N("compare.right_label")}),(0,b.jsx)("div",{className:"compare-logo-wrap",children:(0,b.jsx)("div",{className:"compare-logo",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})})}),(0,b.jsx)("div",{className:"compare-service-name",children:N("compare.right_name")}),(0,b.jsx)("p",{className:"compare-right-note",children:N("compare.right_note")})]})]}),(0,b.jsxs)("div",{className:"engine-card",children:[(0,b.jsxs)("div",{className:"engine-row",children:[(0,b.jsx)("span",{children:N("compare.engine_a")}),(0,b.jsx)("span",{className:"engine-x",children:"×"}),(0,b.jsx)("span",{children:N("compare.engine_b")})]}),(0,b.jsx)("p",{className:"engine-sub",children:N("compare.engine_sub")})]})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge badge-gold",style:{marginLeft:"auto",marginRight:"auto"},children:N("chat_preview.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:N("chat_preview.title")}),(0,b.jsx)("p",{className:"sec-sub",style:{marginBottom:18,whiteSpace:"pre-line"},children:N("chat_preview.sub")}),(0,b.jsxs)("div",{className:"chat-preview",children:[(0,b.jsxs)("div",{className:"chat-preview-hd",children:[(0,b.jsx)("div",{className:"chat-preview-avatar",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"",onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})}),(0,b.jsx)("span",{className:"chat-preview-name",children:N("chat_preview.ai_name")}),(0,b.jsx)("span",{style:{fontSize:10,color:r,marginLeft:"auto"},children:N("chat_preview.ai_status")})]}),(0,b.jsx)("div",{className:"chat-preview-body",children:(z=(y=O.chat_preview.bubbles)[G]||y[0],(0,b.jsxs)(b.Fragment,{children:[(0,b.jsx)("div",{className:"chat-bubble-user",children:z.q}),(0,b.jsx)("div",{className:"chat-bubble-ai",children:z.a})]}))},G),(0,b.jsx)("div",{style:{padding:"10px 14px",borderTop:`1px solid ${m}`},children:(0,b.jsx)("button",{onClick:()=>A.push("/chat"),style:{width:"100%",padding:"10px",borderRadius:8,border:`1px solid ${n}`,background:k,font:"inherit",fontSize:13,color:r,cursor:"pointer",fontFamily:t},children:N("chat_preview.cta")})})]})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:N("manseryeok.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:N("manseryeok.title")}),(0,b.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:N("manseryeok.sub")}),(0,b.jsx)("div",{className:"manseryeok-preview",style:{marginTop:16},children:(0,b.jsxs)("table",{className:"msr-table",children:[(0,b.jsx)("thead",{children:(0,b.jsxs)("tr",{children:[(0,b.jsx)("th",{style:{width:80}}),O.manseryeok.headers.map(a=>(0,b.jsx)("th",{children:a},a))]})}),(0,b.jsxs)("tbody",{children:[(0,b.jsxs)("tr",{className:"msr-row-label",children:[(0,b.jsx)("td",{style:{fontSize:11,color:r,textAlign:"center"},children:"십성(천간)"}),O.manseryeok.sipsung_top.map((a,c)=>(0,b.jsx)("td",{children:a},c))]}),(0,b.jsxs)("tr",{children:[(0,b.jsx)("td",{style:{fontSize:11,color:r,textAlign:"center"},children:"천간"}),[{char:"계癸",el:"water"},{char:"기己",el:"earth"},{char:"갑甲",el:"wood"},{char:"을乙",el:"wood"}].map((a,c)=>{let d=u[a.el];return(0,b.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,b.jsx)("div",{className:"msr-pillar-box",style:{background:d.bg,color:d.text,border:`1px solid ${d.border}`},children:a.char})},c)})]}),(0,b.jsxs)("tr",{children:[(0,b.jsx)("td",{style:{fontSize:11,color:r,textAlign:"center"},children:"지지"}),[{char:"유酉",el:"metal"},{char:"미未",el:"earth"},{char:"신申",el:"metal"},{char:"사巳",el:"fire"}].map((a,c)=>{let d=u[a.el];return(0,b.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,b.jsx)("div",{className:"msr-pillar-box",style:{background:d.bg,color:d.text,border:`1px solid ${d.border}`},children:a.char})},c)})]}),(0,b.jsxs)("tr",{className:"msr-row-label",children:[(0,b.jsx)("td",{style:{fontSize:11,color:r,textAlign:"center"},children:"십성(지지)"}),O.manseryeok.sipsung_bot.map((a,c)=>(0,b.jsx)("td",{children:a},c))]}),(0,b.jsxs)("tr",{children:[(0,b.jsx)("td",{style:{fontSize:11,color:r,textAlign:"center"},children:"지장간"}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:r},children:[(0,b.jsx)("div",{children:"경금 (상관)"}),(0,b.jsx)("div",{children:"신금 (식신)"})]}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:r},children:[(0,b.jsx)("div",{children:"정화 (편인)"}),(0,b.jsx)("div",{children:"을목 (편관)"}),(0,b.jsx)("div",{children:"기토 (비견)"})]}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:r},children:[(0,b.jsx)("div",{children:"무토 (겁재)"}),(0,b.jsx)("div",{children:"임수 (정재)"}),(0,b.jsx)("div",{children:"경금 (상관)"})]}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:r},children:[(0,b.jsx)("div",{children:"무토 (겁재)"}),(0,b.jsx)("div",{children:"경금 (상관)"}),(0,b.jsx)("div",{children:"병화 (정인)"})]})]}),(0,b.jsxs)("tr",{className:"msr-row-label",children:[(0,b.jsx)("td",{style:{fontSize:11,color:r,textAlign:"center"},children:"십이운성"}),O.manseryeok.twelve.map((a,c)=>(0,b.jsx)("td",{children:a},c))]})]})]})}),(0,b.jsx)("p",{style:{fontSize:11,color:r,marginTop:10,textAlign:"center"},children:N("manseryeok.note")})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:N("features.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:N("features.title")}),(0,b.jsx)("div",{className:"report-list",children:O.features.reports.map((a,c)=>(0,b.jsxs)("div",{className:"report-card",children:[(0,b.jsxs)("div",{className:"report-card-header",children:[(0,b.jsxs)("div",{className:"report-card-header-left",children:[(0,b.jsx)("span",{className:"report-card-icon",children:a.icon}),(0,b.jsx)("span",{className:"report-card-title",children:a.title})]}),(0,b.jsx)("span",{className:a.free?"report-card-price-free":"report-card-price-paid",children:a.price})]}),(0,b.jsx)("div",{className:"report-card-items",children:a.items.map((a,c)=>(0,b.jsxs)("div",{className:"report-card-item",children:["· ",a]},c))})]},c))}),(0,b.jsxs)("button",{onClick:()=>A.push("/store"),style:{marginTop:16,width:"100%",padding:"13px 0",borderRadius:12,border:`1.5px solid ${n}`,background:k,fontSize:13,fontWeight:700,color:q,cursor:"pointer",fontFamily:"'Gmarket Sans', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:6},children:[(0,b.jsx)("span",{children:"🛒"})," 스토어에서 리포트 구매하기"]})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:N("animals.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:N("animals.title")}),(0,b.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:N("animals.sub")}),(0,b.jsx)("div",{className:"animal-grid",children:C.map((a,c)=>(0,b.jsx)("div",{className:"animal-cell",children:(0,b.jsx)("div",{className:E>0?"animal-flip":"",style:{width:"100%",height:"100%",animationDelay:E>0?`${35*c}ms`:void 0},children:(0,b.jsx)("img",{src:`/images/day_pillars/${a}.png`,alt:a,loading:"lazy",decoding:"async",onError:a=>{a.currentTarget.style.display="none"}})},`${E}-${c}`)},c))}),(0,b.jsx)("p",{style:{fontSize:11,color:r,textAlign:"center",marginTop:10},children:N("animals.note")})]}),(0,b.jsxs)("section",{className:"sec",style:{background:l,textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:N("trust.badge")}),(0,b.jsx)("div",{className:"trust-grid",children:O.trust.items.map((a,c)=>(0,b.jsxs)("div",{className:"trust-card",children:[(0,b.jsx)("div",{className:"trust-num",children:0===c?V.toLocaleString()+"+":a.val}),(0,b.jsx)("div",{className:"trust-label",style:{whiteSpace:"pre-line"},children:a.lbl.replace("{count}",V.toLocaleString())})]},c))})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:N("reviews.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem"},children:N("reviews.title")}),(0,b.jsx)("div",{ref:K,className:"review-scroll",style:{marginTop:16},onMouseDown:a=>{let b=K.current;if(!b)return;let c=a.pageX-b.offsetLeft,d=b.scrollLeft,e=a=>{let e=(a.pageX-b.offsetLeft-c)*1.2;b.scrollLeft=d-e};document.addEventListener("mousemove",e),document.addEventListener("mouseup",()=>document.removeEventListener("mousemove",e),{once:!0})},children:O.reviews.items.map((a,c)=>(0,b.jsxs)("div",{className:"review-card",children:[(0,b.jsxs)("div",{className:"review-top",children:[(0,b.jsxs)("div",{children:[(0,b.jsx)("span",{className:"review-name",children:a.name}),(0,b.jsx)("span",{className:"review-age",children:a.age})]}),(0,b.jsx)("span",{className:"review-tag",children:a.tag})]}),(0,b.jsx)("div",{className:"review-stars",children:"★".repeat(5)}),(0,b.jsxs)("p",{className:"review-text",children:['"',a.text,'"']})]},c))}),(0,b.jsx)("p",{style:{fontSize:11,color:o,textAlign:"center",marginTop:6},children:N("reviews.hint")})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:N("core_features.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:N("core_features.title")}),(0,b.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18},children:O.core_features.items.slice(0,3).map((a,c)=>(0,b.jsxs)("div",{style:{background:"#fff",border:`1px solid ${n}`,borderRadius:13,padding:"18px 16px",display:"flex",gap:14,alignItems:"flex-start"},children:[(0,b.jsx)("div",{style:{width:42,height:42,borderRadius:10,background:l,border:`1px solid ${n}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0},children:a.icon}),(0,b.jsxs)("div",{style:{flex:1},children:[(0,b.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:7,marginBottom:5,flexWrap:"wrap"},children:[(0,b.jsx)("span",{style:{fontFamily:t,fontSize:14,fontWeight:700,color:p},children:a.title}),a.tag&&(0,b.jsx)("span",{style:{padding:"2px 8px",borderRadius:4,background:s,color:"#fff",fontSize:9,fontWeight:800,letterSpacing:"0.08em"},children:a.tag})]}),(0,b.jsx)("p",{style:{fontSize:12.5,color:r,lineHeight:1.75,wordBreak:"keep-all",textAlign:"left"},children:a.desc})]})]},c))})]}),(0,b.jsxs)("section",{className:"sec",style:{background:l,display:"none"},"aria-hidden":!0,children:[(0,b.jsx)("div",{className:"badge",children:N("pricing.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem",whiteSpace:"pre-line"},children:N("pricing.title")}),(0,b.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18}})]}),(0,b.jsxs)("section",{className:"cta-sec",children:[(0,b.jsx)("p",{style:{fontSize:11,color:"rgba(245,241,234,.5)",letterSpacing:"0.12em",marginBottom:14,fontWeight:700},children:N("cta.eyebrow")}),(0,b.jsx)("h2",{className:"cta-title",style:{whiteSpace:"pre-line"},children:N("cta.title")}),(0,b.jsx)("p",{className:"cta-sub",style:{whiteSpace:"pre-line"},children:N("cta.sub")}),(0,b.jsx)("button",{className:"cta-btn",onClick:X,children:N("cta.primary")}),(0,b.jsx)("button",{className:"cta-chat-btn",onClick:()=>A.push("/chat"),children:N("cta.secondary")})]}),(0,b.jsx)("footer",{className:"footer",children:(0,b.jsxs)("p",{className:"footer-text",style:{whiteSpace:"pre-line"},children:[N("footer.copy"),(0,b.jsx)("br",{}),N("footer.sub")]})})]})]}),(0,b.jsxs)("div",{className:"floating-cta",children:[(0,b.jsx)("button",{className:"floating-btn-main",onClick:X,children:"무료 사주 분석"}),(0,b.jsx)("button",{className:"floating-btn-chat",onClick:()=>A.push("/chat"),children:"AI 대화"})]})]})}a.s(["default",()=>y])}];
+      `}),(0,b.jsxs)("header",{className:"hd",children:[(0,b.jsxs)("div",{className:"hd-logo",children:[(0,b.jsx)("div",{className:"hd-logo-mark",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"태극",style:{width:"100%",height:"100%",objectFit:"cover"},onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})}),(0,b.jsx)("span",{className:"hd-logo-text",children:"한양사주"})]}),(0,b.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:6,position:"relative"},children:[S&&(0,b.jsx)("div",{style:{display:"flex",alignItems:"center",gap:4,padding:"4px 8px",borderRadius:999,background:S.is_admin?"linear-gradient(135deg, #f59e0b, #d97706)":"linear-gradient(135deg, #10b981, #059669)",border:S.is_admin?"1px solid #d97706":"1px solid #047857",boxShadow:S.is_admin?"0 2px 8px rgba(245, 158, 11, 0.3)":"0 2px 8px rgba(16, 185, 129, 0.3)"},children:(0,b.jsx)("span",{style:{fontSize:10,fontWeight:700,color:"white",letterSpacing:"0.05em"},children:S.is_admin?"👑 관리자":"🎉 베타 테스터"})}),(0,b.jsxs)("div",{style:{position:"relative"},children:[(0,b.jsx)("button",{type:"button",onClick:()=>R(a=>!a),style:{padding:"4px 9px",borderRadius:999,border:`1px solid ${o}`,background:"rgba(255,255,255,0.7)",fontFamily:s,fontSize:10,fontWeight:700,color:q,letterSpacing:"0.08em"},children:"ko"===M?"언어 ▾":"Language ▾"}),Q&&(0,b.jsxs)("div",{style:{position:"absolute",right:0,marginTop:4,minWidth:90,borderRadius:8,border:`1px solid ${o}`,background:"rgba(255,255,255,0.98)",boxShadow:"0 6px 18px rgba(0,0,0,0.12)",padding:4,zIndex:40},children:[(0,b.jsx)("button",{type:"button",onClick:()=>{N("ko"),R(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"ko"===M?"rgba(0,0,0,0.05)":"transparent",fontFamily:s,fontSize:12,color:p,cursor:"pointer"},children:"한국어"}),(0,b.jsx)("button",{type:"button",onClick:()=>{N("en"),R(!1)},style:{width:"100%",textAlign:"left",padding:"6px 8px",borderRadius:6,border:"none",background:"en"===M?"rgba(0,0,0,0.05)":"transparent",fontFamily:s,fontSize:12,color:p,cursor:"pointer"},children:"English"})]})]}),C?(0,b.jsx)("button",{className:"hd-btn-fill",onClick:()=>B.push("/chat"),children:"채팅 시작"}):(0,b.jsxs)(b.Fragment,{children:[(0,b.jsx)("button",{className:"hd-btn",onClick:()=>B.push("/start"),children:"로그인"}),(0,b.jsx)("button",{className:"hd-btn-fill",onClick:()=>B.push("/start"),children:"무료 시작"})]})]})]}),(0,b.jsxs)("div",{className:"pc-layout",style:{display:"block"},children:[(0,b.jsx)("div",{className:"pc-sidebar",style:{display:"none"},children:(0,b.jsxs)("div",{className:"pc-sticky-cta",children:[(0,b.jsx)("p",{className:"serif",style:{fontSize:15,fontWeight:700,color:p,lineHeight:1.5,whiteSpace:"pre-line"},children:O("cta.title")}),(0,b.jsx)("button",{className:"btn-primary",onClick:Y,children:O("cta.primary")}),(0,b.jsx)("button",{className:"btn-secondary",onClick:()=>B.push("/chat"),children:O("cta.secondary")})]})}),(0,b.jsxs)("div",{className:"pc-main",children:[(0,b.jsxs)("section",{className:"hero",children:[(0,b.jsxs)("div",{className:"hero-eyebrow",children:[(0,b.jsx)("span",{className:"hero-dot"}),O("hero.badge")]}),(0,b.jsx)("div",{className:"hero-logo",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})}),(0,b.jsx)("h1",{className:"hero-title reveal",style:{whiteSpace:"pre-line"},children:O("hero.title")}),(0,b.jsx)("p",{className:"hero-desc reveal",style:{whiteSpace:"pre-line"},children:O("hero.sub")}),(0,b.jsxs)("div",{className:"hero-btns reveal",children:[(0,b.jsx)("button",{className:"btn-primary",onClick:Y,children:O("hero.cta_primary")}),(0,b.jsx)("button",{className:"btn-secondary",onClick:()=>B.push("/chat"),children:O("hero.cta_secondary")})]}),(0,b.jsxs)("div",{ref:V,className:"counter-row reveal",children:[(0,b.jsx)("div",{className:"counter-dot"}),(0,b.jsx)("span",{style:{fontSize:12,color:q,fontWeight:500},children:O("hero.counter",{count:U.toLocaleString()})})]})]}),(0,b.jsx)("section",{style:{padding:"20px",textAlign:"center"},children:(0,b.jsxs)("div",{style:{background:"linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%)",borderRadius:16,padding:24,maxWidth:400,margin:"0 auto",border:"2px solid #2d5a2d",boxShadow:"0 4px 12px rgba(45, 90, 45, 0.1)"},children:[(0,b.jsx)("div",{style:{fontSize:14,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"베타 테스터 모집"}),(0,b.jsx)("h3",{style:{fontSize:18,fontWeight:700,color:"#2d5a2d",marginBottom:8},children:"채팅 + 기본 리포트 무제한!"}),(0,b.jsxs)("p",{style:{fontSize:13,color:"#2d5a2d",marginBottom:16,lineHeight:1.5},children:["베타 테스터가 되어",(0,b.jsx)("br",{}),"AI 채팅과 기본 리포트를 무제한으로 이용하세요"]}),(0,b.jsx)("button",{onClick:()=>B.push("/saju-mypage"),style:{background:"#2d5a2d",color:"white",border:"none",padding:"12px 24px",borderRadius:8,fontSize:14,fontWeight:700,cursor:"pointer",transition:"all 0.2s"},onMouseOver:a=>a.currentTarget.style.transform="scale(1.05)",onMouseOut:a=>a.currentTarget.style.transform="scale(1)",children:"쿠폰 받기"})]})}),(0,b.jsxs)("section",{className:"problem-sec",children:[(0,b.jsx)("div",{className:"problem-label",children:O("problem.eyebrow")}),(0,b.jsx)("h2",{className:"problem-main",style:{whiteSpace:"pre-line"},children:O("problem.title")}),(0,b.jsx)("h3",{className:"problem-sub",style:{whiteSpace:"pre-line"},children:O("problem.title_gold")}),(0,b.jsx)("div",{className:"problem-divider"}),(0,b.jsx)("p",{className:"problem-desc",style:{whiteSpace:"pre-line"},children:O("problem.body")})]}),(0,b.jsxs)("section",{className:"compare-sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:O("compare.badge")}),(0,b.jsx)("h2",{className:"compare-title",style:{whiteSpace:"pre-line"},children:O("compare.title")}),(0,b.jsxs)("div",{className:"compare-row",children:[(0,b.jsxs)("div",{className:"compare-card compare-left",children:[(0,b.jsx)("div",{className:"compare-label",children:O("compare.left_label")}),(0,b.jsxs)("div",{className:"compare-chip-col",children:[(0,b.jsx)("div",{className:"compare-chip",children:"ChatGPT"}),(0,b.jsx)("div",{className:"compare-chip",children:"Claude"}),(0,b.jsx)("div",{className:"compare-chip",children:"Gemini"})]}),(0,b.jsx)("p",{className:"compare-note",children:O("compare.left_note")})]}),(0,b.jsx)("div",{className:"compare-arrow",children:"→"}),(0,b.jsxs)("div",{className:"compare-card compare-right",children:[(0,b.jsx)("div",{className:"compare-label compare-label-right",children:O("compare.right_label")}),(0,b.jsx)("div",{className:"compare-logo-wrap",children:(0,b.jsx)("div",{className:"compare-logo",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"한양사주",onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})})}),(0,b.jsx)("div",{className:"compare-service-name",children:O("compare.right_name")}),(0,b.jsx)("p",{className:"compare-right-note",children:O("compare.right_note")})]})]}),(0,b.jsxs)("div",{className:"engine-card",children:[(0,b.jsxs)("div",{className:"engine-row",children:[(0,b.jsx)("span",{children:O("compare.engine_a")}),(0,b.jsx)("span",{className:"engine-x",children:"×"}),(0,b.jsx)("span",{children:O("compare.engine_b")})]}),(0,b.jsx)("p",{className:"engine-sub",children:O("compare.engine_sub")})]})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge badge-gold",style:{marginLeft:"auto",marginRight:"auto"},children:O("chat_preview.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:O("chat_preview.title")}),(0,b.jsx)("p",{className:"sec-sub",style:{marginBottom:18,whiteSpace:"pre-line"},children:O("chat_preview.sub")}),(0,b.jsxs)("div",{className:"chat-preview",children:[(0,b.jsxs)("div",{className:"chat-preview-hd",children:[(0,b.jsx)("div",{className:"chat-preview-avatar",children:(0,b.jsx)("img",{src:"/images/yin-yang-logo.png",alt:"",onError:a=>{a.currentTarget.style.display="none",a.currentTarget.parentElement.textContent="☯"}})}),(0,b.jsx)("span",{className:"chat-preview-name",children:O("chat_preview.ai_name")}),(0,b.jsx)("span",{style:{fontSize:10,color:q,marginLeft:"auto"},children:O("chat_preview.ai_status")})]}),(0,b.jsx)("div",{className:"chat-preview-body",children:(y=(x=P.chat_preview.bubbles)[H]||x[0],(0,b.jsxs)(b.Fragment,{children:[(0,b.jsx)("div",{className:"chat-bubble-user",children:y.q}),(0,b.jsx)("div",{className:"chat-bubble-ai",children:y.a})]}))},H),(0,b.jsx)("div",{style:{padding:"10px 14px",borderTop:`1px solid ${m}`},children:(0,b.jsx)("button",{onClick:()=>B.push("/chat"),style:{width:"100%",padding:"10px",borderRadius:8,border:`1px solid ${n}`,background:k,font:"inherit",fontSize:13,color:q,cursor:"pointer",fontFamily:s},children:O("chat_preview.cta")})})]})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:O("manseryeok.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:O("manseryeok.title")}),(0,b.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:O("manseryeok.sub")}),(0,b.jsx)("div",{className:"manseryeok-preview",style:{marginTop:16},children:(0,b.jsxs)("table",{className:"msr-table",children:[(0,b.jsx)("thead",{children:(0,b.jsxs)("tr",{children:[(0,b.jsx)("th",{style:{width:80}}),P.manseryeok.headers.map(a=>(0,b.jsx)("th",{children:a},a))]})}),(0,b.jsxs)("tbody",{children:[(0,b.jsxs)("tr",{className:"msr-row-label",children:[(0,b.jsx)("td",{style:{fontSize:11,color:q,textAlign:"center"},children:"십성(천간)"}),P.manseryeok.sipsung_top.map((a,c)=>(0,b.jsx)("td",{children:a},c))]}),(0,b.jsxs)("tr",{children:[(0,b.jsx)("td",{style:{fontSize:11,color:q,textAlign:"center"},children:"천간"}),[{char:"계癸",el:"water"},{char:"기己",el:"earth"},{char:"갑甲",el:"wood"},{char:"을乙",el:"wood"}].map((a,c)=>{let d=t[a.el];return(0,b.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,b.jsx)("div",{className:"msr-pillar-box",style:{background:d.bg,color:d.text,border:`1px solid ${d.border}`},children:a.char})},c)})]}),(0,b.jsxs)("tr",{children:[(0,b.jsx)("td",{style:{fontSize:11,color:q,textAlign:"center"},children:"지지"}),[{char:"유酉",el:"metal"},{char:"미未",el:"earth"},{char:"신申",el:"metal"},{char:"사巳",el:"fire"}].map((a,c)=>{let d=t[a.el];return(0,b.jsx)("td",{style:{padding:4,verticalAlign:"middle"},children:(0,b.jsx)("div",{className:"msr-pillar-box",style:{background:d.bg,color:d.text,border:`1px solid ${d.border}`},children:a.char})},c)})]}),(0,b.jsxs)("tr",{className:"msr-row-label",children:[(0,b.jsx)("td",{style:{fontSize:11,color:q,textAlign:"center"},children:"십성(지지)"}),P.manseryeok.sipsung_bot.map((a,c)=>(0,b.jsx)("td",{children:a},c))]}),(0,b.jsxs)("tr",{children:[(0,b.jsx)("td",{style:{fontSize:11,color:q,textAlign:"center"},children:"지장간"}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:q},children:[(0,b.jsx)("div",{children:"경금 (상관)"}),(0,b.jsx)("div",{children:"신금 (식신)"})]}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:q},children:[(0,b.jsx)("div",{children:"정화 (편인)"}),(0,b.jsx)("div",{children:"을목 (편관)"}),(0,b.jsx)("div",{children:"기토 (비견)"})]}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:q},children:[(0,b.jsx)("div",{children:"무토 (겁재)"}),(0,b.jsx)("div",{children:"임수 (정재)"}),(0,b.jsx)("div",{children:"경금 (상관)"})]}),(0,b.jsxs)("td",{style:{fontSize:10,padding:6,textAlign:"center",lineHeight:1.5,color:q},children:[(0,b.jsx)("div",{children:"무토 (겁재)"}),(0,b.jsx)("div",{children:"경금 (상관)"}),(0,b.jsx)("div",{children:"병화 (정인)"})]})]}),(0,b.jsxs)("tr",{className:"msr-row-label",children:[(0,b.jsx)("td",{style:{fontSize:11,color:q,textAlign:"center"},children:"십이운성"}),P.manseryeok.twelve.map((a,c)=>(0,b.jsx)("td",{children:a},c))]})]})]})}),(0,b.jsx)("p",{style:{fontSize:11,color:q,marginTop:10,textAlign:"center"},children:O("manseryeok.note")})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:O("features.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:O("features.title")}),(0,b.jsxs)("div",{className:"report-list",children:[(z=P.features.reports[0],(0,b.jsxs)("div",{className:"report-card-free",children:[(0,b.jsxs)("div",{className:"report-card-free-top",children:[(0,b.jsxs)("div",{className:"report-card-free-left",children:[(0,b.jsx)("div",{className:"report-card-free-icon",children:z.icon}),(0,b.jsxs)("div",{children:[(0,b.jsx)("div",{className:"report-card-free-name",children:z.title}),(0,b.jsx)("div",{className:"report-card-free-sub",children:"로그인 없이 바로 확인"})]})]}),(0,b.jsx)("div",{className:"report-card-free-badge",children:z.price})]}),(0,b.jsx)("div",{className:"report-card-free-items",children:z.items.map((a,c)=>(0,b.jsx)("span",{className:"report-card-free-item",children:a},c))})]})),(A=["#6366f1","#f43f5e","#f59e0b"],(0,b.jsxs)(b.Fragment,{children:[(0,b.jsx)("div",{className:"report-paid-scroll",children:P.features.reports.slice(1).map((a,c)=>(0,b.jsxs)("div",{className:"report-card-paid",style:{"--accent-color":A[c]},children:[(0,b.jsx)("span",{className:"report-card-paid-icon",children:a.icon}),(0,b.jsx)("div",{className:"report-card-paid-name",children:a.title}),(0,b.jsx)("div",{className:"report-card-paid-price",children:a.price}),(0,b.jsx)("div",{className:"report-card-paid-items",children:a.items.map((a,c)=>(0,b.jsx)("div",{className:"report-card-paid-item",children:a},c))})]},c))}),(0,b.jsx)("p",{className:"report-scroll-hint",children:"← 옆으로 밀어서 더 보기"})]}))]}),(0,b.jsxs)("button",{onClick:()=>B.push("/store"),style:{marginTop:20,width:"100%",padding:"14px 0",borderRadius:14,border:"none",background:"linear-gradient(135deg, #2C2417 0%, #4A3F30 100%)",fontSize:14,fontWeight:700,color:"#F5F1EA",cursor:"pointer",fontFamily:"'Gmarket Sans', sans-serif",display:"flex",alignItems:"center",justifyContent:"center",gap:8,boxShadow:"0 4px 14px rgba(44,36,23,0.25)"},children:[(0,b.jsx)("span",{children:"🛒"})," 전체 리포트 보러가기"]})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:O("animals.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:O("animals.title")}),(0,b.jsx)("p",{className:"sec-sub",style:{marginBottom:4,whiteSpace:"pre-line"},children:O("animals.sub")}),(0,b.jsx)("div",{className:"animal-grid",children:D.map((a,c)=>(0,b.jsx)("div",{className:"animal-cell",children:(0,b.jsx)("div",{className:F>0?"animal-flip":"",style:{width:"100%",height:"100%",animationDelay:F>0?`${35*c}ms`:void 0},children:(0,b.jsx)("img",{src:`/images/day_pillars/${a}.png`,alt:a,loading:"lazy",decoding:"async",onError:a=>{a.currentTarget.style.display="none"}})},`${F}-${c}`)},c))}),(0,b.jsx)("p",{style:{fontSize:11,color:q,textAlign:"center",marginTop:10},children:O("animals.note")})]}),(0,b.jsxs)("section",{className:"sec",style:{background:l,textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:O("trust.badge")}),(0,b.jsx)("div",{className:"trust-grid",children:P.trust.items.map((a,c)=>(0,b.jsxs)("div",{className:"trust-card",children:[(0,b.jsx)("div",{className:"trust-num",children:0===c?W.toLocaleString()+"+":a.val}),(0,b.jsx)("div",{className:"trust-label",style:{whiteSpace:"pre-line"},children:a.lbl.replace("{count}",W.toLocaleString())})]},c))})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:O("reviews.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem"},children:O("reviews.title")}),(0,b.jsx)("div",{ref:L,className:"review-scroll",style:{marginTop:16},onMouseDown:a=>{let b=L.current;if(!b)return;let c=a.pageX-b.offsetLeft,d=b.scrollLeft,e=a=>{let e=(a.pageX-b.offsetLeft-c)*1.2;b.scrollLeft=d-e};document.addEventListener("mousemove",e),document.addEventListener("mouseup",()=>document.removeEventListener("mousemove",e),{once:!0})},children:P.reviews.items.map((a,c)=>(0,b.jsxs)("div",{className:"review-card",children:[(0,b.jsxs)("div",{className:"review-top",children:[(0,b.jsxs)("div",{children:[(0,b.jsx)("span",{className:"review-name",children:a.name}),(0,b.jsx)("span",{className:"review-age",children:a.age})]}),(0,b.jsx)("span",{className:"review-tag",children:a.tag})]}),(0,b.jsx)("div",{className:"review-stars",children:"★".repeat(5)}),(0,b.jsxs)("p",{className:"review-text",children:['"',a.text,'"']})]},c))}),(0,b.jsx)("p",{style:{fontSize:11,color:o,textAlign:"center",marginTop:6},children:O("reviews.hint")})]}),(0,b.jsxs)("section",{className:"sec",style:{textAlign:"center"},children:[(0,b.jsx)("div",{className:"badge",children:O("core_features.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{whiteSpace:"pre-line"},children:O("core_features.title")}),(0,b.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18},children:P.core_features.items.slice(0,3).map((a,c)=>(0,b.jsxs)("div",{style:{background:"#fff",border:`1px solid ${n}`,borderRadius:13,padding:"18px 16px",display:"flex",gap:14,alignItems:"flex-start"},children:[(0,b.jsx)("div",{style:{width:42,height:42,borderRadius:10,background:l,border:`1px solid ${n}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0},children:a.icon}),(0,b.jsxs)("div",{style:{flex:1},children:[(0,b.jsxs)("div",{style:{display:"flex",alignItems:"center",gap:7,marginBottom:5,flexWrap:"wrap"},children:[(0,b.jsx)("span",{style:{fontFamily:s,fontSize:14,fontWeight:700,color:p},children:a.title}),a.tag&&(0,b.jsx)("span",{style:{padding:"2px 8px",borderRadius:4,background:r,color:"#fff",fontSize:9,fontWeight:800,letterSpacing:"0.08em"},children:a.tag})]}),(0,b.jsx)("p",{style:{fontSize:12.5,color:q,lineHeight:1.75,wordBreak:"keep-all",textAlign:"left"},children:a.desc})]})]},c))})]}),(0,b.jsxs)("section",{className:"sec",style:{background:l,display:"none"},"aria-hidden":!0,children:[(0,b.jsx)("div",{className:"badge",children:O("pricing.badge")}),(0,b.jsx)("h2",{className:"sec-title",style:{fontSize:"1.25rem",whiteSpace:"pre-line"},children:O("pricing.title")}),(0,b.jsx)("div",{style:{display:"flex",flexDirection:"column",gap:10,marginTop:18}})]}),(0,b.jsxs)("section",{className:"cta-sec",children:[(0,b.jsx)("p",{style:{fontSize:11,color:"rgba(245,241,234,.5)",letterSpacing:"0.12em",marginBottom:14,fontWeight:700},children:O("cta.eyebrow")}),(0,b.jsx)("h2",{className:"cta-title",style:{whiteSpace:"pre-line"},children:O("cta.title")}),(0,b.jsx)("p",{className:"cta-sub",style:{whiteSpace:"pre-line"},children:O("cta.sub")}),(0,b.jsx)("button",{className:"cta-btn",onClick:Y,children:O("cta.primary")}),(0,b.jsx)("button",{className:"cta-chat-btn",onClick:()=>B.push("/chat"),children:O("cta.secondary")})]}),(0,b.jsx)("footer",{className:"footer",children:(0,b.jsxs)("p",{className:"footer-text",style:{whiteSpace:"pre-line"},children:[O("footer.copy"),(0,b.jsx)("br",{}),O("footer.sub")]})})]})]}),(0,b.jsxs)("div",{className:"floating-cta",children:[(0,b.jsx)("button",{className:"floating-btn-main",onClick:Y,children:"무료 사주 분석"}),(0,b.jsx)("button",{className:"floating-btn-chat",onClick:()=>B.push("/chat"),children:"AI 대화"})]})]})}a.s(["default",()=>x])}];
 
 //# sourceMappingURL=OneDrive_Desktop_saju-project-temp_frontend_app_home_page_tsx_2b8560bb._.js.map

@@ -552,7 +552,8 @@ class GPTInterpretationGenerator:
             )
 
             content = response.choices[0].message.content
-            print(f"✅ GPT 해석 생성 완료: {len(content)}자")
+            _u = getattr(response, "usage", None)
+            print(f"✅ GPT 해석 생성 완료: {len(content)}자 | 토큰 in={getattr(_u,'prompt_tokens','-')} out={getattr(_u,'completion_tokens','-')} total={getattr(_u,'total_tokens','-')}")
             return content
 
         except Exception as e:
@@ -740,10 +741,13 @@ class GPTInterpretationGenerator:
                         config=_gcfg,
                     )
                     content = response.text or ""
+                    _gm = getattr(response, "usage_metadata", None)
+                    _in_tok = getattr(_gm, "prompt_token_count", "-")
+                    _out_tok = getattr(_gm, "candidates_token_count", "-")
                     section_markers = ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"]
                     section_count = sum(1 for m in section_markers if m in content)
                     last_section_ok = "✅" in content and len(content.split("✅")[-1].strip()) > 50
-                    print(f"✅ 종합 Gemini 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
+                    print(f"✅ 종합 Gemini 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개 | 토큰 in={_in_tok} out={_out_tok}")
                     if len(content) >= min_chars and section_count >= 8 and last_section_ok:
                         break
                     if attempt < 2:
@@ -767,9 +771,10 @@ class GPTInterpretationGenerator:
                         max_tokens=max_tok
                     )
                     content = response.choices[0].message.content or ""
+                    _u = getattr(response, "usage", None)
                     section_count = sum(1 for m in ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"] if m in content)
                     last_section_ok = "✅" in content and len(content.split("✅")[-1].strip()) > 50
-                    print(f"✅ 종합 GPT 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
+                    print(f"✅ 종합 GPT 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개 | 토큰 in={getattr(_u,'prompt_tokens','-')} out={getattr(_u,'completion_tokens','-')}")
                     if len(content) >= min_chars and section_count >= 8 and last_section_ok:
                         break
                     print(f"⚠️ 분량 부족/미완성 — 재시도 ({attempt+1}/3)")
@@ -931,6 +936,8 @@ class GPTInterpretationGenerator:
                 max_tokens=900
             )
             content = response.choices[0].message.content
+            _u = getattr(response, "usage", None)
+            print(f"✅ core_values 생성: {len(content)}자 | 토큰 in={getattr(_u,'prompt_tokens','-')} out={getattr(_u,'completion_tokens','-')}")
             return content.strip()
         except Exception as e:
             print(f"❌ core_values GPT 호출 실패: {e}")
@@ -1251,6 +1258,8 @@ class GPTInterpretationGenerator:
             )
 
             content = response.choices[0].message.content
+            _u = getattr(response, "usage", None)
+            print(f"✅ 오행해석 생성: {len(content)}자 | 토큰 in={getattr(_u,'prompt_tokens','-')} out={getattr(_u,'completion_tokens','-')}")
 
             return {
                 'section_id': 1,

@@ -1601,8 +1601,9 @@ def _call_gpt_with_retry(
             temperature=0.4,
         )
         content = (resp.choices[0].message.content or "").strip()
+        _u = getattr(resp, "usage", None)
         section_count = sum(1 for m in ["1.", "2.", "3.", "4.", "5.", "6."] if m in content)
-        logger.warning(f"[GPT] attempt {attempt + 1}: {len(content)} chars, {section_count} sections")
+        logger.warning(f"[GPT] attempt {attempt + 1}: {len(content)} chars, {section_count} sections | tokens in={getattr(_u,'prompt_tokens','-')} out={getattr(_u,'completion_tokens','-')}")
 
         if len(content) >= 3000 and section_count >= 6:
             return content
@@ -1647,12 +1648,12 @@ async def _call_gemini_with_retry(
                 config=cfg,
             )
             content = response.text or ""
-
+            _gm = getattr(response, "usage_metadata", None)
             section_count = sum(
                 1 for marker in ["1.", "2.", "3.", "4.", "5.", "6."]
                 if marker in content
             )
-            logger.warning(f"[Gemini] attempt {attempt + 1}: {len(content)} chars, sections: {section_count}")
+            logger.warning(f"[Gemini] attempt {attempt + 1}: {len(content)} chars, sections: {section_count} | tokens in={getattr(_gm,'prompt_token_count','-')} out={getattr(_gm,'candidates_token_count','-')}")
 
             if len(content) >= 2000 and section_count >= 6:
                 return content
@@ -3431,6 +3432,8 @@ async def summary_gpt(req: SummaryGPTRequest, request: Request):
             temperature=0.2,
         )
         content = (resp.choices[0].message.content or "").strip()
+        _ru = getattr(resp, "usage", None)
+        print(f"✅ 고민분석 생성 | 토큰 in={getattr(_ru,'prompt_tokens','-')} out={getattr(_ru,'completion_tokens','-')}")
 
         # ✅ 캐시 저장
         if cache_key and content:
@@ -3764,6 +3767,10 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
     try:
         from logic.saju_engine.core.saju_interpreter import interpret_all
         interpretation = interpret_all(saju_data)
+        from logic.saju_engine.core.saju_interpreter import validate_interpret_all
+        _issues = validate_interpret_all(interpretation)
+        if _issues:
+            logger.warning(f"[규칙엔진 검증 경고] {_issues}")
     except Exception as e:
         print(f"❌ interpret_all 실패: {e}")
         raise HTTPException(status_code=500, detail=f"규칙 엔진 오류: {e}")
@@ -3893,6 +3900,8 @@ section_personality, section_strength, section_problem, section_money, section_c
                 response_format={"type": "json_object"},
             )
             sec_raw = (sec_resp.choices[0].message.content or "").strip()
+            _su = getattr(sec_resp, "usage", None)
+            print(f"✅ v2 섹션 JSON 생성 | 토큰 in={getattr(_su,'prompt_tokens','-')} out={getattr(_su,'completion_tokens','-')}")
             sec_obj = json.loads(sec_raw) if sec_raw else {}
             if isinstance(sec_obj, dict):
                 for k in sections.keys():

@@ -252,16 +252,30 @@ def delete_saju_for_user(saju_id: int, user_id: int) -> bool:
 
 # ==================== 리포트 캐시 ====================
 
+_CACHE_TTL_DAYS = 30
+
 def get_report_cache(cache_key: str, section_key: str) -> Optional[str]:
     conn = _conn()
     try:
         cur = conn.cursor()
         cur.execute(
-            adapt("SELECT content FROM report_cache WHERE cache_key = ? AND section_key = ?"),
+            adapt("SELECT content, created_at FROM report_cache WHERE cache_key = ? AND section_key = ?"),
             (cache_key, section_key),
         )
         row = cur.fetchone()
-        return str(row[0]) if row else None
+        if not row:
+            return None
+        created_at_str = str(row[1]) if row[1] else ""
+        if created_at_str:
+            try:
+                from datetime import timezone
+                created_at = datetime.fromisoformat(created_at_str.rstrip("Z"))
+                age_days = (datetime.utcnow() - created_at).days
+                if age_days > _CACHE_TTL_DAYS:
+                    return None  # 만료
+            except Exception:
+                pass
+        return str(row[0])
     finally:
         conn.close()
 

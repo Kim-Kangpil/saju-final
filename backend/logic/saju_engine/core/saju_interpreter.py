@@ -1932,3 +1932,25 @@ def interpret_all(saju_data: dict) -> dict:
         "seun_2026": seun,
         "summary_for_gpt": summary_for_gpt,
     }
+
+
+# ── 규칙엔진 출력 검증 ──────────────────────────────────────────
+_SECTION_KEYS = ("money", "love", "career", "personality", "current_period")
+_SUMMARY_KEYS = ("ilgan", "strength", "money_points", "love_points", "career_points", "personality_points")
+
+def validate_interpret_all(result: dict) -> list[str]:
+    """interpret_all() 반환값의 필수 키/타입을 검사. 문제 목록 반환 (비어있으면 정상)."""
+    issues: list[str] = []
+    for key in _SECTION_KEYS:
+        sec = result.get(key)
+        if not isinstance(sec, dict):
+            issues.append(f"[{key}] dict 아님: {type(sec)}")
+            continue
+        for sub in ("patterns", "language_points"):
+            if not isinstance(sec.get(sub), list):
+                issues.append(f"[{key}.{sub}] list 아님")
+    s = result.get("summary_for_gpt") or {}
+    for k in _SUMMARY_KEYS:
+        if k not in s:
+            issues.append(f"[summary_for_gpt.{k}] 누락")
+    return issues

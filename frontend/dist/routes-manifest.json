@@ -1,0 +1,320 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/add",
+      "regex": "^/add(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/add(?:/)?$"
+    },
+    {
+      "page": "/add-v2",
+      "regex": "^/add\\-v2(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/add\\-v2(?:/)?$"
+    },
+    {
+      "page": "/admin/chat-logs",
+      "regex": "^/admin/chat\\-logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/chat\\-logs(?:/)?$"
+    },
+    {
+      "page": "/api/beta-verify",
+      "regex": "^/api/beta\\-verify(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/beta\\-verify(?:/)?$"
+    },
+    {
+      "page": "/api/chat",
+      "regex": "^/api/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/chat(?:/)?$"
+    },
+    {
+      "page": "/beta-access",
+      "regex": "^/beta\\-access(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/beta\\-access(?:/)?$"
+    },
+    {
+      "page": "/chat",
+      "regex": "^/chat(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/chat(?:/)?$"
+    },
+    {
+      "page": "/contact",
+      "regex": "^/contact(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/contact(?:/)?$"
+    },
+    {
+      "page": "/dev-login",
+      "regex": "^/dev\\-login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dev\\-login(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/forgot-password",
+      "regex": "^/forgot\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/forgot\\-password(?:/)?$"
+    },
+    {
+      "page": "/home",
+      "regex": "^/home(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/home(?:/)?$"
+    },
+    {
+      "page": "/login/success",
+      "regex": "^/login/success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/login/success(?:/)?$"
+    },
+    {
+      "page": "/membership",
+      "regex": "^/membership(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/membership(?:/)?$"
+    },
+    {
+      "page": "/my-purchased-reports",
+      "regex": "^/my\\-purchased\\-reports(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/my\\-purchased\\-reports(?:/)?$"
+    },
+    {
+      "page": "/mypage",
+      "regex": "^/mypage(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/mypage(?:/)?$"
+    },
+    {
+      "page": "/payment",
+      "regex": "^/payment(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/payment(?:/)?$"
+    },
+    {
+      "page": "/payment/cancel",
+      "regex": "^/payment/cancel(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/payment/cancel(?:/)?$"
+    },
+    {
+      "page": "/payment/fail",
+      "regex": "^/payment/fail(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/payment/fail(?:/)?$"
+    },
+    {
+      "page": "/payment/success",
+      "regex": "^/payment/success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/payment/success(?:/)?$"
+    },
+    {
+      "page": "/payment/test-success",
+      "regex": "^/payment/test\\-success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/payment/test\\-success(?:/)?$"
+    },
+    {
+      "page": "/privacy",
+      "regex": "^/privacy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/privacy(?:/)?$"
+    },
+    {
+      "page": "/report/basic",
+      "regex": "^/report/basic(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/basic(?:/)?$"
+    },
+    {
+      "page": "/report/basic/intro",
+      "regex": "^/report/basic/intro(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/basic/intro(?:/)?$"
+    },
+    {
+      "page": "/report/basic/v2",
+      "regex": "^/report/basic/v2(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/basic/v2(?:/)?$"
+    },
+    {
+      "page": "/report/career",
+      "regex": "^/report/career(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/career(?:/)?$"
+    },
+    {
+      "page": "/report/career/intro",
+      "regex": "^/report/career/intro(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/career/intro(?:/)?$"
+    },
+    {
+      "page": "/report/deep",
+      "regex": "^/report/deep(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/deep(?:/)?$"
+    },
+    {
+      "page": "/report/deep/intro",
+      "regex": "^/report/deep/intro(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/deep/intro(?:/)?$"
+    },
+    {
+      "page": "/report/love",
+      "regex": "^/report/love(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/love(?:/)?$"
+    },
+    {
+      "page": "/report/love/intro",
+      "regex": "^/report/love/intro(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/love/intro(?:/)?$"
+    },
+    {
+      "page": "/report/money",
+      "regex": "^/report/money(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/money(?:/)?$"
+    },
+    {
+      "page": "/report/money/intro",
+      "regex": "^/report/money/intro(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/report/money/intro(?:/)?$"
+    },
+    {
+      "page": "/result",
+      "regex": "^/result(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/result(?:/)?$"
+    },
+    {
+      "page": "/saju-add",
+      "regex": "^/saju\\-add(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/saju\\-add(?:/)?$"
+    },
+    {
+      "page": "/saju-list",
+      "regex": "^/saju\\-list(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/saju\\-list(?:/)?$"
+    },
+    {
+      "page": "/saju-mypage",
+      "regex": "^/saju\\-mypage(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/saju\\-mypage(?:/)?$"
+    },
+    {
+      "page": "/saju-preview",
+      "regex": "^/saju\\-preview(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/saju\\-preview(?:/)?$"
+    },
+    {
+      "page": "/seed-charge",
+      "regex": "^/seed\\-charge(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/seed\\-charge(?:/)?$"
+    },
+    {
+      "page": "/signup",
+      "regex": "^/signup(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/signup(?:/)?$"
+    },
+    {
+      "page": "/start",
+      "regex": "^/start(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/start(?:/)?$"
+    },
+    {
+      "page": "/store",
+      "regex": "^/store(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/store(?:/)?$"
+    },
+    {
+      "page": "/terms",
+      "regex": "^/terms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/terms(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

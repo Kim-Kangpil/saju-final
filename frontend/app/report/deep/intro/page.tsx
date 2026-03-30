@@ -150,6 +150,11 @@ function DeepIntroContent() {
           price={4900}
           label="심화 리포트 확인하기"
           sajuId={sajuId}
+          onBeforePay={() => {
+            if (typeof window !== "undefined" && sajuId) {
+              localStorage.setItem("deep_report_saju_id", sajuId);
+            }
+          }}
         />
         <p style={{ fontSize: 10, color: "#C4B5A0", marginTop: 6 }}>
           한 번 구매로 영구 열람 가능

@@ -1,0 +1,1188 @@
+<!DOCTYPE html><!--LKgK_aUW_HZUhZeP8REW1--><html lang="ko"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"/><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"/><link rel="preload" as="image" href="/images/yin-yang-logo.png"/><link rel="stylesheet" href="/_next/static/chunks/3d37b941c8f3d5b7.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/762eacd36e24497b.js"/><script src="/_next/static/chunks/12bbff471d1ef64e.js" async=""></script><script src="/_next/static/chunks/3b0402ff45d65af2.js" async=""></script><script src="/_next/static/chunks/1ba91e3688953ac6.js" async=""></script><script src="/_next/static/chunks/c5f50ec14b0d7937.js" async=""></script><script src="/_next/static/chunks/turbopack-289b27afddfc4057.js" async=""></script><script src="/_next/static/chunks/e73eaabb1f8022b1.js" async=""></script><script src="/_next/static/chunks/623bd66fa1c8ade6.js" async=""></script><script src="/_next/static/chunks/e490691ed556830d.js" async=""></script><script src="/_next/static/chunks/439cc1bbb201dca2.js" async=""></script><script src="/_next/static/chunks/28c3cb5d21e93bde.js" async=""></script><meta name="theme-color" content="#F5F2EE"/><meta name="apple-mobile-web-app-capable" content="yes"/><meta name="apple-mobile-web-app-status-bar-style" content="default"/><title>사주 프로젝트</title><meta name="description" content="한양사주 — Gmarket Sans"/><link rel="icon" href="/favicon.ico?favicon.0b3bf435.ico" sizes="256x256" type="image/x-icon"/><script src="/_next/static/chunks/a6dad97d9634a72d.js" noModule=""></script></head><body class="antialiased" style="padding-bottom:0;background:var(--bg-base)"><div hidden=""><!--$--><!--/$--></div><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPH5HZM3" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript><div class="flex flex-col min-h-screen relative" style="z-index:1"><main class="flex-grow pb-0"><div class="jsx-b6dcc8a425182fc9 hy-page-transition"><style>
+        :root {
+          --cream:  #F5F1EA;
+          --cream2: #EDE7DB;
+          --cream3: #E3D9CB;
+          --beige:  #D4C9B8;
+          --beige2: #C4B8A4;
+          --ink:    #2C2417;
+          --ink2:   #4A3F30;
+          --ink3:   #6B5F4E;
+          --gold:   #8B7355;
+          --goldL:  #A8946A;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+          font-family: 'Gmarket Sans';
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
+          color: var(--ink);
+          -webkit-font-smoothing: antialiased;
+        }
+
+        .serif { font-family: 'Gmarket Sans'; }
+
+        /* ── 공통 레이아웃 ── */
+        .page {
+          max-width: 480px;
+          margin: 0 auto;
+          padding-bottom: 80px;
+          position: relative;
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
+        }
+
+        @media (min-width: 900px) {
+          .page {
+            max-width: 1200px;
+            padding-bottom: 0;
+          }
+          .pc-layout {
+            display: flex;
+            justify-content: center;
+            min-height: 100dvh;
+          }
+          .pc-sidebar {
+            display: none;
+          }
+          .pc-main {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 0 80px;
+            background: var(--cream) url('/images/texture_paper_6.png');
+            background-repeat: repeat;
+            background-size: auto;
+          }
+        }
+
+        /* ── 헤더 ── */
+        .hd {
+          position: sticky;
+          top: 0;
+          z-index: 30;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 14px 20px;
+          background: rgba(245,241,234,0.96);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--beige);
+        }
+
+        .hd-logo {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+        }
+
+        .hd-logo-mark {
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          border: 1.5px solid var(--beige);
+          background: var(--cream2);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+        }
+
+        .hd-logo-text {
+          font-family: 'Gmarket Sans';
+          font-size: 16px;
+          font-weight: 700;
+          color: var(--ink);
+          letter-spacing: 0.04em;
+        }
+
+        .hd-btn {
+          padding: 7px 16px;
+          border-radius: 999px;
+          border: 1px solid var(--beige2);
+          background: transparent;
+          font-family: 'Gmarket Sans';
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--ink);
+          cursor: pointer;
+          transition: background .15s;
+          letter-spacing: 0.02em;
+        }
+        .hd-btn:hover { background: var(--cream2); }
+
+        .hd-btn-fill {
+          padding: 7px 16px;
+          border-radius: 999px;
+          border: none;
+          background: var(--gold);
+          font-family: 'Gmarket Sans';
+          font-size: 12px;
+          font-weight: 700;
+          color: #fff;
+          cursor: pointer;
+          transition: opacity .15s;
+          letter-spacing: 0.02em;
+          margin-left: 6px;
+        }
+        .hd-btn-fill:hover { opacity: .88; }
+
+        /* ── 섹션 공통 ── */
+        .sec {
+          padding: 36px 20px;
+          border-bottom: 1px solid var(--beige);
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
+        }
+
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 4px 11px;
+          border-radius: 999px;
+          border: 1px solid var(--beige);
+          background: var(--cream2);
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--ink3);
+          letter-spacing: 0.07em;
+          margin-bottom: 14px;
+        }
+
+        .badge-gold {
+          border-color: var(--goldL);
+          background: #fdf8f0;
+          color: var(--gold);
+        }
+
+        .sec-title {
+          font-family: 'Gmarket Sans';
+          font-size: clamp(1.45rem, 4.5vw, 1.75rem);
+          font-weight: 900;
+          color: var(--ink);
+          line-height: 1.32;
+          letter-spacing: -0.02em;
+          margin-bottom: 10px;
+        }
+
+        .sec-sub {
+          font-size: 13px;
+          color: var(--ink3);
+          line-height: 1.75;
+        }
+
+        /* ── 히어로 ── */
+        .hero {
+          padding: 44px 20px 36px;
+          text-align: center;
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
+          border-bottom: 1px solid var(--beige);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .hero::before {
+          content: none;
+        }
+
+        .hero-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 13px;
+          border-radius: 999px;
+          border: 1px solid var(--goldL);
+          background: #fdf8f0;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--gold);
+          letter-spacing: 0.08em;
+          margin-bottom: 22px;
+        }
+
+        .hero-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: var(--gold);
+          animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: .3; }
+        }
+
+        .hero-logo {
+          width: 88px;
+          height: 88px;
+          border-radius: 50%;
+          border: 2px solid var(--beige);
+          background: var(--cream2);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 40px;
+          margin: 0 auto 22px;
+          animation: floatY 4s ease-in-out infinite;
+        }
+
+        @keyframes floatY {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-9px); }
+        }
+
+        .hero-logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .hero-title {
+          font-family: 'Gmarket Sans';
+          font-size: clamp(1.65rem, 5.5vw, 2.1rem);
+          font-weight: 900;
+          color: var(--ink);
+          line-height: 1.28;
+          letter-spacing: -0.025em;
+          margin-bottom: 12px;
+        }
+
+        .hero-title em {
+          font-style: normal;
+          color: var(--gold);
+        }
+
+        .hero-desc {
+          font-size: 13.5px;
+          color: var(--ink3);
+          line-height: 1.8;
+          margin-bottom: 28px;
+        }
+
+        /* ── 문제 제기 섹션 ─ */
+        .problem-sec {
+          background: var(--ink);
+          padding: 48px 20px;
+          text-align: center;
+        }
+
+        .problem-label {
+          font-size: 11px;
+          color: rgba(245,241,234,.5);
+          letter-spacing: 0.12em;
+          margin-bottom: 16px;
+          font-weight: 700;
+        }
+
+        .problem-main {
+          font-family: 'Gmarket Sans';
+          font-size: clamp(1.35rem, 4.5vw, 1.65rem);
+          font-weight: 900;
+          color: var(--cream);
+          line-height: 1.4;
+          margin-bottom: 10px;
+        }
+
+        .problem-sub {
+          font-family: 'Gmarket Sans';
+          font-size: clamp(1.35rem, 4.5vw, 1.65rem);
+          font-weight: 900;
+          color: var(--goldL);
+          line-height: 1.4;
+          margin-bottom: 32px;
+        }
+
+        .problem-divider {
+          width: 40px;
+          height: 1px;
+          background: rgba(245,241,234,.2);
+          margin: 0 auto 28px;
+        }
+
+        .problem-desc {
+          font-size: 13px;
+          color: rgba(245,241,234,.6);
+          line-height: 1.85;
+          text-align: center;
+        }
+
+        /* ── 범용 AI vs 사주 전문 AI ─ */
+        .compare-sec {
+          background: var(--cream);
+          padding: 44px 20px;
+          border-bottom: 1px solid var(--beige);
+        }
+
+        .compare-title {
+          font-family: 'Gmarket Sans';
+          font-size: clamp(1.3rem, 4vw, 1.55rem);
+          font-weight: 900;
+          color: var(--ink);
+          line-height: 1.4;
+          margin-bottom: 28px;
+        }
+
+        .compare-row {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .compare-card {
+          flex: 1;
+          padding: 20px 16px;
+          border-radius: 14px;
+        }
+
+        .compare-left {
+          background: #fff;
+          border: 1px solid var(--beige);
+          opacity: 0.55;
+          transform: scale(0.97);
+        }
+
+        .compare-right {
+          background: var(--ink);
+          border: 1.5px solid var(--gold);
+          box-shadow: 0 0 0 1px var(--gold), 0 8px 24px rgba(139,115,85,.2);
+          animation: compareFadeInScale .6s cubic-bezier(.34,1.56,.64,1) .2s both;
+        }
+
+        .compare-label {
+          font-size: 10px;
+          font-weight: 800;
+          color: var(--muted);
+          letter-spacing: 0.1em;
+          margin-bottom: 14px;
+          text-transform: uppercase;
+        }
+
+        .compare-label-right {
+          color: var(--goldL);
+        }
+
+        .compare-chip-col {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .compare-chip {
+          padding: 6px 12px;
+          border-radius: 6px;
+          background: var(--cream2);
+          border: 1px solid var(--beige);
+          font-size: 12px;
+          color: var(--ink3);
+        }
+
+        .compare-note {
+          font-size: 11px;
+          color: var(--muted);
+          margin-top: 14px;
+        }
+
+        .compare-arrow {
+          font-size: 20px;
+          color: var(--beige2);
+          flex-shrink: 0;
+          animation: compareArrowFade .4s ease .1s both;
+        }
+
+        .compare-logo-wrap {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 10px;
+        }
+
+        .compare-logo {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          border: 1.5px solid var(--gold);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .compare-logo img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .compare-service-name {
+          font-family: 'Gmarket Sans';
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--cream);
+          text-align: center;
+          margin-bottom: 14px;
+        }
+
+        .compare-right-note {
+          font-size: 11px;
+          color: rgba(245,241,234,.55);
+          margin-top: 0;
+          text-align: center;
+        }
+
+        .engine-card {
+          margin-top: 28px;
+          background: var(--cream2);
+          border: 1px solid var(--beige);
+          border-radius: 12px;
+          padding: 18px 16px;
+        }
+
+        .engine-row {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          text-align: center;
+        }
+
+        .engine-row span {
+          font-family: 'Gmarket Sans';
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+
+        .engine-x {
+          font-size: 16px;
+          color: var(--beige2);
+        }
+
+        .engine-sub {
+          font-size: 12px;
+          color: var(--ink3);
+          margin-top: 10px;
+          text-align: center;
+        }
+
+        @keyframes compareFadeInScale {
+          from { opacity: 0; transform: scale(0.92); }
+          to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes compareArrowFade {
+          from { opacity: 0; transform: translateX(-4px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+
+        .hero-btns {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          max-width: 320px;
+          margin: 0 auto 24px;
+        }
+
+        .btn-primary {
+          width: 100%;
+          padding: 15px;
+          border-radius: 12px;
+          border: none;
+          background: var(--ink);
+          color: var(--cream);
+          font-family: 'Gmarket Sans';
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          letter-spacing: 0.02em;
+          transition: opacity .15s, transform .1s;
+        }
+        .btn-primary:active { transform: scale(.98); opacity: .9; }
+
+        .btn-secondary {
+          width: 100%;
+          padding: 13px;
+          border-radius: 12px;
+          border: 1.5px solid var(--beige2);
+          background: transparent;
+          color: var(--ink3);
+          font-family: 'Gmarket Sans';
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background .15s;
+          letter-spacing: 0.01em;
+        }
+        .btn-secondary:hover { background: var(--cream2); }
+
+        .counter-row {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          padding: 7px 16px;
+          border-radius: 999px;
+          border: 1px solid var(--beige);
+          background: var(--cream2);
+        }
+
+        .counter-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #4CAF50;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: .7; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.35); }
+        }
+
+        /* ── 국내 최초 뱃지 ── */
+        .first-band {
+          background: var(--ink);
+          color: var(--cream);
+          padding: 18px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          flex-wrap: wrap;
+          text-align: center;
+        }
+
+        .first-band-tag {
+          padding: 4px 10px;
+          border-radius: 4px;
+          background: var(--gold);
+          font-size: 10px;
+          font-weight: 800;
+          color: #fff;
+          letter-spacing: 0.1em;
+          flex-shrink: 0;
+        }
+
+        .first-band-text {
+          font-family: 'Gmarket Sans';
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--cream);
+          line-height: 1.6;
+          letter-spacing: 0.01em;
+          flex: 0 1 620px;
+          text-align: center;
+        }
+
+        /* ── 채팅 미리보기 ── */
+        .chat-preview {
+          background: #fff;
+          border: 1px solid var(--beige);
+          border-radius: 14px;
+          overflow: hidden;
+          box-shadow: 0 2px 16px rgba(44,36,23,0.07);
+        }
+
+        .chat-preview-hd {
+          background: var(--cream2);
+          border-bottom: 1px solid var(--beige);
+          padding: 10px 14px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .chat-preview-avatar {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: var(--cream3);
+          border: 1px solid var(--beige);
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          flex-shrink: 0;
+        }
+
+        .chat-preview-name {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+
+        .chat-preview-body {
+          padding: 16px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          min-height: 120px;
+        }
+
+        .chat-bubble-user {
+          align-self: flex-end;
+          background: var(--ink);
+          color: var(--cream);
+          padding: 9px 13px;
+          border-radius: 12px;
+          border-bottom-right-radius: 3px;
+          font-size: 13px;
+          line-height: 1.6;
+          max-width: 80%;
+          word-break: keep-all;
+          animation: fadeInUp .4s ease both;
+        }
+
+        .chat-bubble-ai {
+          align-self: flex-start;
+          background: var(--cream2);
+          color: var(--ink2);
+          padding: 9px 13px;
+          border-radius: 12px;
+          border-bottom-left-radius: 3px;
+          font-size: 13px;
+          line-height: 1.45;
+          max-width: 600px;
+          width: 100%;
+          word-break: keep-all;
+          white-space: pre-line;
+          margin-bottom: 8px;
+          text-align: left;
+          animation: fadeInUp .4s .15s ease both;
+        }
+
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── 만세력 미리보기 테이블 ── */
+        .manseryeok-preview {
+          border: 1.5px solid var(--beige);
+          border-radius: 12px;
+          overflow: hidden;
+          margin-top: 16px;
+        }
+
+        .msr-header {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          background: var(--cream2);
+          border-bottom: 1.5px solid var(--beige);
+        }
+
+        .msr-header-cell {
+          padding: 7px 4px;
+          text-align: center;
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--ink3);
+          letter-spacing: 0.08em;
+        }
+
+        .msr-header-cell:not(:last-child) { border-right: 1px solid var(--beige); }
+
+        .msr-body {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+        }
+
+        .msr-cell {
+          padding: 12px 4px;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 2px;
+        }
+
+        .msr-cell:not(:last-child) { border-right: 1px solid var(--cream3); }
+
+        .msr-sipsung {
+          font-size: 9px;
+          color: var(--ink3);
+          height: 14px;
+        }
+
+        .msr-char {
+          font-family: 'Gmarket Sans';
+          font-size: 22px;
+          font-weight: 700;
+        }
+
+        .msr-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 14px;
+          background: #fff;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06);
+          table-layout: fixed;
+        }
+        .msr-table th,
+        .msr-table td {
+          border: 1px solid var(--beige);
+          padding: 10px 6px;
+          text-align: center;
+          height: 70px;
+        }
+        .msr-table th:first-child,
+        .msr-table td:first-child {
+          width: 72px;
+        }
+        .msr-table th { background: var(--cream2); font-weight: 700; color: var(--ink); }
+        .msr-table .msr-row-label td { font-size: 12px; color: var(--ink3); text-align: center; }
+        .msr-table .msr-pillar-box {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          border-radius: 0;
+          color: #fff;
+          font-weight: 700;
+          font-size: 20px;
+        }
+
+        @media (max-width: 480px) {
+          .msr-table th,
+          .msr-table td {
+            height: 60px;
+            padding: 8px 4px;
+          }
+          .msr-table th:first-child,
+          .msr-table td:first-child {
+            width: 64px;
+            font-size: 10px;
+          }
+          .msr-table .msr-row-label td {
+            font-size: 11px;
+          }
+          .msr-table .msr-pillar-box {
+            font-size: 18px;
+          }
+        }
+
+        /* ── 리포트 카드 ── */
+        .report-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-top: 18px;
+        }
+
+        .report-card {
+          background: #fff;
+          border: 1px solid var(--beige);
+          border-radius: 13px;
+          overflow: hidden;
+          transition: box-shadow .15s;
+        }
+
+        .report-card:hover {
+          box-shadow: 0 3px 14px rgba(44,36,23,0.07);
+        }
+
+        .report-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 13px 14px 10px;
+          border-bottom: 1px solid var(--beige);
+        }
+
+        .report-card-header-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .report-card-icon { font-size: 18px; line-height: 1; }
+        .report-card-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+
+        .report-card-price-free {
+          font-size: 11px;
+          font-weight: 700;
+          color: #059669;
+          background: #d1fae5;
+          padding: 3px 8px;
+          border-radius: 999px;
+        }
+
+        .report-card-price-paid {
+          font-size: 11px;
+          font-weight: 700;
+          color: #4A3F30;
+          background: #F5F1EA;
+          padding: 3px 8px;
+          border-radius: 999px;
+        }
+
+        .report-card-items {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+          padding: 10px 14px 12px;
+        }
+
+        .report-card-item {
+          font-size: 11px;
+          color: var(--ink3);
+          line-height: 1.6;
+          padding: 2px 0;
+        }
+
+        /* ── 동물 갤러리 ── */
+        .animal-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 7px;
+          margin-top: 18px;
+        }
+
+        .animal-cell {
+          aspect-ratio: 1;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1px solid var(--beige);
+          background: var(--cream2);
+        }
+
+        .animal-cell img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+
+        @keyframes cardFlip {
+          from { opacity: 0; transform: perspective(280px) rotateY(-70deg); }
+          to { opacity: 1; transform: perspective(280px) rotateY(0); }
+        }
+
+        .animal-flip { animation: cardFlip .28s ease-out both; }
+
+        /* ── 리뷰 ── */
+        .review-scroll {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding: 4px 0 12px;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          -webkit-overflow-scrolling: touch;
+          cursor: grab;
+        }
+
+        .review-scroll::-webkit-scrollbar { display: none; }
+
+        .review-card {
+          flex: 0 0 260px;
+          background: #fff;
+          border: 1px solid var(--beige);
+          border-radius: 12px;
+          padding: 16px 14px;
+          box-shadow: 0 1px 8px rgba(44,36,23,0.05);
+        }
+
+        .review-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+
+        .review-name {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--ink);
+        }
+
+        .review-age {
+          font-size: 11px;
+          color: var(--ink3);
+          margin-left: 5px;
+        }
+
+        .review-tag {
+          padding: 3px 8px;
+          border-radius: 999px;
+          background: var(--cream2);
+          border: 1px solid var(--beige);
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--ink3);
+        }
+
+        .review-stars {
+          color: #E6A817;
+          font-size: 12px;
+          margin-bottom: 8px;
+          letter-spacing: 1px;
+        }
+
+        .review-text {
+          font-size: 12.5px;
+          color: var(--ink2);
+          line-height: 1.75;
+          word-break: keep-all;
+        }
+
+        /* ── 신뢰 지표 ── */
+        .trust-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-top: 18px;
+        }
+
+        .trust-card {
+          background: #fff;
+          border: 1px solid var(--beige);
+          border-radius: 12px;
+          padding: 18px 14px;
+          text-align: center;
+        }
+
+        .trust-num {
+          font-family: 'Gmarket Sans';
+          font-size: 26px;
+          font-weight: 900;
+          color: var(--gold);
+          line-height: 1;
+          margin-bottom: 5px;
+        }
+
+        .trust-label {
+          font-size: 11px;
+          color: var(--ink3);
+          font-weight: 600;
+          line-height: 1.5;
+        }
+
+        /* ── 최종 CTA ── */
+        .cta-sec {
+          padding: 48px 20px 52px;
+          text-align: center;
+          background: var(--ink);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .cta-sec::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: url('/images/hanji-bg.png');
+          background-repeat: repeat;
+          background-size: auto;
+          opacity: 0.08;
+          pointer-events: none;
+        }
+
+        .cta-title {
+          font-family: 'Gmarket Sans';
+          font-size: clamp(1.4rem, 4.5vw, 1.7rem);
+          font-weight: 900;
+          color: var(--cream);
+          line-height: 1.35;
+          letter-spacing: -0.02em;
+          margin-bottom: 12px;
+        }
+
+        .cta-sub {
+          font-size: 13px;
+          color: rgba(245,241,234,.65);
+          line-height: 1.75;
+          margin-bottom: 28px;
+        }
+
+        .cta-btn {
+          width: 100%;
+          max-width: 320px;
+          padding: 16px;
+          border-radius: 12px;
+          border: none;
+          background: var(--gold);
+          color: #fff;
+          font-family: 'Gmarket Sans';
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: opacity .15s, transform .1s;
+          letter-spacing: 0.02em;
+          margin-bottom: 12px;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .cta-btn:active { transform: scale(.98); opacity: .9; }
+
+        .cta-chat-btn {
+          width: 100%;
+          max-width: 320px;
+          padding: 13px;
+          border-radius: 12px;
+          border: 1.5px solid rgba(245,241,234,.3);
+          background: transparent;
+          color: rgba(245,241,234,.8);
+          font-family: 'Gmarket Sans';
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: border-color .15s, background .15s;
+          letter-spacing: 0.01em;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .cta-chat-btn:hover {
+          background: rgba(245,241,234,.08);
+          border-color: rgba(245,241,234,.5);
+        }
+
+        /* ── 푸터 ── */
+        .footer {
+          padding: 24px 20px;
+          text-align: center;
+          background: var(--cream) url('/images/texture_paper_6.png');
+          background-repeat: repeat;
+          background-size: auto;
+          border-top: 1px solid var(--beige);
+        }
+
+        .footer-text {
+          font-size: 10px;
+          color: var(--beige2);
+          line-height: 1.7;
+        }
+
+        /* ── 플로팅 CTA (모바일) ── */
+        .floating-cta {
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 50;
+          display: flex;
+          gap: 8px;
+          padding: 0 16px;
+          width: 100%;
+          max-width: 400px;
+        }
+
+        @media (min-width: 1024px) {
+          .floating-cta { display: none; }
+        }
+
+        .floating-btn-main {
+          flex: 1;
+          padding: 14px;
+          border-radius: 12px;
+          border: none;
+          background: var(--ink);
+          color: var(--cream);
+          font-family: 'Gmarket Sans';
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(44,36,23,0.25);
+          transition: opacity .15s;
+        }
+        .floating-btn-main:active { opacity: .88; }
+
+        .floating-btn-chat {
+          padding: 14px 18px;
+          border-radius: 12px;
+          border: 1.5px solid var(--beige2);
+          background: rgba(245,241,234,.95);
+          color: var(--ink);
+          font-family: 'Gmarket Sans';
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 4px 20px rgba(44,36,23,0.12);
+          transition: background .15s;
+          white-space: nowrap;
+        }
+        .floating-btn-chat:hover { background: var(--cream2); }
+
+        /* ── 구분선 장식 ── */
+        .divider {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin: 4px 0;
+        }
+
+        .divider-line { flex: 1; height: 1px; background: var(--beige); }
+        .divider-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--beige2); }
+
+        /* ── PC 사이드바 고정 ── */
+        .pc-sticky-cta {
+          display: none;
+        }
+
+        @media (min-width: 900px) {
+          .pc-sticky-cta {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 28px 24px;
+            border-bottom: 1px solid var(--beige);
+          }
+        }
+
+        /* fade in 섹션 */
+        .reveal {
+          opacity: 0;
+          transform: translateY(14px);
+          animation: revealUp .55s ease forwards;
+        }
+
+        @keyframes revealUp {
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal:nth-child(1) { animation-delay: .05s; }
+        .reveal:nth-child(2) { animation-delay: .1s; }
+        .reveal:nth-child(3) { animation-delay: .15s; }
+        .reveal:nth-child(4) { animation-delay: .2s; }
+        .reveal:nth-child(5) { animation-delay: .25s; }
+      </style><header class="hd"><div class="hd-logo"><div class="hd-logo-mark"><img src="/images/yin-yang-logo.png" alt="태극" style="width:100%;height:100%;object-fit:cover"/></div><span class="hd-logo-text">한양사주</span></div><div style="display:flex;align-items:center;gap:6px;position:relative"><div style="position:relative"><button type="button" style="padding:4px 9px;border-radius:999px;border:1px solid #C4B8A4;background:rgba(255,255,255,0.7);font-family:&#x27;Gmarket Sans&#x27;;font-size:10px;font-weight:700;color:#6B5F4E;letter-spacing:0.08em">언어 ▾</button></div><button class="hd-btn">로그인</button><button class="hd-btn-fill">무료 시작</button></div></header><div class="pc-layout" style="display:block"><div class="pc-sidebar" style="display:none"><div class="pc-sticky-cta"><p class="serif" style="font-size:15px;font-weight:700;color:#2C2417;line-height:1.5;white-space:pre-line">내 사주, 지금
+무료로 확인해보세요</p><button class="btn-primary">무료 사주 분석 시작하기</button><button class="btn-secondary">AI에게 먼저 물어보기</button></div></div><div class="pc-main"><section class="hero"><div class="hero-eyebrow"><span class="hero-dot"></span>국내 최초 사주 전용 AI 채팅</div><div class="hero-logo"><img src="/images/yin-yang-logo.png" alt="한양사주"/></div><h1 class="hero-title reveal" style="white-space:pre-line">사주를 아는 AI와
+직접 대화하세요</h1><p class="hero-desc reveal" style="white-space:pre-line">전통 사주명리학을 기반으로, 나만의 사주를 이해하기 쉽게 풀어주는 AI입니다.</p><div class="hero-btns reveal"><button class="btn-primary">무료로 사주 분석 시작하기</button><button class="btn-secondary">AI에게 먼저 물어보기 →</button></div><div class="counter-row reveal"><div class="counter-dot"></div><span style="font-size:12px;color:#6B5F4E;font-weight:500">오늘 이미 0명이 분석했습니다</span></div></section><section style="padding:20px;text-align:center"><div style="background:linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%);border-radius:16px;padding:24px;max-width:400px;margin:0 auto;border:2px solid #2d5a2d;box-shadow:0 4px 12px rgba(45, 90, 45, 0.1)"><div style="font-size:14px;font-weight:700;color:#2d5a2d;margin-bottom:8px">베타 테스터 모집</div><h3 style="font-size:18px;font-weight:700;color:#2d5a2d;margin-bottom:8px">채팅 + 기본 리포트 무제한!</h3><p style="font-size:13px;color:#2d5a2d;margin-bottom:16px;line-height:1.5">베타 테스터가 되어<br/>AI 채팅과 기본 리포트를 무제한으로 이용하세요</p><button style="background:#2d5a2d;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s">쿠폰 받기</button></div></section><section class="problem-sec"><div class="problem-label">기존의 방식</div><h2 class="problem-main" style="white-space:pre-line">사주를 검색해서 보는 시대는
+끝났습니다.</h2><h3 class="problem-sub" style="white-space:pre-line">이제 AI에게 직접 물어보세요.</h3><div class="problem-divider"></div><p class="problem-desc" style="white-space:pre-line">검색하고, 이해하고, 내 상황에 대입하는 과정.
+한양사주 AI는 이 과정을 대화 한 번으로 줄입니다.</p></section><section class="compare-sec" style="text-align:center"><div class="badge">왜 전용 AI인가</div><h2 class="compare-title" style="white-space:pre-line">ChatGPT는 똑똑합니다.
+하지만 사주는 모릅니다.</h2><div class="compare-row"><div class="compare-card compare-left"><div class="compare-label">범용 AI</div><div class="compare-chip-col"><div class="compare-chip">ChatGPT</div><div class="compare-chip">Claude</div><div class="compare-chip">Gemini</div></div><p class="compare-note">사주 비전문 · 일반 대화 최적화</p></div><div class="compare-arrow">→</div><div class="compare-card compare-right"><div class="compare-label compare-label-right">사주 전문 AI</div><div class="compare-logo-wrap"><div class="compare-logo"><img src="/images/yin-yang-logo.png" alt="한양사주"/></div></div><div class="compare-service-name">한양사주 AI</div><p class="compare-right-note">사주명리 전용 알고리즘 탑재</p></div></div><div class="engine-card"><div class="engine-row"><span>최신 AI 모델</span><span class="engine-x">×</span><span>사주명리 전용 알고리즘</span></div><p class="engine-sub">범용 AI가 아닌, 사주를 위해 설계된 AI입니다.</p></div></section><section class="sec" style="text-align:center"><div class="badge badge-gold" style="margin-left:auto;margin-right:auto">💬 사주 AI 채팅</div><h2 class="sec-title" style="white-space:pre-line">궁금한 건 그냥
+물어보면 됩니다</h2><p class="sec-sub" style="margin-bottom:18px;white-space:pre-line">일반 사주 지식부터 내 사주 기반 맞춤 분석까지.
+대화하듯 편하게 질문하세요.</p><div class="chat-preview"><div class="chat-preview-hd"><div class="chat-preview-avatar"><img src="/images/yin-yang-logo.png" alt=""/></div><span class="chat-preview-name">한양사주 AI</span><span style="font-size:10px;color:#6B5F4E;margin-left:auto">24시간 · 사주 전문</span></div><div class="chat-preview-body"><div class="chat-bubble-user">왜 돈이 안 모일까요?</div><div class="chat-bubble-ai">명식 흐름을 보면 재성이 앞에서 바로 쌓이는 구조라기보다, 식상에서 시작해 재성으로 이어지는 쪽에 가깝습니다. 이런 구조는 움직이고, 시도하고, 반복하면서 수익이 점점 커지는 흐름이라 초반에는 ‘열심히 하는데 돈이 안 모인다’는 체감이 강하게 올 수 있습니다. 대신 한 번 루트가 잡히면 지속성이 강한 타입이라, 지금은 돈을 모으는 것보다 반복해서 들어오는 수입 루트를 만드는 것이 더 중요합니다.
+
+👉 현재 수익 구조를 기준으로 어떤 부분을 키워야 돈이 붙는지 구체적으로 분석해드릴까요?
+👉 아니면 앞으로 돈이 들어오는 시기를 흐름 기준으로 자세히 확인해보시겠습니까?</div></div><div style="padding:10px 14px;border-top:1px solid #E3D9CB"><button style="width:100%;padding:10px;border-radius:8px;border:1px solid #D4C9B8;background:#F5F1EA;font:inherit;font-size:13px;color:#6B5F4E;cursor:pointer;font-family:&#x27;Gmarket Sans&#x27;">한양사주 AI에게 물어보기 →</button></div></div></section><section class="sec" style="text-align:center"><div class="badge">📅 정확한 만세력</div><h2 class="sec-title" style="white-space:pre-line">절기·음력 변환까지
+자동으로 정확하게</h2><p class="sec-sub" style="margin-bottom:4px;white-space:pre-line">직접 계산하거나 앱을 비교할 필요 없습니다.
+생년월일시를 입력하면 즉시 정확한 사주팔자를 계산합니다.</p><div class="manseryeok-preview" style="margin-top:16px"><table class="msr-table"><thead><tr><th style="width:80px"></th><th>시주</th><th>일주</th><th>월주</th><th>년주</th></tr></thead><tbody><tr class="msr-row-label"><td style="font-size:11px;color:#6B5F4E;text-align:center">십성(천간)</td><td>편재</td><td>비견</td><td>정관</td><td>편관</td></tr><tr><td style="font-size:11px;color:#6B5F4E;text-align:center">천간</td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#85B7EB;color:#0C447C;border:1px solid #185FA5">계癸</div></td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#FAC775;color:#633806;border:1px solid #854F0B">기己</div></td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#C0DD97;color:#27500A;border:1px solid #3B6D11">갑甲</div></td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#C0DD97;color:#27500A;border:1px solid #3B6D11">을乙</div></td></tr><tr><td style="font-size:11px;color:#6B5F4E;text-align:center">지지</td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#B4B2A9;color:#444441;border:1px solid #5F5E5A">유酉</div></td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#FAC775;color:#633806;border:1px solid #854F0B">미未</div></td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#B4B2A9;color:#444441;border:1px solid #5F5E5A">신申</div></td><td style="padding:4px;vertical-align:middle"><div class="msr-pillar-box" style="background:#F0997B;color:#712B13;border:1px solid #993C1D">사巳</div></td></tr><tr class="msr-row-label"><td style="font-size:11px;color:#6B5F4E;text-align:center">십성(지지)</td><td>식신</td><td>비견</td><td>상관</td><td>정인</td></tr><tr><td style="font-size:11px;color:#6B5F4E;text-align:center">지장간</td><td style="font-size:10px;padding:6px;text-align:center;line-height:1.5;color:#6B5F4E"><div>경금 (상관)</div><div>신금 (식신)</div></td><td style="font-size:10px;padding:6px;text-align:center;line-height:1.5;color:#6B5F4E"><div>정화 (편인)</div><div>을목 (편관)</div><div>기토 (비견)</div></td><td style="font-size:10px;padding:6px;text-align:center;line-height:1.5;color:#6B5F4E"><div>무토 (겁재)</div><div>임수 (정재)</div><div>경금 (상관)</div></td><td style="font-size:10px;padding:6px;text-align:center;line-height:1.5;color:#6B5F4E"><div>무토 (겁재)</div><div>경금 (상관)</div><div>병화 (정인)</div></td></tr><tr class="msr-row-label"><td style="font-size:11px;color:#6B5F4E;text-align:center">십이운성</td><td>장생</td><td>관대</td><td>목욕</td><td>제왕</td></tr></tbody></table></div><p style="font-size:11px;color:#6B5F4E;margin-top:10px;text-align:center">※ 위 사주는 예시입니다</p></section><section class="sec" style="text-align:center"><div class="badge">📋 리포트 안내</div><h2 class="sec-title" style="white-space:pre-line">어떤 리포트를
+받을 수 있나요?</h2><div class="report-list"><div class="report-card"><div class="report-card-header"><div class="report-card-header-left"><span class="report-card-icon">💬</span><span class="report-card-title">무료 기본 분석</span></div><span class="report-card-price-free">무료</span></div><div class="report-card-items"><div class="report-card-item">· <!-- -->사주팔자 원국 · 일주 동물</div><div class="report-card-item">· <!-- -->타고난 기질 · 오행 성향</div><div class="report-card-item">· <!-- -->십성 분포 요약</div><div class="report-card-item">· <!-- -->대운 · 올해 운세 흐름</div></div></div><div class="report-card"><div class="report-card-header"><div class="report-card-header-left"><span class="report-card-icon">💼</span><span class="report-card-title">직업운 리포트</span></div><span class="report-card-price-paid">2,900원</span></div><div class="report-card-items"><div class="report-card-item">· <!-- -->💼 일하는 방식</div><div class="report-card-item">· <!-- -->🎯 잘 맞는 직종</div><div class="report-card-item">· <!-- -->🏢 조직 vs 독립</div><div class="report-card-item">· <!-- -->📈 현재 커리어 흐름</div><div class="report-card-item">· <!-- -->🗓 올해 직업운</div><div class="report-card-item">· <!-- -->✅ 실천 조언</div></div></div><div class="report-card"><div class="report-card-header"><div class="report-card-header-left"><span class="report-card-icon">❤️</span><span class="report-card-title">연애운 리포트</span></div><span class="report-card-price-paid">2,900원</span></div><div class="report-card-items"><div class="report-card-item">· <!-- -->❤️ 연애 기질</div><div class="report-card-item">· <!-- -->👤 이상형</div><div class="report-card-item">· <!-- -->🔄 관계 패턴</div><div class="report-card-item">· <!-- -->💫 현재 인연 흐름</div><div class="report-card-item">· <!-- -->🗓 올해 연애운</div><div class="report-card-item">· <!-- -->✅ 실천 조언</div></div></div><div class="report-card"><div class="report-card-header"><div class="report-card-header-left"><span class="report-card-icon">💰</span><span class="report-card-title">재물운 리포트</span></div><span class="report-card-price-paid">2,900원</span></div><div class="report-card-items"><div class="report-card-item">· <!-- -->💰 재물 기질</div><div class="report-card-item">· <!-- -->💵 수입 구조</div><div class="report-card-item">· <!-- -->🕳 지출 패턴</div><div class="report-card-item">· <!-- -->📈 현재 재물 흐름</div><div class="report-card-item">· <!-- -->🗓 올해 재물운</div><div class="report-card-item">· <!-- -->✅ 실천 조언</div></div></div></div><button style="margin-top:16px;width:100%;padding:13px 0;border-radius:12px;border:1.5px solid #D4C9B8;background:#F5F1EA;font-size:13px;font-weight:700;color:#4A3F30;cursor:pointer;font-family:&#x27;Gmarket Sans&#x27;, sans-serif;display:flex;align-items:center;justify-content:center;gap:6px"><span>🛒</span> 스토어에서 리포트 구매하기</button></section><section class="sec" style="text-align:center"><div class="badge">🐾 일주 동물</div><h2 class="sec-title" style="white-space:pre-line">60가지 중 단 하나,
+나만의 일주 동물</h2><p class="sec-sub" style="margin-bottom:4px;white-space:pre-line">생년월일로 결정되는 일간·일지.
+이 두 글자가 나의 본성을 가장 정확히 나타냅니다.</p><div class="animal-grid"></div><p style="font-size:11px;color:#6B5F4E;text-align:center;margin-top:10px">이 중 하나가 당신의 일주 동물입니다.</p></section><section class="sec" style="background:#EDE7DB;text-align:center"><div class="badge">📊 이용 현황</div><div class="trust-grid"><div class="trust-card"><div class="trust-num">0+</div><div class="trust-label" style="white-space:pre-line">누적 사주 분석</div></div><div class="trust-card"><div class="trust-num">4.9</div><div class="trust-label" style="white-space:pre-line">평균 만족도
+★★★★★</div></div><div class="trust-card"><div class="trust-num">60</div><div class="trust-label" style="white-space:pre-line">일주 동물
+전체 지원</div></div><div class="trust-card"><div class="trust-num">무료</div><div class="trust-label" style="white-space:pre-line">기본 분석
+완전 무료</div></div></div></section><section class="sec" style="text-align:center"><div class="badge">💬 실제 후기</div><h2 class="sec-title" style="font-size:1.25rem">직접 써본 분들의 이야기</h2><div class="review-scroll" style="margin-top:16px"><div class="review-card"><div class="review-top"><div><span class="review-name">이○희</span><span class="review-age">28세</span></div><span class="review-tag">직장운</span></div><div class="review-stars">★★★★★</div><p class="review-text">&quot;<!-- -->대운 설명이 너무 정확해서 소름돋았어요. 지금 제 상황이랑 딱 맞아서 친구한테도 바로 공유했습니다.<!-- -->&quot;</p></div><div class="review-card"><div class="review-top"><div><span class="review-name">김○준</span><span class="review-age">34세</span></div><span class="review-tag">재물운</span></div><div class="review-stars">★★★★★</div><p class="review-text">&quot;<!-- -->다른 사주 앱들은 두루뭉술한데 여긴 일간 기준으로 구체적으로 짚어줘서 신뢰가 갔어요.<!-- -->&quot;</p></div><div class="review-card"><div class="review-top"><div><span class="review-name">박○연</span><span class="review-age">26세</span></div><span class="review-tag">연애운</span></div><div class="review-stars">★★★★★</div><p class="review-text">&quot;<!-- -->AI한테 사주 물어볼 수 있다는 게 신기해서 시작했는데 답변이 진짜 사주 선생님 같았어요.<!-- -->&quot;</p></div><div class="review-card"><div class="review-top"><div><span class="review-name">최○민</span><span class="review-age">31세</span></div><span class="review-tag">건강운</span></div><div class="review-stars">★★★★★</div><p class="review-text">&quot;<!-- -->건강 체질 분석이 너무 정확해요. 제가 항상 그 부위가 약하다고 생각했는데 사주에 그대로 나오네요.<!-- -->&quot;</p></div><div class="review-card"><div class="review-top"><div><span class="review-name">정○아</span><span class="review-age">24세</span></div><span class="review-tag">적성</span></div><div class="review-stars">★★★★★</div><p class="review-text">&quot;<!-- -->취업 준비 중인데 적성 분석이 진로 결정에 진짜 도움됐어요. 구체적인 직무까지 나와서 좋았습니다.<!-- -->&quot;</p></div><div class="review-card"><div class="review-top"><div><span class="review-name">윤○서</span><span class="review-age">29세</span></div><span class="review-tag">대운</span></div><div class="review-stars">★★★★★</div><p class="review-text">&quot;<!-- -->만세력을 AI가 자동으로 뽑아주는 게 제일 편했어요. 계산 틀릴까봐 걱정했는데 완전 정확하더라고요.<!-- -->&quot;</p></div></div><p style="font-size:11px;color:#C4B8A4;text-align:center;margin-top:6px">← 스크롤하여 더 보기</p></section><section class="sec" style="text-align:center"><div class="badge">⚙️ 핵심 기능</div><h2 class="sec-title" style="white-space:pre-line">필요한 것만,
+제대로 갖췄습니다</h2><div style="display:flex;flex-direction:column;gap:10px;margin-top:18px"><div style="background:#fff;border:1px solid #D4C9B8;border-radius:13px;padding:18px 16px;display:flex;gap:14px;align-items:flex-start"><div style="width:42px;height:42px;border-radius:10px;background:#EDE7DB;border:1px solid #D4C9B8;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💬</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap"><span style="font-family:&#x27;Gmarket Sans&#x27;;font-size:14px;font-weight:700;color:#2C2417">무제한 사주 AI 채팅</span><span style="padding:2px 8px;border-radius:4px;background:#8B7355;color:#fff;font-size:9px;font-weight:800;letter-spacing:0.08em">국내 최초</span></div><p style="font-size:12.5px;color:#6B5F4E;line-height:1.75;word-break:keep-all;text-align:left">사주 이론에 특화된 AI와 제한 없이 대화하세요. 일반 질문부터 내 사주 기반 맞춤 분석까지 모두 가능합니다.</p></div></div><div style="background:#fff;border:1px solid #D4C9B8;border-radius:13px;padding:18px 16px;display:flex;gap:14px;align-items:flex-start"><div style="width:42px;height:42px;border-radius:10px;background:#EDE7DB;border:1px solid #D4C9B8;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📅</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap"><span style="font-family:&#x27;Gmarket Sans&#x27;;font-size:14px;font-weight:700;color:#2C2417">정확한 만세력 자동 계산</span><span style="padding:2px 8px;border-radius:4px;background:#8B7355;color:#fff;font-size:9px;font-weight:800;letter-spacing:0.08em">국내 최초 엔진</span></div><p style="font-size:12.5px;color:#6B5F4E;line-height:1.75;word-break:keep-all;text-align:left">절기·음력 변환을 포함한 전통 만세력 계산 엔진을 탑재했습니다. 생년월일시 입력 즉시 정확한 사주팔자를 확인하세요.</p></div></div><div style="background:#fff;border:1px solid #D4C9B8;border-radius:13px;padding:18px 16px;display:flex;gap:14px;align-items:flex-start"><div style="width:42px;height:42px;border-radius:10px;background:#EDE7DB;border:1px solid #D4C9B8;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔮</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap"><span style="font-family:&#x27;Gmarket Sans&#x27;;font-size:14px;font-weight:700;color:#2C2417">전문 심화 풀이</span></div><p style="font-size:12.5px;color:#6B5F4E;line-height:1.75;word-break:keep-all;text-align:left">일주 동물 · 십성 · 대운 · 신강약 · 공망 · 귀인 · 합충형 등 전통 사주명리학 핵심 이론 기반의 심층 분석을 제공합니다.</p></div></div></div></section><section class="sec" style="background:#EDE7DB;display:none" aria-hidden="true"><div class="badge">💳 이용 요금</div><h2 class="sec-title" style="font-size:1.25rem;white-space:pre-line">기본은 무료,
+필요할 때만 선택하세요</h2><div style="display:flex;flex-direction:column;gap:10px;margin-top:18px"></div></section><section class="cta-sec"><p style="font-size:11px;color:rgba(245,241,234,.5);letter-spacing:0.12em;margin-bottom:14px;font-weight:700">지금 바로 시작하세요</p><h2 class="cta-title" style="white-space:pre-line">내 사주, 지금
+무료로 확인해보세요</h2><p class="cta-sub" style="white-space:pre-line">생년월일 하나로 시작합니다.
+회원가입 없이도 AI와 대화할 수 있습니다.</p><button class="cta-btn">무료 사주 분석 시작하기</button><button class="cta-chat-btn">AI에게 먼저 물어보기</button></section><footer class="footer"><p class="footer-text" style="white-space:pre-line">© 2026 한양사주 · AI 사주명리 분석 서비스<br/>전통 사주명리학 기반의 참고용 서비스입니다.</p></footer></div></div><div class="floating-cta"><button class="floating-btn-main">무료 사주 분석</button><button class="floating-btn-chat">AI 대화</button></div><!--$--><!--/$--></div></main><div style="width:100%;background:inherit;padding-bottom:16px"><div style="max-width:390px;margin:0 auto;padding:0 20px"><footer class="w-full bg-gradient-to-b from-transparent to-[#f8f4e6] py-6 sm:py-8 px-4 sm:px-6 mt-8"><div class="max-w-[450px] mx-auto"><div class="space-y-1.5 sm:space-y-2 text-[10px] sm:text-xs text-gray-600 text-center mb-3 sm:mb-4"><p class="leading-relaxed"><span class="font-semibold">상호명:</span> 한양사주<span class="hidden sm:inline">  </span><span class="block sm:inline mt-0.5 sm:mt-0"><span class="font-semibold">대표자:</span> 김강필</span></p><p class="leading-relaxed"><span class="font-semibold">사업자등록번호:</span> <span>889-28-01406</span></p><p class="leading-relaxed px-2 sm:px-0"><span class="font-semibold">주소:</span> 경기도 안산시 상록구 학사4길 9-1,<br/>302호(사동, 쁘띠메종)</p><p class="leading-relaxed"><span class="font-semibold">전화:</span> <a href="tel:01024359790" class="text-blue-600 hover:text-blue-800 underline">010-2435-9790</a></p><p class="leading-relaxed"><span class="font-semibold">이메일:</span> <a href="mailto:ksh00922@gmail.com" class="text-blue-600 hover:text-blue-800 underline break-all">ksh00922@gmail.com</a></p></div><div class="flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-gray-600 mb-2 sm:mb-3 border-t border-gray-300 pt-2 sm:pt-3"><a class="hover:text-gray-900 hover:underline whitespace-nowrap" href="/privacy">개인정보 처리방침</a><span class="text-gray-400">|</span><a class="hover:text-gray-900 hover:underline whitespace-nowrap" href="/terms">이용약관</a><span class="text-gray-400">|</span><a class="hover:text-gray-900 hover:underline whitespace-nowrap" href="/contact">문의하기</a></div><div class="text-center"><p class="text-[9px] sm:text-[10px] text-gray-500">© 2026 한양사주. All rights reserved.</p></div></div></footer></div></div></div><script src="/_next/static/chunks/762eacd36e24497b.js" id="_R_" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n3:I[93348,[\"/_next/static/chunks/e73eaabb1f8022b1.js\",\"/_next/static/chunks/623bd66fa1c8ade6.js\"],\"default\"]\n4:I[85070,[\"/_next/static/chunks/e73eaabb1f8022b1.js\",\"/_next/static/chunks/623bd66fa1c8ade6.js\"],\"default\"]\n5:I[87103,[\"/_next/static/chunks/e73eaabb1f8022b1.js\",\"/_next/static/chunks/623bd66fa1c8ade6.js\"],\"ClientPageRoot\"]\n6:I[19246,[\"/_next/static/chunks/e490691ed556830d.js\",\"/_next/static/chunks/439cc1bbb201dca2.js\",\"/_next/static/chunks/28c3cb5d21e93bde.js\"],\"default\"]\n9:I[21058,[\"/_next/static/chunks/e73eaabb1f8022b1.js\",\"/_next/static/chunks/623bd66fa1c8ade6.js\"],\"OutletBoundary\"]\na:\"$Sreact.suspense\"\nc:I[21058,[\"/_next/static/chunks/e73eaabb1f8022b1.js\",\"/_next/static/chunks/623bd66fa1c8ade6.js\"],\"ViewportBoundary\"]\ne:I[21058,[\"/_next/static/chunks/e73eaabb1f8022b1.js\",\"/_next/static/chunks/623bd66fa1c8ade6.js\"],\"MetadataBoundary\"]\n10:I[20665,[],\"default\"]\n:HL[\"/_next/static/chunks/3d37b941c8f3d5b7.css\",\"style\"]\n"])</script><script>self.__next_f.push([1,"0:{\"P\":null,\"b\":\"LKgK_aUW-HZUhZeP8REW1\",\"c\":[\"\",\"home\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"home\",{\"children\":[\"__PAGE__\",{}]}]},\"$undefined\",\"$undefined\",true],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/_next/static/chunks/3d37b941c8f3d5b7.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/e490691ed556830d.js\",\"async\":true,\"nonce\":\"$undefined\"}]],\"$L2\"]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[null,[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":\"$undefined\",\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[[\"$\",\"$L5\",null,{\"Component\":\"$6\",\"serverProvidedParams\":{\"searchParams\":{},\"params\":{},\"promises\":[\"$@7\",\"$@8\"]}}],[[\"$\",\"script\",\"script-0\",{\"src\":\"/_next/static/chunks/439cc1bbb201dca2.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/_next/static/chunks/28c3cb5d21e93bde.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"$L9\",null,{\"children\":[\"$\",\"$a\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@b\"}]}]]}],{},null,false,false]},null,false,false]},null,false,false],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$Lc\",null,{\"children\":\"$Ld\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$Le\",null,{\"children\":[\"$\",\"$a\",null,{\"name\":\"Next.Metadata\",\"children\":\"$Lf\"}]}]}],null]}],false]],\"m\":\"$undefined\",\"G\":[\"$10\",[]],\"S\":true}\n"])</script><script>self.__next_f.push([1,"11:I[72441,[\"/_next/static/chunks/e490691ed556830d.js\"],\"LangProvider\"]\n13:I[28872,[\"/_next/static/chunks/e490691ed556830d.js\"],\"\"]\n14:I[44649,[\"/_next/static/chunks/e490691ed556830d.js\"],\"default\"]\n15:I[61746,[\"/_next/static/chunks/e490691ed556830d.js\"],\"default\"]\n7:{}\n8:\"$0:f:0:1:1:children:1:children:0:props:children:0:props:serverProvidedParams:params\"\n12:[\"$\",\"iframe\",null,{\"src\":\"https://www.googletagmanager.com/ns.html?id=GTM-KPH5HZM3\",\"height\":\"0\",\"width\":\"0\",\"style\":{\"display\":\"none\",\"visibility\":\"hidden\"},\"title\":\"Google Tag Manager\"}]\n"])</script><script>self.__next_f.push([1,"2:[\"$\",\"html\",null,{\"lang\":\"ko\",\"children\":[[\"$\",\"head\",null,{\"children\":[[\"$\",\"meta\",null,{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes\"}],[\"$\",\"meta\",null,{\"name\":\"theme-color\",\"content\":\"#F5F2EE\"}],[\"$\",\"meta\",null,{\"name\":\"apple-mobile-web-app-capable\",\"content\":\"yes\"}],[\"$\",\"meta\",null,{\"name\":\"apple-mobile-web-app-status-bar-style\",\"content\":\"default\"}]]}],[\"$\",\"body\",null,{\"className\":\"antialiased\",\"style\":{\"paddingBottom\":0,\"background\":\"var(--bg-base)\"},\"children\":[\"$\",\"$L11\",null,{\"children\":[[\"$\",\"noscript\",null,{\"children\":\"$12\"}],[\"$\",\"$L13\",null,{\"id\":\"gtm\",\"strategy\":\"afterInteractive\",\"dangerouslySetInnerHTML\":{\"__html\":\"(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':\\nnew Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],\\nj=d.createElement(s),dl=l!='dataLayer'?'\u0026l='+l:'';j.async=true;j.src=\\n'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);\\n})(window,document,'script','dataLayer','GTM-KPH5HZM3');\"}}],[\"$\",\"div\",null,{\"className\":\"flex flex-col min-h-screen relative\",\"style\":{\"zIndex\":1},\"children\":[[\"$\",\"main\",null,{\"className\":\"flex-grow pb-0\",\"children\":[\"$\",\"$L14\",null,{\"children\":[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404}],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"}]}]]}]}]],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}]}]}],[\"$\",\"div\",null,{\"style\":{\"width\":\"100%\",\"background\":\"inherit\",\"paddingBottom\":16},\"children\":[\"$\",\"div\",null,{\"style\":{\"maxWidth\":390,\"margin\":\"0 auto\",\"padding\":\"0 20px\"},\"children\":[\"$\",\"$L15\",null,{}]}]}]]}]]}]}]]}]\n"])</script><script>self.__next_f.push([1,"d:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes\"}]]\n"])</script><script>self.__next_f.push([1,"16:I[38984,[\"/_next/static/chunks/e73eaabb1f8022b1.js\",\"/_next/static/chunks/623bd66fa1c8ade6.js\"],\"IconMark\"]\nb:null\nf:[[\"$\",\"title\",\"0\",{\"children\":\"사주 프로젝트\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"한양사주 — Gmarket Sans\"}],[\"$\",\"link\",\"2\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.0b3bf435.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"}],[\"$\",\"$L16\",\"3\",{}]]\n"])</script></body></html>

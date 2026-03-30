@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { Suspense, use, useRef, useEffect, useMemo, useState, useCallback } from "react";
+import { Suspense, use, useRef, useEffect, useMemo, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { useChat } from "@ai-sdk/react";
@@ -41,12 +41,11 @@ function getTimeBasedGreeting(lang: "ko" | "en"): string {
 }
 
 const QUICK_PROMPTS_KO = [
-  { label: "사주 질문", text: "사주에 대해 궁금한 게 있어요." },
-  { label: "오늘의 운세", text: "오늘 제 운세를 알려주세요." },
-  { label: "올해 재물운", text: "올해 재물운이 어떻게 되나요?" },
-  { label: "맞는 직업", text: "나랑 잘 맞는 직업이나 방향이 궁금해요." },
-  { label: "고민 상담", text: "요즘 고민이 있어서 조언이 필요해요." },
-  { label: "나와 맞는 방향", text: "제게 맞는 직업이나 방향이 궁금해요." },
+  "올해 연애운은?",
+  "취업/이직 타이밍",
+  "재물운이 트이는 시기",
+  "나랑 잘 맞는 사람",
+  "지금 이 결정 해도 될까?",
 ];
 
 const BACKEND_API_BASE =
@@ -117,12 +116,11 @@ function getDayPillarHangulFromSaved(first: SavedSaju | null | undefined): strin
 }
 
 const QUICK_PROMPTS_EN = [
-  { label: "Ask about Saju", text: "I have a question about my Saju." },
-  { label: "Today's luck", text: "Please tell me my luck for today." },
-  { label: "Wealth this year", text: "How is my wealth luck this year?" },
-  { label: "Career direction", text: "What kind of job or direction fits me well?" },
-  { label: "Worry counseling", text: "I have something on my mind and need some advice." },
-  { label: "Best direction", text: "I want to know which direction in life suits me." },
+  "How's my love luck this year?",
+  "Best timing for a job change?",
+  "When does my wealth luck open up?",
+  "Who is my ideal match?",
+  "Can I make this decision now?",
 ];
 
 function getMessageText(message: { parts?: Array<{ type: string; text?: string }> }): string {
@@ -788,6 +786,36 @@ function ChatPageInner({
         @media (min-width: 768px) { .chat-initial-greeting { font-size: 16px; } }
         .chat-initial-prompt { font-family: var(--serif); font-size: 20px; font-weight: 700; color: var(--text); text-align: center; line-height: 1.5; max-width: 320px; }
         @media (min-width: 768px) { .chat-initial-prompt { font-size: 22px; max-width: 400px; } }
+        .chat-context-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 4px;
+          font-size: 12px;
+          color: var(--sub);
+          text-align: center;
+          padding: 6px 8px 10px;
+          line-height: 1.5;
+        }
+        .chat-context-badge-name {
+          color: var(--text);
+          font-weight: 600;
+        }
+        .chat-context-badge-sep {
+          color: var(--border2);
+          margin: 0 4px;
+        }
+        .chat-context-badge-limit {
+          color: var(--gold-muted);
+        }
+        .chat-context-badge-sub-cta {
+          color: var(--accent);
+          font-weight: 600;
+        }
+        @media (min-width: 768px) {
+          .chat-context-badge { font-size: 13px; padding-bottom: 12px; }
+        }
         .chat-quick-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; padding: 0 4px; }
         .chat-quick-chip {
           padding: 10px 16px; border-radius: 999px; border: 1px solid var(--border2); background: var(--surface);
@@ -1491,6 +1519,7 @@ function ChatPageInner({
                     lastUserMessageRef={lastUserMessageRef}
                     handleRetryRef={handleRetryRef}
                     savedSajuName={savedSajuName}
+                    sajuBadgeDayKr={sajuBadgeDayKr}
                     replaceMessages={replaceMessages}
                     ensureTitleFromFirstMessage={ensureTitleFromFirstMessage}
                     sajuId={urlSajuId || undefined}
@@ -1533,6 +1562,7 @@ type ChatContentProps = {
   lastUserMessageRef: React.MutableRefObject<string | null>;
   handleRetryRef: React.MutableRefObject<((text: string) => void) | null>;
   savedSajuName: string | null;
+  sajuBadgeDayKr: string;
   sessionTitle: string;
   sajuId?: string;
 };
@@ -1552,6 +1582,7 @@ function ChatContent({
   lastUserMessageRef,
   handleRetryRef,
   savedSajuName,
+  sajuBadgeDayKr,
   sessionTitle,
   sajuId,
 }: ChatContentProps) {
@@ -1833,12 +1864,21 @@ function ChatContent({
       }, 100);
       if (shouldIncrementGuestCount) {
         const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
-        localStorage.setItem("guest_chat_count", String(guestCount + 1));
+        const newCount = guestCount + 1;
+        localStorage.setItem("guest_chat_count", String(newCount));
+        setGuestChatCount(newCount);
       }
     } catch (e) {
       onError(e instanceof Error ? e.message : "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
     }
   };
+
+  const [guestChatCount, setGuestChatCount] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    return parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
+  });
+
+  const chatInputRef = useRef<ChatInputHandle>(null);
 
   const sending = isLoading;
   const hasUserMessage = messages.some((m) => m.role === "user");
@@ -1986,21 +2026,51 @@ function ChatContent({
       </div>
 
       <div className="chat-input-wrap">
+        {(() => {
+          const remaining = Math.max(0, GUEST_LIMIT - guestChatCount);
+          const nameStr = savedSajuName?.trim() ?? "";
+          const dayStr = sajuBadgeDayKr;
+          if (lang === "en") return null;
+          return (
+            <div className="chat-context-badge">
+              <span>🔮</span>
+              {nameStr ? (
+                <>
+                  <span className="chat-context-badge-name">
+                    {nameStr}{dayStr ? ` (${dayStr}일주)` : ""}
+                  </span>
+                  <span>의 사주로 대화 중</span>
+                </>
+              ) : (
+                <span>사주를 등록하면 맞춤 해석이 가능해요</span>
+              )}
+              {!isLoggedIn && (
+                <>
+                  <span className="chat-context-badge-sep">|</span>
+                  <span className="chat-context-badge-limit">무료 채팅 {remaining}회 남음</span>
+                  <span>·</span>
+                  <span className="chat-context-badge-sub-cta">구독하면 무제한</span>
+                </>
+              )}
+            </div>
+          );
+        })()}
         {!hasUserMessage && !showLoginCard && (
           <div className="chat-quick-chips">
             {(lang === "en" ? QUICK_PROMPTS_EN : QUICK_PROMPTS_KO).map((q) => (
               <button
-                key={q.label}
+                key={q}
                 type="button"
                 className="chat-quick-chip"
-                onClick={() => handleSubmit(q.text)}
+                onClick={() => chatInputRef.current?.fillAndSubmit(q)}
               >
-                {q.label}
+                {q}
               </button>
             ))}
           </div>
         )}
         <ChatInput
+          ref={chatInputRef}
           disabled={sending || showLoginCard}
           onSubmit={handleSubmit}
           placeholder={lang === "en" ? "Ask anything about your Saju" : "무엇이든 물어보세요"}
@@ -2070,20 +2140,22 @@ function ChatContent({
   );
 }
 
-function ChatInput({
-  disabled,
-  onSubmit,
-  placeholder = "무엇이든 물어보세요",
-}: {
+type ChatInputHandle = { fillAndSubmit: (text: string) => void };
+
+const ChatInput = forwardRef<ChatInputHandle, {
   disabled: boolean;
   onSubmit: (text: string) => void;
   placeholder?: string;
-}) {
+}>(function ChatInput({
+  disabled,
+  onSubmit,
+  placeholder = "무엇이든 물어보세요",
+}, ref) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSend = () => {
-    const t = input.trim();
+  const handleSend = (overrideText?: string) => {
+    const t = (overrideText ?? input).trim();
     if (!t || disabled) return;
     setInput("");
     onSubmit(t);
@@ -2092,6 +2164,15 @@ function ChatInput({
       textareaRef.current.style.height = "auto";
     }
   };
+
+  useImperativeHandle(ref, () => ({
+    fillAndSubmit(text: string) {
+      setInput(text);
+      requestAnimationFrame(() => {
+        handleSend(text);
+      });
+    },
+  }));
 
   // 입력창 자동 높이 조절 (최대 max-height 내에서)
   const adjustHeight = () => {
@@ -2124,7 +2205,7 @@ function ChatInput({
       <button
         type="button"
         className="chat-send"
-        onClick={handleSend}
+        onClick={() => handleSend()}
         disabled={disabled || !input.trim()}
         aria-label="보내기"
       >
@@ -2132,7 +2213,7 @@ function ChatInput({
       </button>
     </div>
   );
-}
+});
 
 export default function ChatPage({
   params,

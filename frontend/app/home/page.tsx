@@ -1890,6 +1890,14 @@ export default function HomePage({
                 </div>
               ))}
             </div>
+
+            {/* 스토어 바로가기 */}
+            <button
+              onClick={() => router.push("/store")}
+              style={{ marginTop: 16, width: "100%", padding: "13px 0", borderRadius: 12, border: `1.5px solid ${S.beige}`, background: S.cream, fontSize: 13, fontWeight: 700, color: S.ink2, cursor: "pointer", fontFamily: "'Gmarket Sans', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
+            >
+              <span>🛒</span> 스토어에서 리포트 구매하기
+            </button>
           </section>
 
           {/* ── 일주 동물 ── */}

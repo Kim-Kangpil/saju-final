@@ -23,6 +23,14 @@ type MenuItem =
 const MENU_ITEMS: MenuItem[] = [
   { key: "saju-list", icon: "mdi:format-list-bulleted", label: "내 사주 목록", desc: "저장한 사주 보기", color: "var(--text-secondary)", path: "/saju-list" },
   {
+    key: "store",
+    icon: "mdi:storefront-outline",
+    label: "스토어",
+    desc: "리포트 구매 및 구독 관리",
+    color: "#8B7355",
+    path: "/store",
+  },
+  {
     key: "purchased-reports",
     icon: "mdi:file-document-outline",
     label: "구매한 리포트",

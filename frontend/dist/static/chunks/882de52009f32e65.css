@@ -1,0 +1,1 @@
+.loginRoot{min-height:100vh;position:relative;overflow:hidden}.loginCenter{z-index:2;justify-content:center;align-items:center;min-height:100vh;display:flex;position:relative}@keyframes sajuSway{0%{transform:translate(-2px)}50%{transform:translate(2px)}to{transform:translate(-2px)}}@keyframes sajuParticles{0%{transform:translateY(0)}to{transform:translateY(-20px)}}

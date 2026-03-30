@@ -207,6 +207,8 @@ function SectionAccordion({
   defaultOpen,
   visualCard,
   ruleSummary,
+  ctaLabel,
+  ctaHref,
 }: {
   icon: string;
   title: string;
@@ -214,6 +216,8 @@ function SectionAccordion({
   defaultOpen: boolean;
   visualCard?: "personality" | "problem" | "money";
   ruleSummary?: Record<string, any>;
+  ctaLabel?: string;
+  ctaHref?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -281,10 +285,273 @@ function SectionAccordion({
                   <MoneyFlowCard ruleSummary={ruleSummary} />
                 </div>
               )}
+              {ctaLabel && ctaHref && (
+                <a
+                  href={ctaHref}
+                  style={{
+                    display: "block", marginTop: 18,
+                    padding: "13px 0", borderRadius: 10,
+                    background: "linear-gradient(135deg, #8B7355 0%, #A8946A 100%)",
+                    color: "#fff", fontSize: 14, fontWeight: 700,
+                    textAlign: "center", textDecoration: "none",
+                    boxShadow: "0 2px 8px rgba(139,115,85,0.3)",
+                  }}
+                >
+                  {ctaLabel}
+                </a>
+              )}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── 오행 한국어 매핑 ───
+const ELEMENT_KO: Record<string, string> = {
+  wood: "목(木)", fire: "화(火)", earth: "토(土)", metal: "금(金)", water: "수(水)",
+};
+const ELEMENT_COLORS: Record<string, string> = {
+  wood: "#3B6D11", fire: "#993C1D", earth: "#854F0B", metal: "#555", water: "#3B5FA0",
+};
+const ELEMENT_BG: Record<string, string> = {
+  wood: "#C0DD97", fire: "#F0997B", earth: "#FAC775", metal: "#E8E8E8", water: "#B4CFE8",
+};
+
+function computeOhaengRatio(pillars: { year: string; month: string; day: string; hour: string }): Record<string, number> {
+  const counts: Record<string, number> = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
+  const all = [pillars.year, pillars.month, pillars.day, pillars.hour].join("");
+  for (const ch of all) {
+    const el = hanjaToElement(ch);
+    if (el !== "none") counts[el]++;
+  }
+  return counts;
+}
+
+// ─── 핵심 카드 ───
+function HeroCard({
+  pillarStrings,
+  yongshin,
+  geokguk,
+  sajuId,
+  onSaveImage,
+}: {
+  pillarStrings: { year: string; month: string; day: string; hour: string };
+  yongshin: string;
+  geokguk: string;
+  sajuId: string;
+  onSaveImage: () => void;
+}) {
+  const ratio = computeOhaengRatio(pillarStrings);
+  const total = Object.values(ratio).reduce((a, b) => a + b, 0) || 1;
+  const dayPillar = pillarStrings.day;
+  const dayHanja = dayPillar.slice(0, 2);
+  const dayHangul = dayHanja.split("").map(hanjaToHangul).join("");
+
+  const handleKakaoShare = () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (typeof window !== "undefined" && (window as any).Kakao?.isInitialized?.()) {
+      (window as any).Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "내 사주 핵심 카드",
+          description: `일주 ${dayHanja}(${dayHangul}) | 용신 ${yongshin}`,
+          imageUrl: "https://hsaju.com/og-image.png",
+          link: { mobileWebUrl: url, webUrl: url },
+        },
+      });
+    } else if (navigator.share) {
+      navigator.share({ title: "내 사주 핵심 카드", url }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(url).then(() => alert("링크가 복사됐어요!")).catch(() => {});
+    }
+  };
+
+  return (
+    <div
+      style={{
+        background: "linear-gradient(135deg, #2C2417 0%, #4A3F30 100%)",
+        borderRadius: 20, padding: "22px 20px 18px", marginBottom: 16,
+        boxShadow: "0 4px 20px rgba(44,36,23,0.25)",
+      }}
+    >
+      {/* 태그 */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+        {[
+          { label: "일주", value: `${dayHanja}(${dayHangul})` },
+          { label: "용신", value: yongshin },
+          { label: "격국", value: geokguk },
+        ].map((item) => (
+          <div key={item.label} style={{
+            background: "rgba(255,255,255,0.12)", borderRadius: 8,
+            padding: "6px 12px", display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <span style={{ fontSize: 10, color: "#C4B8A4", fontWeight: 600 }}>{item.label}</span>
+            <span style={{ fontSize: 13, color: "#F5F1EA", fontWeight: 700 }}>{item.value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* 오행 바차트 */}
+      <div style={{ marginBottom: 14 }}>
+        <p style={{ fontSize: 11, color: "#A8946A", marginBottom: 8, letterSpacing: "0.05em" }}>오행 비율</p>
+        {(["wood", "fire", "earth", "metal", "water"] as const).map((el) => {
+          const pct = Math.round((ratio[el] / total) * 100);
+          return (
+            <div key={el} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+              <span style={{ fontSize: 11, color: "#C4B8A4", width: 42, flexShrink: 0 }}>{ELEMENT_KO[el].split("(")[0]}</span>
+              <div style={{ flex: 1, height: 8, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden" }}>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  style={{ height: "100%", background: ELEMENT_BG[el], borderRadius: 99 }}
+                />
+              </div>
+              <span style={{ fontSize: 11, color: "#F5F1EA", width: 28, textAlign: "right", flexShrink: 0 }}>{pct}%</span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 버튼 */}
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          type="button"
+          onClick={onSaveImage}
+          style={{
+            flex: 1, padding: "10px 0", borderRadius: 8,
+            background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.2)",
+            color: "#F5F1EA", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}
+        >
+          📸 이미지 저장
+        </button>
+        <button
+          type="button"
+          onClick={handleKakaoShare}
+          style={{
+            flex: 1, padding: "10px 0", borderRadius: 8,
+            background: "#FEE500", border: "none",
+            color: "#3C1E1E", fontSize: 13, fontWeight: 700, cursor: "pointer",
+          }}
+        >
+          💬 카카오 공유
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── 대운 미리보기 ───
+function DaeunPreview({ daeunList, birthYear, sajuId, router }: {
+  daeunList: string[];
+  birthYear: number;
+  sajuId: string;
+  router: ReturnType<typeof import("next/navigation").useRouter>;
+}) {
+  const currentYear = 2026;
+  const approxAge = currentYear - birthYear;
+
+  let currentEntry: { ganji: string; hangul: string; startAge: number } | null = null;
+  for (const entry of daeunList) {
+    const m = entry.match(/^(\d+)세\s+([^\(]+)\(([^)]+)\)/);
+    if (!m) continue;
+    const startAge = parseInt(m[1], 10);
+    const ganji = m[2].trim();
+    const hangul = m[3].trim();
+    if (approxAge >= startAge && approxAge < startAge + 10) {
+      currentEntry = { ganji, hangul, startAge };
+      break;
+    }
+  }
+  if (!currentEntry && daeunList.length > 0) {
+    const m = daeunList[0].match(/^(\d+)세\s+([^\(]+)\(([^)]+)\)/);
+    if (m) currentEntry = { ganji: m[2].trim(), hangul: m[3].trim(), startAge: parseInt(m[1], 10) };
+  }
+  if (!currentEntry) return null;
+
+  const endAge = currentEntry.startAge + 9;
+
+  return (
+    <div style={{
+      background: "#fff", borderRadius: 14, border: `1px solid ${S.beige}`,
+      padding: "16px 18px", marginBottom: 16,
+      boxShadow: "0 2px 8px rgba(44,36,23,0.05)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: S.ink }}>🌊 현재 대운</span>
+        <span style={{ fontSize: 11, color: S.ink3 }}>{currentEntry.startAge}세 ~ {endAge}세</span>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{
+          background: `linear-gradient(135deg, ${S.ink} 0%, ${S.ink2} 100%)`,
+          borderRadius: 12, padding: "10px 16px", textAlign: "center",
+        }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "#F5F1EA", letterSpacing: 2 }}>{currentEntry.ganji}</div>
+          <div style={{ fontSize: 11, color: "#C4B8A4", marginTop: 2 }}>{currentEntry.hangul}</div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 13, color: S.ink2, lineHeight: 1.6, margin: 0 }}>
+            현재 <strong>{currentEntry.ganji}({currentEntry.hangul})</strong> 대운 흐름 속에 있어요.
+          </p>
+          <p style={{ fontSize: 12, color: S.ink3, margin: "4px 0 0" }}>
+            {currentEntry.startAge}세부터 {endAge}세까지 이어져요
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => router.push(`/report/deep/intro?saju_id=${sajuId}`)}
+        style={{
+          marginTop: 12, width: "100%", padding: "10px 0", borderRadius: 8,
+          background: S.cream2, border: `1px solid ${S.beige}`,
+          color: S.ink, fontSize: 13, fontWeight: 600, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
+        }}
+      >
+        전체 대운 흐름 보기 →
+      </button>
+    </div>
+  );
+}
+
+// ─── 상품 목록 그리드 ───
+function ProductGrid({ sajuId, router }: {
+  sajuId: string;
+  router: ReturnType<typeof import("next/navigation").useRouter>;
+}) {
+  const products = [
+    { icon: "💰", label: "재물운 리포트", sub: "2,900원", href: `/report/money/intro?saju_id=${sajuId}` },
+    { icon: "❤️", label: "연애운 리포트", sub: "2,900원", href: `/report/love/intro?saju_id=${sajuId}` },
+    { icon: "🧭", label: "직업운 리포트", sub: "2,900원", href: `/report/career/intro?saju_id=${sajuId}` },
+    { icon: "🔮", label: "심화 리포트", sub: "4,900원", href: `/report/deep/intro?saju_id=${sajuId}` },
+    { icon: "💬", label: "AI 채팅", sub: "Pro 월 3,900원", href: `/chat?saju_id=${sajuId}` },
+    { icon: "💑", label: "궁합 분석", sub: "2,900원", href: `/report/couple/intro?saju_id=${sajuId}` },
+  ];
+  return (
+    <div style={{ marginTop: 24, marginBottom: 8 }}>
+      <p style={{ fontSize: 13, fontWeight: 700, color: S.ink, marginBottom: 12 }}>📦 더 깊이 알아보기</p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {products.map((p) => (
+          <button
+            key={p.label}
+            type="button"
+            onClick={() => router.push(p.href)}
+            style={{
+              padding: "14px 12px", borderRadius: 12,
+              background: "#fff", border: `1px solid ${S.beige}`,
+              textAlign: "left", cursor: "pointer",
+              boxShadow: "0 1px 4px rgba(44,36,23,0.06)",
+            }}
+          >
+            <div style={{ fontSize: 20, marginBottom: 4 }}>{p.icon}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: S.ink, marginBottom: 2 }}>{p.label}</div>
+            <div style={{ fontSize: 11, color: S.gold }}>{p.sub}</div>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -311,6 +578,9 @@ function BasicV2ReportContent() {
   const [basicInfoOpen, setBasicInfoOpen] = useState(false);
   const [sajuTableOpen, setSajuTableOpen] = useState(false);
   const [fakeProgress, setFakeProgress] = useState(0);
+  const [fullRawData, setFullRawData] = useState<Record<string, any> | null>(null);
+  const [freeChatRemaining, setFreeChatRemaining] = useState<number | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [stuckAt95, setStuckAt95] = useState(false);
@@ -394,6 +664,7 @@ function BasicV2ReportContent() {
         if (!fullRes.ok) throw new Error("사주 계산에 실패했습니다.");
         const fullData = await fullRes.json();
         setResult(fullData);
+        setFullRawData(fullData);
 
         const raw = fullData as Record<string, unknown>;
         const yearPillar = (raw.year_pillar as string) || `${fullData.year?.cheongan?.hanja || ""}${fullData.year?.jiji?.hanja || ""}`;
@@ -485,6 +756,18 @@ function BasicV2ReportContent() {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
 
+  // 무료 채팅 남은 횟수 조회
+  useEffect(() => {
+    fetch(`${API_BASE}/api/payment/status`, { credentials: "include", headers: getAuthHeaders() })
+      .then((r) => r.json())
+      .then((d) => {
+        const limit = d.chat_limit ?? 3;
+        const used = d.daily_chat_count ?? 0;
+        setFreeChatRemaining(Math.max(0, limit - used));
+      })
+      .catch(() => setFreeChatRemaining(3));
+  }, []);
+
   const birthYmd = sajuInfo?.birthdate?.replace(/-/g, "");
   const birthHm = sajuInfo?.birth_time?.replace(":", "") || "1200";
   const gender = sajuInfo?.gender === "남자" ? "M" : "F";
@@ -512,6 +795,32 @@ function BasicV2ReportContent() {
       alert("공유 링크 생성에 실패했어요. 다시 시도해 주세요.");
     }
   };
+
+  const handleSaveImage = async () => {
+    if (!cardRef.current) return;
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(cardRef.current, { backgroundColor: null, scale: 2 });
+      const link = document.createElement("a");
+      link.download = "saju-core-card.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch {
+      alert("이미지 저장에 실패했어요. 다시 시도해 주세요.");
+    }
+  };
+
+  // 용신/격국 계산
+  const yongshinLabel = (() => {
+    const elements: string[] = fullRawData?.yongshin?.final_yongshin ?? [];
+    const KO: Record<string, string> = { wood: "목", fire: "화", earth: "토", metal: "금", water: "수" };
+    return elements.map((e) => KO[e] ?? e).join("·") || "분석 중";
+  })();
+  const geokgukLabel = (() => {
+    const tg = fullRawData?.ten_gods;
+    const mb = tg?.month_branch ?? "";
+    return mb ? `${mb}격` : "분석 중";
+  })();
 
   if (error) {
     return (
@@ -627,6 +936,19 @@ function BasicV2ReportContent() {
       ) : (
         /* ── 결과 UI ── */
         <div style={{ padding: "16px 14px" }}>
+          {/* 핵심 카드 */}
+          {v2Result && pillarStrings && (
+            <div ref={cardRef}>
+              <HeroCard
+                pillarStrings={pillarStrings}
+                yongshin={yongshinLabel}
+                geokguk={geokgukLabel}
+                sajuId={sajuId}
+                onSaveImage={handleSaveImage}
+              />
+            </div>
+          )}
+
           {/* 기본 정보 아코디언 */}
           <div style={{ border: `1px solid ${S.beige}`, borderRadius: 12, overflow: "hidden", background: "#fff", marginBottom: 10, boxShadow: "0 1px 4px rgba(44,36,23,0.05)" }}>
             <button
@@ -751,6 +1073,16 @@ function BasicV2ReportContent() {
             </div>
           )}
 
+          {/* 대운 미리보기 */}
+          {fullRawData && Array.isArray(fullRawData.daeun_list) && fullRawData.daeun_list.length > 0 && sajuInfo?.birthdate && !isSharedView && (
+            <DaeunPreview
+              daeunList={fullRawData.daeun_list as string[]}
+              birthYear={parseInt((sajuInfo.birthdate as string).split("-")[0], 10)}
+              sajuId={sajuId}
+              router={router}
+            />
+          )}
+
           {/* AI 분석 섹션 */}
           {v2Result && (() => {
             const sections = parseV2ComprehensiveSections(v2Result.comprehensive);
@@ -762,6 +1094,16 @@ function BasicV2ReportContent() {
                 {sections.map((sec, idx) => {
                   const icon = extractIcon(sec.title);
                   const titleText = icon ? sec.title.replace(icon, "").trim() : sec.title;
+                  const isMoney = /💰/.test(sec.title);
+                  const isLove = /❤️/.test(sec.title);
+                  const isCareer = /🧭/.test(sec.title);
+                  const ctaRoute = isMoney
+                    ? `/report/money/intro?saju_id=${sajuId}`
+                    : isLove
+                    ? `/report/love/intro?saju_id=${sajuId}`
+                    : isCareer
+                    ? `/report/career/intro?saju_id=${sajuId}`
+                    : undefined;
                   return (
                     <SectionAccordion
                       key={sec.title}
@@ -771,6 +1113,8 @@ function BasicV2ReportContent() {
                       defaultOpen={idx < 2}
                       visualCard={getVisualCard(sec.title)}
                       ruleSummary={v2Result.rule_summary}
+                      ctaLabel={ctaRoute && !isSharedView ? "더 자세히 보기 (2,900원) →" : undefined}
+                      ctaHref={ctaRoute && !isSharedView ? ctaRoute : undefined}
                     />
                   );
                 })}
@@ -850,7 +1194,44 @@ function BasicV2ReportContent() {
             </div>
           )}
 
-          <div style={{ height: 32 }} />
+          {/* 상품 목록 그리드 */}
+          {v2Result && !isSharedView && (
+            <ProductGrid sajuId={sajuId} router={router} />
+          )}
+
+          <div style={{ height: 80 }} />
+        </div>
+      )}
+
+      {/* 플로팅 AI 채팅 버튼 */}
+      {!loading && v2Result && !isSharedView && (
+        <div style={{
+          position: "fixed", bottom: 24, right: 16, zIndex: 100,
+        }}>
+          <button
+            type="button"
+            onClick={() => router.push(`/chat?saju_id=${sajuId}`)}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "12px 18px", borderRadius: 99,
+              background: "linear-gradient(135deg, #2C2417 0%, #4A3F30 100%)",
+              border: "none", color: "#F5F1EA",
+              fontSize: 14, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 4px 20px rgba(44,36,23,0.4)",
+            }}
+          >
+            <span style={{ fontSize: 18 }}>💬</span>
+            <span>AI에게 바로 질문하기</span>
+            {freeChatRemaining !== null && (
+              <span style={{
+                background: freeChatRemaining > 0 ? "#A8946A" : "#888",
+                color: "#fff", fontSize: 10, fontWeight: 700,
+                borderRadius: 99, padding: "2px 7px", minWidth: 20, textAlign: "center",
+              }}>
+                {freeChatRemaining > 0 ? `${freeChatRemaining}회 무료` : "소진"}
+              </span>
+            )}
+          </button>
         </div>
       )}
     </div>

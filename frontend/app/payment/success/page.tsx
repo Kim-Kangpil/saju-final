@@ -10,7 +10,7 @@ const REDIRECT_MAP: Record<string, string> = {
   pro_monthly:     "/home",
   basic:           "/add",
   analysis_ticket: "/add",
-  deep:            "/add",
+  deep:            "/report/deep",
   money:           "/report/money",
   love:            "/report/love",
   career:          "/report/career",
@@ -70,6 +70,13 @@ function PaymentSuccessInner() {
             localStorage.removeItem("kakao_pay_report_return");
             const sep = ret.includes("?") ? "&" : "?";
             setRedirectOverride(`${ret}${sep}variant=realistic`);
+          }
+        }
+        if (typeof window !== "undefined" && ot === "deep") {
+          const sid = localStorage.getItem("deep_report_saju_id");
+          if (sid) {
+            localStorage.removeItem("deep_report_saju_id");
+            setRedirectOverride(`/report/deep?saju_id=${encodeURIComponent(sid)}`);
           }
         }
         setState("success");

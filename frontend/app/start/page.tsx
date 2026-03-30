@@ -217,6 +217,7 @@ export default function StartPage({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleEmailLogin()}
               placeholder="HanyangSaju@gmail.com"
               className="start-input"
               style={{
@@ -236,6 +237,7 @@ export default function StartPage({
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleEmailLogin()}
                 placeholder="********"
                 className="start-input"
                 style={{

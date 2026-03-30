@@ -649,6 +649,35 @@ async def admin_list_users(request: Request, limit: int = 50, offset: int = 0):
     return {"success": True, "users": users}
 
 
+@app.post("/api/admin/reset-password")
+async def admin_reset_password(request: Request):
+    """관리자용 특정 이메일 계정 비밀번호 강제 리셋."""
+    if not _is_chat_admin(request):
+        raise HTTPException(status_code=403, detail="admin secret missing")
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="잘못된 요청입니다.")
+    email = (body.get("email") or "").strip().lower()
+    new_password = (body.get("new_password") or "").strip()
+    if not email or not new_password:
+        raise HTTPException(status_code=400, detail="email과 new_password 필요")
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="비밀번호 6자 이상")
+    from logic.user_db import _hash_password, _conn, adapt
+    pw_hash = _hash_password(new_password)
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(adapt("UPDATE users SET password_hash = ? WHERE provider = 'email' AND provider_id = ?"), (pw_hash, email))
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="해당 이메일 계정 없음")
+        conn.commit()
+        return {"success": True, "message": f"{email} 비밀번호 변경 완료"}
+    finally:
+        conn.close()
+
+
 @app.get("/api/saju/count")
 def get_saju_count(request: Request):
     """

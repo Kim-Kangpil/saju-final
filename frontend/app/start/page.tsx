@@ -50,6 +50,38 @@ export default function StartPage({
 
   const goEmail = () => router.push("/signup");
 
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  const handleEmailLogin = async () => {
+    if (!email || !password) {
+      setLoginError("이메일과 비밀번호를 입력해주세요.");
+      return;
+    }
+    setLoginLoading(true);
+    setLoginError(null);
+    try {
+      const res = await fetch(`${backend}/api/auth/email/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLoginError(data.detail || "로그인에 실패했습니다.");
+        return;
+      }
+      if (data.token) localStorage.setItem("hsaju_token", data.token);
+      if (data.user_id) localStorage.setItem("userId", String(data.user_id));
+      router.replace("/home");
+    } catch {
+      setLoginError("서버 연결에 실패했습니다.");
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
   const pending = () => {
     alert("아직 준비 중인 기능입니다.\n카카오 또는 이메일로 먼저 이용해 주세요.");
   };
@@ -237,6 +269,28 @@ export default function StartPage({
                 <Icon icon={showPassword ? "mdi:eye-off-outline" : "mdi:eye-outline"} width={22} />
               </button>
             </div>
+            {loginError && (
+              <div style={{ fontSize: 13, color: "#e11d48", marginBottom: -8 }}>{loginError}</div>
+            )}
+            <button
+              type="button"
+              className="tap"
+              disabled={loginLoading}
+              onClick={handleEmailLogin}
+              style={{
+                width: "100%",
+                padding: "13px 16px",
+                borderRadius: radius,
+                border: "none",
+                background: loginLoading ? "#A0A0A0" : "#3A3A3A",
+                fontSize: 15,
+                fontWeight: 700,
+                color: "#fff",
+                cursor: loginLoading ? "wait" : "pointer",
+              }}
+            >
+              {loginLoading ? "로그인 중..." : "이메일로 로그인"}
+            </button>
             <button
               type="button"
               className="tap"
@@ -247,9 +301,9 @@ export default function StartPage({
                 borderRadius: radius,
                 border: "1.5px solid #E8E4DF",
                 background: "#F5F2EE",
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: 500,
-                color: textDark,
+                color: "var(--text-secondary)",
               }}
             >
               이메일로 회원가입

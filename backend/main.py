@@ -100,6 +100,51 @@ app.include_router(kakao_router)
 app.include_router(google_router)
 app.include_router(naver_router)
 
+
+# ── 이메일 회원가입 / 로그인 ──────────────────────────────────────
+@app.post("/api/auth/email/signup")
+async def email_signup(request: Request):
+    from logic.session_token import create_session_token
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="잘못된 요청입니다.")
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    nickname = (body.get("nickname") or "").strip()
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="이메일과 비밀번호를 입력해주세요.")
+    if len(password) < 6:
+        raise HTTPException(status_code=400, detail="비밀번호는 6자 이상이어야 합니다.")
+    user_id = create_email_user(email, password, nickname)
+    if user_id is None:
+        raise HTTPException(status_code=409, detail="이미 사용 중인 이메일입니다.")
+    token = create_session_token(user_id)
+    response = JSONResponse({"success": True, "user_id": user_id, "token": token})
+    response.set_cookie("hsaju_session", str(user_id), max_age=60*60*24*30, httponly=True, samesite="none", secure=True)
+    return response
+
+
+@app.post("/api/auth/email/login")
+async def email_login(request: Request):
+    from logic.session_token import create_session_token
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="잘못된 요청입니다.")
+    email = (body.get("email") or "").strip().lower()
+    password = (body.get("password") or "").strip()
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="이메일과 비밀번호를 입력해주세요.")
+    user_id = verify_email_login(email, password)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 올바르지 않습니다.")
+    token = create_session_token(user_id)
+    response = JSONResponse({"success": True, "user_id": user_id, "token": token})
+    response.set_cookie("hsaju_session", str(user_id), max_age=60*60*24*30, httponly=True, samesite="none", secure=True)
+    return response
+
+
 # ... 나머지 코드 그대로 ...
 
 # CORS: credentials(쿠키) 사용 시 allow_origins에 "*" 불가 → 명시적 origin 필요
@@ -180,6 +225,8 @@ from logic.user_db import (
     get_report_credits,
     add_report_credits,
     deduct_report_credit,
+    create_email_user,
+    verify_email_login,
 )
 from logic.session_token import verify_session_token
 

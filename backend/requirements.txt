@@ -8,6 +8,7 @@ python-multipart>=0.0.6
 korean-lunar-calendar>=0.3.1
 httpx>=0.28.0
 requests
+bcrypt>=4.0.0
 
 # ORM + Supabase (Phase 0)
 sqlmodel>=0.0.14

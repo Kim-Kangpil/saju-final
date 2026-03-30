@@ -1,6 +1,8 @@
 # backend/logic/user_db.py
 """사용자 저장용 DB — DATABASE_URL 있으면 PostgreSQL, 없으면 SQLite."""
 import sqlite3
+import hashlib
+import os
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -42,6 +44,7 @@ def init_user_db():
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS membership_expires_at TEXT",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS report_credits INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_coupon_data TEXT",
+                "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT",
             ):
                 cur.execute(col_sql)
         else:
@@ -68,6 +71,7 @@ def init_user_db():
                 "ALTER TABLE users ADD COLUMN membership_expires_at TEXT",
                 "ALTER TABLE users ADD COLUMN report_credits INTEGER DEFAULT 0",
                 "ALTER TABLE users ADD COLUMN beta_coupon_data TEXT",
+                "ALTER TABLE users ADD COLUMN password_hash TEXT",
             ):
                 try:
                     cur.execute(col_sql)
@@ -427,6 +431,76 @@ def get_beta_coupon(user_id: int) -> dict | None:
         if not row or not row[0]:
             return None
         return json.loads(row[0])
+    except Exception:
+        return None
+    finally:
+        conn.close()
+
+
+# ─────────────────────────────────────────────────────────────
+# 이메일 회원가입 / 로그인
+# ─────────────────────────────────────────────────────────────
+
+def _hash_password(password: str) -> str:
+    salt = os.urandom(16).hex()
+    hashed = hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 260000).hex()
+    return f"{salt}:{hashed}"
+
+
+def _verify_password(password: str, stored: str) -> bool:
+    try:
+        salt, hashed = stored.split(":", 1)
+        return hashlib.pbkdf2_hmac("sha256", password.encode(), salt.encode(), 260000).hex() == hashed
+    except Exception:
+        return False
+
+
+def create_email_user(email: str, password: str, nickname: str = "") -> int | None:
+    """이메일 회원가입. 이미 존재하면 None 반환, 성공 시 user_id 반환."""
+    now = datetime.utcnow().isoformat()
+    pw_hash = _hash_password(password)
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        # 이미 같은 이메일로 가입된 계정 확인
+        cur.execute(adapt("SELECT id FROM users WHERE provider = ? AND provider_id = ?"), ("email", email))
+        if cur.fetchone():
+            return None  # 이미 존재
+        sql = adapt(
+            "INSERT INTO users (provider, provider_id, email, nickname, password_hash, created_at, last_login)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?)"
+        )
+        if USE_PG:
+            sql += " RETURNING id"
+        cur.execute(sql, ("email", email, email, nickname or email.split("@")[0], pw_hash, now, now))
+        new_id = cur.fetchone()[0] if USE_PG else cur.lastrowid
+        conn.commit()
+        return new_id
+    except Exception:
+        return None
+    finally:
+        conn.close()
+
+
+def verify_email_login(email: str, password: str) -> int | None:
+    """이메일 로그인 검증. 성공 시 user_id, 실패 시 None."""
+    now = datetime.utcnow().isoformat()
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("SELECT id, password_hash FROM users WHERE provider = ? AND provider_id = ?"),
+            ("email", email),
+        )
+        row = cur.fetchone()
+        if not row:
+            return None
+        user_id, pw_hash = row[0], row[1]
+        if not pw_hash or not _verify_password(password, pw_hash):
+            return None
+        cur.execute(adapt("UPDATE users SET last_login = ? WHERE id = ?"), (now, user_id))
+        conn.commit()
+        return user_id
     except Exception:
         return None
     finally:

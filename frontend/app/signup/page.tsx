@@ -1,7 +1,10 @@
 'use client';
 
 import { use, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
 type FormState = {
   email: string;
@@ -71,15 +74,36 @@ export default function Signup({
     formData.agreeTerms &&
     formData.agreePrivacy;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!requiredChecked) {
       setFormError('입력 항목을 다시 확인해주세요. 필수값이 비어있거나 형식이 맞지 않습니다.');
       return;
     }
+    if (formData.password !== formData.passwordConfirm) {
+      setFormError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
     setFormError('');
-    alert('회원가입이 완료되었습니다!');
-    window.location.href = '/start';
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/email/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: formData.email, password: formData.password, nickname: formData.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFormError(data.detail || '회원가입에 실패했습니다.');
+        return;
+      }
+      if (data.token) localStorage.setItem('hsaju_token', data.token);
+      if (data.user_id) localStorage.setItem('userId', String(data.user_id));
+      alert('회원가입이 완료되었습니다!');
+      window.location.href = '/home';
+    } catch {
+      setFormError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

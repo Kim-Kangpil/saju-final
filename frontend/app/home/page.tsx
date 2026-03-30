@@ -995,31 +995,74 @@ export default function HomePage({
           }
         }
 
-        /* ── 피처 그리드 ── */
-        .feature-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
+        /* ── 리포트 카드 ── */
+        .report-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
           margin-top: 18px;
         }
 
-        .feature-card {
-          padding: 14px 13px;
+        .report-card {
           background: #fff;
           border: 1px solid var(--beige);
-          border-radius: 11px;
-          transition: border-color .15s, box-shadow .15s;
-          cursor: default;
+          border-radius: 13px;
+          overflow: hidden;
+          transition: box-shadow .15s;
         }
 
-        .feature-card:hover {
-          border-color: var(--beige2);
-          box-shadow: 0 2px 12px rgba(44,36,23,0.06);
+        .report-card:hover {
+          box-shadow: 0 3px 14px rgba(44,36,23,0.07);
         }
 
-        .feature-icon { font-size: 18px; margin-bottom: 7px; display: block; }
-        .feature-title { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 3px; }
-        .feature-desc { font-size: 11px; color: var(--ink3); line-height: 1.5; }
+        .report-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 13px 14px 10px;
+          border-bottom: 1px solid var(--beige);
+        }
+
+        .report-card-header-left {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .report-card-icon { font-size: 18px; line-height: 1; }
+        .report-card-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+
+        .report-card-price-free {
+          font-size: 11px;
+          font-weight: 700;
+          color: #059669;
+          background: #d1fae5;
+          padding: 3px 8px;
+          border-radius: 999px;
+        }
+
+        .report-card-price-paid {
+          font-size: 11px;
+          font-weight: 700;
+          color: #4A3F30;
+          background: #F5F1EA;
+          padding: 3px 8px;
+          border-radius: 999px;
+        }
+
+        .report-card-items {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+          padding: 10px 14px 12px;
+        }
+
+        .report-card-item {
+          font-size: 11px;
+          color: var(--ink3);
+          line-height: 1.6;
+          padding: 2px 0;
+        }
 
         /* ── 동물 갤러리 ── */
         .animal-grid {
@@ -1827,23 +1870,25 @@ export default function HomePage({
               {t("features.title")}
             </h2>
 
-            <div className="feature-grid">
-              {messages.features.items.map((f, idx) => (
-                <div key={idx} className="feature-card">
-                  <span className="feature-icon">{f.icon}</span>
-                  <div className="feature-title">{f.title}</div>
-                  <div className="feature-desc">{f.desc}</div>
+            <div className="report-list">
+              {messages.features.reports.map((r, idx) => (
+                <div key={idx} className="report-card">
+                  <div className="report-card-header">
+                    <div className="report-card-header-left">
+                      <span className="report-card-icon">{r.icon}</span>
+                      <span className="report-card-title">{r.title}</span>
+                    </div>
+                    <span className={r.free ? "report-card-price-free" : "report-card-price-paid"}>
+                      {r.price}
+                    </span>
+                  </div>
+                  <div className="report-card-items">
+                    {r.items.map((item, i) => (
+                      <div key={i} className="report-card-item">· {item}</div>
+                    ))}
+                  </div>
                 </div>
               ))}
-            </div>
-
-            <div style={{ marginTop: 16, padding: "12px 14px", background: S.cream2, borderRadius: 10, border: `1px solid ${S.beige}` }}>
-              <p style={{ fontSize: 12, color: S.ink3, lineHeight: 1.7, whiteSpace: "pre-line" }}>
-                {t("features.more")}
-                <br />
-                <strong style={{ color: S.gold }}>{t("features.more_strong")}</strong>
-                {t("features.more_suffix")}
-              </p>
             </div>
           </section>
 

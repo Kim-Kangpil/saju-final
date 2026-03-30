@@ -1593,7 +1593,7 @@ async def _call_gemini_with_retry(
     system_prompt: str,
     user_prompt: str,
     model: str = "gemini-2.5-flash",
-    max_tokens: int = 8192,
+    max_tokens: int = 16000,
     max_retries: int = 2,
     temperature: float = 0.7,
 ) -> str:
@@ -1694,6 +1694,7 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str, tone: str 
 각 섹션은 반드시 숫자로 시작: "1. 💼 일하는 방식" 형태 그대로 — 번호 절대 생략 금지.
 
 [형식 규칙 — 절대 준수]
+• 마크다운 완전 금지: **, *, ##, ### 등 모든 마크다운 기호 출력 금지 — 일반 텍스트만 사용
 • 각 섹션 내부에 소제목/레이블 절대 금지: "이유:", "실천:", "결론:", "왜냐하면:", "핵심:", "요약:" 등 모든 소제목 출력 금지
 • 흐르는 산문(연속된 문단)으로만 작성 — 내부 번호 매기기, 대시(-) 레이블 금지
 • 아래 섹션 구조는 내용 흐름 참고용이며, 출력물에 레이블로 표기 금지:

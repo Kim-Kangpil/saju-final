@@ -2,6 +2,13 @@
  * GPT/Gemini가 반환한 단일 문자열을 리포트 섹션 개수만큼 분리.
  * 번호 형식이 조금 어긋나도 본문이 사라지지 않도록 fallback 포함.
  */
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "$1")  // **bold** → plain
+    .replace(/\*(.+?)\*/g, "$1")       // *italic* → plain
+    .replace(/#{1,6}\s+/g, "");        // ## heading → plain
+}
+
 export function parseGptSections(content: string, count: number): string[] {
   const result: string[] = new Array(count).fill("");
   if (!content?.trim()) return result;
@@ -20,7 +27,7 @@ export function parseGptSections(content: string, count: number): string[] {
     const firstNewline = trimmed.search(/\n/);
     const body =
       firstNewline >= 0 ? trimmed.slice(firstNewline + 1).trim() : "";
-    result[idx] = body;
+    result[idx] = stripMarkdown(body);
     idx++;
   }
 
@@ -40,7 +47,7 @@ export function parseGptSections(content: string, count: number): string[] {
       const body =
         firstNewline >= 0 ? trimmed.slice(firstNewline + 1).trim() : trimmed;
       if (body) {
-        result[eIdx] = body;
+        result[eIdx] = stripMarkdown(body);
         eIdx++;
       }
     }
@@ -50,7 +57,7 @@ export function parseGptSections(content: string, count: number): string[] {
   // Fallback 2: put everything in first section
   const whole = content.trim();
   if (whole.length > 0) {
-    result[0] = whole;
+    result[0] = stripMarkdown(whole);
   }
   return result;
 }

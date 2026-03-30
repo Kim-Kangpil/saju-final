@@ -2371,7 +2371,7 @@ async def _generate_deep_topic_report(
                         ),
                     )
 
-    if not client:
+    if not get_openai_client() and not GEMINI_API_KEY:
         return {"success": False, "error": "OPENAI_API_KEY not configured"}
 
     pillars_dict = {
@@ -3337,7 +3337,7 @@ async def summary_gpt(req: SummaryGPTRequest, request: Request):
             raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
 
     try:
-        if not client:
+        if not get_openai_client() and not GEMINI_API_KEY:
             print("⚠️ OPENAI_API_KEY 없음 — summary-gpt 스킵")
             return {"summary": None, "error": "OPENAI_API_KEY not configured"}
 
@@ -3621,7 +3621,7 @@ def _call_gpt_concern(system: str, user_prompt: str) -> str:
 @app.post("/saju/concern-analysis")
 async def concern_analysis(req: ConcernAnalysisRequest):
     """고민 분석: 사주 + 고민 텍스트 → GPT-4o로 5가지 포맷 결과 반환 (총 2500자 내외)"""
-    if not client:
+    if not get_openai_client() and not GEMINI_API_KEY:
         raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
 
     concern_text = (req.concern or "").strip()

@@ -501,12 +501,85 @@ function getSajuTopOrResult(saju: unknown, key: string): unknown {
   return undefined;
 }
 
+// ─────────────────────────────────────────────
+// 체용반대(體用反對) 규칙 포함 십성 계산 (Python ten_gods.py 포팅)
+// GPT가 직접 계산하면 체용반대 규칙 미적용으로 오류 발생 → 미리 계산해서 주입
+// ─────────────────────────────────────────────
+const _TG_STEM_POL: Record<string, "yang" | "yin"> = {
+  甲: "yang", 乙: "yin", 丙: "yang", 丁: "yin", 戊: "yang",
+  己: "yin", 庚: "yang", 辛: "yin", 壬: "yang", 癸: "yin",
+};
+const _TG_BRANCH_BASE: Record<string, "yang" | "yin"> = {
+  子: "yang", 丑: "yin", 寅: "yang", 卯: "yin", 辰: "yang", 巳: "yin",
+  午: "yang", 未: "yin", 申: "yang", 酉: "yin", 戌: "yang", 亥: "yin",
+};
+// 체용반대: 해자사오(亥子巳午) 음양 반전
+const _TG_BRANCH_SPECIAL: Record<string, "yang" | "yin"> = {
+  子: "yin", 午: "yin", 巳: "yang", 亥: "yang",
+};
+const _TG_ELEM: Record<string, string> = {
+  甲: "wood", 乙: "wood", 丙: "fire", 丁: "fire", 戊: "earth",
+  己: "earth", 庚: "metal", 辛: "metal", 壬: "water", 癸: "water",
+  子: "water", 丑: "earth", 寅: "wood", 卯: "wood", 辰: "earth",
+  巳: "fire", 午: "fire", 未: "earth", 申: "metal", 酉: "metal",
+  戌: "earth", 亥: "water",
+};
+const _PRODUCES: Record<string, string> = {
+  wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood",
+};
+const _CONTROLS: Record<string, string> = {
+  wood: "earth", fire: "metal", earth: "water", metal: "wood", water: "fire",
+};
+
+function _tgPolarity(ch: string): "yang" | "yin" | null {
+  if (ch in _TG_STEM_POL) return _TG_STEM_POL[ch];
+  if (ch in _TG_BRANCH_SPECIAL) return _TG_BRANCH_SPECIAL[ch];
+  if (ch in _TG_BRANCH_BASE) return _TG_BRANCH_BASE[ch];
+  return null;
+}
+
+/** 일간 + 대상 글자(천간 or 지지) → 십성 이름. 체용반대 규칙 적용. */
+function calcTenGodLabel(dayStem: string, target: string): string {
+  const de = _TG_ELEM[dayStem];
+  const te = _TG_ELEM[target];
+  if (!de || !te) return "";
+  const dp = _tgPolarity(dayStem);
+  const tp = _tgPolarity(target);
+  if (!dp || !tp) return "";
+  const same = dp === tp;
+  if (de === te) return same ? "비견" : "겁재";
+  if (_PRODUCES[de] === te) return same ? "식신" : "상관";
+  if (_PRODUCES[te] === de) return same ? "편인" : "정인";
+  if (_CONTROLS[de] === te) return same ? "편재" : "정재";
+  if (_CONTROLS[te] === de) return same ? "편관" : "정관";
+  return "";
+}
+
+/** saju 데이터에서 일간 한자 추출 */
+function extractDayStem(saju: unknown): string {
+  if (!saju || typeof saju !== "object") return "";
+  const o = saju as Record<string, unknown>;
+  // model 방식
+  const model = o.model as Record<string, unknown> | undefined;
+  if (model?.day && typeof model.day === "object") {
+    const day = model.day as Record<string, unknown>;
+    const cg = day.cheongan as Record<string, unknown> | undefined;
+    if (typeof cg?.hanja === "string" && cg.hanja.trim()) return cg.hanja.trim()[0];
+  }
+  // day_pillar 방식 (문자열 "癸未" → 첫 글자)
+  const dayPillar = o.day_pillar ?? (o.result as any)?.day_pillar;
+  if (typeof dayPillar === "string" && dayPillar.trim()) return dayPillar.trim()[0];
+  return "";
+}
+
 /** 대운 목록 및 시작 나이 컨텍스트
  *
  * 백엔드 test.py calculate_daeun() 반환 형식:
  *   daeun_list: string[]  — 예: ["5세 甲子(갑자)", "15세 乙丑(을축)", ...]
  *   daeun_start_age: number
  *   daeun_direction: "순행" | "역행"
+ *
+ * 십성은 미리 계산해서 주입 — GPT가 체용반대 규칙을 모르고 잘못 계산하는 것 방지
  */
 function formatDaeunBlock(saju: unknown): string {
   const daeunList = getSajuTopOrResult(saju, "daeun_list");
@@ -514,21 +587,128 @@ function formatDaeunBlock(saju: unknown): string {
   const daeunDirection = getSajuTopOrResult(saju, "daeun_direction");
   if (!Array.isArray(daeunList) || daeunList.length === 0) return "";
 
+  const dayStem = extractDayStem(saju);
+
   const parts: string[] = [];
   const dir = typeof daeunDirection === "string" ? daeunDirection.trim() : "";
   if (daeunStartAge != null) {
     parts.push(`대운 시작: 만 ${daeunStartAge}세${dir ? ` (${dir})` : ""}`);
   }
-  // 각 항목은 문자열: "5세 甲子(갑자)"
+
+  // 각 항목: "5세 甲子(갑자)" → 천간·지지 추출 → 십성 사전 계산 후 주입
   const items = (daeunList as unknown[])
-    .map((d) => (typeof d === "string" ? d.trim() : null))
+    .map((d) => {
+      if (typeof d !== "string") return null;
+      const entry = d.trim();
+      if (!dayStem) return entry;
+      // 한자 2글자(천간+지지) 추출
+      const m = entry.match(/[\u4E00-\u9FFF]{2}/);
+      if (!m) return entry;
+      const stem = m[0][0];
+      const branch = m[0][1];
+      const stemTg = calcTenGodLabel(dayStem, stem);
+      const branchTg = calcTenGodLabel(dayStem, branch);
+      const tgAnnotation = [stemTg, branchTg].filter(Boolean).join("/");
+      return tgAnnotation ? `${entry}[${tgAnnotation}]` : entry;
+    })
     .filter(Boolean);
+
   if (items.length > 0) parts.push(`대운 흐름: ${items.join(", ")}`);
+  if (dayStem) parts.push(`※ 대운 [] 안의 십성은 ${dayStem} 일간 기준으로 사전 계산된 값이다. 자체 계산 금지.`);
 
   return parts.length > 0
     ? `[대운 정보 — 반드시 이 데이터 기준으로만 해석]\n${parts.join("\n")}`
     : "";
 }
+
+// ─────────────────────────────────────────────
+// 세운(歲運) / 월운(月運) 사전 계산 주입
+// Gemini가 직접 계산하면 체용반대 오류 발생 → JS에서 미리 계산
+// ─────────────────────────────────────────────
+
+const _STEMS = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"] as const;
+const _BRANCHES = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"] as const;
+
+// 연도별 간지 (seun.py의 YEAR_GANZHI와 동일)
+const _YEAR_GANZHI: Record<number, [string, string]> = {
+  2020: ["庚","子"], 2021: ["辛","丑"], 2022: ["壬","寅"], 2023: ["癸","卯"],
+  2024: ["甲","辰"], 2025: ["乙","巳"], 2026: ["丙","午"], 2027: ["丁","未"],
+  2028: ["戊","申"], 2029: ["己","酉"], 2030: ["庚","戌"],
+};
+
+// 월간 시작 인덱스: 年天干 % 5 → 寅月의 天干 인덱스 (甲乙丙丁戊己庚辛壬癸 = 0~9)
+// 甲(0)/己(5)년 → 丙(2)부터, 乙(1)/庚(6)년 → 戊(4)부터
+// 丙(2)/辛(7)년 → 庚(6)부터, 丁(3)/壬(8)년 → 壬(8)부터, 戊(4)/癸(9)년 → 甲(0)부터
+const _MONTH_START_STEM_IDX = [2, 4, 6, 8, 0]; // index = yearStemIdx % 5
+
+// 양력 월 → 월지 인덱스 (寅=0 기준, 절기 근사치)
+// 2월→寅(0), 3월→卯(1), ..., 12월→子(10), 1월→丑(11)
+function _solarMonthToMonthInYear(solarMonth: number): number {
+  return (solarMonth + 10) % 12;
+}
+
+/** 세운/월운 간지 계산 후 십성 주입 */
+function formatSeunWoluunBlock(saju: unknown): string {
+  const dayStem = extractDayStem(saju);
+  if (!dayStem) return "";
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const solarMonth = now.getMonth() + 1; // 1~12
+
+  const lines: string[] = ["[세운·월운 — 사전 계산된 십성, 자체 계산 금지]"];
+
+  // ── 세운 ──
+  const yearGanzhi = _YEAR_GANZHI[year];
+  if (yearGanzhi) {
+    const [yStem, yBranch] = yearGanzhi;
+    const yStemTg = calcTenGodLabel(dayStem, yStem);
+    const yBranchTg = calcTenGodLabel(dayStem, yBranch);
+    const tgStr = [yStemTg, yBranchTg].filter(Boolean).join("/");
+    lines.push(`올해 세운(${year}년): ${yStem}${yBranch}년${tgStr ? ` [${tgStr}]` : ""}`);
+    if (yStemTg) lines.push(`  천간 ${yStem} → ${yStemTg}: ${_TG_SEUN_MEANING[yStemTg] ?? ""}`);
+    if (yBranchTg) lines.push(`  지지 ${yBranch} → ${yBranchTg}: ${_TG_SEUN_MEANING[yBranchTg] ?? ""}`);
+  }
+
+  // ── 월운 ──
+  const yearStemIdx = _STEMS.indexOf(dayStem[0] as any);
+  // 세운 천간 인덱스로 월간 시작 결정 (yearGanzhi의 天干 기준)
+  if (yearGanzhi) {
+    const yearStemForMonth = yearGanzhi[0];
+    const ysIdx = _STEMS.indexOf(yearStemForMonth as any);
+    if (ysIdx >= 0) {
+      const startStemIdx = _MONTH_START_STEM_IDX[ysIdx % 5];
+      const monthInYear = _solarMonthToMonthInYear(solarMonth); // 0~11
+      const mStemIdx = (startStemIdx + monthInYear) % 10;
+      const mBranchIdx = (monthInYear + 2) % 12; // 寅=2(index in BRANCHES)
+      const mStem = _STEMS[mStemIdx];
+      const mBranch = _BRANCHES[(monthInYear + 2) % 12];
+      const mStemTg = calcTenGodLabel(dayStem, mStem);
+      const mBranchTg = calcTenGodLabel(dayStem, mBranch);
+      const mTgStr = [mStemTg, mBranchTg].filter(Boolean).join("/");
+      lines.push(`이번 월운(${year}년 ${solarMonth}월): ${mStem}${mBranch}월${mTgStr ? ` [${mTgStr}]` : ""}`);
+      if (mStemTg) lines.push(`  천간 ${mStem} → ${mStemTg}`);
+      if (mBranchTg) lines.push(`  지지 ${mBranch} → ${mBranchTg}`);
+    }
+  }
+
+  lines.push(`※ 위 십성은 ${dayStem} 일간 기준 사전 계산값. 자체 계산·추측 금지.`);
+  return lines.join("\n");
+}
+
+// 십성별 세운 의미 (seun.py TEN_GOD_SEUN_MEANING과 동일)
+const _TG_SEUN_MEANING: Record<string, string> = {
+  비견: "경쟁·독립 에너지가 강해지는 흐름",
+  겁재: "재물 변동·경쟁 심화. 보증·동업 주의",
+  식신: "표현·생산·여유. 안정적으로 결과 만드는 흐름",
+  상관: "변화·이직·창의. 기존 틀을 깨는 흐름",
+  편재: "기회·인맥·유통. 움직이면 돈이 보이는 흐름",
+  정재: "안정·저축·현실. 꾸준히 쌓는 흐름",
+  편관: "압박·도전·시험. 힘든 만큼 성장하는 흐름",
+  정관: "명예·승진·책임. 조직에서 인정받는 흐름",
+  편인: "학습·연구·내면. 혼자 깊이 파는 흐름",
+  정인: "보호·자격·안정. 배움과 자격이 도움 되는 흐름",
+};
 
 /** 용신/조후 컨텍스트 */
 function formatYongshinBlock(saju: unknown): string {
@@ -550,6 +730,7 @@ function buildSajuContext(saju: unknown): string {
     formatSinsalContextBlock(saju),
     formatTenGodsHarmonyClashTwelveBlock(saju),
     formatDaeunBlock(saju),
+    formatSeunWoluunBlock(saju),
     formatYongshinBlock(saju),
   ]
     .filter(Boolean)

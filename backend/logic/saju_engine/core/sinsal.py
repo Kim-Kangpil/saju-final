@@ -71,6 +71,16 @@ HWAGAE = {
     '未': '未'
 }
 
+# 귀문관살 (지지 조합 - 서로 쌍이 되는 두 지지)
+GUIMUN_PAIRS = {
+    '子': '酉', '酉': '子',
+    '丑': '午', '午': '丑',
+    '寅': '未', '未': '寅',
+    '卯': '申', '申': '卯',
+    '辰': '亥', '亥': '辰',
+    '巳': '戌', '戌': '巳',
+}
+
 # 월공 (월지 + 천간 조합)
 WOLGONG = {
     '子': ['丙'],
@@ -158,7 +168,8 @@ def analyze_sinsal(day_stem, pillars):
         'yeokma': [],
         'hwagae': [],
         'wolgong': [],
-        'munchang_gwiin': []
+        'munchang_gwiin': [],
+        'guimun': []
     }
     
     # 1. 천을귀인 (일간 기준)
@@ -223,7 +234,30 @@ def analyze_sinsal(day_stem, pillars):
                 'char': branch,
                 'description': f"문창귀인 ({positions[i]}지 {branch})"
             })
-    
+
+    # 7. 귀문관살 (지지 조합 - 인접한 기둥 우선, 전체 조합 탐색)
+    branch_pairs = [
+        (0, 1, '년지', '월지'),
+        (1, 2, '월지', '일지'),
+        (2, 3, '일지', '시지'),
+        (0, 2, '년지', '일지'),
+        (1, 3, '월지', '시지'),
+        (0, 3, '년지', '시지'),
+    ]
+    seen_guimun = set()
+    for i, j, pos_i, pos_j in branch_pairs:
+        b_i, b_j = branches[i], branches[j]
+        pair_key = tuple(sorted([b_i, b_j]))
+        if pair_key in seen_guimun:
+            continue
+        if GUIMUN_PAIRS.get(b_i) == b_j:
+            seen_guimun.add(pair_key)
+            result['guimun'].append({
+                'positions': f"{pos_i}-{pos_j}",
+                'chars': [b_i, b_j],
+                'description': f"귀문관살 ({pos_i} {b_i} · {pos_j} {b_j})"
+            })
+
     return result
 
 

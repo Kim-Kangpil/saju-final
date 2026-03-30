@@ -59,6 +59,18 @@ DAEUN_PERIOD_MEANING = {
     "정인": {"phase": "준비·회복", "tip": "실력과 내면을 쌓는 시기. 지금 심은 게 나중에 열매 맺음."},
 }
 
+# 일간별 외면-내면 괴리 특성 (실전 검증 규칙)
+ILGAN_INNER_OUTER = {
+    "丙": "겉으로는 밝고 에너지 넘쳐 보이지만, 속으로는 그만큼 어두운 면이 공존해요. 혼자 있을 때 감정이 깊어지는 타입.",
+    "癸": "겉으로는 조용하고 부드러워 보이는 타입이에요. 속에 담아두는 게 많고 드러내지 않는 편이에요.",
+    "戊": "자신과의 경쟁 의식이 있어요. 남한테 지기보다 스스로 기준을 높이고 그걸 못 채울 때 자존심이 상하는 타입.",
+    "丁": "마음이 따뜻하고 봉사심이 강해요. 남이 힘든 걸 보면 먼저 움직이고, 주변에 헌신하는 데서 보람을 느끼는 타입.",
+    "辛": "깔끔하고 날카로우며 예민해요. 외모나 주변 환경의 작은 부분에도 민감하고, 첫인상이 차가워 보일 수 있어요.",
+}
+
+# 양간 목록
+YANG_STEMS = {"甲", "丙", "戊", "庚", "壬"}
+
 # ─────────────────────────────────────────────────────────────
 # 내부 헬퍼 함수
 # ─────────────────────────────────────────────────────────────
@@ -189,6 +201,50 @@ def _get_tg(ten_gods: dict, english_key: str) -> str:
     return ten_gods.get(korean_key, '') or ten_gods.get(english_key, '')
 
 
+def _get_ohaeng_counts(saju_data: dict) -> dict:
+    """오행 카운트 반환. element_count 또는 pillars 직접 계산."""
+    ec = saju_data.get("element_count") or saju_data.get("elements") or {}
+    if ec:
+        return ec
+    # pillars에서 직접 계산
+    STEM_ELEMENT = {"甲": "목", "乙": "목", "丙": "화", "丁": "화", "戊": "토",
+                    "己": "토", "庚": "금", "辛": "금", "壬": "수", "癸": "수"}
+    BRANCH_ELEMENT = {"寅": "목", "卯": "목", "辰": "토", "巳": "화", "午": "화",
+                      "未": "토", "申": "금", "酉": "금", "戌": "토", "亥": "수",
+                      "子": "수", "丑": "토"}
+    counts: dict[str, int] = {"목": 0, "화": 0, "토": 0, "금": 0, "수": 0}
+    pillars = _get_pillars(saju_data)
+    for p in pillars.values():
+        if len(p) >= 1:
+            counts[STEM_ELEMENT.get(p[0], "")] = counts.get(STEM_ELEMENT.get(p[0], ""), 0) + 1
+        if len(p) >= 2:
+            counts[BRANCH_ELEMENT.get(p[1], "")] = counts.get(BRANCH_ELEMENT.get(p[1], ""), 0) + 1
+    counts.pop("", None)
+    return counts
+
+
+def _has_guimun(saju_data: dict, pos1: str = None, pos2: str = None) -> bool:
+    """귀문관살 존재 여부. pos1/pos2 지정 시 해당 위치 조합만 확인."""
+    sinsal = _get_sinsal(saju_data)
+    guimun_list = sinsal.get("guimun") or []
+    if not guimun_list:
+        return False
+    if pos1 is None:
+        return len(guimun_list) > 0
+    target = f"{pos1}-{pos2}"
+    return any(item.get("positions") == target for item in guimun_list)
+
+
+def _is_yangtong(saju_data: dict) -> bool:
+    """8글자 천간이 모두 양간인지 확인 (양팔통)."""
+    pillars = _get_pillars(saju_data)
+    stems = [p[0] for p in pillars.values() if len(p) >= 1]
+    ilgan = _get_ilgan(saju_data)
+    all_stems = stems + ([ilgan] if ilgan and ilgan not in stems else [])
+    # 일간 포함 모든 천간이 양간인지
+    return all(s in YANG_STEMS for s in all_stems) and len(all_stems) >= 4
+
+
 def _parse_daeun_entry(entry: str) -> tuple[int, str]:
     """'5세 甲子(갑자)' → (5, '甲子')"""
     try:
@@ -313,12 +369,19 @@ def interpret_money(saju_data: dict) -> dict:
         language_points.append("인연을 통해 재물이 들어오는 흐름이 있어요.")
 
     # ── 대운 반영 ──
-    if daeun_tg in ("편재", "정재"):
-        language_points.append(f"지금 이 시기는 재물 운이 직접적으로 열려 있는 구간이에요.")
+    if daeun_tg == "정재":
+        language_points.append("지금은 꾸준히 쌓이는 재물 운이에요. 안정적으로 내실을 다지기 좋은 시기.")
+    elif daeun_tg == "편재":
+        if jeong_jae_count > pyeон_jae_count:
+            # 정재 우세 사주에서 편재 대운 → 효율 낮음
+            patterns.append("정재형 사주 + 편재 대운 → 재물 운 효율 낮음")
+            language_points.append("이 시기 재물 기회가 생기긴 하지만, 통제권 밖의 돈이라 잡기 어렵거나 영양가 없다고 느껴질 수 있어요. 정재형 사주는 편재 운보다 정재 운에서 더 잘 돌아가요.")
+        else:
+            language_points.append("지금 이 시기는 재물 운이 직접적으로 열려 있는 구간이에요.")
     elif daeun_tg in ("식신", "상관"):
-        language_points.append(f"지금은 직접 버는 능력이 올라오는 시기예요. 수입 늘릴 기회.")
+        language_points.append("지금은 직접 버는 능력이 올라오는 시기예요. 수입 늘릴 기회.")
     elif daeun_tg in ("편관", "정관"):
-        language_points.append(f"지금은 조직·직업 안에서 재물이 움직이는 시기예요.")
+        language_points.append("지금은 조직·직업 안에서 재물이 움직이는 시기예요.")
 
     # 빈 문자열 제거 + 최소 1개 보장
     language_points = [p for p in language_points if p]
@@ -442,6 +505,20 @@ def interpret_love(saju_data: dict) -> dict:
     elif daeun_tg in ("식신", "상관"):
         language_points.append("지금은 새로운 만남보다 본인의 매력을 키우는 시기예요.")
 
+    # ── 편관 강한 여성 → 배울 점 있는 이성에게만 끌림 ──
+    pyeongwan_count = _count_ten_god(ten_gods, "편관")
+    jeonggwan_count = _count_ten_god(ten_gods, "정관")
+    if ("female" in gender or "여" in gender or "f" == gender) and pyeongwan_count > jeonggwan_count:
+        patterns.append("여성 + 편관 우세 → 배울 점 있는 이성에게만 끌림")
+        language_points.append("아무한테나 마음이 가지 않아요. 내가 배울 점이 있고 존경할 수 있는 이성에게만 감정이 생기는 타입이에요.")
+
+    # ── 정재 우세 사주 + 편재 운 → 효율 낮음 ──
+    jeong_jae_cnt = _count_ten_god(ten_gods, "정재")
+    pyeon_jae_cnt = _count_ten_god(ten_gods, "편재")
+    if jeong_jae_cnt > pyeon_jae_cnt and daeun_tg == "편재":
+        patterns.append("정재형 사주 + 편재 대운 → 이성운 효율 낮음")
+        language_points.append("이 시기 이성 운이 들어오긴 해도, 내 스타일과 맞지 않는 인연이라 영양가 없다고 느껴질 수 있어요. 정재처럼 안정적이고 통제 가능한 관계를 원하는데 편재 운은 그 반대라서요.")
+
     # 빈 문자열 제거 + 최소 1개 보장
     language_points = [p for p in language_points if p]
     if not language_points:
@@ -547,6 +624,28 @@ def interpret_career(saju_data: dict) -> dict:
         language_points.append("지금은 새로운 기술이나 표현 능력을 키우기 좋은 시기예요.")
     elif daeun_tg in ("편재", "정재"):
         language_points.append("지금은 직접 수익 만드는 활동이 잘 풀리는 시기예요.")
+
+    # ── 오행 기반 직업 적성 (화토 강함 → IT/기술) ──
+    ohaeng = _get_ohaeng_counts(saju_data)
+    hwa_cnt = ohaeng.get("화", 0)
+    to_cnt  = ohaeng.get("토", 0)
+    geum_cnt = ohaeng.get("금", 0)
+    if hwa_cnt + to_cnt >= 5:
+        patterns.append("화토 강함 → IT·기술·정보처리 적합")
+        language_points.append("화와 토 기운이 강해요. 정보처리, IT, 기술직, 데이터 계통에서 잘 맞는 경우가 많아요.")
+
+    # ── 월지 정재 → 경제·행정 계통 ──
+    wolji_tg = ten_gods.get("월지") or ten_gods.get("month_branch") or ""
+    if wolji_tg == "정재":
+        patterns.append("월지 정재 → 경제·행정·관리 계통")
+        language_points.append("월지에 정재가 있어요. 경제, 금융, 행정, 관리직 계통에서 꾸준한 역량을 발휘해요.")
+
+    # ── 월지-일지 합(관성) → 조직 선호 ──
+    ilji_tg_career = ten_gods.get("일지") or ten_gods.get("day_branch") or ""
+    wolji_tg_career = ten_gods.get("월지") or ten_gods.get("month_branch") or ""
+    if ilji_tg_career in ("정관", "편관") and _has_hap_on(harmony_clash, "월"):
+        patterns.append("월지-일지 합(관성) → 조직·직장 선호")
+        language_points.append("월지와 일지가 합으로 묶여 있고 일지에 관성이 있어요. 사업보다 조직·직장에서 안정적으로 실력 발휘하는 구조예요.")
 
     # 빈 문자열 제거 + 최소 1개 보장
     language_points = [p for p in language_points if p]
@@ -655,6 +754,51 @@ def interpret_personality(saju_data: dict) -> dict:
         patterns.append("신약 → 감수성 예민·환경 영향 큼")
         language_points.append("주변 분위기를 잘 읽어요. 좋은 환경에선 빛나고 나쁜 환경엔 쉽게 영향 받아요.")
 
+    # ── 일간별 외면-내면 괴리 (실전 검증) ──
+    inner_outer = ILGAN_INNER_OUTER.get(ilgan)
+    if inner_outer:
+        patterns.append(f"일간 {ilgan} 외면-내면 특성")
+        language_points.append(inner_outer)
+
+    # ── 편인 과다 → on/off 성향 ──
+    pyeonin_count = _count_ten_god(ten_gods, "편인")
+    if pyeonin_count >= 2:
+        patterns.append(f"편인 {pyeonin_count}개 → 극단적 on/off 성향")
+        language_points.append("할 때는 완전히 몰입하고, 안 할 때는 아예 손 안 대는 타입이에요. 집중력과 완전 휴식 사이를 왔다 갔다 해요.")
+
+    # ── 양팔통 (모든 천간이 양간) ──
+    if _is_yangtong(saju_data):
+        patterns.append("양팔통 → 에너지가 한 방향으로 강하게 쏠림")
+        language_points.append("사주 기운이 한 방향으로 강하게 쏠려 있어요. 주도적이고 추진력이 강한 대신, 유연하게 조절하는 게 숙제예요.")
+
+    # ── 귀문관살 (월지-일지 조합) ──
+    if _has_guimun(saju_data, "월지", "일지"):
+        patterns.append("월지-일지 귀문관살 → 예민한 직관·의심·생각 과다")
+        language_points.append("생각이 많고 의심이 많으며 눈치가 빨라요. 남들이 모르는 것도 감지하는 날카로운 촉이 있어요.")
+    elif _has_guimun(saju_data):
+        patterns.append("귀문관살 → 직관 예민·생각 복잡")
+        language_points.append("생각이 복잡하고 직관이 날카로워요. 남이 못 보는 걸 먼저 감지하는 타입이에요.")
+
+    # ── 년간 정관 → 집안 교육열·성공한 조상 ──
+    yeongan_tg = ten_gods.get("년간") or ten_gods.get("year_stem") or ""
+    if yeongan_tg == "정관":
+        patterns.append("년간 정관 → 교육열 강한 집안·성공한 조상")
+        language_points.append("집안에 교육열이 강하거나 사회적으로 인정받은 어른이 있는 경우예요. 어릴 때부터 기준이 높은 환경에서 자란 타입.")
+
+    # ── 일주별 특화 성격 (계해일주: 속에 강한 주체성·야망) ──
+    day_pillar = (saju_data.get("day_pillar") or "").strip()
+    if day_pillar.startswith("癸亥"):
+        patterns.append("계해일주 → 겉부드럽·속강한 주체성·야망")
+        language_points.append("겉으로는 조용하고 부드러워 보이지만 속에 주체성과 야망이 아주 강해요. 일지 亥가 일간을 강하게 받쳐주는 구조라 드러내지 않을 뿐 목표 의식이 뚜렷한 타입이에요.")
+
+    # ── 금수 강함 → 냉체질·혈액순환 주의 ──
+    ohaeng_p = _get_ohaeng_counts(saju_data)
+    geum_p = ohaeng_p.get("금", 0)
+    su_p   = ohaeng_p.get("수", 0)
+    if geum_p + su_p >= 5:
+        patterns.append("금수 강함 → 냉체질·혈액순환 주의")
+        language_points.append("금과 수 기운이 강해 몸이 차고 혈액순환이 약할 수 있어요. 뼈는 튼튼한 편이지만 냉기로 인한 정신적 우울감이나 무기력함이 생길 수 있으니 주의하세요.")
+
     # 빈 문자열 제거 + 최소 1개 보장
     language_points = [p for p in language_points if p]
     if not language_points:
@@ -672,6 +816,7 @@ def interpret_personality(saju_data: dict) -> dict:
             "bigap_count": bigap_count,
             "inseong_count": inseong_count,
             "siksang_count": siksang_count,
+            "pyeonin_count": pyeonin_count,
         },
     }
 

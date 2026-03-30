@@ -26,7 +26,12 @@
       "Bash(pip download:*)",
       "Bash(grep -v \"^$\")",
       "Bash(find C:Usersksh00OneDriveDesktopsaju-project-tempfrontend -type f \\\\\\(-name *.tsx -o -name *.ts \\\\\\) ! -path */.next/* ! -path */node_modules/* ! -path */dist/*)",
-      "Bash(grep -r \"transform\" app/**/*.tsx lib/**/*.tsx)"
+      "Bash(grep -r \"transform\" app/**/*.tsx lib/**/*.tsx)",
+      "Bash(node:*)",
+      "Bash(head -20 grep -n \"귀문\\\\|원진\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/logic/saju_engine/core/sinsal.py)",
+      "Bash(head -10 grep -rn \"만세력\\\\|manse\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend --include=\"*.py\" -l)",
+      "Bash(head -10 grep -rn \"admin.*code\\\\|관리자\\\\|admin_code\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend --include=\"*.py\" -l)",
+      "Bash(head -20 grep -rn \"saju_interpreter\\\\|interpret_all\\\\|interpret_personality\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/main.py)"
     ]
   }
 }

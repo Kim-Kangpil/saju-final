@@ -3158,10 +3158,13 @@ async def save_saju(request: Request, body: SajuSaveRequest):
         print("🧩 /api/saju/save: user_id 없음 → 401 반환")
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
 
-    # 만세력 2개 제한 확인
-    existing_saju_list = get_saju_list_for_user(user_id)
-    if len(existing_saju_list) >= 2:
-        raise HTTPException(status_code=400, detail="최대 2개의 만세력만 등록할 수 있습니다. 기존 만세력을 삭제한 후 새로 등록해주세요.")
+    # 만세력 개수 제한 확인 (관리자 코드 입력된 사용자는 무제한)
+    coupon_data = get_cached_data(f"beta_coupon_{user_id}")
+    is_admin_user = bool(coupon_data and coupon_data.get("features", {}).get("is_admin"))
+    if not is_admin_user:
+        existing_saju_list = get_saju_list_for_user(user_id)
+        if len(existing_saju_list) >= 2:
+            raise HTTPException(status_code=400, detail="최대 2개의 만세력만 등록할 수 있습니다. 기존 만세력을 삭제한 후 새로 등록해주세요.")
 
     try:
         name = body.name.strip()

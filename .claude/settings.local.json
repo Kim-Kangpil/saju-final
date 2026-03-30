@@ -35,7 +35,8 @@
       "Bash(xargs grep:*)",
       "Bash(grep -rn \"password\\\\|email.*login\\\\|signup\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/*.py)",
       "Bash(ls:*)",
-      "Bash(head -20 grep -rn \"CREATE TABLE\\\\|password\\\\|email\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/logic/ --include=\"*.py\")"
+      "Bash(head -20 grep -rn \"CREATE TABLE\\\\|password\\\\|email\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/logic/ --include=\"*.py\")",
+      "Bash(grep -rn \"TODO\\\\|FIXME\\\\|WIP\\\\|XXX\\\\|HACK\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/frontend --include=*.tsx --include=*.ts)"
     ]
   }
 }

@@ -809,6 +809,47 @@ function BasicV2ReportContent() {
             </div>
           )}
 
+          {/* 채팅 유도 배너 */}
+          {v2Result && !isSharedView && (
+            <div style={{
+              marginTop: 20,
+              padding: '20px 18px',
+              background: 'linear-gradient(135deg, #2C2417 0%, #4A3F30 100%)',
+              borderRadius: 16,
+              display: 'flex', flexDirection: 'column', gap: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 22 }}>💬</span>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#F5F1EA', margin: 0 }}>
+                    더 궁금한 게 있나요?
+                  </p>
+                  <p style={{ fontSize: 11, color: '#C4B8A4', margin: '2px 0 0' }}>
+                    AI와 1:1 채팅으로 깊이 있게 물어보세요
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => router.push(`/chat?saju_id=${sajuId}`)}
+                style={{
+                  width: '100%',
+                  padding: '13px 0',
+                  background: '#F5F1EA',
+                  color: '#2C2417',
+                  border: 'none',
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                채팅으로 더 물어보기 →
+              </button>
+            </div>
+          )}
+
           <div style={{ height: 32 }} />
         </div>
       )}

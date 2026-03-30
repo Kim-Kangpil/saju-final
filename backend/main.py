@@ -3823,7 +3823,7 @@ section_personality, section_strength, section_problem, section_money, section_c
                     {"role": "user", "content": section_prompt},
                 ],
                 temperature=0.3,
-                max_tokens=2200,
+                max_tokens=4000,
                 response_format={"type": "json_object"},
             )
             sec_raw = (sec_resp.choices[0].message.content or "").strip()

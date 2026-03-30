@@ -34,7 +34,7 @@ const LOADING_STEPS = [
   { upTo: 70, icon: "🧠", msg: "성향·패턴·돈 구조를 파악하는 중이에요" },
   { upTo: 85, icon: "✍️", msg: "AI가 당신의 언어로 바꾸고 있어요" },
   { upTo: 95, icon: "🔮", msg: "마지막 문장을 다듬는 중이에요" },
-  { upTo: 100, icon: "✨", msg: "거의 다 됐어요, 조금만 기다려 주세요" },
+  { upTo: 100, icon: "✨", msg: "거의 완성됐어요\n최대 1분 정도 걸릴 수 있어요 🙏" },
 ];
 
 function getLoadingStep(progress: number) {
@@ -262,7 +262,7 @@ function SectionAccordion({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.22 }}
-            style={{ overflow: "hidden" }}
+            style={{ overflow: open ? "visible" : "hidden" }}
           >
             <div style={{ padding: "0 18px 18px", borderTop: `1px solid ${S.cream3}`, paddingTop: 14 }}>
               <MarkdownBody text={body} />
@@ -313,24 +313,38 @@ function BasicV2ReportContent() {
   const [fakeProgress, setFakeProgress] = useState(0);
 
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [stuckAt95, setStuckAt95] = useState(false);
+  const stuckTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const loadFnRef = useRef<(() => void) | null>(null);
+  const loadingRef = useRef(true);
 
   // 로딩 progress
   useEffect(() => {
     if (!loading) {
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (stuckTimerRef.current) clearTimeout(stuckTimerRef.current);
       setFakeProgress(100);
+      setStuckAt95(false);
       return;
     }
     setFakeProgress(0);
+    setStuckAt95(false);
     progressIntervalRef.current = setInterval(() => {
       setFakeProgress((prev) => {
-        if (prev >= 95) return prev;
+        if (prev >= 95) {
+          // 95% 도달 시 10초 후 "오래 걸리고 있어요" 메시지 표시
+          if (!stuckTimerRef.current) {
+            stuckTimerRef.current = setTimeout(() => setStuckAt95(true), 10000);
+          }
+          return prev;
+        }
         const inc = prev < 30 ? 3 : prev < 60 ? 1.8 : prev < 80 ? 1 : 0.4;
         return Math.min(95, prev + inc);
       });
     }, 150);
     return () => {
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (stuckTimerRef.current) { clearTimeout(stuckTimerRef.current); stuckTimerRef.current = null; }
     };
   }, [loading]);
 
@@ -343,6 +357,9 @@ function BasicV2ReportContent() {
     }
 
     const loadAndAnalyze = async () => {
+      loadingRef.current = true;
+      setLoading(true);
+      setError(null);
       try {
         // 공유 토큰으로 접근하는 경우 (인증 불필요)
         let resolvedSajuId = sajuId;
@@ -440,14 +457,33 @@ function BasicV2ReportContent() {
         const v2Data = await v2Res.json();
         setV2Result(v2Data);
       } catch (err) {
+        // 네트워크 오류 + 백그라운드 상태 → 조용히 대기 (복귀 시 자동 재시도)
+        const isNetworkError = err instanceof TypeError || (err instanceof Error && /network|fetch|load/i.test(err.message));
+        if (isNetworkError && document.hidden) {
+          // 백그라운드로 이동하는 바람에 실패 → 복귀 시 visibilitychange가 재시도함
+          return;
+        }
         setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
       } finally {
+        loadingRef.current = false;
         setLoading(false);
       }
     };
 
+    loadFnRef.current = loadAndAnalyze;
     loadAndAnalyze();
   }, [sajuId, shareToken]);
+
+  // 백그라운드 복귀 시 자동 재시도
+  useEffect(() => {
+    const onVisible = () => {
+      if (!document.hidden && loadingRef.current && loadFnRef.current) {
+        loadFnRef.current();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
 
   const birthYmd = sajuInfo?.birthdate?.replace(/-/g, "");
   const birthHm = sajuInfo?.birth_time?.replace(":", "") || "1200";
@@ -536,9 +572,16 @@ function BasicV2ReportContent() {
             </motion.p>
           </AnimatePresence>
 
-          <p style={{ fontSize: 12, color: S.ink3, marginBottom: 32, textAlign: "center" }}>
+          <p style={{ fontSize: 12, color: S.ink3, marginBottom: stuckAt95 ? 12 : 32, textAlign: "center" }}>
             AI가 사주 데이터를 바탕으로 분석하고 있어요
           </p>
+          {stuckAt95 && (
+            <p style={{ fontSize: 12, color: S.gold, marginBottom: 32, textAlign: "center", lineHeight: 1.7, padding: "10px 16px", background: "#FBF8F3", borderRadius: 10, border: `1px solid ${S.beige}` }}>
+              생각보다 오래 걸리고 있어요.<br />
+              <strong>앱을 닫지 말고 잠시만 기다려 주세요.</strong><br />
+              최대 1분 안에 완성돼요 🔮
+            </p>
+          )}
 
           {/* 프로그레스 바 */}
           <div style={{ width: "100%", maxWidth: 300 }}>

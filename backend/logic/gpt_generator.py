@@ -717,8 +717,8 @@ class GPTInterpretationGenerator:
     "전체 4,000~5,000자. 각 섹션 400~600자."
 ) + "\n"""
 
-        min_chars = 4000 if is_deep else 3000
-        max_tok = 9000 if is_deep else 8000
+        min_chars = 5000 if is_deep else 4000
+        max_tok = 14000 if is_deep else 12000
         content = ""
 
         GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -742,12 +742,13 @@ class GPTInterpretationGenerator:
                     content = response.text or ""
                     section_markers = ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"]
                     section_count = sum(1 for m in section_markers if m in content)
+                    last_section_ok = "✅" in content and len(content.split("✅")[-1].strip()) > 50
                     print(f"✅ 종합 Gemini 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
-                    if len(content) >= min_chars and section_count >= 7:
+                    if len(content) >= min_chars and section_count >= 8 and last_section_ok:
                         break
                     if attempt < 2:
                         print(f"⚠️ 분량 부족 — 재시도 ({attempt+1}/3)")
-                        current_system = "[재시도: 더 길게 작성]\n\n" + system_prompt
+                        current_system = "[재시도: 더 길게 작성, 반드시 9개 섹션 전부 완성, 특히 ✅ 섹션을 끝까지 작성할 것]\n\n" + system_prompt
                 except Exception as e:
                     print(f"❌ Gemini API 호출 실패 (시도 {attempt+1}): {e}")
         else:
@@ -767,10 +768,12 @@ class GPTInterpretationGenerator:
                     )
                     content = response.choices[0].message.content or ""
                     section_count = sum(1 for m in ["🔮", "🧠", "💪", "🔁", "💰", "🧭", "❤️", "⏰", "✅"] if m in content)
+                    last_section_ok = "✅" in content and len(content.split("✅")[-1].strip()) > 50
                     print(f"✅ 종합 GPT 해석 생성 시도 {attempt+1}: {len(content)}자, 섹션 {section_count}개")
-                    if len(content) >= min_chars and section_count >= 7:
+                    if len(content) >= min_chars and section_count >= 8 and last_section_ok:
                         break
-                    print(f"⚠️ 분량 부족 — 재시도 ({attempt+1}/3)")
+                    print(f"⚠️ 분량 부족/미완성 — 재시도 ({attempt+1}/3)")
+                    current_system = "[재시도: 더 길게 작성, 반드시 9개 섹션 전부 완성, 특히 ✅ 섹션을 끝까지 작성할 것]\n\n" + current_system
                 except Exception as e:
                     print(f"❌ GPT API 호출 실패 (시도 {attempt+1}): {e}")
 

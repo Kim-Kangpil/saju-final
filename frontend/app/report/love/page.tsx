@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
@@ -11,6 +12,19 @@ import { parseGptSections } from "@/lib/parseGptReportSections";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
+
+const LOADING_STEPS = [
+  { upTo: 15, icon: "📅", msg: "생년월일·시각을 불러오고 있어요" },
+  { upTo: 30, icon: "❤️", msg: "연애와 연결된 오행 구조를 분석해요" },
+  { upTo: 50, icon: "👤", msg: "이상형과 관계 패턴을 파악하는 중이에요" },
+  { upTo: 68, icon: "💫", msg: "지금 인연 흐름의 방향을 읽고 있어요" },
+  { upTo: 83, icon: "🗓", msg: "올해 연애운의 시기를 계산해요" },
+  { upTo: 93, icon: "✍️", msg: "AI가 분석 결과를 정리하고 있어요" },
+  { upTo: 100, icon: "✨", msg: "거의 완성됐어요\n잠시만 기다려 주세요 🙏" },
+];
+function getLoadingStep(p: number) {
+  return LOADING_STEPS.find((s) => p < s.upTo) ?? LOADING_STEPS[LOADING_STEPS.length - 1];
+}
 
 const SECTION_TITLES = [
   "❤️ 연애 기질",
@@ -120,6 +134,35 @@ function LoveReportContent() {
   const [hasDirectAddon, setHasDirectAddon] = useState(false);
   const [addonPrice, setAddonPrice] = useState(990);
   const realisticFetchedRef = useRef(false);
+  const [fakeProgress, setFakeProgress] = useState(0);
+  const [stuckAt95, setStuckAt95] = useState(false);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const stuckTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (!loading) {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (stuckTimerRef.current) clearTimeout(stuckTimerRef.current);
+      setFakeProgress(100);
+      return;
+    }
+    setFakeProgress(0);
+    setStuckAt95(false);
+    progressIntervalRef.current = setInterval(() => {
+      setFakeProgress((prev) => {
+        if (prev >= 95) {
+          if (!stuckTimerRef.current) stuckTimerRef.current = setTimeout(() => setStuckAt95(true), 12000);
+          return prev;
+        }
+        const inc = prev < 30 ? 3 : prev < 60 ? 1.5 : prev < 80 ? 0.8 : 0.3;
+        return Math.min(95, prev + inc);
+      });
+    }, 150);
+    return () => {
+      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+      if (stuckTimerRef.current) { clearTimeout(stuckTimerRef.current); stuckTimerRef.current = null; }
+    };
+  }, [loading]);
 
   useEffect(() => {
     realisticFetchedRef.current = false;
@@ -221,6 +264,59 @@ function LoveReportContent() {
   const displaySections = activeView === "main" ? sectionsMain : sectionsRealistic;
   const displayLoading = activeView === "main" ? loading : loadingRealistic;
   const displayError = activeView === "main" ? error : realisticError;
+  const loadingStep = getLoadingStep(fakeProgress);
+
+  if (loading) {
+    return (
+      <div style={{ maxWidth: 520, margin: "0 auto", background: "#F5F1EA", minHeight: "100vh", fontFamily: "'Gmarket Sans', sans-serif" }}>
+        <header style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid #D4C9B8", background: "#fff" }}>
+          <button onClick={() => router.back()} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+            <Icon icon="mdi:chevron-left" width={24} color="#2C2417" />
+          </button>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: "#2C2417", flex: 1 }}>❤️ 연애운 분석</h1>
+        </header>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 57px)", padding: "0 32px" }}>
+          <motion.div key={loadingStep.icon} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.35 }}
+            style={{ fontSize: 52, marginBottom: 28, lineHeight: 1 }}>
+            {loadingStep.icon}
+          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.p key={loadingStep.msg} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.3 }}
+              style={{ fontSize: 15, fontWeight: 700, color: "#4A3F30", textAlign: "center", marginBottom: 8, lineHeight: 1.6, whiteSpace: "pre-line" }}>
+              {loadingStep.msg}
+            </motion.p>
+          </AnimatePresence>
+          <p style={{ fontSize: 12, color: "#6B5F4E", marginBottom: stuckAt95 ? 12 : 32, textAlign: "center" }}>
+            AI가 연애 데이터를 분석하고 있어요
+          </p>
+          {stuckAt95 && (
+            <p style={{ fontSize: 12, color: "#8B7355", marginBottom: 32, textAlign: "center", lineHeight: 1.7, padding: "10px 16px", background: "#FBF8F3", borderRadius: 10, border: "1px solid #D4C9B8" }}>
+              생각보다 오래 걸리고 있어요.<br />
+              <strong>앱을 닫지 말고 잠시만 기다려 주세요.</strong><br />
+              최대 1분 안에 완성돼요 ❤️
+            </p>
+          )}
+          <div style={{ width: "100%", maxWidth: 300 }}>
+            <div style={{ height: 6, background: "#E3D9CB", borderRadius: 99, overflow: "hidden", marginBottom: 8 }}>
+              {fakeProgress < 95 ? (
+                <motion.div style={{ height: "100%", background: "linear-gradient(90deg, #8B7355, #A8946A)", borderRadius: 99 }}
+                  animate={{ width: `${fakeProgress}%` }} transition={{ duration: 0.4, ease: "easeOut" }} />
+              ) : (
+                <div style={{ position: "relative", height: "100%", width: "95%", background: "linear-gradient(90deg, #8B7355, #A8946A)", borderRadius: 99 }}>
+                  <motion.div style={{ position: "absolute", top: 0, height: "100%", width: "40%", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)" }}
+                    animate={{ x: ["-100%", "200%"] }} transition={{ duration: 1.0, repeat: Infinity, ease: "linear" }} />
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 11, color: "#6B5F4E" }}>분석 중</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#8B7355" }}>{Math.floor(fakeProgress)}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main style={{ minHeight: "100vh", background: "#F5F1EA", fontFamily: "var(--font-sans), 'Gmarket Sans', sans-serif", color: "#2C2417" }}>

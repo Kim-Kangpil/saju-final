@@ -1870,22 +1870,39 @@ def interpret_all(saju_data: dict) -> dict:
     # 시기 분석 추가
     timing = analyze_timing_for_chat(saju_data)
 
-    from logic.saju_engine.core.tonggeun import calculate_tonggeun, format_tonggeun_for_prompt
-    from logic.saju_engine.core.geunmyo import analyze_geunmyo, format_geunmyo_for_prompt
-    from logic.saju_engine.core.hyeong_haehae import analyze_hyeong_haehae, format_hyeong_for_prompt
-    from logic.saju_engine.core.seun import analyze_seun, format_seun_for_prompt
-
     try:
+        from logic.saju_engine.core.tonggeun import calculate_tonggeun, format_tonggeun_for_prompt
+        from logic.saju_engine.core.geunmyo import analyze_geunmyo, format_geunmyo_for_prompt
+        from logic.saju_engine.core.hyeong_haehae import analyze_hyeong_haehae, format_hyeong_for_prompt
+        from logic.saju_engine.core.seun import analyze_seun, format_seun_for_prompt
         tonggeun = calculate_tonggeun(saju_data)
         geunmyo = analyze_geunmyo(saju_data)
         hyeong = analyze_hyeong_haehae(saju_data)
         seun = analyze_seun(saju_data)
     except Exception as e:
-        print(f"추가 엔진 오류: {e}")
+        import traceback as _tb
+        print(f"추가 엔진 오류: {e}\n{_tb.format_exc()}")
         tonggeun = {}
         geunmyo = {}
         hyeong = {}
         seun = {}
+        # format_* 함수 fallback (import 실패 시)
+        try:
+            from logic.saju_engine.core.tonggeun import format_tonggeun_for_prompt
+        except Exception:
+            format_tonggeun_for_prompt = lambda _: ""
+        try:
+            from logic.saju_engine.core.geunmyo import format_geunmyo_for_prompt
+        except Exception:
+            format_geunmyo_for_prompt = lambda _: ""
+        try:
+            from logic.saju_engine.core.hyeong_haehae import format_hyeong_for_prompt
+        except Exception:
+            format_hyeong_for_prompt = lambda _: ""
+        try:
+            from logic.saju_engine.core.seun import format_seun_for_prompt
+        except Exception:
+            format_seun_for_prompt = lambda _: ""
 
     # 시각화 데이터 계산
     visual_data = {

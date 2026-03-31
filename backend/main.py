@@ -3731,6 +3731,17 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
     1) interpret_all()  — 규칙 엔진 (환각 없음)
     2) GPT             — 표현 변환만 담당
     """
+    try:
+        return await _analyze_v2_impl(req, request)
+    except HTTPException:
+        raise
+    except Exception as _top_e:
+        import traceback as _tb
+        print(f"❌ [analyze-v2 미처리 예외] {_top_e}\n{_tb.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"내부 오류: {_top_e}")
+
+
+async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(

@@ -258,24 +258,38 @@ def get_report_cache(cache_key: str, section_key: str) -> Optional[str]:
     conn = _conn()
     try:
         cur = conn.cursor()
-        cur.execute(
-            adapt("SELECT content, created_at FROM report_cache WHERE cache_key = ? AND section_key = ?"),
-            (cache_key, section_key),
-        )
-        row = cur.fetchone()
-        if not row:
-            return None
-        created_at_str = str(row[1]) if row[1] else ""
-        if created_at_str:
-            try:
-                from datetime import timezone
-                created_at = datetime.fromisoformat(created_at_str.rstrip("Z"))
-                age_days = (datetime.utcnow() - created_at).days
-                if age_days > _CACHE_TTL_DAYS:
-                    return None  # 만료
-            except Exception:
-                pass
-        return str(row[0])
+        # created_at 컬럼이 없는 구버전 DB 대비: content만 먼저 가져오고 created_at은 별도 시도
+        try:
+            cur.execute(
+                adapt("SELECT content, created_at FROM report_cache WHERE cache_key = ? AND section_key = ?"),
+                (cache_key, section_key),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            content_val = str(row[0])
+            created_at_str = str(row[1]) if len(row) > 1 and row[1] else ""
+            if created_at_str:
+                try:
+                    created_at = datetime.fromisoformat(created_at_str.rstrip("Z"))
+                    if (datetime.utcnow() - created_at).days > _CACHE_TTL_DAYS:
+                        return None  # 만료
+                except Exception:
+                    pass
+            return content_val
+        except Exception:
+            # created_at 컬럼 없는 구버전 — content만 조회 (TTL 없이)
+            cur2 = conn.cursor()
+            cur2.execute(
+                adapt("SELECT content FROM report_cache WHERE cache_key = ? AND section_key = ?"),
+                (cache_key, section_key),
+            )
+            row2 = cur2.fetchone()
+            return str(row2[0]) if row2 else None
+    except Exception as e:
+        import logging as _log
+        _log.getLogger(__name__).warning(f"[캐시 조회 실패] {cache_key}/{section_key}: {e}")
+        return None
     finally:
         conn.close()
 

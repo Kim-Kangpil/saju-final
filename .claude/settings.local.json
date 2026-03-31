@@ -38,7 +38,9 @@
       "Bash(head -20 grep -rn \"CREATE TABLE\\\\|password\\\\|email\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/logic/ --include=\"*.py\")",
       "Bash(grep -rn \"TODO\\\\|FIXME\\\\|WIP\\\\|XXX\\\\|HACK\" /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/frontend --include=*.tsx --include=*.ts)",
       "Bash(grep -E \"\\\\.py$|^d\")",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(grep -v \"^$\\\\|^commit\\\\|^Author\\\\|^Date\\\\|^    \")",
+      "Bash(grep -rn pillars[''hour''][ /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/)"
     ]
   }
 }

@@ -3772,7 +3772,9 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
         if _issues:
             logger.warning(f"[규칙엔진 검증 경고] {_issues}")
     except Exception as e:
-        print(f"❌ interpret_all 실패: {e}")
+        import traceback as _tb
+        _trace = _tb.format_exc()
+        print(f"❌ interpret_all 실패: {e}\n{_trace}")
         raise HTTPException(status_code=500, detail=f"규칙 엔진 오류: {e}")
 
     # ── 2) analyzer (GPT generator 입력용) ──────────────
@@ -3789,7 +3791,9 @@ async def analyze_v2(req: AnalyzeV2Request, request: Request):
         if req.harmony_clash:
             analysis["harmony_clash"] = req.harmony_clash
     except Exception as e:
-        print(f"❌ analyze_full_saju 실패: {e}")
+        import traceback as _tb
+        _trace = _tb.format_exc()
+        print(f"❌ analyze_full_saju 실패: {e}\n{_trace}")
         raise HTTPException(status_code=500, detail=f"분석 엔진 오류: {e}")
 
     # ── 3) 이론 검색 ────────────────────────────────────

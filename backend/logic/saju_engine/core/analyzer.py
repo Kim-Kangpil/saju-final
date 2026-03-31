@@ -32,6 +32,11 @@ def analyze_full_saju(day_stem, pillars):
         모든 분석 결과를 담은 딕셔너리
     """
 
+    # 시주가 없는 경우(빈 문자열) 안전하게 처리
+    _hour = pillars.get('hour') or ''
+    if len(_hour) < 2:
+        pillars = dict(pillars, hour=_hour.ljust(2, '?'))
+
     result = {
         'basic_info': {
             'day_stem': day_stem,

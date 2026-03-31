@@ -1861,14 +1861,38 @@ def interpret_all(saju_data: dict) -> dict:
     Returns:
         money, love, career, personality, current_period 각 결과 + summary
     """
-    money       = interpret_money(saju_data)
-    love        = interpret_love(saju_data)
-    career      = interpret_career(saju_data)
-    personality = interpret_personality(saju_data)
-    period      = interpret_current_period(saju_data)
-    
+    try:
+        money = interpret_money(saju_data)
+    except Exception as _e:
+        import traceback as _tb; print(f"[interpret_money 오류] {_e}\n{_tb.format_exc()}")
+        money = {"patterns": [], "language_points": [], "raw": {}}
+    try:
+        love = interpret_love(saju_data)
+    except Exception as _e:
+        import traceback as _tb; print(f"[interpret_love 오류] {_e}\n{_tb.format_exc()}")
+        love = {"patterns": [], "language_points": [], "raw": {}}
+    try:
+        career = interpret_career(saju_data)
+    except Exception as _e:
+        import traceback as _tb; print(f"[interpret_career 오류] {_e}\n{_tb.format_exc()}")
+        career = {"patterns": [], "language_points": [], "raw": {}}
+    try:
+        personality = interpret_personality(saju_data)
+    except Exception as _e:
+        import traceback as _tb; print(f"[interpret_personality 오류] {_e}\n{_tb.format_exc()}")
+        personality = {"patterns": [], "language_points": [], "raw": {}}
+    try:
+        period = interpret_current_period(saju_data)
+    except Exception as _e:
+        import traceback as _tb; print(f"[interpret_period 오류] {_e}\n{_tb.format_exc()}")
+        period = {"patterns": [], "language_points": [], "raw": {}}
+
     # 시기 분석 추가
-    timing = analyze_timing_for_chat(saju_data)
+    try:
+        timing = analyze_timing_for_chat(saju_data)
+    except Exception as _e:
+        import traceback as _tb; print(f"[analyze_timing 오류] {_e}\n{_tb.format_exc()}")
+        timing = {}
 
     try:
         from logic.saju_engine.core.tonggeun import calculate_tonggeun, format_tonggeun_for_prompt
@@ -1905,11 +1929,15 @@ def interpret_all(saju_data: dict) -> dict:
             format_seun_for_prompt = lambda _: ""
 
     # 시각화 데이터 계산
-    visual_data = {
-        "personality_radar": calculate_personality_radar_scores(saju_data, personality, money, career),
-        "problem_loop": calculate_problem_loop(saju_data, personality, money, career),
-        "money_flow": calculate_money_flow(saju_data, money),
-    }
+    try:
+        visual_data = {
+            "personality_radar": calculate_personality_radar_scores(saju_data, personality, money, career),
+            "problem_loop": calculate_problem_loop(saju_data, personality, money, career),
+            "money_flow": calculate_money_flow(saju_data, money),
+        }
+    except Exception as _e:
+        import traceback as _tb; print(f"[visual_data 오류] {_e}\n{_tb.format_exc()}")
+        visual_data = {}
     
     # GPT에게 넘길 요약 블록
     summary_for_gpt = {

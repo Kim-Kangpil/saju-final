@@ -3823,6 +3823,7 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
     cached_main = get_report_cache(cache_key, "v2_comprehensive")
     cached_cv   = get_report_cache(cache_key, "v2_core_values")
     cached_sections = get_report_cache(cache_key, "v2_sections")
+    cached_deep = get_report_cache(cache_key, "v2_deep_sections")
     if cached_main and cached_cv:
         parsed_sections: dict[str, str] = {}
         if cached_sections:
@@ -3832,6 +3833,14 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
                     parsed_sections = {k: str(v) for k, v in obj.items() if isinstance(v, str)}
             except Exception:
                 parsed_sections = {}
+        parsed_deep: dict[str, str] = {}
+        if cached_deep:
+            try:
+                obj2 = json.loads(cached_deep)
+                if isinstance(obj2, dict):
+                    parsed_deep = {k: str(v) for k, v in obj2.items() if isinstance(v, str)}
+            except Exception:
+                parsed_deep = {}
         print(f"✅ v2 캐시 히트: {cache_key}")
         return {
             "success": True,
@@ -3846,9 +3855,18 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
             "section_relationship": parsed_sections.get("section_relationship", ""),
             "section_current": parsed_sections.get("section_current", ""),
             "rule_summary": interpretation.get("summary_for_gpt", {}),
+            # deep 전용
+            "section_structure": parsed_deep.get("section_structure", ""),
+            "section_geunmyo": parsed_deep.get("section_geunmyo", ""),
+            "section_tonggeun": parsed_deep.get("section_tonggeun", ""),
+            "section_sibiun": parsed_deep.get("section_sibiun", ""),
+            "section_harmony": parsed_deep.get("section_harmony", ""),
+            "section_sinsal": parsed_deep.get("section_sinsal", ""),
+            "section_seun": parsed_deep.get("section_seun", ""),
         }
 
     # ── 5) GPT 표현 변환 ────────────────────────────────
+    deep_sections: dict = {}
     try:
         from logic.gpt_generator import GPTInterpretationGenerator
         generator = GPTInterpretationGenerator()
@@ -3924,6 +3942,18 @@ section_personality, section_strength, section_problem, section_money, section_c
                     sections[k] = str(v).strip() if v is not None else ""
         except Exception as se:
             print(f"⚠️ v2 섹션 생성 실패: {se}")
+
+        # deep 리포트 전용 추가 섹션
+        deep_sections: dict = {}
+        if (req.report_type or "basic").lower() == "deep":
+            try:
+                deep_sections = generator.generate_deep_sections(
+                    analysis=analysis,
+                    interpretation=interpretation if isinstance(interpretation, dict) else {},
+                )
+            except Exception as _de:
+                print(f"⚠️ generate_deep_sections 실패: {_de}")
+
     except Exception as e:
         print(f"❌ GPT 생성 실패: {e}")
         raise HTTPException(status_code=502, detail=f"GPT 생성 오류: {e}")
@@ -3933,6 +3963,8 @@ section_personality, section_strength, section_problem, section_money, section_c
         save_report_cache(cache_key, "v2_comprehensive", comprehensive)
         save_report_cache(cache_key, "v2_core_values",   core_values)
         save_report_cache(cache_key, "v2_sections", json.dumps(sections, ensure_ascii=False))
+        if deep_sections:
+            save_report_cache(cache_key, "v2_deep_sections", json.dumps(deep_sections, ensure_ascii=False))
         print(f"✅ v2 캐시 저장: {cache_key}")
     except Exception as e:
         print(f"⚠️ v2 캐시 저장 실패: {e}")
@@ -3953,6 +3985,14 @@ section_personality, section_strength, section_problem, section_money, section_c
         "section_relationship": sections.get("section_relationship", ""),
         "section_current": sections.get("section_current", ""),
         "rule_summary": rule_summary_data,
+        # deep 전용
+        "section_structure": deep_sections.get("section_structure", ""),
+        "section_geunmyo": deep_sections.get("section_geunmyo", ""),
+        "section_tonggeun": deep_sections.get("section_tonggeun", ""),
+        "section_sibiun": deep_sections.get("section_sibiun", ""),
+        "section_harmony": deep_sections.get("section_harmony", ""),
+        "section_sinsal": deep_sections.get("section_sinsal", ""),
+        "section_seun": deep_sections.get("section_seun", ""),
     }
 
 

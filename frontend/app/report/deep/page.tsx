@@ -195,6 +195,14 @@ interface V2Result {
   section_relationship: string;
   section_current: string;
   rule_summary: Record<string, unknown>;
+  // deep 전용
+  section_structure: string;
+  section_geunmyo: string;
+  section_tonggeun: string;
+  section_sibiun: string;
+  section_harmony: string;
+  section_sinsal: string;
+  section_seun: string;
 }
 
 interface DaeunItem { age: number; ganji: string; hangul: string; raw: string }
@@ -595,6 +603,24 @@ function DeepReportContent() {
             );
           })()}
 
+          {/* ── 나의 사주 DNA ── */}
+          {v2Result?.section_structure && (
+            <div style={{ marginBottom: 10 }}>
+              <Accordion title="🧬 나의 사주 DNA">
+                <MarkdownBody text={v2Result.section_structure} />
+              </Accordion>
+            </div>
+          )}
+
+          {/* ── 기둥별 인생 구조 ── */}
+          {v2Result?.section_geunmyo && (
+            <div style={{ marginBottom: 10 }}>
+              <Accordion title="🌱 기둥별 인생 구조">
+                <MarkdownBody text={v2Result.section_geunmyo} />
+              </Accordion>
+            </div>
+          )}
+
           {/* ── SECTION 1: 종합 사주 해석 ── */}
           <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${S.beige}`, padding: "18px 18px", marginBottom: 14, boxShadow: "0 2px 10px rgba(44,36,23,0.06)" }}>
             <SectionHeader icon="🔮" title="종합 사주 해석" sub="규칙 엔진이 계산하고 AI가 언어로 바꾼 결과예요" />
@@ -609,6 +635,24 @@ function DeepReportContent() {
                 <MarkdownBody text={v2Result.core_values} />
               </div>
             )}
+          </div>
+
+          {/* ── 심화 구조 섹션 (통근/십이운성/합충/신살) ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+            {[
+              { key: "section_tonggeun", title: "🌳 실질적 힘의 구조" },
+              { key: "section_sibiun",   title: "⚙️ 에너지 생사 사이클" },
+              { key: "section_harmony",  title: "⚡ 합충·형파해 패턴" },
+              { key: "section_sinsal",   title: "✨ 타고난 특수 기운" },
+            ].map(({ key, title }) => {
+              const text = v2Result?.[key as keyof V2Result] as string | undefined;
+              if (!text) return null;
+              return (
+                <Accordion key={key} title={title}>
+                  <MarkdownBody text={text} />
+                </Accordion>
+              );
+            })}
           </div>
 
           {/* 성격·강약·돈·직업·관계 아코디언 */}
@@ -818,6 +862,15 @@ function DeepReportContent() {
               </div>
             );
           })()}
+
+          {/* ── 올해 흐름 분석 (세운) ── */}
+          {v2Result?.section_seun && (
+            <div style={{ marginBottom: 14 }}>
+              <Accordion title="🗓 올해 흐름 분석 (세운)">
+                <MarkdownBody text={v2Result.section_seun} />
+              </Accordion>
+            </div>
+          )}
 
           {/* ── SECTION 6: AI 채팅 CTA ── */}
           <div style={{

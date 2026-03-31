@@ -1341,6 +1341,246 @@ class GPTInterpretationGenerator:
         }
 
 
+    # ── deep 리포트 전용 ──────────────────────────────────────────────
+
+    def _format_sinsal_for_prompt(self, sinsal: dict) -> str:
+        """신살 데이터를 프롬프트용 텍스트로 변환 (해당 항목만)"""
+        label_map = {
+            "cheonul_gwiin": "천을귀인(어려운 순간 귀인 등장)",
+            "dohwa": "도화(매력·인기·관계 불안정)",
+            "yeokma": "역마(이동·변화·활동성)",
+            "hwagae": "화개(예술·영성·고독)",
+            "wolgong": "월공(명예·주목받는 기운)",
+            "munchang_gwiin": "문창귀인(학문·글재주·창작)",
+            "guimun": "귀문(기둥 간 긴장·직관)",
+        }
+        lines = []
+        for key, label in label_map.items():
+            items = sinsal.get(key, [])
+            if items:
+                positions = ", ".join(
+                    f"{it.get('position','')}{it.get('char','')}" for it in items
+                )
+                lines.append(f"- {label}: {positions}")
+        return "\n".join(lines) if lines else "- 해당 신살 없음"
+
+    def _format_sibiun_for_prompt(self, sibiun: dict, day_stem: str) -> str:
+        """십이운성 데이터를 프롬프트용 텍스트로 변환"""
+        lines = []
+        # 봉법: 각 천간의 생사 단계
+        bong = sibiun.get("bongbeop", {})
+        for pos in ["year_stem", "month_stem", "day_stem", "hour_stem"]:
+            d = bong.get(pos, {})
+            if d:
+                pos_kr = {"year_stem": "년주 천간", "month_stem": "월주 천간",
+                          "day_stem": "일주 천간(일간)", "hour_stem": "시주 천간"}.get(pos, pos)
+                lines.append(f"- {pos_kr} {d.get('stem','')}({d.get('sibiun','')}/{d.get('phase','')}) → {d.get('modern_meaning','')}")
+        # 거법: 일간 기준 각 지지
+        geo = sibiun.get("geobeop", {})
+        for pos in ["year_branch", "month_branch", "day_branch", "hour_branch"]:
+            d = geo.get(pos, {})
+            if d:
+                pos_kr = {"year_branch": "년지", "month_branch": "월지",
+                          "day_branch": "일지", "hour_branch": "시지"}.get(pos, pos)
+                lines.append(f"- {pos_kr} 기준 일간({day_stem}): {d.get('ilgan_sibiun','')}/{d.get('phase','')} → {d.get('meaning','')}")
+        return "\n".join(lines) if lines else "- 데이터 없음"
+
+    def generate_deep_sections(self, analysis: dict, interpretation: dict) -> dict:
+        """
+        deep 리포트 전용: 규칙 엔진 데이터를 자연어로 번역.
+        7개 섹션을 JSON으로 반환.
+        할루시네이션 방지: 계산된 데이터만 넘기고 번역만 요청.
+        """
+        GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+        client_ok = self.client or GEMINI_API_KEY
+        if not client_ok:
+            return {}
+
+        summary = analysis.get("summary", {})
+        day_stem = analysis.get("basic_info", {}).get("day_stem", "")
+        ec = summary.get("element_count", {})
+        sinsal = analysis.get("sinsal", {})
+        sibiun = analysis.get("sibiun", {})
+        harmony_clash = analysis.get("harmony_clash", {})
+
+        # interpretation 서브필드
+        geunmyo = interpretation.get("geunmyo") or {}
+        tonggeun = interpretation.get("tonggeun") or {}
+        hyeong = interpretation.get("hyeong_haehae") or {}
+        seun = interpretation.get("seun_2026") or {}
+        yongshin_info = (interpretation.get("summary_for_gpt") or {})
+
+        # 오행 텍스트
+        el_kr = {"wood": "목(木/나무)", "fire": "화(火/불)", "earth": "토(土/흙)",
+                 "metal": "금(金/쇠)", "water": "수(水/물)"}
+        el_text = " / ".join(f"{el_kr.get(k, k)} {v}개" for k, v in ec.items() if v)
+
+        # 용신 텍스트
+        yongshin_text = ""
+        if yongshin_info:
+            fy = yongshin_info.get("final_yongshin") or yongshin_info.get("yongshin") or []
+            gi = yongshin_info.get("gishin") or []
+            if fy:
+                yongshin_text += f"유리한 기운: {', '.join(str(x) for x in fy)}\n"
+            if gi:
+                yongshin_text += f"불리한 기운: {', '.join(str(x) for x in gi)}\n"
+
+        # 통근 텍스트
+        tg_summary = tonggeun.get("summary", {}) if isinstance(tonggeun, dict) else {}
+        strong_stems = tg_summary.get("strong_stems", [])
+        weak_stems = tg_summary.get("weak_stems", [])
+        tonggeun_text = f"뿌리 있는(실제 작동) 십성: {', '.join(str(s) for s in strong_stems) or '없음'}\n"
+        tonggeun_text += f"뿌리 없는(허약) 십성: {', '.join(str(s) for s in weak_stems) or '없음'}\n"
+        tonggeun_text += f"일간({day_stem}) 뿌리 강도: {tg_summary.get('day_stem_strength', '불명')}"
+
+        # 근묘화실 텍스트
+        def _gm(key, label):
+            d = geunmyo.get(key, {})
+            if not d:
+                return ""
+            om = d.get("overall_meaning", "") or ""
+            return f"[{label}] {om}"
+        geunmyo_text = "\n".join(filter(None, [
+            _gm("year", "년주(초년/뿌리)"),
+            _gm("month", "월주(청년기/줄기)"),
+            _gm("day", "일주(중년/꽃)"),
+            _gm("hour", "시주(말년/열매)"),
+        ])) or "데이터 없음"
+
+        # 신살 텍스트
+        sinsal_text = self._format_sinsal_for_prompt(sinsal)
+
+        # 십이운성 텍스트
+        sibiun_text = self._format_sibiun_for_prompt(sibiun, day_stem)
+
+        # 합충형파해 텍스트
+        def _list_items(lst, key="modern"):
+            return "\n".join(f"  · {it.get(key, str(it))}" for it in lst) if lst else "  · 없음"
+
+        hc = harmony_clash
+        harmony_text = "【천간합】\n" + _list_items(hc.get("cheongan_hap", []), "description")
+        harmony_text += "\n【천간충】\n" + _list_items(hc.get("cheongan_chung", []), "description")
+        harmony_text += "\n【지지 육합】\n" + _list_items(hc.get("jiji_yukhap", []), "description")
+        harmony_text += "\n【지지 삼합/반합】\n" + _list_items(
+            hc.get("jiji_samhap", []) + hc.get("jiji_banhap", []), "name")
+        harmony_text += "\n【지지 충】\n" + _list_items(hc.get("jiji_chung", []), "description")
+
+        hyeong_data = hyeong if isinstance(hyeong, dict) else {}
+        harmony_text += "\n【형(刑)】\n" + _list_items(hyeong_data.get("hyeong", []), "modern")
+        harmony_text += "\n【파(破)】\n" + _list_items(hyeong_data.get("pa", []), "modern")
+        harmony_text += "\n【해(害)】\n" + _list_items(hyeong_data.get("hae", []), "modern")
+        harmony_text += "\n【원진(怨嗔)】\n" + _list_items(hyeong_data.get("wonjin", []), "modern")
+
+        # 세운 텍스트
+        seun_text = ""
+        if seun:
+            seun_text = (
+                f"분석 연도: {seun.get('year', 2026)}\n"
+                f"올해 천간: {seun.get('seun_stem', '')} → {seun.get('stem_meaning', '')}\n"
+                f"올해 지지: {seun.get('seun_branch', '')} → {seun.get('branch_meaning', '')}\n"
+                f"충돌 여부: {'있음 (' + str(seun.get('clash_with', '')) + '와 충)' if seun.get('branch_clash') else '없음'}\n"
+                f"활성 영역: {seun.get('activated_domain', '')}\n"
+                f"올해 흐름: {seun.get('overall', '')}\n"
+                f"조언: {seun.get('advice', '')}"
+            )
+        else:
+            seun_text = "세운 데이터 없음"
+
+        system_prompt = (
+            "당신은 사주명리학 전문 번역가입니다.\n"
+            "아래 규칙을 반드시 지키세요:\n"
+            "1. 제공된 계산 데이터에 있는 것만 설명. 없는 신살·합충은 절대 언급 금지.\n"
+            "2. 사주 전문 용어 직접 노출 금지 — 일상 언어로만 표현.\n"
+            "   예) '편재' → '내가 통제하는 재물 에너지', '장생' → '가장 생동감 있는 단계'\n"
+            "3. 추측·창작 금지. 위에서 준 데이터를 번역하는 것이 전부.\n"
+            "4. 각 섹션 300~500자. 존댓말 사용.\n"
+            "5. 마크다운 기호(##, **, *) 사용 금지. 이모지+한글 소제목만 허용.\n"
+            "6. 반드시 JSON 형식으로 반환."
+        )
+
+        user_prompt = f"""아래 규칙 엔진이 계산한 사주 데이터를 자연어 리포트로 번역해주세요.
+
+═══ 신강약·오행·용신 ═══
+신강약: {summary.get('strength', '')} (점수: {summary.get('strength_score', 0)}/100)
+오행 분포: {el_text}
+{yongshin_text}
+
+═══ 기둥별 인생 구조 (근묘화실론) ═══
+{geunmyo_text}
+
+═══ 통근투출 (실제 작동하는 힘) ═══
+{tonggeun_text}
+
+═══ 십이운성 (에너지 생사 사이클) ═══
+{sibiun_text}
+
+═══ 합충·형파해원진 ═══
+{harmony_text}
+
+═══ 신살 (타고난 특수 기운) ═══
+{sinsal_text}
+
+═══ 세운 (올해 흐름) ═══
+{seun_text}
+
+[출력 JSON 형식 — 7개 키 필수]
+{{
+  "section_structure": "나의 사주 DNA — 신강약·오행·용신 설명 (300~500자)",
+  "section_geunmyo": "기둥별 인생 구조 — 초년/청년기/중년/말년 설명 (300~500자)",
+  "section_tonggeun": "실질적 힘의 구조 — 실제 작동하는 십성 vs 허약한 십성 (300~500자)",
+  "section_sibiun": "에너지 생사 사이클 — 각 기둥의 생사 단계와 의미 (300~500자)",
+  "section_harmony": "합충·형파해 패턴 — 내 사주 내부 역학과 삶에서 반복되는 구조 (300~500자)",
+  "section_sinsal": "타고난 특수 기운 — 해당 신살만 설명 (없으면 빈 문자열)",
+  "section_seun": "올해 흐름 분석 — 2026년 에너지와 주요 영역 (300~500자)"
+}}"""
+
+        try:
+            if GEMINI_API_KEY:
+                from google import genai as _genai
+                from google.genai import types as _gtypes
+                _gclient = _genai.Client(api_key=GEMINI_API_KEY)
+                full_prompt = f"{system_prompt}\n\n{user_prompt}"
+                resp = _gclient.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=full_prompt,
+                    config=_gtypes.GenerateContentConfig(
+                        max_output_tokens=6000,
+                        temperature=0.3,
+                        response_mime_type="application/json",
+                    ),
+                )
+                raw = (resp.text or "").strip()
+            else:
+                resp = self.client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    temperature=0.3,
+                    max_tokens=6000,
+                    response_format={"type": "json_object"},
+                )
+                raw = resp.choices[0].message.content or ""
+
+            import json as _json
+            # JSON 블록 추출
+            if "```" in raw:
+                import re as _re
+                m = _re.search(r"```(?:json)?\s*([\s\S]+?)```", raw)
+                raw = m.group(1).strip() if m else raw
+            result = _json.loads(raw)
+            print(f"✅ generate_deep_sections 완료: {len(str(result))}자")
+            return {k: str(result.get(k, "") or "").strip() for k in [
+                "section_structure", "section_geunmyo", "section_tonggeun",
+                "section_sibiun", "section_harmony", "section_sinsal", "section_seun",
+            ]}
+        except Exception as _e:
+            import traceback as _tb
+            print(f"❌ generate_deep_sections 오류: {_e}\n{_tb.format_exc()}")
+            return {}
+
+
 def test_generator():
     """테스트"""
     element_counts = {

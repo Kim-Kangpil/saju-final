@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import KakaoPayButton from "@/components/KakaoPayButton";
 import { ReportIntroHeader } from "@/components/ReportIntroHeader";
@@ -10,7 +10,9 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.o
 function DeepIntroContent() {
   const searchParams = useSearchParams();
   const sajuId = searchParams.get("saju_id") || "";
+  const router = useRouter();
   const [sajuInfo, setSajuInfo] = useState<{ name?: string; birth_ymd?: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!sajuId) return;
@@ -24,6 +26,34 @@ function DeepIntroContent() {
       })
       .catch(() => {});
   }, [sajuId]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("betaFeatures");
+    if (stored) {
+      try {
+        const f = JSON.parse(stored);
+        if (f?.is_admin === true) setIsAdmin(true);
+      } catch {}
+    }
+    fetch(`${API_BASE}/api/beta/features`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => {
+        const f = data?.features;
+        if (f) {
+          localStorage.setItem("betaFeatures", JSON.stringify(f));
+          setIsAdmin(f.is_admin === true);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleAdminViewReport = () => {
+    if (!sajuId) {
+      alert("사주 정보를 찾을 수 없습니다.");
+      return;
+    }
+    router.push(`/report/deep?saju_id=${sajuId}`);
+  };
 
   return (
     <div
@@ -156,6 +186,31 @@ function DeepIntroContent() {
             }
           }}
         />
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={handleAdminViewReport}
+            style={{
+              marginTop: 12,
+              padding: "12px 24px",
+              borderRadius: 10,
+              border: "2px solid #dc2626",
+              background: "#fee2e2",
+              color: "#991b1b",
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              margin: "12px auto 0",
+            }}
+          >
+            <span>👑</span>
+            관리자: 바로 보기
+          </button>
+        )}
         <p style={{ fontSize: 10, color: "#C4B5A0", marginTop: 6 }}>
           한 번 구매로 영구 열람 가능
         </p>

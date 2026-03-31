@@ -3824,7 +3824,9 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
     cached_cv   = get_report_cache(cache_key, "v2_core_values")
     cached_sections = get_report_cache(cache_key, "v2_sections")
     cached_deep = get_report_cache(cache_key, "v2_deep_sections")
-    if cached_main and cached_cv:
+    is_deep = (req.report_type or "basic").lower() == "deep"
+    # deep 리포트: 종합 캐시가 있어도 deep_sections 없으면 재생성
+    if cached_main and cached_cv and (not is_deep or cached_deep):
         parsed_sections: dict[str, str] = {}
         if cached_sections:
             try:
@@ -3863,6 +3865,53 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
             "section_harmony": parsed_deep.get("section_harmony", ""),
             "section_sinsal": parsed_deep.get("section_sinsal", ""),
             "section_seun": parsed_deep.get("section_seun", ""),
+        }
+    # deep이고 종합 캐시는 있는데 deep_sections만 없는 경우: deep_sections만 재생성
+    if is_deep and cached_main and cached_cv and not cached_deep:
+        print(f"⚡ deep_sections 부분 재생성: {cache_key}")
+        try:
+            from logic.gpt_generator import GPTInterpretationGenerator
+            _gen = GPTInterpretationGenerator()
+            _ds = _gen.generate_deep_sections(
+                analysis=analysis,
+                interpretation=interpretation if isinstance(interpretation, dict) else {},
+            )
+        except Exception as _e:
+            print(f"⚠️ deep_sections 부분 재생성 실패: {_e}")
+            _ds = {}
+        if _ds:
+            try:
+                save_report_cache(cache_key, "v2_deep_sections", json.dumps(_ds, ensure_ascii=False))
+            except Exception:
+                pass
+        parsed_sections2: dict[str, str] = {}
+        if cached_sections:
+            try:
+                obj3 = json.loads(cached_sections)
+                if isinstance(obj3, dict):
+                    parsed_sections2 = {k: str(v) for k, v in obj3.items() if isinstance(v, str)}
+            except Exception:
+                parsed_sections2 = {}
+        return {
+            "success": True,
+            "cached": True,
+            "comprehensive": cached_main,
+            "core_values": cached_cv,
+            "section_personality": parsed_sections2.get("section_personality", ""),
+            "section_strength": parsed_sections2.get("section_strength", ""),
+            "section_problem": parsed_sections2.get("section_problem", ""),
+            "section_money": parsed_sections2.get("section_money", ""),
+            "section_career": parsed_sections2.get("section_career", ""),
+            "section_relationship": parsed_sections2.get("section_relationship", ""),
+            "section_current": parsed_sections2.get("section_current", ""),
+            "rule_summary": interpretation.get("summary_for_gpt", {}),
+            "section_structure": _ds.get("section_structure", ""),
+            "section_geunmyo": _ds.get("section_geunmyo", ""),
+            "section_tonggeun": _ds.get("section_tonggeun", ""),
+            "section_sibiun": _ds.get("section_sibiun", ""),
+            "section_harmony": _ds.get("section_harmony", ""),
+            "section_sinsal": _ds.get("section_sinsal", ""),
+            "section_seun": _ds.get("section_seun", ""),
         }
 
     # ── 5) GPT 표현 변환 ────────────────────────────────
@@ -3945,7 +3994,7 @@ section_personality, section_strength, section_problem, section_money, section_c
 
         # deep 리포트 전용 추가 섹션
         deep_sections: dict = {}
-        if (req.report_type or "basic").lower() == "deep":
+        if is_deep:
             try:
                 deep_sections = generator.generate_deep_sections(
                     analysis=analysis,

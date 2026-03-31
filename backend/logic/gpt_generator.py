@@ -713,7 +713,7 @@ class GPTInterpretationGenerator:
 
 [분량]
 """ + (
-    "전체 6,000~8,000자. 각 섹션 700~900자.\n통근투출·기둥별구조·형파해원진·올해세운 분석을 본문에 자연스럽게 녹여낼 것."
+    "전체 6,000~8,000자. 각 섹션 700~900자.\n⚠️ 통근투출·합충·형파해·십이운성·신살·세운은 이미 별도 전문 섹션에서 다루므로 이 리포트에서 중복 언급 금지. 대신 이 사람의 '인생 서사'와 '지금 이 시기의 감정·심리·행동 패턴'에 집중할 것."
     if (report_type or 'basic').lower() == 'deep' else
     "전체 4,000~5,000자. 각 섹션 400~600자."
 ) + "\n"""
@@ -1407,7 +1407,7 @@ class GPTInterpretationGenerator:
         geunmyo = interpretation.get("geunmyo") or {}
         tonggeun = interpretation.get("tonggeun") or {}
         hyeong = interpretation.get("hyeong_haehae") or {}
-        seun = interpretation.get("seun_2026") or {}
+        seun = interpretation.get("seun_current") or interpretation.get("seun_2026") or {}
         yongshin_info = (interpretation.get("summary_for_gpt") or {})
 
         # 오행 텍스트

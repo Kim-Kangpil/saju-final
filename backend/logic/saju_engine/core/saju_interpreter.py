@@ -1974,7 +1974,7 @@ def interpret_all(saju_data: dict) -> dict:
         "tonggeun": tonggeun,
         "geunmyo": geunmyo,
         "hyeong_haehae": hyeong,
-        "seun_2026": seun,
+        "seun_current": seun,
         "summary_for_gpt": summary_for_gpt,
     }
 

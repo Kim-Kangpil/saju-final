@@ -42,9 +42,9 @@ function getTimeBasedGreeting(lang: "ko" | "en"): string {
 
 const QUICK_PROMPTS_KO = [
   "올해 연애운은?",
-  "취업/이직 타이밍",
-  "재물운이 트이는 시기",
-  "나랑 잘 맞는 사람",
+  "취업·이직 타이밍",
+  "재물운 트이는 시기",
+  "나랑 잘 맞는 사람 유형",
   "지금 이 결정 해도 될까?",
 ];
 
@@ -799,6 +799,32 @@ function ChatPageInner({
             padding-left: max(20px, env(safe-area-inset-left));
             padding-right: max(20px, env(safe-area-inset-right));
           }
+        }
+        .chat-top-context-badge {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 4px;
+          font-size: 11px;
+          color: var(--sub);
+          text-align: center;
+          padding: 6px 12px 8px;
+          margin: -16px -16px 12px;
+          border-bottom: 1px solid var(--border);
+          background: var(--surface);
+          line-height: 1.5;
+        }
+        .chat-top-context-badge-name {
+          color: var(--text);
+          font-weight: 600;
+        }
+        .chat-top-context-badge-count {
+          color: var(--gold-muted);
+          font-weight: 600;
+        }
+        @media (min-width: 768px) {
+          .chat-top-context-badge { font-size: 12px; margin: -16px -16px 16px; }
         }
         .chat-list {
           flex: 1;
@@ -1984,6 +2010,23 @@ function ChatContent({
     <>
       <div className="chat-main">
         <div className="chat-list" ref={listRef} onScroll={handleScroll} data-chat-list>
+          {lang !== "en" && (sajuBadgeDayKr || savedSajuName) && (
+            <div className="chat-top-context-badge">
+              <span>🔮</span>
+              {sajuBadgeDayKr ? (
+                <>
+                  {savedSajuName && <span className="chat-top-context-badge-name">{savedSajuName}님</span>}
+                  <span>({sajuBadgeDayKr}일주)의 사주로 대화 중</span>
+                </>
+              ) : (
+                <span className="chat-top-context-badge-name">{savedSajuName}님</span>
+              )}
+              <span style={{ color: "var(--border2)", margin: "0 2px" }}>·</span>
+              <span className="chat-top-context-badge-count">
+                {isPro ? "채팅 무제한" : `오늘 채팅 ${Math.max(0, 3 - dailyChatCount)}회 남음`}
+              </span>
+            </div>
+          )}
           {isInitialView ? (
             <div className="chat-initial-area">
               <div

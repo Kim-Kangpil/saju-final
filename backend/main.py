@@ -214,6 +214,7 @@ from logic.saju_db import (
     get_report_cache,
     save_report_cache,
     clear_all_report_cache,
+    PROMPT_VERSION,
 )
 from logic.user_db import (
     get_user_id_from_session,
@@ -1937,6 +1938,89 @@ def health():
     return {"ok": True}
 
 
+# ─── /api/daily-saju 24h 인메모리 캐시 ───────────────────────────────────
+_daily_saju_cache: dict[str, dict] = {}
+
+
+@app.get("/api/daily-saju")
+async def get_daily_saju(user_id: int, request: Request):
+    """
+    유저의 사주 + 오늘 일진으로 GPT 한 줄 메시지 생성.
+    같은 날·같은 유저는 24시간 캐시 반환.
+    """
+    kst = timezone(timedelta(hours=9))
+    today_str = datetime.now(kst).strftime("%Y-%m-%d")
+    cache_key = f"{user_id}_{today_str}"
+
+    if cache_key in _daily_saju_cache:
+        return _daily_saju_cache[cache_key]
+
+    # 사주 목록에서 첫 번째 항목 사용
+    try:
+        saju_list = get_saju_list_for_user(user_id)
+    except Exception:
+        saju_list = []
+
+    saju_context = ""
+    if saju_list:
+        first = saju_list[0]
+        day_pillar = first.get("day_pillar") or ""
+        name = first.get("name") or ""
+        if day_pillar:
+            saju_context = f"일주: {day_pillar}"
+        if name:
+            saju_context = f"이름: {name}, {saju_context}".strip(", ")
+
+    # 오늘 일진 계산
+    try:
+        today_dt = datetime.now(kst)
+        dt = datetime(today_dt.year, today_dt.month, today_dt.day, 12, 0)
+        today_pillar = test.calculate_day_pillar(dt)
+    except Exception:
+        today_pillar = ""
+
+    # GPT 한 줄 메시지 생성
+    prompt_parts = []
+    if saju_context:
+        prompt_parts.append(f"사용자 정보: {saju_context}")
+    if today_pillar:
+        prompt_parts.append(f"오늘 일진: {today_pillar}({today_str})")
+    prompt_parts.append(
+        "위 정보를 바탕으로 오늘 하루에 대한 실용적인 한 줄 조언을 50자 이내로 작성하세요. "
+        "사주 용어 없이 현실 언어로만 쓰세요."
+    )
+    prompt = "\n".join(prompt_parts)
+
+    message = ""
+    try:
+        if gemini_client:
+            resp = gemini_client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+                config=_genai_types.GenerateContentConfig(
+                    max_output_tokens=80,
+                    temperature=0.7,
+                ),
+            )
+            message = (resp.text or "").strip()
+        else:
+            oai = get_openai_client()
+            if oai:
+                resp = oai.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=80,
+                    temperature=0.7,
+                )
+                message = (resp.choices[0].message.content or "").strip()
+    except Exception as e:
+        logger.warning(f"⚠️ /api/daily-saju GPT 실패: {e}")
+
+    result = {"message": message, "date": today_str}
+    _daily_saju_cache[cache_key] = result
+    return result
+
+
 @app.get("/saju/day-pillar")
 def get_day_pillar(date_str: Optional[str] = None):
     """특정 날짜의 일진(일주) 반환. date=YYYY-MM-DD (없으면 대한민국(KST) 기준 오늘)."""
@@ -2236,7 +2320,9 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
             month_pillar_str, str) and len(month_pillar_str) >= 2 else ''
 
         # ✅ 6-0. 캐시 확인
-        cache_key = req.cache_key or f"{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}"
+        _current_year = datetime.utcnow().year
+        # 구형: f"{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}"
+        cache_key = req.cache_key or f"{_uid}_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}_{_current_year}_{PROMPT_VERSION}"
         cached_elements = get_report_cache(cache_key, "elements")
         cached_core_values = get_report_cache(cache_key, "core_values")
         if cached_elements and cached_core_values:
@@ -2533,7 +2619,9 @@ async def _generate_deep_topic_report(
 
     _tone = (report_tone or "empathy").strip().lower()
     _ck_suffix = "realistic" if _tone == "realistic" else "deep"
-    cache_key = req.cache_key or f"{topic_key}_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{_ck_suffix}"
+    _current_year = datetime.utcnow().year
+    # 구형: f"{topic_key}_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{_ck_suffix}"
+    cache_key = req.cache_key or f"{_uid}_{topic_key}_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{_ck_suffix}_{_current_year}_{PROMPT_VERSION}"
     cached = get_report_cache(cache_key, section_key)
     if cached:
         return {
@@ -3862,9 +3950,11 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
         print(f"⚠️ 이론 검색 실패: {e}")
 
     # ── 4) 캐시 확인 ────────────────────────────────────
+    _current_year = datetime.utcnow().year
+    # 구형: f"v2_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}"
     cache_key = (
         req.cache_key
-        or f"v2_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}"
+        or f"{_uid}_v2_{req.year_pillar}_{req.month_pillar}_{req.day_pillar}_{req.hour_pillar}_{req.tone}_{_current_year}_{PROMPT_VERSION}"
     )
     cached_main = get_report_cache(cache_key, "v2_comprehensive")
     cached_cv   = get_report_cache(cache_key, "v2_core_values")
@@ -4192,9 +4282,12 @@ async def analyze_guest(req: AnalyzeV2Request, request: Request):
         logger.warning(f"[analyze-guest] 이론 검색 실패: {e}")
 
     # ── 4) 캐시 확인 (IP 불포함 — 같은 사주는 캐시 공유) ──
+    _current_year = datetime.utcnow().year
+    # 구형: f"guest_{req_basic.year_pillar}_{req_basic.month_pillar}_{req_basic.day_pillar}_{req_basic.hour_pillar}_{req_basic.tone}"
     cache_key = (
         f"guest_{req_basic.year_pillar}_{req_basic.month_pillar}"
         f"_{req_basic.day_pillar}_{req_basic.hour_pillar}_{req_basic.tone}"
+        f"_{_current_year}_{PROMPT_VERSION}"
     )
     cached_main = get_report_cache(cache_key, "v2_comprehensive")
     cached_cv   = get_report_cache(cache_key, "v2_core_values")

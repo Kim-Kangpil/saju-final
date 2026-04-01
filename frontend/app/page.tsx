@@ -90,12 +90,12 @@ export default function RootPage() {
 
         {/* CTA */}
         <div className="fade-up fade-up-4">
-          <button className="tap" onClick={() => router.push("/start")}
+          <button className="tap" onClick={() => router.push("/add-guest")}
             style={{ width: "100%", maxWidth: 340, padding: "16px 24px", borderRadius: 14, border: "none", background: `linear-gradient(135deg, ${S.ink}, #4A3F30)`, color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", boxShadow: "0 6px 20px rgba(44,36,23,0.25)", display: "block", margin: "0 auto" }}>
             무료로 내 사주 분석받기 →
           </button>
           <p style={{ marginTop: 10, fontSize: 12, color: S.ink3 }}>
-            카드 정보 불필요&nbsp;·&nbsp;30초 완성
+            로그인 없이 바로 시작
           </p>
         </div>
 
@@ -245,7 +245,7 @@ export default function RootPage() {
               { label: "심화 리포트", badge: null, desc: "17개 섹션 심층 분석 · 신살 · 세운", price: "9,900원", priceNote: "1회 이용", highlight: false },
               { label: "Pro 멤버십", badge: "추천", badgeColor: S.gold, badgeBg: "#FBF8F3", desc: "AI 채팅 무제한 + 모든 기능 이용", price: "4,900원", priceNote: "/ 월", highlight: true },
             ].map(({ label, badge, badgeColor, badgeBg, desc, price, priceNote, highlight }) => (
-              <div key={label} className="tap" onClick={() => router.push("/start")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `${highlight ? "2px" : "1px"} solid ${highlight ? S.gold : S.beige}`, borderRadius: 14, padding: "16px 18px", boxShadow: highlight ? `0 4px 16px rgba(139,115,85,0.12)` : "0 1px 4px rgba(44,36,23,0.05)" }}>
+              <div key={label} className="tap" onClick={() => router.push("/add-guest")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `${highlight ? "2px" : "1px"} solid ${highlight ? S.gold : S.beige}`, borderRadius: 14, padding: "16px 18px", boxShadow: highlight ? `0 4px 16px rgba(139,115,85,0.12)` : "0 1px 4px rgba(44,36,23,0.05)" }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: S.ink }}>{label}</span>
@@ -278,12 +278,12 @@ export default function RootPage() {
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.65)", lineHeight: 1.8, marginBottom: 28, wordBreak: "keep-all" }}>
             가입만 해도 무료 채팅 3번이 생겨요.<br />카드 정보 없이 30초 안에 시작할 수 있어요.
           </p>
-          <button className="tap" onClick={() => router.push("/start")}
+          <button className="tap" onClick={() => router.push("/add-guest")}
             style={{ width: "100%", maxWidth: 320, padding: "16px 0", borderRadius: 14, border: "none", background: "#fff", color: S.ink, fontSize: 16, fontWeight: 700, cursor: "pointer", display: "block", margin: "0 auto", boxShadow: "0 4px 16px rgba(0,0,0,0.2)" }}>
             무료로 내 사주 분석받기 →
           </button>
           <p style={{ marginTop: 10, fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
-            카드 정보 불필요 · 30초 완성
+            로그인 없이 바로 시작
           </p>
         </div>
       </section>

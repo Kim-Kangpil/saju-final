@@ -93,6 +93,6 @@
 - `PurchaseModal` 컴포넌트로 통합
 
 ### 미완료 / 확인 필요한 것들
-- `/membership` 페이지 결제 연동 상태 (구독 플로우 전체)
+- `/membership` 결제 연동은 카카오페이 코드 구현 완료 상태
 - `add-guest` → 채팅 연동 실제 동작 테스트 필요
 - `report/basic/v2` 배포 전 QA 필요

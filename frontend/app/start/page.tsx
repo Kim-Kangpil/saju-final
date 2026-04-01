@@ -10,14 +10,29 @@ const inputBg = "var(--bg-input)";
 const textDark = "var(--text-primary)";
 const radius = 12;
 
+const CONCERNS = [
+  { value: "money",  emoji: "💰", label: "돈·직업" },
+  { value: "love",   emoji: "❤️", label: "연애·관계" },
+  { value: "career", emoji: "🧭", label: "인생 방향" },
+  { value: "timing", emoji: "📅", label: "시기·타이밍" },
+] as const;
+
 export default function StartPage({
   params,
 }: { params?: Promise<Record<string, string | string[]>> } = {}) {
   use(params ?? Promise.resolve({}));
   const router = useRouter();
+  const [step, setStep] = useState<"concern" | "login">("concern");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  function selectConcern(value: string) {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("saju_concern", value);
+    }
+    setStep("login");
+  }
 
   const backend =
     process.env.NEXT_PUBLIC_BACKEND_URL ||
@@ -156,7 +171,7 @@ export default function StartPage({
       `}</style>
 
       <div className="wrap">
-        {/* 헤더 – 로그인/saju-add와 동일 */}
+        {/* 헤더 */}
         <header
           style={{
             display: "flex",
@@ -168,7 +183,7 @@ export default function StartPage({
           <button
             type="button"
             className="tap"
-            onClick={() => router.push("/home")}
+            onClick={() => step === "login" ? setStep("concern") : router.push("/home")}
             style={{
               display: "flex",
               alignItems: "center",
@@ -198,7 +213,52 @@ export default function StartPage({
           <div style={{ width: 40, flexShrink: 0 }} aria-hidden />
         </header>
 
-        {/* 시작하기 섹션 – 로그인 시안과 동일 */}
+        {/* ── STEP 1: 관심사 선택 ── */}
+        {step === "concern" && (
+          <section style={{ padding: "8px 0 24px" }}>
+            <div style={{ marginBottom: 32 }}>
+              <h1 style={{ fontSize: 24, fontWeight: 700, color: textDark, marginBottom: 10, lineHeight: 1.35 }}>
+                지금 가장 궁금한 게<br />뭐예요?
+              </h1>
+              <p style={{ fontSize: 14, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                선택하면 맞춤 분석을 먼저 보여드려요
+              </p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {CONCERNS.map((c) => (
+                <button
+                  key={c.value}
+                  type="button"
+                  className="tap"
+                  onClick={() => selectConcern(c.value)}
+                  style={{
+                    width: "100%",
+                    padding: "18px 20px",
+                    borderRadius: 14,
+                    border: "1.5px solid #E0DDCF",
+                    background: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    fontSize: 16,
+                    fontWeight: 600,
+                    color: textDark,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontFamily: "var(--font-sans)",
+                  }}
+                >
+                  <span style={{ fontSize: 26, lineHeight: 1 }}>{c.emoji}</span>
+                  {c.label}
+                  <Icon icon="mdi:chevron-right" width={20} style={{ marginLeft: "auto", color: "#B4A292" }} />
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── STEP 2: 로그인 ── */}
+        {step === "login" && (
         <section style={{ padding: "8px 0 24px" }}>
           <div style={{ marginBottom: 24 }}>
             <h1
@@ -360,6 +420,7 @@ export default function StartPage({
             </button>
           </div>
         </section>
+        )}
       </div>
     </main>
   );

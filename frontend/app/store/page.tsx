@@ -39,9 +39,8 @@ const SPEC_REPORTS = [
 
 const SUB_BENEFITS = [
   { icon: "mdi:chat-outline", text: "AI 채팅 무제한 — 하루 제한 없이" },
-  { icon: "mdi:file-chart-outline", text: "매월 분석권 3개 자동 지급" },
-  { icon: "mdi:timeline-outline", text: "대운·세운 심층 분석 우선 제공" },
-  { icon: "mdi:star-outline", text: "신기능 우선 체험 & 할인 혜택" },
+  { icon: "mdi:file-chart-outline", text: "매월 특화 리포트 1개 무료" },
+  { icon: "mdi:calendar-month-outline", text: "월간 세운 브리핑 자동 발송" },
 ];
 
 export default function StorePage() {
@@ -49,8 +48,6 @@ export default function StorePage() {
   const [tab, setTab] = useState<"reports" | "subscription">("reports");
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [sajuList, setSajuList] = useState<SajuItem[]>([]);
-  const [proLoading, setProLoading] = useState(false);
-  const [proError, setProError] = useState<string | null>(null);
 
   useEffect(() => {
     const headers = getAuthHeaders();
@@ -72,33 +69,6 @@ export default function StorePage() {
   function goReport(path: string) {
     if (!firstSajuId) { router.push("/saju-add"); return; }
     router.push(`${path}?saju_id=${firstSajuId}`);
-  }
-
-  async function startProPayment() {
-    setProLoading(true);
-    setProError(null);
-    try {
-      const res = await fetch(`${API_BASE}/api/payment/kakao/ready`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        credentials: "include",
-        body: JSON.stringify({ order_type: "pro_monthly" }),
-      });
-      if (res.status === 401) { router.push("/start"); return; }
-      const data = await res.json();
-      if (!data.next_redirect_mobile_url && !data.next_redirect_pc_url) {
-        setProError("결제 준비에 실패했어요. 잠시 후 다시 시도해주세요.");
-        return;
-      }
-      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-      window.location.href = isMobile
-        ? (data.next_redirect_mobile_url || data.next_redirect_pc_url)
-        : (data.next_redirect_pc_url || data.next_redirect_mobile_url);
-    } catch {
-      setProError("결제 연결 오류가 발생했어요.");
-    } finally {
-      setProLoading(false);
-    }
   }
 
   const chatRemaining = status
@@ -142,7 +112,7 @@ export default function StorePage() {
 
         {/* Tabs */}
         <div style={{ display: "flex", gap: 0, margin: "20px 0 0", borderBottom: `2px solid ${S.border}` }}>
-          {([["reports", "내 리포트"], ["subscription", "구독"]] as const).map(([id, label]) => (
+          {([["reports", "리포트 구매"], ["subscription", "Pro 구독"]] as const).map(([id, label]) => (
             <button
               key={id}
               className="tap"
@@ -191,7 +161,7 @@ export default function StorePage() {
                   onClick={() => goReport("/report/basic")}
                   style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 10, border: `1.5px solid ${S.beige2}`, background: S.cream, fontSize: 12, fontWeight: 700, color: S.ink2, cursor: "pointer", whiteSpace: "nowrap" }}
                 >
-                  다시 보기
+                  바로 보기
                 </button>
               </div>
             </div>
@@ -225,7 +195,7 @@ export default function StorePage() {
                     style={{ flexShrink: 0, padding: "8px 14px", borderRadius: 10, border: "none", background: "#FEE500", fontSize: 12, fontWeight: 700, color: "#191919", cursor: "pointer", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5 }}
                   >
                     <span style={{ display: "inline-flex", width: 16, height: 16, borderRadius: "50%", background: "#191919", color: "#FEE500", fontSize: 9, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>K</span>
-                    결제하기
+                    구매하기
                   </button>
                 </div>
               </div>
@@ -291,8 +261,8 @@ export default function StorePage() {
                     <Icon icon="mdi:firework" width={22} color={S.ink3} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: S.ink, marginBottom: 3 }}>신년운세 리포트</div>
-                    <div style={{ fontSize: 12, color: S.ink3, lineHeight: 1.5 }}>2026년 연간 운세·월운 흐름 총정리</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: S.ink, marginBottom: 3 }}>대운+세운 연간 리포트</div>
+                    <div style={{ fontSize: 12, color: S.ink3, lineHeight: 1.5 }}>연간 대운 흐름 + 12개월 월운 총정리</div>
                     <div style={{ marginTop: 6, fontSize: 14, fontWeight: 700, color: S.ink }}>9,900원</div>
                   </div>
                 </div>
@@ -393,9 +363,6 @@ export default function StorePage() {
               ))}
             </div>
 
-            {proError && (
-              <div style={{ color: "#B91C1C", fontSize: 13, textAlign: "center", marginBottom: 12 }}>{proError}</div>
-            )}
           </div>
         )}
       </div>
@@ -405,12 +372,11 @@ export default function StorePage() {
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, display: "flex", justifyContent: "center", padding: "12px 20px 28px", background: `linear-gradient(to top, ${S.cream} 65%, transparent)` }}>
           <button
             className="tap"
-            disabled={proLoading}
-            onClick={startProPayment}
-            style={{ width: "100%", maxWidth: 420, padding: "15px 14px", borderRadius: 14, border: "none", background: proLoading ? "#C8A951" : "#FEE500", fontSize: 15, fontWeight: 700, color: "#191919", cursor: proLoading ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Gmarket Sans', sans-serif" }}
+            onClick={() => router.push("/membership")}
+            style={{ width: "100%", maxWidth: 420, padding: "15px 14px", borderRadius: 14, border: "none", background: "#FEE500", fontSize: 15, fontWeight: 700, color: "#191919", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Gmarket Sans', sans-serif" }}
           >
             <span style={{ display: "inline-flex", width: 22, height: 22, borderRadius: "50%", background: "#191919", color: "#FEE500", fontSize: 12, fontWeight: 900, alignItems: "center", justifyContent: "center", flexShrink: 0 }}>K</span>
-            {proLoading ? "결제 준비 중..." : "구독 시작하기 · 월 4,900원"}
+            구독 시작하기 · 월 4,900원
           </button>
         </div>
       )}

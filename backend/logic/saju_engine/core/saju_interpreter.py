@@ -491,6 +491,11 @@ def interpret_love(saju_data: dict) -> dict:
         patterns.append("도화살 있음 → 매력 발산·이성 관심")
         language_points.append("자연스럽게 이성의 시선을 끄는 매력이 있어요.")
 
+    # ── 홍염살 ──
+    if hongyeom:
+        patterns.append("홍염살 있음 → 깊은 감성, 이성에게 특별한 인상")
+        language_points.append("이성에게 독특하고 강렬한 인상을 남기는 기운이 있어요. 관계가 시작되면 감정이 깊어지는 편이에요.")
+
     # ── 신강약 영향 ──
     if strength == "신강":
         patterns.append("신강 → 독립성 강, 관계에서 자기 공간 중요")
@@ -1214,7 +1219,7 @@ def interpret_love_deep(saju_data: dict) -> dict:
             yeonin_life_stages.append(STAGE_LABEL.get(pos, pos))
 
     dohwa = sinsal.get("dohwa") or []
-    hongyeom: list = []  # 홍염살 — analyze_sinsal 미구현, 항상 0
+    hongyeom = sinsal.get("hongyeom") or []
 
     current = _get_current_daeun(saju_data)
     daeun_tg = ""
@@ -1416,7 +1421,8 @@ def interpret_career_deep(saju_data: dict) -> dict:
     special = []
     if sinsal.get("munchang_gwiin"):
         special.append("문창귀인(글·표현 능력)")
-    # 학당귀인: analyze_sinsal 미구현 — 포함하지 않음
+    if sinsal.get("hakdang"):
+        special.append("학당귀인(학문·지혜·교육)")
     if sinsal.get("hwagae"):
         special.append("화개살(예술·철학·종교)")
     if sinsal.get("yeokma"):

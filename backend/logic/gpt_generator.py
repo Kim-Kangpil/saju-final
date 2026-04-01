@@ -1353,6 +1353,8 @@ class GPTInterpretationGenerator:
             "wolgong": "월공(명예·주목받는 기운)",
             "munchang_gwiin": "문창귀인(학문·글재주·창작)",
             "guimun": "귀문(기둥 간 긴장·직관)",
+            "hongyeom": "홍염살(깊은 감성·이성에게 강렬한 인상)",
+            "hakdang": "학당귀인(학문·지혜·교육적 재능)",
         }
         lines = []
         for key, label in label_map.items():

@@ -97,6 +97,36 @@ WOLGONG = {
     '亥': ['庚']
 }
 
+# 홍염살 (紅豔殺) — 일간 기준 지지
+# 이성 매력, 감성, 관계의 복잡성을 나타내는 신살 (도화와 유사하나 더 개인적·내면적)
+HONGYEOM = {
+    '甲': ['午'],
+    '乙': ['午'],
+    '丙': ['寅'],
+    '丁': ['未'],
+    '戊': ['辰'],
+    '己': ['辰'],
+    '庚': ['戌'],
+    '辛': ['酉'],
+    '壬': ['子'],
+    '癸': ['申'],
+}
+
+# 학당귀인 (學堂貴人) — 일간 기준 지지
+# 학문, 지혜, 교육적 재능을 나타내는 귀인 (문창귀인과 유사하나 더 깊이 있는 학문성)
+HAKDANG = {
+    '甲': ['亥'],
+    '乙': ['午'],
+    '丙': ['寅'],
+    '丁': ['酉'],
+    '戊': ['申'],
+    '己': ['卯'],
+    '庚': ['巳'],
+    '辛': ['子'],
+    '壬': ['寅'],
+    '癸': ['卯'],
+}
+
 # 문창귀인 (일간 기준)
 # ※ 이 표는 backend/logic/theories/사주이론(각종귀인,신살).txt 의
 #    "문창귀인의 성립 조건" 절을 기준으로 정리된 매핑입니다.
@@ -169,7 +199,9 @@ def analyze_sinsal(day_stem, pillars):
         'hwagae': [],
         'wolgong': [],
         'munchang_gwiin': [],
-        'guimun': []
+        'guimun': [],
+        'hongyeom': [],
+        'hakdang': [],
     }
     
     # 1. 천을귀인 (일간 기준)
@@ -256,6 +288,26 @@ def analyze_sinsal(day_stem, pillars):
                 'positions': f"{pos_i}-{pos_j}",
                 'chars': [b_i, b_j],
                 'description': f"귀문관살 ({pos_i} {b_i} · {pos_j} {b_j})"
+            })
+
+    # 8. 홍염살 (일간 기준 지지)
+    hongyeom_branches = HONGYEOM.get(day_stem, [])
+    for i, branch in enumerate(branches):
+        if branch in hongyeom_branches:
+            result['hongyeom'].append({
+                'position': f"{positions[i]}지",
+                'char': branch,
+                'description': f"홍염살 ({positions[i]}지 {branch})"
+            })
+
+    # 9. 학당귀인 (일간 기준 지지)
+    hakdang_branches = HAKDANG.get(day_stem, [])
+    for i, branch in enumerate(branches):
+        if branch in hakdang_branches:
+            result['hakdang'].append({
+                'position': f"{positions[i]}지",
+                'char': branch,
+                'description': f"학당귀인 ({positions[i]}지 {branch})"
             })
 
     return result

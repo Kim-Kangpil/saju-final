@@ -897,6 +897,30 @@ def _attach_strength_to_payload(data: dict[str, Any]) -> None:
         }
 
 
+def _attach_yongshin_to_payload(data: dict[str, Any]) -> None:
+    """_attach_strength_to_payload 실행 후 호출 — data['strength'] 결과를 재활용"""
+    try:
+        from logic.saju_engine.core.yongshin import calculate_yongshin
+        day_pillar = data.get("day_pillar") or ""
+        month_pillar = data.get("month_pillar") or ""
+        strength_data = data.get("strength") or {}
+        # calculate_yongshin이 analysis 딕트를 기대하므로 필요한 필드만 조립
+        pseudo_analysis = {
+            "basic_info": {
+                "day_stem": day_pillar[0] if day_pillar else "",
+                "month": month_pillar,
+            },
+            "summary": {
+                "strength": strength_data.get("strength", ""),
+                "strength_score": strength_data.get("total_score", 50),
+                "element_count": {},
+            },
+        }
+        data["yongshin"] = calculate_yongshin(pseudo_analysis)
+    except Exception as _ys_err:
+        data["yongshin"] = {}
+
+
 _HARMONY_CLASH_EMPTY: dict[str, list] = {
     "cheongan_hap": [],
     "cheongan_jaenghap": [],
@@ -1970,6 +1994,7 @@ async def get_full_saju(req: SajuRequest):
         _attach_ten_gods_to_payload(data)
         _attach_harmony_clash_to_payload(data)
         _attach_strength_to_payload(data)
+        _attach_yongshin_to_payload(data)
         return data
     except Exception as e:
         print(f"❌ /saju/full 에러: {e}")

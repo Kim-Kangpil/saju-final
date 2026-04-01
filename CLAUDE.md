@@ -94,5 +94,7 @@
 
 ### 미완료 / 확인 필요한 것들
 - `/membership` 결제 연동은 카카오페이 코드 구현 완료 상태
-- `add-guest` → 채팅 연동 실제 동작 테스트 필요
+- `add-guest` → 채팅 연동 구현 완료 (커밋 0180cc2)
+  - chat/page.tsx: sessionStorage 폴백으로 게스트 사주 주입
+  - report/basic/v2: 채팅 CTA → /chat 직접 이동 (로그인 불필요)
 - `report/basic/v2` 배포 전 QA 필요

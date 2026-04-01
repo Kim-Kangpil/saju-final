@@ -15,6 +15,11 @@ function BasicReportGate() {
   const [price, setPrice] = useState(990)
 
   useEffect(() => {
+    const isGuest = searchParams.get('guest') === 'true'
+    if (isGuest) {
+      router.replace('/report/basic/v2?guest=true')
+      return
+    }
     if (!sajuId) {
       setChecking(false)
       return

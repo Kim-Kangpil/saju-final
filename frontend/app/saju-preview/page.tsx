@@ -1182,7 +1182,10 @@ function SajuPreviewContent() {
               <div style={{ fontSize: 13, fontWeight: 700 }}>확인 중...</div>
             ) : (
               <>
-                <div style={{ fontSize: 13, fontWeight: 700 }}>✨ 나의 사주 기본 리포트</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>✨ 나의 사주 기본 리포트</div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: "#059669", padding: "2px 6px", borderRadius: 4 }}>무료</span>
+                </div>
                 <div
                   style={{
                     display: "flex",
@@ -1193,7 +1196,7 @@ function SajuPreviewContent() {
                 >
                   <Icon icon="mdi:arrow-right-circle-outline" width={17} style={{ color: "#9A7B52", flexShrink: 0 }} />
                   <span style={{ fontSize: 11, fontWeight: 600, color: "#8B7355", letterSpacing: "0.04em" }}>
-                    자세히 보러가기
+                    무료로 바로 보기
                   </span>
                 </div>
               </>

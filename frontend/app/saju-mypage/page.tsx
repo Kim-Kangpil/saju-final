@@ -64,6 +64,9 @@ export default function SajuMyPage({
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponMessage, setCouponMessage] = useState<string | null>(null);
   const [betaFeatures, setBetaFeatures] = useState<any>(null);
+  const [isMember, setIsMember] = useState(false);
+  const [purchasedCount, setPurchasedCount] = useState(0);
+  const [chatRemaining, setChatRemaining] = useState(3);
 
   useEffect(() => {
     if (loading) return;
@@ -89,6 +92,7 @@ export default function SajuMyPage({
             email: data.email ?? null,
             nickname: data.nickname ?? null,
           });
+          setIsMember(!!data.is_member);
           if (!cancelled) setUserInfoLoading(false);
           return;
         }
@@ -138,6 +142,40 @@ export default function SajuMyPage({
     })();
     return () => { cancelled = true; };
   }, [isLoggedIn]);
+
+  // 구매한 리포트 수 확인
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let cancelled = false;
+    (async () => {
+      const types = ["basic", "money", "love", "career", "deep"];
+      let count = 0;
+      await Promise.all(
+        types.map(async (type) => {
+          try {
+            const res = await fetch(`${API_BASE}/api/payment/report-access/${type}`, {
+              credentials: "include",
+              headers: { Accept: "application/json", ...getAuthHeaders() },
+            });
+            const data = await res.json().catch(() => ({}));
+            if (data?.has_access) count++;
+          } catch {
+            // ignore
+          }
+        })
+      );
+      if (!cancelled) setPurchasedCount(count);
+    })();
+    return () => { cancelled = true; };
+  }, [isLoggedIn]);
+
+  // 오늘 남은 채팅 횟수 (localStorage)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = localStorage.getItem("chat_daily_count");
+    const used = parseInt(raw ?? "0", 10);
+    setChatRemaining(Math.max(0, 3 - (isNaN(used) ? 0 : used)));
+  }, []);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -495,28 +533,62 @@ export default function SajuMyPage({
           </section>
         )}
 
-        <section style={{ padding: "20px 0 0" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {MENU_ITEMS.map((item) => (
+        {/* 구매한 리포트 대시보드 카드 */}
+        {purchasedCount > 0 && (
+          <section style={{ padding: "20px 0 0" }}>
+            <div style={{ background: "#FBF8F3", border: "2px solid #8B7355", borderRadius: 16, padding: 18, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: "#2C2417", marginBottom: 4 }}>
+                  📋 구매한 리포트 {purchasedCount}개
+                </div>
+                <div style={{ fontSize: 13, color: "#6B5F4E" }}>바로 열어볼 수 있어요</div>
+              </div>
               <button
-                key={item.key}
                 type="button"
                 className="tap"
-                onClick={() => { if ("action" in item && item.action === "usage") alert("준비 중입니다."); else if ("path" in item && item.path) router.push(item.path); }}
-                style={{ width: "100%", background: "var(--bg-surface)", borderRadius: 12, border: "1.5px solid var(--border-default)", padding: "14px 16px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                onClick={() => router.push("/my-purchased-reports")}
+                style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: "#8B7355", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", flexShrink: 0 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--bg-input)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <Icon icon={item.icon} width={20} style={{ color: item.color }} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: textDark }}>{item.label}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 1 }}>{item.desc}</div>
-                  </div>
-                </div>
-                <Icon icon="mdi:chevron-right" width={20} style={{ color: "var(--text-placeholder)", flexShrink: 0 }} />
+                리포트 보러가기
               </button>
-            ))}
+            </div>
+          </section>
+        )}
+
+        <section style={{ padding: "20px 0 0" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {MENU_ITEMS.map((item) => {
+              const isStore = item.key === "store";
+              const isChat = item.key === "ai-chat";
+              const chatDesc = isMember ? "무제한" : `오늘 ${chatRemaining}회 남음`;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  className="tap"
+                  onClick={() => { if ("action" in item && item.action === "usage") alert("준비 중입니다."); else if ("path" in item && item.path) router.push(item.path); }}
+                  style={{ width: "100%", background: "var(--bg-surface)", borderRadius: 12, border: "1.5px solid var(--border-default)", padding: "14px 16px", textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "var(--bg-input)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <Icon icon={item.icon} width={20} style={{ color: item.color }} />
+                    </div>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: textDark }}>{item.label}</span>
+                        {isStore && (
+                          <span style={{ fontSize: 10, fontWeight: 700, background: "#22C55E", color: "#fff", borderRadius: 99, padding: "2px 6px", lineHeight: 1.4 }}>NEW</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-secondary)", marginTop: 1 }}>
+                        {isChat ? chatDesc : item.desc}
+                      </div>
+                    </div>
+                  </div>
+                  <Icon icon="mdi:chevron-right" width={20} style={{ color: "var(--text-placeholder)", flexShrink: 0 }} />
+                </button>
+              );
+            })}
           </div>
         </section>
 

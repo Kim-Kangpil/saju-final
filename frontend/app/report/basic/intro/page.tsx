@@ -1,8 +1,6 @@
 "use client"
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Suspense, useEffect, useState, useRef } from 'react'
-import { motion } from 'framer-motion'
-import KakaoPayButton from '@/components/KakaoPayButton'
+import { Suspense, useEffect, useState } from 'react'
 import { ReportIntroHeader } from '@/components/ReportIntroHeader'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://saju-backend-eqd6.onrender.com'
@@ -12,11 +10,6 @@ function BasicIntroContent() {
   const router = useRouter()
   const sajuId = searchParams.get('saju_id') || ''
   const [sajuInfo, setSajuInfo] = useState<{ name?: string; birth_ymd?: string } | null>(null)
-  const [isBetaTester, setIsBetaTester] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [fakeProgress, setFakeProgress] = useState(0)
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (!sajuId) return
@@ -31,70 +24,11 @@ function BasicIntroContent() {
       .catch(() => {})
   }, [sajuId])
 
-  // 베타테스터/관리자 여부 확인
-  useEffect(() => {
-    // 1. localStorage 캐시 먼저 확인
-    const stored = localStorage.getItem('betaFeatures')
-    if (stored) {
-      try {
-        const f = JSON.parse(stored)
-        if (f?.is_beta_tester === true) setIsBetaTester(true)
-        if (f?.is_admin === true) setIsAdmin(true)
-      } catch {}
-    }
-
-    // 2. API로 최신 정보 확인 (항상 덮어씀)
-    const checkFeatures = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/beta/features`, { credentials: 'include' })
-        const data = await res.json()
-        const f = data?.features
-        if (f) {
-          localStorage.setItem('betaFeatures', JSON.stringify(f))
-          setIsBetaTester(f.is_beta_tester === true)
-          setIsAdmin(f.is_admin === true)
-        }
-        // API가 null 반환해도 localStorage 값 유지 (서버 재시작 등 일시적 상황 대응)
-      } catch {}
-    }
-    checkFeatures()
-  }, [])
-
-  // 로딩 progress 애니메이션 (95%까지 증가, 이후 shimmer)
-  useEffect(() => {
-    if (!loading) {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current)
-        progressIntervalRef.current = null
-      }
-      setFakeProgress(0)
-      return
-    }
-
-    setFakeProgress(0)
-    progressIntervalRef.current = setInterval(() => {
-      setFakeProgress(prev => {
-        if (prev >= 95) return prev
-        const inc = prev < 40 ? 2.5 : prev < 70 ? 1.5 : prev < 85 ? 0.8 : 0.3
-        return Math.min(95, prev + inc)
-      })
-    }, 150)
-
-    return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current)
-      }
-    }
-  }, [loading])
-
-  // 베타테스터용: 결제 건너뛰고 바로 v2 리포트 보기
-  const handleBetaViewReport = async () => {
-    console.log('[Beta] 버튼 클릭됨, sajuId:', sajuId)
+  const handleViewReport = () => {
     if (!sajuId) {
       alert('사주 정보를 찾을 수 없습니다.')
       return
     }
-    // 바로 v2 리포트 페이지로 이동
     router.push(`/report/basic/v2?saju_id=${sajuId}`)
   }
 
@@ -166,169 +100,37 @@ function BasicIntroContent() {
             ? `${sajuInfo.name}님 (${sajuInfo.birth_ymd.slice(0, 4)}.${sajuInfo.birth_ymd.slice(4, 6)}.${sajuInfo.birth_ymd.slice(6, 8)}) 맞춤 리포트`
             : '맞춤 리포트'}
         </p>
-        <p style={{fontSize: 12, color: '#8B7355', marginBottom: 14, fontWeight: 700}}>
-          내 사주 전체 그림을 한눈에 파악하세요.
-        </p>
-        <div style={{marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8}}>
-          <span style={{fontSize: 16, color: '#C4B5A0', textDecoration: 'line-through'}}>
-            1,900원
-          </span>
-          <span style={{fontSize: 26, fontWeight: 700, color: '#3D3530'}}>
-            990원
-          </span>
-          <span style={{fontSize: 12, fontWeight: 700, color: '#fff', background: '#DC2626', padding: '3px 8px', borderRadius: 6}}>
-            48%
+
+        {/* 무료 뱃지 */}
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 16}}>
+          <span style={{fontSize: 26, fontWeight: 700, color: '#3D3530'}}>무료</span>
+          <span style={{fontSize: 12, fontWeight: 700, color: '#fff', background: '#059669', padding: '3px 8px', borderRadius: 6}}>
+            FREE
           </span>
         </div>
-        
-        {/* 일반 결제 버튼 */}
-        <KakaoPayButton
-          orderType="basic"
-          price={990}
-          label="기본 리포트 확인하기"
-          sajuId={sajuId}
-        />
-        
-        {/* 베타테스터용 무료 버튼 - 관리자 제외 */}
-        {isBetaTester && !isAdmin && (
-          <button
-            type="button"
-            onClick={handleBetaViewReport}
-            disabled={loading}
-            style={{
-              marginTop: 12,
-              padding: '12px 24px',
-              borderRadius: 10,
-              border: '2px solid #d97706',
-              background: loading ? '#f3f4f6' : '#fef3c7',
-              color: '#92400e',
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: loading ? 'wait' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              margin: '12px auto 0',
-            }}
-          >
-            <span>⚡</span>
-            {loading ? '리포트 불러오는 중...' : '베타테스터: 무료로 바로 보기'}
-          </button>
-        )}
-        
-        {/* 관리자용 바로 보기 버튼 */}
-        {isAdmin && (
-          <button
-            type="button"
-            onClick={handleBetaViewReport}
-            disabled={loading}
-            style={{
-              marginTop: 12,
-              padding: '12px 24px',
-              borderRadius: 10,
-              border: '2px solid #dc2626',
-              background: loading ? '#f3f4f6' : '#fee2e2',
-              color: '#991b1b',
-              fontSize: 14,
-              fontWeight: 700,
-              cursor: loading ? 'wait' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              margin: '12px auto 0',
-            }}
-          >
-            <span>👑</span>
-            {loading ? '리포트 불러오는 중...' : '관리자: 바로 보기'}
-          </button>
-        )}
-        
-        <p style={{fontSize: 10, color: '#C4B5A0', marginTop: 6}}>
-          구매 후 7일간 열람 가능 · 열람한 리포트는 영구 소장
+
+        <button
+          type="button"
+          onClick={handleViewReport}
+          style={{
+            width: '100%',
+            padding: '15px 24px',
+            borderRadius: 14,
+            border: 'none',
+            background: '#3D3530',
+            color: '#fff',
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          무료로 리포트 보기
+        </button>
+
+        <p style={{fontSize: 12, color: '#8B7355', marginTop: 10}}>
+          로그인 후 즉시 열람 · 무제한 재열람 가능
         </p>
       </div>
-
-      {/* 로딩 오버레이 - 95%까지 progress bar, 이후 shimmer */}
-      {loading && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: '#F5F1EA',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0 24px',
-          fontFamily: "'Gmarket Sans', sans-serif"
-        }}>
-          <div style={{ width: '100%', maxWidth: 360, textAlign: 'center' }}>
-            {/* 제목 — 95% 이상이면 pulse 애니메이션 */}
-            {fakeProgress >= 95 ? (
-              <motion.p
-                style={{ fontSize: 13, fontWeight: 600, color: '#6B5F4E', letterSpacing: '0.1em', marginBottom: 32 }}
-                animate={{ opacity: [1, 0.4, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-              >
-                거의 다 됐어요
-              </motion.p>
-            ) : (
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#6B5F4E', letterSpacing: '0.1em', marginBottom: 32 }}>
-                리포트를 준비하고 있어요
-              </p>
-            )}
-
-            {/* progress bar */}
-            <div style={{ marginBottom: 14 }}>
-              {fakeProgress < 95 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                  <span style={{ fontSize: 12, color: '#6B5F4E' }}>
-                    {fakeProgress < 20 ? '사주 데이터를 불러오는 중'
-                      : fakeProgress < 50 ? '만세력을 계산하는 중'
-                      : fakeProgress < 75 ? '리포트를 구성하는 중'
-                      : '거의 완료되었어요'}
-                  </span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#8B7355' }}>
-                    {Math.floor(fakeProgress)}%
-                  </span>
-                </div>
-              )}
-
-              {/* 95% 미만: 일반 progress bar / 95% 이상: shimmer */}
-              {fakeProgress < 95 ? (
-                <div style={{ height: 8, background: '#E3D9CB', borderRadius: 99, overflow: 'hidden' }}>
-                  <motion.div
-                    style={{ height: '100%', background: 'linear-gradient(90deg, #8B7355, #A8946A)', borderRadius: 99 }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${fakeProgress}%` }}
-                    transition={{ duration: 0.3, ease: 'linear' }}
-                  />
-                </div>
-              ) : (
-                <div style={{ height: 8, background: '#E3D9CB', borderRadius: 99, overflow: 'hidden', position: 'relative' }}>
-                  {/* 95% 채워진 기본 바 */}
-                  <div style={{ position: 'absolute', inset: 0, width: '95%', background: 'linear-gradient(90deg, #8B7355, #A8946A)', borderRadius: 99 }} />
-                  {/* shimmer 광택 */}
-                  <motion.div
-                    style={{ position: 'absolute', top: 0, height: '100%', width: '35%', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)', borderRadius: 99 }}
-                    animate={{ x: ['-100%', '200%'] }}
-                    transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* 서브 메시지 */}
-            <p style={{ fontSize: 12, color: '#8B7355', lineHeight: 1.7 }}>
-              {fakeProgress >= 95
-                ? '사주 데이터를 정리하고 있어요.\n곧 리포트가 열립니다 :)'
-                : '당신의 사주를 분석하고 있어요'}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -209,6 +209,7 @@ function SectionAccordion({
   ruleSummary,
   ctaLabel,
   ctaHref,
+  ctaTitle,
 }: {
   icon: string;
   title: string;
@@ -218,6 +219,7 @@ function SectionAccordion({
   ruleSummary?: Record<string, any>;
   ctaLabel?: string;
   ctaHref?: string;
+  ctaTitle?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -286,19 +288,33 @@ function SectionAccordion({
                 </div>
               )}
               {ctaLabel && ctaHref && (
-                <a
-                  href={ctaHref}
-                  style={{
-                    display: "block", marginTop: 18,
-                    padding: "13px 0", borderRadius: 10,
-                    background: "linear-gradient(135deg, #8B7355 0%, #A8946A 100%)",
-                    color: "#fff", fontSize: 14, fontWeight: 700,
-                    textAlign: "center", textDecoration: "none",
-                    boxShadow: "0 2px 8px rgba(139,115,85,0.3)",
-                  }}
-                >
-                  {ctaLabel}
-                </a>
+                <div style={{
+                  marginTop: 20,
+                  background: "#FBF8F3",
+                  border: "1px solid #D4C9B8",
+                  borderRadius: 14,
+                  padding: "16px 18px",
+                }}>
+                  {ctaTitle && (
+                    <p style={{ fontSize: 13, fontWeight: 700, color: S.ink, margin: "0 0 12px" }}>{ctaTitle}</p>
+                  )}
+                  <a
+                    href={ctaHref}
+                    style={{
+                      display: "block",
+                      padding: "12px 0",
+                      borderRadius: 10,
+                      background: S.gold,
+                      color: "#fff",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      textAlign: "center",
+                      textDecoration: "none",
+                    }}
+                  >
+                    {ctaLabel}
+                  </a>
+                </div>
               )}
             </div>
           </motion.div>
@@ -562,6 +578,7 @@ function BasicV2ReportContent() {
   const sajuId = searchParams.get("saju_id") || "";
   const shareToken = searchParams.get("share_token") || "";
   const isSharedView = !!shareToken && !sajuId;
+  const isGuest = searchParams.get("guest") === "true";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -620,6 +637,66 @@ function BasicV2ReportContent() {
 
   // 데이터 로드 및 v2 분석
   useEffect(() => {
+    if (isGuest) {
+      const loadGuestData = async () => {
+        loadingRef.current = true;
+        setLoading(true);
+        setError(null);
+        try {
+          const rawResult = typeof window !== "undefined" ? sessionStorage.getItem("guest_saju_result") : null;
+          const rawInput = typeof window !== "undefined" ? sessionStorage.getItem("guest_saju_input") : null;
+          if (!rawResult) throw new Error("게스트 사주 데이터를 찾을 수 없어요.\n다시 입력해 주세요.");
+          const fullData = JSON.parse(rawResult);
+          const inputData = rawInput ? JSON.parse(rawInput) : {};
+          setSajuInfo(inputData);
+          setResult(fullData);
+          setFullRawData(fullData);
+          const raw = fullData as Record<string, unknown>;
+          const yearPillar = (raw.year_pillar as string) || `${fullData.year?.cheongan?.hanja || ""}${fullData.year?.jiji?.hanja || ""}`;
+          const monthPillar = (raw.month_pillar as string) || `${fullData.month?.cheongan?.hanja || ""}${fullData.month?.jiji?.hanja || ""}`;
+          const dayPillar = (raw.day_pillar as string) || `${fullData.day?.cheongan?.hanja || ""}${fullData.day?.jiji?.hanja || ""}`;
+          const hourPillar = (raw.hour_pillar as string) || `${fullData.hour?.cheongan?.hanja || ""}${fullData.hour?.jiji?.hanja || ""}`;
+          setPillarStrings({ hour: hourPillar, day: dayPillar, month: monthPillar, year: yearPillar });
+          const genderCode = inputData.gender === "남자" ? "M" : "F";
+          const v2Res = await fetch(`${API_BASE}/saju/analyze-guest`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              year_pillar: yearPillar,
+              month_pillar: monthPillar,
+              day_pillar: dayPillar,
+              hour_pillar: hourPillar,
+              gender: genderCode,
+              birthdate: inputData.birthdate,
+              daeun_list: Array.isArray(raw.daeun_list) ? raw.daeun_list : [],
+              daeun_direction: typeof raw.daeun_direction === "string" ? raw.daeun_direction : "순행",
+              ten_gods: raw.ten_gods && typeof raw.ten_gods === "object" ? raw.ten_gods : {},
+              strength: raw.strength !== undefined ? raw.strength : {},
+              harmony_clash: raw.harmony_clash && typeof raw.harmony_clash === "object" ? raw.harmony_clash : {},
+              sinsal: raw.sinsal && typeof raw.sinsal === "object" ? raw.sinsal : {},
+              twelve_states: raw.twelve_states && typeof raw.twelve_states === "object" ? raw.twelve_states : {},
+              tone: "empathy",
+            }),
+          });
+          if (!v2Res.ok) {
+            const errBody = await v2Res.json().catch(() => ({}));
+            if (v2Res.status === 429) throw new Error(errBody.detail || "하루 무료 분석 3회를 모두 사용했어요.");
+            throw new Error("AI 분석에 실패했습니다.");
+          }
+          const v2Data = await v2Res.json();
+          setV2Result(v2Data);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "오류가 발생했습니다.");
+        } finally {
+          loadingRef.current = false;
+          setLoading(false);
+        }
+      };
+      loadFnRef.current = loadGuestData;
+      loadGuestData();
+      return;
+    }
+
     if (!sajuId && !shareToken) {
       setError("사주 ID가 필요합니다.");
       setLoading(false);
@@ -743,7 +820,7 @@ function BasicV2ReportContent() {
 
     loadFnRef.current = loadAndAnalyze;
     loadAndAnalyze();
-  }, [sajuId, shareToken]);
+  }, [sajuId, shareToken, isGuest]);
 
   // 백그라운드 복귀 시 자동 재시도
   useEffect(() => {
@@ -775,7 +852,7 @@ function BasicV2ReportContent() {
   const timeUnknown = !sajuInfo?.birth_time;
 
   const handleShare = async () => {
-    if (isSharedView) return; // 공유 뷰에서는 재공유 불가
+    if (isSharedView || isGuest) return;
     try {
       const res = await fetch(`${API_BASE}/api/saju/${sajuId}/share`, {
         method: "POST",
@@ -1074,7 +1151,7 @@ function BasicV2ReportContent() {
           )}
 
           {/* 대운 미리보기 */}
-          {fullRawData && Array.isArray(fullRawData.daeun_list) && fullRawData.daeun_list.length > 0 && sajuInfo?.birthdate && !isSharedView && (
+          {fullRawData && Array.isArray(fullRawData.daeun_list) && fullRawData.daeun_list.length > 0 && sajuInfo?.birthdate && !isSharedView && !isGuest && (
             <DaeunPreview
               daeunList={fullRawData.daeun_list as string[]}
               birthYear={parseInt((sajuInfo.birthdate as string).split("-")[0], 10)}
@@ -1097,13 +1174,25 @@ function BasicV2ReportContent() {
                   const isMoney = /💰/.test(sec.title);
                   const isLove = /❤️/.test(sec.title);
                   const isCareer = /🧭/.test(sec.title);
-                  const ctaRoute = isMoney
-                    ? `/report/money/intro?saju_id=${sajuId}`
-                    : isLove
-                    ? `/report/love/intro?saju_id=${sajuId}`
-                    : isCareer
-                    ? `/report/career/intro?saju_id=${sajuId}`
-                    : undefined;
+                  const ctaConfig = (() => {
+                    if (isMoney) return {
+                      title: "💰 재물운을 더 깊이 보고 싶다면",
+                      label: "재물 특화 리포트 보기 — 2,900원",
+                      href: isGuest ? "/start?redirect=money" : `/report/money/intro?saju_id=${sajuId}`,
+                    };
+                    if (isLove) return {
+                      title: "❤️ 연애·결혼 운도 궁금하다면",
+                      label: "연애 특화 리포트 보기 — 2,900원",
+                      href: isGuest ? "/start?redirect=love" : `/report/love/intro?saju_id=${sajuId}`,
+                    };
+                    if (isCareer) return {
+                      title: "💼 직업·커리어 방향도 알고 싶다면",
+                      label: "직업 특화 리포트 보기 — 2,900원",
+                      href: isGuest ? "/start?redirect=career" : `/report/career/intro?saju_id=${sajuId}`,
+                    };
+                    return null;
+                  })();
+                  const showCTA = ctaConfig && !isSharedView;
                   return (
                     <SectionAccordion
                       key={sec.title}
@@ -1113,8 +1202,9 @@ function BasicV2ReportContent() {
                       defaultOpen={idx < 2}
                       visualCard={getVisualCard(sec.title)}
                       ruleSummary={v2Result.rule_summary}
-                      ctaLabel={ctaRoute && !isSharedView ? "더 자세히 보기 (2,900원) →" : undefined}
-                      ctaHref={ctaRoute && !isSharedView ? ctaRoute : undefined}
+                      ctaTitle={showCTA ? ctaConfig.title : undefined}
+                      ctaLabel={showCTA ? ctaConfig.label : undefined}
+                      ctaHref={showCTA ? ctaConfig.href : undefined}
                     />
                   );
                 })}
@@ -1123,7 +1213,7 @@ function BasicV2ReportContent() {
           })()}
 
           {/* 공유/저장 */}
-          {v2Result && (
+          {v2Result && !isGuest && (
             <div style={{ marginTop: 24, marginBottom: 8, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
@@ -1153,49 +1243,40 @@ function BasicV2ReportContent() {
             </div>
           )}
 
-          {/* 채팅 유도 배너 */}
+          {/* AI 채팅 CTA */}
           {v2Result && !isSharedView && (
             <div style={{
               marginTop: 20,
-              padding: '20px 18px',
-              background: 'linear-gradient(135deg, #2C2417 0%, #4A3F30 100%)',
-              borderRadius: 16,
-              display: 'flex', flexDirection: 'column', gap: 10,
+              background: "#FBF8F3",
+              border: "1px solid #D4C9B8",
+              borderRadius: 14,
+              padding: "16px 18px",
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 22 }}>💬</span>
-                <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: '#F5F1EA', margin: 0 }}>
-                    더 궁금한 게 있나요?
-                  </p>
-                  <p style={{ fontSize: 11, color: '#C4B8A4', margin: '2px 0 0' }}>
-                    AI와 1:1 채팅으로 깊이 있게 물어보세요
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => router.push(`/chat?saju_id=${sajuId}`)}
+              <p style={{ fontSize: 14, fontWeight: 700, color: S.ink, margin: "0 0 6px" }}>AI에게 직접 물어보세요</p>
+              <p style={{ fontSize: 13, color: S.ink3, lineHeight: 1.7, margin: "0 0 14px" }}>
+                궁금한 게 생기면 AI 사주 상담이 답해줘요. 무료 3회 제공.
+              </p>
+              <a
+                href={isGuest ? "/start?redirect=chat" : `/chat${sajuId ? `?saju_id=${sajuId}` : ""}`}
                 style={{
-                  width: '100%',
-                  padding: '13px 0',
-                  background: '#F5F1EA',
-                  color: '#2C2417',
-                  border: 'none',
+                  display: "block",
+                  padding: "12px 0",
                   borderRadius: 10,
+                  background: S.gold,
+                  color: "#fff",
                   fontSize: 14,
                   fontWeight: 700,
-                  cursor: 'pointer',
-                  letterSpacing: '-0.01em',
+                  textAlign: "center",
+                  textDecoration: "none",
                 }}
               >
-                채팅으로 더 물어보기 →
-              </button>
+                AI 상담 시작하기
+              </a>
             </div>
           )}
 
           {/* 상품 목록 그리드 */}
-          {v2Result && !isSharedView && (
+          {v2Result && !isSharedView && !isGuest && (
             <ProductGrid sajuId={sajuId} router={router} />
           )}
 
@@ -1210,7 +1291,7 @@ function BasicV2ReportContent() {
         }}>
           <button
             type="button"
-            onClick={() => router.push(`/chat?saju_id=${sajuId}`)}
+            onClick={() => router.push(isGuest ? "/start?redirect=chat" : `/chat?saju_id=${sajuId}`)}
             style={{
               display: "flex", alignItems: "center", gap: 8,
               padding: "12px 18px", borderRadius: 99,

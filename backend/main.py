@@ -4050,6 +4050,254 @@ section_personality, section_strength, section_problem, section_money, section_c
     }
 
 
+# =====================================================
+# /saju/analyze-guest  — 비로그인 게스트 경량 분석
+# =====================================================
+
+# IP당 하루 3회 제한: { "ip_YYYY-MM-DD": count }
+_guest_rate: dict[str, int] = {}
+
+@app.post("/saju/analyze-guest")
+async def analyze_guest(req: AnalyzeV2Request, request: Request):
+    """
+    비로그인 게스트용 분석 엔드포인트.
+    - 인증 불필요
+    - IP당 하루 3회 제한
+    - report_type 강제 "basic"
+    - DB 저장 없음
+    """
+    # ── rate limit ──────────────────────────────────
+    client_ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() \
+        or (request.client.host if request.client else "unknown")
+    from datetime import date as _date
+    today_str = _date.today().isoformat()
+    rate_key = f"{client_ip}_{today_str}"
+    current_count = _guest_rate.get(rate_key, 0)
+    if current_count >= 3:
+        raise HTTPException(
+            status_code=429,
+            detail="하루 무료 분석 3회를 모두 사용했어요.",
+        )
+
+    if not get_openai_client():
+        raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
+
+    # report_type 강제 basic
+    req_basic = req.model_copy(update={"report_type": "basic"})
+
+    # ── saju_data 조립 ──────────────────────────────────
+    saju_data: dict[str, Any] = {
+        "year_pillar":     req_basic.year_pillar,
+        "month_pillar":    req_basic.month_pillar,
+        "day_pillar":      req_basic.day_pillar,
+        "hour_pillar":     req_basic.hour_pillar,
+        "gender":          req_basic.gender or "",
+        "ten_gods":        req_basic.ten_gods or {},
+        "strength": (
+            req_basic.strength.get("strength")
+            if isinstance(req_basic.strength, dict)
+            else str(req_basic.strength or "")
+        ) or "알 수 없음",
+        "harmony_clash":   req_basic.harmony_clash or {},
+        "sinsal":          req_basic.sinsal or {},
+        "twelve_states":   req_basic.twelve_states or {},
+        "daeun_list":      req_basic.daeun_list or [],
+        "daeun_direction": req_basic.daeun_direction or "순행",
+    }
+    if req_basic.birthdate:
+        saju_data["birthdate"] = req_basic.birthdate
+
+    # ── 1) 규칙 엔진 ────────────────────────────────────
+    try:
+        from logic.saju_engine.core.saju_interpreter import interpret_all
+        interpretation = interpret_all(saju_data)
+        from logic.saju_engine.core.saju_interpreter import validate_interpret_all
+        _issues = validate_interpret_all(interpretation)
+        if _issues:
+            logger.warning(f"[guest 규칙엔진 경고] {_issues}")
+    except Exception as e:
+        import traceback as _tb
+        logger.warning(f"[analyze-guest] interpret_all 실패: {e}\n{_tb.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"규칙 엔진 오류: {e}")
+
+    # ── 2) analyzer ─────────────────────────────────────
+    try:
+        from logic.saju_engine.core.analyzer import analyze_full_saju
+        day_stem = req_basic.day_pillar[0] if req_basic.day_pillar else ""
+        pillars = {
+            "year":  req_basic.year_pillar,
+            "month": req_basic.month_pillar,
+            "day":   req_basic.day_pillar,
+            "hour":  req_basic.hour_pillar,
+        }
+        analysis = analyze_full_saju(day_stem, pillars)
+        if req_basic.harmony_clash:
+            analysis["harmony_clash"] = req_basic.harmony_clash
+    except Exception as e:
+        import traceback as _tb
+        logger.warning(f"[analyze-guest] analyze_full_saju 실패: {e}\n{_tb.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"분석 엔진 오류: {e}")
+
+    # ── 3) 이론 검색 ────────────────────────────────────
+    theories = ""
+    try:
+        retriever = get_theory_retriever()
+        theories = retriever.get_relevant_theories(analysis) or ""
+    except Exception as e:
+        logger.warning(f"[analyze-guest] 이론 검색 실패: {e}")
+
+    # ── 4) 캐시 확인 (IP 불포함 — 같은 사주는 캐시 공유) ──
+    cache_key = (
+        f"guest_{req_basic.year_pillar}_{req_basic.month_pillar}"
+        f"_{req_basic.day_pillar}_{req_basic.hour_pillar}_{req_basic.tone}"
+    )
+    cached_main = get_report_cache(cache_key, "v2_comprehensive")
+    cached_cv   = get_report_cache(cache_key, "v2_core_values")
+    cached_sections = get_report_cache(cache_key, "v2_sections")
+
+    if cached_main and cached_cv:
+        parsed_sections: dict[str, str] = {}
+        if cached_sections:
+            try:
+                obj = json.loads(cached_sections)
+                if isinstance(obj, dict):
+                    parsed_sections = {k: str(v) for k, v in obj.items() if isinstance(v, str)}
+            except Exception:
+                parsed_sections = {}
+        # 캐시 히트여도 rate count 증가
+        _guest_rate[rate_key] = current_count + 1
+        print(f"✅ [analyze-guest] 캐시 히트: {cache_key}")
+        return {
+            "success": True,
+            "cached": True,
+            "comprehensive": cached_main,
+            "core_values": cached_cv,
+            "section_personality": parsed_sections.get("section_personality", ""),
+            "section_strength": parsed_sections.get("section_strength", ""),
+            "section_problem": parsed_sections.get("section_problem", ""),
+            "section_money": parsed_sections.get("section_money", ""),
+            "section_career": parsed_sections.get("section_career", ""),
+            "section_relationship": parsed_sections.get("section_relationship", ""),
+            "section_current": parsed_sections.get("section_current", ""),
+            "rule_summary": interpretation.get("summary_for_gpt", {}),
+            # deep 섹션은 게스트에 미제공
+            "section_structure": "", "section_geunmyo": "", "section_tonggeun": "",
+            "section_sibiun": "", "section_harmony": "", "section_sinsal": "", "section_seun": "",
+        }
+
+    # ── 5) GPT 표현 변환 ────────────────────────────────
+    comprehensive = ""
+    core_values = ""
+    sections: dict = {
+        "section_personality": "", "section_strength": "", "section_problem": "",
+        "section_money": "", "section_career": "", "section_relationship": "", "section_current": "",
+    }
+
+    try:
+        from logic.gpt_generator import GPTInterpretationGenerator
+        generator = GPTInterpretationGenerator()
+    except Exception as _ge:
+        logger.warning(f"[analyze-guest] GPTInterpretationGenerator 초기화 실패: {_ge}")
+        generator = None
+
+    if generator:
+        try:
+            comprehensive = generator.generate_comprehensive_interpretation(
+                analysis=analysis,
+                tone=req_basic.tone,
+                theories=theories,
+                interpretation=interpretation,
+                report_type="basic",
+            )
+        except Exception as e:
+            logger.warning(f"[analyze-guest] generate_comprehensive_interpretation 실패: {e}")
+
+        try:
+            month_branch = req_basic.month_pillar[1] if len(req_basic.month_pillar) >= 2 else ""
+            core_values = generator.generate_core_values(
+                day_stem=day_stem,
+                month_branch=month_branch,
+                tone=req_basic.tone,
+                analysis=analysis,
+            )
+        except Exception as e:
+            logger.warning(f"[analyze-guest] generate_core_values 실패: {e}")
+
+        summary_for_gpt = interpretation.get("summary_for_gpt", {}) if isinstance(interpretation, dict) else {}
+        section_prompt = f"""
+아래 규칙 엔진 결과를 기반으로, 반드시 JSON 객체 하나만 반환하세요.
+키는 정확히 다음 7개만 사용:
+section_personality, section_strength, section_problem, section_money, section_career, section_relationship, section_current
+
+[규칙]
+- 사주 전문 용어 직접 사용 금지
+- 일상적이고 공감되는 표현
+- 짧은 문장 위주 (모바일 가독성)
+- 각 항목은 1~3개의 짧은 단락
+- 데이터에 없는 내용 추측 금지
+
+[데이터]
+성격: {summary_for_gpt.get("personality_points", [])}
+재물: {summary_for_gpt.get("money_points", [])}
+연애: {summary_for_gpt.get("love_points", [])}
+직업: {summary_for_gpt.get("career_points", [])}
+현재시기: {summary_for_gpt.get("period_points", [])}
+신강약: {summary_for_gpt.get("strength", "")}
+종합참고: {comprehensive}
+"""
+        try:
+            sec_resp = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "당신은 한국어 리포트 편집기입니다. JSON 객체만 출력하세요."},
+                    {"role": "user", "content": section_prompt},
+                ],
+                temperature=0.3,
+                max_tokens=4000,
+                response_format={"type": "json_object"},
+                timeout=55,
+            )
+            sec_raw = (sec_resp.choices[0].message.content or "").strip()
+            sec_obj = json.loads(sec_raw) if sec_raw else {}
+            if isinstance(sec_obj, dict):
+                for k in sections.keys():
+                    v = sec_obj.get(k, "")
+                    sections[k] = str(v).strip() if v is not None else ""
+        except Exception as se:
+            logger.warning(f"[analyze-guest] 섹션 생성 실패: {se}")
+
+    # ── 6) 캐시 저장 ────────────────────────────────────
+    try:
+        save_report_cache(cache_key, "v2_comprehensive", comprehensive)
+        save_report_cache(cache_key, "v2_core_values",   core_values)
+        save_report_cache(cache_key, "v2_sections", json.dumps(sections, ensure_ascii=False))
+        print(f"✅ [analyze-guest] 캐시 저장: {cache_key}")
+    except Exception as e:
+        logger.warning(f"[analyze-guest] 캐시 저장 실패: {e}")
+
+    # ── rate count 증가 ──────────────────────────────────
+    _guest_rate[rate_key] = current_count + 1
+
+    rule_summary_data = interpretation.get("summary_for_gpt", {})
+    return {
+        "success": True,
+        "cached": False,
+        "comprehensive": comprehensive,
+        "core_values": core_values,
+        "section_personality": sections.get("section_personality", ""),
+        "section_strength": sections.get("section_strength", ""),
+        "section_problem": sections.get("section_problem", ""),
+        "section_money": sections.get("section_money", ""),
+        "section_career": sections.get("section_career", ""),
+        "section_relationship": sections.get("section_relationship", ""),
+        "section_current": sections.get("section_current", ""),
+        "rule_summary": rule_summary_data,
+        # deep 섹션은 게스트에 미제공
+        "section_structure": "", "section_geunmyo": "", "section_tonggeun": "",
+        "section_sibiun": "", "section_harmony": "", "section_sinsal": "", "section_seun": "",
+    }
+
+
 # ==================== 베타 쿠폰 API ====================
 
 # 메모리 캐시 (빠른 읽기용 보조 캐시, DB가 primary)

@@ -32,7 +32,15 @@ export default function StartPage({
       credentials: "include",
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => {
-      if (r.ok) router.replace("/home");
+      if (r.ok) {
+        const redirect = localStorage.getItem("purchase_redirect");
+        if (redirect) {
+          localStorage.removeItem("purchase_redirect");
+          router.replace(redirect);
+        } else {
+          router.replace("/home");
+        }
+      }
     }).catch(() => {});
   }, []);
 
@@ -74,7 +82,13 @@ export default function StartPage({
       }
       if (data.token) localStorage.setItem("hsaju_token", data.token);
       if (data.user_id) localStorage.setItem("userId", String(data.user_id));
-      router.replace("/home");
+      const redirect = localStorage.getItem("purchase_redirect");
+      if (redirect) {
+        localStorage.removeItem("purchase_redirect");
+        router.replace(redirect);
+      } else {
+        router.replace("/home");
+      }
     } catch {
       setLoginError("서버 연결에 실패했습니다.");
     } finally {

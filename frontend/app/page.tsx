@@ -208,6 +208,66 @@ export default function RootPage() {
         </div>
       </section>
 
+      {/* ── SECTION 4: 후기 ── */}
+      <section style={{ background: "#fff", borderTop: `1px solid ${S.beige}`, padding: "48px 20px" }}>
+        <div style={{ maxWidth: 480, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: S.ink, textAlign: "center", marginBottom: 28, lineHeight: 1.4 }}>
+            실제로 써본 분들의 이야기
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {[
+              { name: "김모씨 (31)", text: "사주 리포트 받고 궁금한 게 생겼는데 바로 AI한테 물어볼 수 있어서 너무 좋았어요. 기존 앱들은 그냥 읽고 끝이었는데 여기는 진짜 대화가 돼요." },
+              { name: "이모씨 (28)", text: "이직 타이밍 고민하다가 써봤는데 생각보다 구체적으로 답해줘서 놀랐어요. 그냥 뻔한 말이 아니라 제 사주 기반으로 풀어주더라고요." },
+              { name: "박모씨 (26)", text: "심화 리포트 사봤는데 내 에너지 체질이랑 올해 흐름 분석이 엄청 상세해요. 돈 주고 살 만한 것 같아서 친구한테도 추천했어요." },
+            ].map(({ name, text }, i) => (
+              <div key={name} style={{ background: "#fff", border: `1px solid ${S.beige}`, borderRadius: 14, padding: 18 }}>
+                <p style={{ fontSize: 13, color: S.ink, lineHeight: 1.8, marginBottom: 12, wordBreak: "keep-all" }}>
+                  &#34;{text}&#34;
+                </p>
+                <p style={{ fontSize: 12, color: S.ink3, fontWeight: 600 }}>{name}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── SECTION 5: 가격표 ── */}
+      <section style={{ background: S.cream2, borderTop: `1px solid ${S.beige}`, padding: "48px 20px" }}>
+        <div style={{ maxWidth: 480, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: S.ink, textAlign: "center", marginBottom: 8, lineHeight: 1.4 }}>
+            필요한 것만 골라서
+          </h2>
+          <p style={{ fontSize: 13, color: S.ink3, textAlign: "center", marginBottom: 28 }}>구독 없이 단건 결제 가능해요</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { label: "기본 리포트", badge: "무료", badgeColor: "#22C55E", badgeBg: "#F0FDF4", desc: "AI 채팅 3회 + 기본 사주 분석", price: "무료", priceNote: "가입 즉시", highlight: false },
+              { label: "특화 리포트", badge: null, desc: "재물운 / 연애운 / 직업운 중 선택", price: "2,900원", priceNote: "1회 이용", highlight: false },
+              { label: "심화 리포트", badge: null, desc: "17개 섹션 심층 분석 · 신살 · 세운", price: "9,900원", priceNote: "1회 이용", highlight: false },
+              { label: "Pro 멤버십", badge: "추천", badgeColor: S.gold, badgeBg: "#FBF8F3", desc: "AI 채팅 무제한 + 모든 기능 이용", price: "4,900원", priceNote: "/ 월", highlight: true },
+            ].map(({ label, badge, badgeColor, badgeBg, desc, price, priceNote, highlight }) => (
+              <div key={label} className="tap" onClick={() => router.push("/start")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `${highlight ? "2px" : "1px"} solid ${highlight ? S.gold : S.beige}`, borderRadius: 14, padding: "16px 18px", boxShadow: highlight ? `0 4px 16px rgba(139,115,85,0.12)` : "0 1px 4px rgba(44,36,23,0.05)" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: S.ink }}>{label}</span>
+                    {badge && (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: badgeColor, background: badgeBg, border: `1px solid ${badgeColor}`, borderRadius: 99, padding: "1px 7px" }}>{badge}</span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: 12, color: S.ink3, lineHeight: 1.5 }}>{desc}</p>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 12 }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: highlight ? S.gold : S.ink }}>{price}</p>
+                  <p style={{ fontSize: 11, color: S.ink3 }}>{priceNote}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ marginTop: 16, fontSize: 11, color: S.ink3, textAlign: "center" }}>
+            모든 결제는 카카오페이 · 카드로 가능해요
+          </p>
+        </div>
+      </section>
+
       {/* ── 하단 CTA ── */}
       <section style={{ background: `linear-gradient(135deg, ${S.ink}, #4A3F30)`, padding: "48px 24px", textAlign: "center" }}>
         <div style={{ maxWidth: 400, margin: "0 auto" }}>

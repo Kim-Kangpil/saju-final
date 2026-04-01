@@ -1271,7 +1271,7 @@ function BasicV2ReportContent() {
                 궁금한 게 생기면 AI 사주 상담이 답해줘요. 무료 3회 제공.
               </p>
               <a
-                href={isGuest ? "/start?redirect=chat" : `/chat${sajuId ? `?saju_id=${sajuId}` : ""}`}
+                href={`/chat${!isGuest && sajuId ? `?saju_id=${sajuId}` : ""}`}
                 style={{
                   display: "block",
                   padding: "12px 0",

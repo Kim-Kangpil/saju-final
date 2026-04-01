@@ -320,7 +320,28 @@ function ChatPageInner({
             list,
             urlSajuIdRef.current,
           );
-          const saju = savedSajuToChatApiPayload(picked);
+          let saju = savedSajuToChatApiPayload(picked);
+
+          // 게스트 사주 폴백: add-guest 페이지에서 sessionStorage에 저장된 데이터 사용
+          if (!saju && typeof window !== "undefined") {
+            try {
+              const guestInput = JSON.parse(sessionStorage.getItem("guest_saju_input") || "null");
+              const guestResult = JSON.parse(sessionStorage.getItem("guest_saju_result") || "null");
+              if (guestInput && guestResult) {
+                const bYmd = `${guestInput.year}${String(guestInput.month).padStart(2, "0")}${String(guestInput.day).padStart(2, "0")}`;
+                const bHm = `${String(guestInput.hour ?? 12).padStart(2, "0")}${String(guestInput.minute ?? 0).padStart(2, "0")}`;
+                saju = {
+                  name: guestInput.name,
+                  birthYmd: bYmd,
+                  birthHm: bHm,
+                  gender: guestInput.gender === "남자" ? "M" : "F",
+                  calendar: guestInput.calendar_type === "양력" ? "solar" : "lunar",
+                  timeUnknown: guestInput.time_unknown ?? false,
+                  result: guestResult,
+                };
+              }
+            } catch { }
+          }
 
           // 저장된 리포트 요약 읽기 (사주 기둥 기반 캐시 키)
           let reportSummary: string | null = null;

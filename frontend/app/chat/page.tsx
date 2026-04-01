@@ -202,6 +202,7 @@ function ChatPageInner({
   const router = useRouter();
   const { lang } = useLang();
   const { isLoggedIn, refresh: refreshAuth } = useAuthStatus();
+  const [isPro, setIsPro] = useState(false);
   const [showLoginCard, setShowLoginCard] = useState(false);
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
@@ -413,6 +414,28 @@ function ChatPageInner({
       cancelled = true;
     };
   }, [hydrated, isLoggedIn, urlSajuId]);
+
+  // 로그인 시 Pro 멤버십 여부 확인
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setIsPro(false);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND_API_BASE}/api/me`, {
+          credentials: "include",
+          headers: { ...getAuthHeaders() },
+        });
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          setIsPro(!!data.is_member);
+        }
+      } catch {
+        setIsPro(false);
+      }
+    })();
+  }, [isLoggedIn]);
 
   // 로그인: 서버에 등록된 만세력이 있으면 로컬이 비어 있어도 등록 유도 화면을 띄우지 않음
   useEffect(() => {
@@ -1513,6 +1536,7 @@ function ChatPageInner({
                     transport={transport}
                     onError={setChatError}
                     isLoggedIn={isLoggedIn}
+                    isPro={isPro}
                     showLoginCard={showLoginCard}
                     setShowLoginCard={setShowLoginCard}
                     router={router}
@@ -1556,6 +1580,7 @@ type ChatContentProps = {
   transport: DefaultChatTransport<any>;
   onError: (msg: string | null) => void;
   isLoggedIn: boolean;
+  isPro: boolean;
   showLoginCard: boolean;
   setShowLoginCard: (v: boolean) => void;
   router: ReturnType<typeof useRouter>;
@@ -1576,6 +1601,7 @@ function ChatContent({
   transport,
   onError,
   isLoggedIn,
+  isPro,
   showLoginCard,
   setShowLoginCard,
   router,
@@ -1838,6 +1864,22 @@ function ChatContent({
     handleRetryRef.current = (t: string) => sendMessage({ text: t });
     lastUserSendAtRef.current = Date.now();
 
+    // 일일 채팅 카운트 체크 (비구독 유저 전용)
+    if (!isPro) {
+      const today = new Date().toDateString();
+      let currentDailyCount = dailyChatCount;
+      if (localStorage.getItem("chat_date") !== today) {
+        localStorage.setItem("chat_date", today);
+        localStorage.setItem("chat_daily_count", "0");
+        currentDailyCount = 0;
+        setDailyChatCount(0);
+      }
+      if (currentDailyCount >= 3) {
+        setShowExhaustedModal(true);
+        return;
+      }
+    }
+
     let shouldIncrementGuestCount = false;
     if (GUEST_LIMIT_ENABLED && !isLoggedIn) {
       const guestCount = parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
@@ -1868,6 +1910,15 @@ function ChatContent({
         localStorage.setItem("guest_chat_count", String(newCount));
         setGuestChatCount(newCount);
       }
+      // 일일 카운트 증가 (비구독 유저)
+      if (!isPro) {
+        const newDailyCount = parseInt(localStorage.getItem("chat_daily_count") || "0", 10) + 1;
+        localStorage.setItem("chat_daily_count", String(newDailyCount));
+        setDailyChatCount(newDailyCount);
+        if (newDailyCount >= 3) {
+          setShowExhaustedModal(true);
+        }
+      }
     } catch (e) {
       onError(e instanceof Error ? e.message : "응답을 불러오는 중 오류가 났어요. 잠시 후 다시 시도해 주세요.");
     }
@@ -1877,6 +1928,30 @@ function ChatContent({
     if (typeof window === "undefined") return 0;
     return parseInt(localStorage.getItem("guest_chat_count") || "0", 10);
   });
+
+  // 일일 채팅 카운트 (비구독 유저 하루 3회 제한)
+  const [dailyChatCount, setDailyChatCount] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const today = new Date().toDateString();
+    if (localStorage.getItem("chat_date") !== today) {
+      localStorage.setItem("chat_date", today);
+      localStorage.setItem("chat_daily_count", "0");
+      return 0;
+    }
+    return parseInt(localStorage.getItem("chat_daily_count") || "0", 10);
+  });
+  const [showExhaustedModal, setShowExhaustedModal] = useState(false);
+
+  // 페이지 진입 시 날짜 리셋 체크
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const today = new Date().toDateString();
+    if (localStorage.getItem("chat_date") !== today) {
+      localStorage.setItem("chat_date", today);
+      localStorage.setItem("chat_daily_count", "0");
+      setDailyChatCount(0);
+    }
+  }, []);
 
   const chatInputRef = useRef<ChatInputHandle>(null);
 
@@ -2055,6 +2130,44 @@ function ChatContent({
             </div>
           );
         })()}
+        {/* 남은 무료 상담 횟수 표시 (비구독 유저) */}
+        {!isPro && lang !== "en" && (
+          <div style={{ fontSize: 11, color: "#6B5F4E", textAlign: "center", marginBottom: 4 }}>
+            오늘 남은 무료 상담: {Math.max(0, 3 - dailyChatCount)}회
+          </div>
+        )}
+        {/* 일일 한도 소진 배너 */}
+        {!isPro && dailyChatCount >= 3 && (
+          <div style={{
+            background: "#FBF8F3",
+            border: "1px solid #D4C9B8",
+            borderRadius: 12,
+            padding: "14px 16px",
+            marginBottom: 8,
+            textAlign: "center",
+          }}>
+            <p style={{ fontSize: 13, color: "#3D2B1F", marginBottom: 10, lineHeight: 1.6 }}>
+              오늘 무료 상담 3회를 모두 사용했어요.<br />
+              Pro 구독으로 무제한 상담하세요.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push("/membership")}
+              style={{
+                background: "#8B7355",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                padding: "9px 18px",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Pro 구독하기 — 4,900원/월
+            </button>
+          </div>
+        )}
         {!hasUserMessage && !showLoginCard && (
           <div className="chat-quick-chips">
             {(lang === "en" ? QUICK_PROMPTS_EN : QUICK_PROMPTS_KO).map((q) => (
@@ -2071,11 +2184,41 @@ function ChatContent({
         )}
         <ChatInput
           ref={chatInputRef}
-          disabled={sending || showLoginCard}
+          disabled={sending || showLoginCard || (!isPro && dailyChatCount >= 3)}
           onSubmit={handleSubmit}
           placeholder={lang === "en" ? "Ask anything about your Saju" : "무엇이든 물어보세요"}
         />
       </div>
+
+      {/* 일일 한도 소진 모달 */}
+      {showExhaustedModal && (
+        <div className="chat-login-modal-backdrop" onClick={() => setShowExhaustedModal(false)}>
+          <div className="chat-login-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>💬 오늘 상담을 모두 사용했어요</h3>
+            <p>
+              내일 다시 3번 무료로 쓸 수 있고,<br />
+              지금 구독하면 오늘도 계속 대화할 수 있어요.
+            </p>
+            <div className="chat-login-btns">
+              <button
+                type="button"
+                className="chat-login-btn primary"
+                onClick={() => router.push("/membership")}
+                style={{ background: "#8B7355" }}
+              >
+                Pro 구독하기
+              </button>
+              <button
+                type="button"
+                className="chat-login-modal-close"
+                onClick={() => setShowExhaustedModal(false)}
+              >
+                내일 다시 올게요
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showLoginCard && (
         <div className="chat-login-modal-backdrop" onClick={() => setShowLoginCard(false)}>

@@ -70,7 +70,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
             사주를 가장<br />깊이 있게
           </h1>
           <p style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.8, marginBottom: 24 }}>
-            AI 채팅 무제한과<br />분석권 매월 3개, 월 3,900원
+            AI 채팅 무제한과<br />분석권 매월 3개, 월 4,900원
           </p>
           {status?.is_pro ? (
             <div style={{ background: "#E1DDCF", borderRadius: 12, padding: "14px 16px", fontSize: 13, color: "#3A3A3A", fontWeight: 700 }}>
@@ -80,7 +80,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
               </div>}
             </div>
           ) : (
-            <div style={{ fontSize: 26, fontWeight: 700, color: "#3A3A3A" }}>월 3,900원</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: "#3A3A3A" }}>월 4,900원</div>
           )}
         </section>
 
@@ -120,7 +120,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
               ["AI 채팅", "3회/일", "3회/일", "무제한"],
               ["분석권", "❌", "1회", "월 3회"],
               ["특화/심화 리포트", "❌", "유료", "월 3회 할인"],
-              ["가격", "무료", "1,900원", "3,900원/월"],
+              ["가격", "무료", "1,900원", "4,900원/월"],
             ].map(([label, a, , c]) => (
               <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: "1px solid #E8E5DF" }}>
                 <div style={{ padding: "11px 8px", fontSize: 12, color: "#6B6B6B", textAlign: "center" }}>{label}</div>
@@ -146,7 +146,7 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 3C7.029 3 3 6.358 3 10.5c0 2.668 1.611 5.015 4.054 6.373L6.08 20.25a.375.375 0 0 0 .544.416L11.1 17.94c.296.027.596.06.9.06 4.971 0 9-3.358 9-7.5S16.971 3 12 3z" fill="#191919"/>
               </svg>
-              {loading ? "결제 준비 중..." : "카카오페이로 결제 · 월 3,900원"}
+              {loading ? "결제 준비 중..." : "카카오페이로 결제 · 월 4,900원"}
             </button>
           </div>
         </div>

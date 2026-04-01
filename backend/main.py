@@ -3722,6 +3722,7 @@ class AnalyzeV2Request(BaseModel):
     twelve_states: Optional[dict] = None
     tone: str = "empathy"
     cache_key: Optional[str] = None
+    report_type: Optional[str] = None  # "basic" | "deep"
 
 
 @app.post("/saju/analyze-v2")
@@ -3915,29 +3916,47 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
         }
 
     # ── 5) GPT 표현 변환 ────────────────────────────────
+    comprehensive = ""
+    core_values = ""
+    sections: dict = {
+        "section_personality": "", "section_strength": "", "section_problem": "",
+        "section_money": "", "section_career": "", "section_relationship": "", "section_current": "",
+    }
     deep_sections: dict = {}
+
     try:
         from logic.gpt_generator import GPTInterpretationGenerator
         generator = GPTInterpretationGenerator()
+    except Exception as _ge:
+        print(f"❌ GPTInterpretationGenerator 초기화 실패: {_ge}")
+        generator = None
 
-        # 종합 해석 (규칙엔진 결과를 시스템 프롬프트에 주입)
-        comprehensive = generator.generate_comprehensive_interpretation(
-            analysis=analysis,
-            tone=req.tone,
-            theories=theories,
-            interpretation=interpretation,   # ← 규칙엔진 결과 전달
-        )
+    if generator:
+        # 종합 해석
+        try:
+            comprehensive = generator.generate_comprehensive_interpretation(
+                analysis=analysis,
+                tone=req.tone,
+                theories=theories,
+                interpretation=interpretation,
+                report_type=req.report_type or "basic",
+            )
+        except Exception as e:
+            print(f"⚠️ generate_comprehensive_interpretation 실패: {e}")
 
         # 월지 기반 가치관
-        month_branch = req.month_pillar[1] if len(req.month_pillar) >= 2 else ""
-        core_values = generator.generate_core_values(
-            day_stem=day_stem,
-            month_branch=month_branch,
-            tone=req.tone,
-            analysis=analysis,
-        )
+        try:
+            month_branch = req.month_pillar[1] if len(req.month_pillar) >= 2 else ""
+            core_values = generator.generate_core_values(
+                day_stem=day_stem,
+                month_branch=month_branch,
+                tone=req.tone,
+                analysis=analysis,
+            )
+        except Exception as e:
+            print(f"⚠️ generate_core_values 실패: {e}")
 
-        # 섹션형 응답 생성(JSON)
+        # 섹션형 응답 생성(JSON) — comprehensive 없어도 진행
         summary_for_gpt = interpretation.get("summary_for_gpt", {}) if isinstance(interpretation, dict) else {}
         section_prompt = f"""
 아래 규칙 엔진 결과를 기반으로, 반드시 JSON 객체 하나만 반환하세요.
@@ -3960,16 +3979,6 @@ section_personality, section_strength, section_problem, section_money, section_c
 신강약: {summary_for_gpt.get("strength", "")}
 종합참고: {comprehensive}
 """
-
-        sections = {
-            "section_personality": "",
-            "section_strength": "",
-            "section_problem": "",
-            "section_money": "",
-            "section_career": "",
-            "section_relationship": "",
-            "section_current": "",
-        }
         try:
             sec_resp = client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -3980,6 +3989,7 @@ section_personality, section_strength, section_problem, section_money, section_c
                 temperature=0.3,
                 max_tokens=4000,
                 response_format={"type": "json_object"},
+                timeout=55,
             )
             sec_raw = (sec_resp.choices[0].message.content or "").strip()
             _su = getattr(sec_resp, "usage", None)
@@ -3993,7 +4003,6 @@ section_personality, section_strength, section_problem, section_money, section_c
             print(f"⚠️ v2 섹션 생성 실패: {se}")
 
         # deep 리포트 전용 추가 섹션
-        deep_sections: dict = {}
         if is_deep:
             try:
                 deep_sections = generator.generate_deep_sections(
@@ -4002,10 +4011,6 @@ section_personality, section_strength, section_problem, section_money, section_c
                 )
             except Exception as _de:
                 print(f"⚠️ generate_deep_sections 실패: {_de}")
-
-    except Exception as e:
-        print(f"❌ GPT 생성 실패: {e}")
-        raise HTTPException(status_code=502, detail=f"GPT 생성 오류: {e}")
 
     # ── 6) 캐시 저장 ────────────────────────────────────
     try:

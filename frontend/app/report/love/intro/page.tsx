@@ -216,7 +216,7 @@ function LoveIntroContent() {
         )}
 
         <p style={{fontSize: 10, color: '#C4B5A0', marginTop: 6}}>
-          한 번 구매로 영구 열람 가능
+          구매 후 7일간 열람 가능 · 열람한 리포트는 영구 소장
         </p>
       </div>
 

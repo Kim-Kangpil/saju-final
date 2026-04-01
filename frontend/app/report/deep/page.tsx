@@ -127,20 +127,20 @@ function branchMainStem(br: string): string {
   return ({子:"癸",丑:"己",寅:"甲",卯:"乙",辰:"戊",巳:"丙",午:"丁",未:"己",申:"庚",酉:"辛",戌:"戊",亥:"壬"} as Record<string,string>)[br]??"";
 }
 
-// 12월 → 지지 매핑 (음력 기준)
+// 12월 → 지지 매핑 (양력 기준: 2월 입춘부터 寅월 시작)
 const MONTH_BRANCH = [
-  { month: 1, branch: "寅", hangul: "인" },
-  { month: 2, branch: "卯", hangul: "묘" },
-  { month: 3, branch: "辰", hangul: "진" },
-  { month: 4, branch: "巳", hangul: "사" },
-  { month: 5, branch: "午", hangul: "오" },
-  { month: 6, branch: "未", hangul: "미" },
-  { month: 7, branch: "申", hangul: "신" },
-  { month: 8, branch: "酉", hangul: "유" },
-  { month: 9, branch: "戌", hangul: "술" },
-  { month: 10, branch: "亥", hangul: "해" },
-  { month: 11, branch: "子", hangul: "자" },
-  { month: 12, branch: "丑", hangul: "축" },
+  { month: 1, branch: "丑", hangul: "축" },
+  { month: 2, branch: "寅", hangul: "인" },
+  { month: 3, branch: "卯", hangul: "묘" },
+  { month: 4, branch: "辰", hangul: "진" },
+  { month: 5, branch: "巳", hangul: "사" },
+  { month: 6, branch: "午", hangul: "오" },
+  { month: 7, branch: "未", hangul: "미" },
+  { month: 8, branch: "申", hangul: "신" },
+  { month: 9, branch: "酉", hangul: "유" },
+  { month: 10, branch: "戌", hangul: "술" },
+  { month: 11, branch: "亥", hangul: "해" },
+  { month: 12, branch: "子", hangul: "자" },
 ];
 
 // 아코디언
@@ -225,6 +225,7 @@ function DeepReportContent() {
   const [daeunList, setDaeunList] = useState<DaeunItem[]>([]);
   const [daeunStartAge, setDaeunStartAge] = useState(0);
   const [pillars, setPillars] = useState<{ year: string; month: string; day: string; hour: string } | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const stuckRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -258,6 +259,8 @@ function DeepReportContent() {
   // 데이터 로드
   useEffect(() => {
     if (!sajuId) { setError("사주 ID가 필요합니다."); setLoading(false); return; }
+    setError(null);
+    setLoading(true);
 
     (async () => {
       try {
@@ -332,10 +335,18 @@ function DeepReportContent() {
             sinsal: typeof fullData.sinsal === "object" ? fullData.sinsal : {},
             twelve_states: typeof fullData.twelve_states === "object" ? fullData.twelve_states : {},
             tone: "empathy",
+            report_type: "deep",
             cache_key: `deep_v2_${sajuId}`,
           }),
         });
-        if (!v2Res.ok) throw new Error("심화 분석에 실패했습니다.");
+        if (!v2Res.ok) {
+          // 자동 1회 재시도 (캐시 없는 첫 요청 타임아웃 대응)
+          if (retryCount === 0) {
+            setRetryCount(1);
+            return;
+          }
+          throw new Error("심화 분석 생성에 실패했습니다. 아래 버튼으로 다시 시도해 주세요.");
+        }
         const v2Data = await v2Res.json() as V2Result;
         setV2Result(v2Data);
       } catch (e) {
@@ -344,7 +355,7 @@ function DeepReportContent() {
         setLoading(false);
       }
     })();
-  }, [sajuId]);
+  }, [sajuId, retryCount]);
 
   // 현재 대운 인덱스 계산
   const birthYear = sajuInfo?.birthdate ? parseInt((sajuInfo.birthdate as string).split("-")[0], 10) : 0;
@@ -386,11 +397,18 @@ function DeepReportContent() {
     return (
       <div style={{ maxWidth: 480, margin: "0 auto", padding: "40px 20px", textAlign: "center", background: S.cream, minHeight: "100vh", fontFamily: "'Gmarket Sans', sans-serif" }}>
         <p style={{ fontSize: 48, marginBottom: 16 }}>⚠️</p>
-        <p style={{ fontSize: 16, color: S.ink, marginBottom: 20 }}>{error}</p>
-        <button onClick={() => router.push("/saju-list")}
-          style={{ padding: "12px 24px", background: S.gold, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
-          사주 목록으로
-        </button>
+        <p style={{ fontSize: 15, color: S.ink, marginBottom: 8, lineHeight: 1.7 }}>{error}</p>
+        <p style={{ fontSize: 12, color: S.ink3, marginBottom: 24 }}>서버가 바쁘면 분석에 시간이 걸릴 수 있어요.</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "center" }}>
+          <button onClick={() => { setRetryCount(c => c + 1); }}
+            style={{ padding: "12px 32px", background: S.deep, color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", width: 220 }}>
+            다시 분석하기
+          </button>
+          <button onClick={() => router.push("/saju-list")}
+            style={{ padding: "12px 32px", background: "transparent", color: S.ink3, border: `1px solid ${S.beige}`, borderRadius: 10, fontSize: 14, cursor: "pointer", width: 220 }}>
+            사주 목록으로
+          </button>
+        </div>
       </div>
     );
   }
@@ -674,7 +692,7 @@ function DeepReportContent() {
               <div style={{ overflowX: "auto", paddingBottom: 8 }}>
                 <div style={{ display: "flex", gap: 8, paddingLeft: 2, paddingRight: 2, width: "max-content" }}>
                   {daeunList.map((d, i) => {
-                    const el = elementOf(d.ganji[0] || "");
+                    const el = elementOf(d.ganji[1] || "");
                     const pal = EL_COLOR[el];
                     const isCurrent = i === currentDaeunIdx;
                     return (
@@ -725,7 +743,7 @@ function DeepReportContent() {
             </div>
             {currentDaeunIdx >= 0 && daeunList[currentDaeunIdx] && (() => {
               const cur = daeunList[currentDaeunIdx];
-              const el = elementOf(cur.ganji[0] || "");
+              const el = elementOf(cur.ganji[1] || "");
               const pal = EL_COLOR[el];
               return (
                 <div style={{ background: "#fff", borderRadius: 16, border: `2px solid ${S.gold}`, overflow: "hidden", boxShadow: "0 4px 16px rgba(139,115,85,0.15)" }}>
@@ -784,28 +802,33 @@ function DeepReportContent() {
                 const el = elementOf(branch);
                 const pal = EL_COLOR[el];
                 const isNow = month === currentMonth;
+                const isPrevYear = month === 1;
                 return (
                   <div key={month} style={{
                     borderRadius: 10, overflow: "hidden",
-                    border: isNow ? `2px solid ${S.gold}` : `1px solid ${pal.border}`,
-                    background: isNow ? "#FBF8F3" : pal.bg + "55",
+                    border: isNow ? `2px solid ${S.gold}` : isPrevYear ? `1px dashed ${S.beige2}` : `1px solid ${pal.border}`,
+                    background: isPrevYear ? S.cream + "99" : isNow ? "#FBF8F3" : pal.bg + "55",
                     boxShadow: isNow ? "0 2px 8px rgba(139,115,85,0.2)" : undefined,
+                    opacity: isPrevYear ? 0.75 : 1,
                   }}>
-                    <div style={{ height: 4, background: pal.bg, borderBottom: `1px solid ${pal.border}` }} />
+                    <div style={{ height: 4, background: isPrevYear ? S.beige : pal.bg, borderBottom: `1px solid ${isPrevYear ? S.beige2 : pal.border}` }} />
                     <div style={{ padding: "8px 6px", textAlign: "center" }}>
-                      <div style={{ fontSize: 10, color: isNow ? S.gold : S.ink3, fontWeight: isNow ? 700 : 400, marginBottom: 2 }}>
+                      <div style={{ fontSize: 10, color: isNow ? S.gold : isPrevYear ? S.ink3 : S.ink3, fontWeight: isNow ? 700 : 400, marginBottom: 2 }}>
                         {isNow ? "이번 달" : `${month}월`}
                       </div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: pal.text }}>{branch}</div>
-                      <div style={{ fontSize: 10, color: pal.text }}>{hangul}</div>
-                      <div style={{ fontSize: 9, marginTop: 3, color: pal.text, background: pal.bg, padding: "1px 5px", borderRadius: 99, display: "inline-block" }}>
-                        {EL_NAME[el]}
+                      <div style={{ fontSize: 16, fontWeight: 700, color: isPrevYear ? S.ink3 : pal.text }}>{branch}</div>
+                      <div style={{ fontSize: 10, color: isPrevYear ? S.ink3 : pal.text }}>{hangul}</div>
+                      <div style={{ fontSize: 9, marginTop: 3, color: isPrevYear ? S.ink3 : pal.text, background: isPrevYear ? S.cream3 : pal.bg, padding: "1px 5px", borderRadius: 99, display: "inline-block" }}>
+                        {isPrevYear ? "작년 기운" : EL_NAME[el]}
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
+            <p style={{ fontSize: 10, color: S.ink3, marginTop: 8, paddingLeft: 2 }}>
+              * 1월은 입춘(2월 초) 이전으로, 작년 세운의 기운이 이어집니다.
+            </p>
             {v2Result?.section_current && (
               <div style={{ marginTop: 14, padding: "12px 14px", background: S.cream2, borderRadius: 12 }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: S.ink3, marginBottom: 6 }}>올해 전반적인 흐름</p>
@@ -817,7 +840,7 @@ function DeepReportContent() {
           {/* ── SECTION 5: 다음 대운 예고 ── */}
           {currentDaeunIdx >= 0 && daeunList[currentDaeunIdx + 1] && (() => {
             const next = daeunList[currentDaeunIdx + 1];
-            const el = elementOf(next.ganji[0] || "");
+            const el = elementOf(next.ganji[1] || "");
             const pal = EL_COLOR[el];
             return (
               <div style={{ background: "#fff", borderRadius: 16, border: `1px solid ${S.beige}`, padding: "18px 18px", marginBottom: 14, boxShadow: "0 2px 8px rgba(44,36,23,0.05)" }}>

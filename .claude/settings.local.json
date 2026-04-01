@@ -40,7 +40,13 @@
       "Bash(grep -E \"\\\\.py$|^d\")",
       "Bash(npx next:*)",
       "Bash(grep -v \"^$\\\\|^commit\\\\|^Author\\\\|^Date\\\\|^    \")",
-      "Bash(grep -rn pillars[''hour''][ /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/)"
+      "Bash(grep -rn pillars[''hour''][ /c/Users/ksh00/OneDrive/Desktop/saju-project-temp/backend/)",
+      "Bash(grep -r \"미구현\\\\|임시\\\\|추후\" C:Usersksh00OneDriveDesktopsaju-project-tempbackend --include=*.py)",
+      "Bash(head:*)",
+      "Bash(wc:*)",
+      "Bash(tail:*)",
+      "Bash(grep -E \"\\\\.py$\")",
+      "Bash(cat:*)"
     ]
   }
 }

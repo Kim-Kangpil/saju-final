@@ -83,7 +83,7 @@ export default function SeedChargePage({ params }: { params?: Promise<Record<str
             </div>
             <div style={{ fontSize: 13, color: "#6B6B6B", lineHeight: 1.7 }}>
               사주 리포트를 1회 열람할 수 있는 권한입니다.<br />
-              유효기간 없이 영구 사용 가능해요.
+              구매 후 90일 이내 사용 가능해요.
             </div>
           </div>
         </section>
@@ -125,7 +125,7 @@ export default function SeedChargePage({ params }: { params?: Promise<Record<str
         {/* Notes */}
         <section style={{ paddingBottom: 32 }}>
           <div style={{ background: "#F5F2EE", borderRadius: 12, border: "1px solid #E0DDCF", padding: "12px 14px" }}>
-            {["결제 즉시 분석권이 지급됩니다.", "유효기간 없이 영구 사용 가능해요.", "환불은 미사용 분석권에 한해 문의해주세요."].map(txt => (
+            {["결제 즉시 분석권이 지급됩니다.", "구매 후 90일 이내 사용 가능해요.", "환불은 미사용 분석권에 한해 문의해주세요."].map(txt => (
               <div key={txt} style={{ display: "flex", gap: 6, fontSize: 12, color: "#6B6B6B", lineHeight: 1.6, marginBottom: 4 }}>
                 <span style={{ flexShrink: 0, color: "#A0A0A0" }}>·</span><span>{txt}</span>
               </div>

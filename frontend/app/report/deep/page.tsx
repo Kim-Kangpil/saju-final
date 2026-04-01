@@ -463,37 +463,37 @@ function DeepReportContent() {
 
           {/* ── 기본 정보 아코디언 ── */}
           {birthYmd && (() => {
-            const infoRows = [
+            const bt = sajuInfo?.birth_time ? String(sajuInfo.birth_time) : "";
+            const timeDisplay = bt
+              ? (bt.includes(":") ? bt : bt.length === 4 ? `${bt.slice(0,2)}:${bt.slice(2,4)}` : bt)
+              : "미상";
+            const rows = [
               ...(sajuInfo?.name ? [{ label: "이름", value: sajuInfo.name as string }] : []),
-              { label: "생년월일", value: `${birthYmd.slice(0,4)}년 ${birthYmd.slice(4,6)}월 ${birthYmd.slice(6,8)}일` },
-              { label: "시각", value: sajuInfo?.birth_time ? String(sajuInfo.birth_time) : "모름" },
-              { label: "성별", value: sajuInfo?.gender === "남자" || sajuInfo?.gender === "M" ? "남성" : "여성" },
+              { label: "생년월일", value: `${birthYmd.slice(0,4)}.${birthYmd.slice(4,6)}.${birthYmd.slice(6,8)}` },
+              { label: "시각", value: timeDisplay },
+              { label: "성별", value: (sajuInfo?.gender === "남자" || sajuInfo?.gender === "M") ? "남자" : "여자" },
               { label: "달력", value: sajuInfo?.calendar_type === "음력" ? "음력" : "양력" },
             ];
             return (
-              <div style={{ marginBottom: 10 }}>
+              <div style={{ border: `1px solid ${S.beige}`, borderRadius: 12, overflow: "hidden", background: "#fff", marginBottom: 10, boxShadow: "0 1px 4px rgba(44,36,23,0.05)" }}>
                 <button
+                  type="button"
                   onClick={() => setBasicInfoOpen(v => !v)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `1px solid ${S.beige}`, borderRadius: basicInfoOpen ? "12px 12px 0 0" : 12, padding: "13px 16px", cursor: "pointer" }}
+                  style={{ width: "100%", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer" }}
                 >
-                  <span style={{ fontSize: 14, fontWeight: 700, color: S.ink }}>기본 정보</span>
-                  <motion.span animate={{ rotate: basicInfoOpen ? 180 : 0 }} transition={{ duration: 0.2 }} style={{ display: "inline-block", fontSize: 12, color: S.ink3 }}>▼</motion.span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>기본 정보</span>
+                  <motion.span animate={{ rotate: basicInfoOpen ? 180 : 0 }} transition={{ duration: 0.15 }} style={{ color: S.ink3 }}>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </motion.span>
                 </button>
                 <AnimatePresence initial={false}>
                   {basicInfoOpen && (
-                    <motion.div
-                      key="basicInfo"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                      style={{ overflow: "hidden", background: "#fff", border: `1px solid ${S.beige}`, borderTop: "none", borderRadius: "0 0 12px 12px" }}
-                    >
-                      <div style={{ padding: "4px 0 10px" }}>
-                        {infoRows.map(({ label, value }) => (
-                          <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 16px" }}>
-                            <span style={{ fontSize: 13, color: S.ink3 }}>{label}</span>
-                            <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{value}</span>
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} style={{ overflow: "hidden" }}>
+                      <div style={{ padding: "12px 16px 14px", borderTop: `1px solid ${S.cream3}` }}>
+                        {rows.map(row => (
+                          <div key={row.label} style={{ display: "flex", justifyContent: "space-between", paddingBottom: 8, marginBottom: 8, borderBottom: `1px solid ${S.cream3}` }}>
+                            <span style={{ fontSize: 12, color: S.ink3 }}>{row.label}</span>
+                            <span style={{ fontSize: 13, fontWeight: 600, color: S.ink }}>{row.value}</span>
                           </div>
                         ))}
                       </div>
@@ -511,90 +511,78 @@ function DeepReportContent() {
               { label: "일주", val: pillars.day },
               { label: "월주", val: pillars.month },
               { label: "년주", val: pillars.year },
-            ];
-            const dayStem = pillars.day[0] || "";
+            ].filter(b => b.val && b.val.length >= 2);
+            const dayStem = pillars.day[0] ?? "";
+            const tdBase: React.CSSProperties = { fontSize: 11, color: "#4A3F30", textAlign: "center", border: `1px solid ${S.beige}`, padding: "6px 4px" };
+            const thBase: React.CSSProperties = { background: S.cream2, border: `1px solid ${S.beige}`, padding: "7px 4px", textAlign: "center", fontSize: 11, fontWeight: 700, color: S.ink };
             return (
-              <div style={{ marginBottom: 14 }}>
+              <div style={{ border: `1px solid ${S.beige}`, borderRadius: 12, overflow: "hidden", background: "#fff", marginBottom: 20, boxShadow: "0 1px 4px rgba(44,36,23,0.05)" }}>
                 <button
+                  type="button"
                   onClick={() => setSajuTableOpen(v => !v)}
-                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", border: `1px solid ${S.beige}`, borderRadius: sajuTableOpen ? "12px 12px 0 0" : 12, padding: "13px 16px", cursor: "pointer" }}
+                  style={{ width: "100%", padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "none", cursor: "pointer" }}
                 >
                   <span style={{ fontSize: 14, fontWeight: 700, color: S.ink }}>내 사주팔자</span>
-                  <motion.span animate={{ rotate: sajuTableOpen ? 180 : 0 }} transition={{ duration: 0.2 }} style={{ display: "inline-block", fontSize: 12, color: S.ink3 }}>▼</motion.span>
+                  <motion.span animate={{ rotate: sajuTableOpen ? 180 : 0 }} transition={{ duration: 0.15 }} style={{ color: S.ink3 }}>
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  </motion.span>
                 </button>
                 <AnimatePresence initial={false}>
                   {sajuTableOpen && (
-                    <motion.div
-                      key="sajuTable"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                      style={{ overflow: "hidden", background: "#fff", border: `1px solid ${S.beige}`, borderTop: "none", borderRadius: "0 0 12px 12px" }}
-                    >
-                      <div style={{ padding: "12px 14px 14px" }}>
-                        {/* 헤더 행 */}
-                        <div style={{ display: "grid", gridTemplateColumns: "52px repeat(4, 1fr)", gap: 6, marginBottom: 6 }}>
-                          <div />
-                          {blocks.map(b => (
-                            <div key={b.label} style={{ textAlign: "center", fontSize: 11, color: S.ink3, fontWeight: 600 }}>{b.label}</div>
-                          ))}
-                        </div>
-                        {/* 십성 행 (천간) */}
-                        <div style={{ display: "grid", gridTemplateColumns: "52px repeat(4, 1fr)", gap: 6, marginBottom: 4 }}>
-                          <div style={{ fontSize: 11, color: S.ink3, display: "flex", alignItems: "center" }}>십성</div>
-                          {blocks.map(b => {
-                            const stem = b.val[0] || "";
-                            const tg = stem && dayStem ? tenGod(dayStem, stem) : "";
-                            return (
-                              <div key={b.label} style={{ textAlign: "center", fontSize: 11, color: S.ink3 }}>{tg}</div>
-                            );
-                          })}
-                        </div>
-                        {/* 천간 행 */}
-                        <div style={{ display: "grid", gridTemplateColumns: "52px repeat(4, 1fr)", gap: 6, marginBottom: 4 }}>
-                          <div style={{ fontSize: 11, color: S.ink3, display: "flex", alignItems: "center" }}>천간</div>
-                          {blocks.map(b => {
-                            const stem = b.val[0] || "";
-                            const el = elementOf(stem);
-                            const pal = EL_COLOR[el];
-                            return (
-                              <div key={b.label} style={{ textAlign: "center" }}>
-                                <span style={{ display: "inline-block", padding: "3px 8px", borderRadius: 8, background: pal.bg, border: `1px solid ${pal.border}`, fontSize: 15, fontWeight: 700, color: pal.text }}>
-                                  {stem}<br /><span style={{ fontSize: 10, fontWeight: 400 }}>{hanjaToHangul(stem)}</span>
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {/* 지지 행 */}
-                        <div style={{ display: "grid", gridTemplateColumns: "52px repeat(4, 1fr)", gap: 6, marginBottom: 4 }}>
-                          <div style={{ fontSize: 11, color: S.ink3, display: "flex", alignItems: "center" }}>지지</div>
-                          {blocks.map(b => {
-                            const br = b.val[1] || "";
-                            const el = elementOf(br);
-                            const pal = EL_COLOR[el];
-                            return (
-                              <div key={b.label} style={{ textAlign: "center" }}>
-                                <span style={{ display: "inline-block", padding: "3px 8px", borderRadius: 8, background: pal.bg, border: `1px solid ${pal.border}`, fontSize: 15, fontWeight: 700, color: pal.text }}>
-                                  {br}<br /><span style={{ fontSize: 10, fontWeight: 400 }}>{hanjaToHangul(br)}</span>
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {/* 지지 십성 행 */}
-                        <div style={{ display: "grid", gridTemplateColumns: "52px repeat(4, 1fr)", gap: 6 }}>
-                          <div style={{ fontSize: 11, color: S.ink3, display: "flex", alignItems: "center" }}>십성</div>
-                          {blocks.map(b => {
-                            const br = b.val[1] || "";
-                            const ms = branchMainStem(br);
-                            const tg = ms && dayStem ? tenGod(dayStem, ms) : "";
-                            return (
-                              <div key={b.label} style={{ textAlign: "center", fontSize: 11, color: S.ink3 }}>{tg}</div>
-                            );
-                          })}
-                        </div>
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.18 }} style={{ overflow: "hidden" }}>
+                      <div style={{ padding: "12px 12px 14px", borderTop: `1px solid ${S.cream3}`, overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, tableLayout: "fixed" }}>
+                          <thead>
+                            <tr>
+                              <th style={{ ...thBase, width: 64 }} />
+                              {blocks.map(b => <th key={b.label} style={thBase}>{b.label}</th>)}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td style={tdBase}>십성</td>
+                              {blocks.map(b => {
+                                const stem = b.val[0] ?? "";
+                                return <td key={b.label} style={{ ...tdBase, fontWeight: 600, fontSize: 12 }}>{tenGod(dayStem, stem)}</td>;
+                              })}
+                            </tr>
+                            <tr>
+                              <td style={tdBase}>천간</td>
+                              {blocks.map(b => {
+                                const stem = b.val[0] ?? "";
+                                const pal = EL_COLOR[elementOf(stem)];
+                                return (
+                                  <td key={b.label} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                    <div style={{ padding: "10px 6px", borderRadius: 8, textAlign: "center", background: pal.bg, color: pal.text, fontWeight: 700, border: `1px solid ${pal.border}` }}>
+                                      {stem}{hanjaToHangul(stem)}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                            <tr>
+                              <td style={tdBase}>지지</td>
+                              {blocks.map(b => {
+                                const br = b.val[1] ?? "";
+                                const pal = EL_COLOR[elementOf(br)];
+                                return (
+                                  <td key={b.label} style={{ padding: 4, verticalAlign: "middle", border: `1px solid ${S.beige}` }}>
+                                    <div style={{ padding: "10px 6px", borderRadius: 8, textAlign: "center", background: pal.bg, color: pal.text, fontWeight: 700, border: `1px solid ${pal.border}` }}>
+                                      {br}{hanjaToHangul(br)}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                            <tr>
+                              <td style={tdBase}>십성(지지)</td>
+                              {blocks.map(b => {
+                                const ms = branchMainStem(b.val[1] ?? "");
+                                return <td key={b.label} style={{ ...tdBase, fontWeight: 600, fontSize: 12 }}>{ms ? tenGod(dayStem, ms) : ""}</td>;
+                              })}
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </motion.div>
                   )}

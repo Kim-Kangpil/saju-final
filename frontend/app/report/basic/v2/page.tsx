@@ -210,6 +210,7 @@ function SectionAccordion({
   ctaLabel,
   ctaHref,
   ctaTitle,
+  ctaOnClick,
 }: {
   icon: string;
   title: string;
@@ -220,6 +221,7 @@ function SectionAccordion({
   ctaLabel?: string;
   ctaHref?: string;
   ctaTitle?: string;
+  ctaOnClick?: () => void;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
@@ -299,7 +301,8 @@ function SectionAccordion({
                     <p style={{ fontSize: 13, fontWeight: 700, color: S.ink, margin: "0 0 12px" }}>{ctaTitle}</p>
                   )}
                   <a
-                    href={ctaHref}
+                    href={ctaOnClick ? undefined : ctaHref}
+                    onClick={ctaOnClick ? (e) => { e.preventDefault(); ctaOnClick(); } : undefined}
                     style={{
                       display: "block",
                       padding: "12px 0",
@@ -310,6 +313,7 @@ function SectionAccordion({
                       fontWeight: 700,
                       textAlign: "center",
                       textDecoration: "none",
+                      cursor: "pointer",
                     }}
                   >
                     {ctaLabel}
@@ -1178,21 +1182,30 @@ function BasicV2ReportContent() {
                     if (isMoney) return {
                       title: "💰 재물운을 더 깊이 보고 싶다면",
                       label: "재물 특화 리포트 보기 — 2,900원",
-                      href: isGuest ? "/start?redirect=money" : `/report/money/intro?saju_id=${sajuId}`,
+                      href: isGuest ? undefined : `/report/money/intro?saju_id=${sajuId}`,
+                      guestRedirect: isGuest ? "/report/money/intro" : undefined,
                     };
                     if (isLove) return {
                       title: "❤️ 연애·결혼 운도 궁금하다면",
                       label: "연애 특화 리포트 보기 — 2,900원",
-                      href: isGuest ? "/start?redirect=love" : `/report/love/intro?saju_id=${sajuId}`,
+                      href: isGuest ? undefined : `/report/love/intro?saju_id=${sajuId}`,
+                      guestRedirect: isGuest ? "/report/love/intro" : undefined,
                     };
                     if (isCareer) return {
                       title: "💼 직업·커리어 방향도 알고 싶다면",
                       label: "직업 특화 리포트 보기 — 2,900원",
-                      href: isGuest ? "/start?redirect=career" : `/report/career/intro?saju_id=${sajuId}`,
+                      href: isGuest ? undefined : `/report/career/intro?saju_id=${sajuId}`,
+                      guestRedirect: isGuest ? "/report/career/intro" : undefined,
                     };
                     return null;
                   })();
                   const showCTA = ctaConfig && !isSharedView;
+                  const guestCtaClick = showCTA && ctaConfig.guestRedirect
+                    ? () => {
+                        localStorage.setItem("purchase_redirect", ctaConfig.guestRedirect!);
+                        router.push("/start");
+                      }
+                    : undefined;
                   return (
                     <SectionAccordion
                       key={sec.title}
@@ -1205,6 +1218,7 @@ function BasicV2ReportContent() {
                       ctaTitle={showCTA ? ctaConfig.title : undefined}
                       ctaLabel={showCTA ? ctaConfig.label : undefined}
                       ctaHref={showCTA ? ctaConfig.href : undefined}
+                      ctaOnClick={guestCtaClick}
                     />
                   );
                 })}

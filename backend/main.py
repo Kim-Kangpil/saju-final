@@ -4606,6 +4606,177 @@ async def reset_beta_coupon(request: Request):
         "message": "적용된 쿠폰이 없습니다."
     }
 
+# =====================================================
+# KG이니시스 결제 연동
+# =====================================================
+
+_INICIS_ORDER_MAP: dict[str, tuple[str, int]] = {
+    "pro_monthly":      ("한양사주 Pro (월간)", 4900),
+    "basic":            ("분析권 1개", 990),
+    "analysis_ticket":  ("분析권 1개", 990),
+    "deep":             ("심화 리포트", 4900),
+    "money":            ("재물운 리포트", 2900),
+    "love":             ("연애운 리포트", 2900),
+    "career":           ("직업운 리포트", 2900),
+    "couple":           ("궁합 리포트", 2900),
+    "money_realistic":  ("재물운 직설 분析", 990),
+    "love_realistic":   ("연애운 직설 분析", 990),
+    "career_realistic": ("직업운 직설 분析", 990),
+}
+
+def _inicis_signature(timestamp: str, mid: str, price: int, signkey: str) -> str:
+    raw = f"tstamp={timestamp}&mid={mid}&price={price}&SignKey={signkey}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+def _inicis_mkey(signkey: str) -> str:
+    return hashlib.sha256(signkey.encode("utf-8")).hexdigest()
+
+
+@app.post("/api/payment/inicis/ready")
+async def inicis_ready(request: Request):
+    """KG이니시스 결제 준비 — 서명 데이터 반환."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    order_type = body.get("order_type", "basic")
+    saju_id_raw = body.get("saju_id")
+
+    item = _INICIS_ORDER_MAP.get(order_type)
+    if not item:
+        raise HTTPException(status_code=400, detail="알 수 없는 주문 유형입니다.")
+    good_name, price = item
+
+    mid = os.getenv("INICIS_MID", "MOIhsaju43")
+    signkey = os.getenv("INICIS_SIGNKEY", "")
+
+    import uuid as _uuid
+    from datetime import datetime as _dt
+    timestamp = _dt.now().strftime("%Y%m%d%H%M%S")
+    order_id = f"ini_{_uuid.uuid4().hex[:20]}"
+
+    sig = _inicis_signature(timestamp, mid, price, signkey)
+    mkey = _inicis_mkey(signkey)
+
+    saju_id_int = normalize_saju_id_from_client(saju_id_raw) if saju_id_raw else None
+    save_pending_payment(order_id, user_id, order_type, "", saju_id_int)
+
+    # 구매자 이름 조회 (없으면 기본값)
+    try:
+        from logic.user_db import get_user_by_id as _get_user
+        u = _get_user(user_id)
+        buyer_name = (u.get("name") or "구매자") if u else "구매자"
+    except Exception:
+        buyer_name = "구매자"
+
+    return {
+        "mid": mid,
+        "order_id": order_id,
+        "price": price,
+        "timestamp": timestamp,
+        "signature": sig,
+        "mkey": mkey,
+        "good_name": good_name,
+        "buyer_name": buyer_name,
+        "buyer_tel": "01000000000",
+        "buyer_email": "",
+    }
+
+
+@app.post("/api/payment/inicis/return")
+async def inicis_return(request: Request):
+    """KG이니시스 결제 완료 콜백 — 승인 후 프론트엔드로 리다이렉트."""
+    from fastapi.responses import HTMLResponse as _HTML
+    import httpx as _httpx
+
+    try:
+        form = await request.form()
+    except Exception:
+        return _HTML("<script>location.href='/payment/fail'</script>")
+
+    frontend_url = os.getenv("FRONTEND_URL", "https://hsaju.com")
+    result_code = form.get("resultCode", "")
+
+    def _fail_html(msg: str = "") -> _HTML:
+        url = f"{frontend_url}/payment/fail"
+        return _HTML(f"""<html><body><script>
+try{{if(window.opener){{window.opener.location.href="{url}";window.close();}}else{{location.href="{url}";}}}}catch(e){{location.href="{url}";}}
+</script></body></html>""")
+
+    if result_code != "0000":
+        logger.warning(f"[inicis] 결제 실패: {form.get('resultMsg')}")
+        return _fail_html()
+
+    auth_token = form.get("authToken", "")
+    auth_url   = form.get("authUrl", "")
+    moid       = form.get("MOID", "")
+    tot_price  = form.get("TotPrice", "0")
+    timestamp  = form.get("timestamp", "")
+    mid        = form.get("mid", "")
+
+    # ── Inicis 승인 API 호출 ────────────────────────────
+    try:
+        async with _httpx.AsyncClient(timeout=30) as client:
+            approve_res = await client.post(auth_url, data={
+                "authToken": auth_token,
+                "timestamp": timestamp,
+                "mid": mid,
+                "price": tot_price,
+            })
+            approve_data = approve_res.json()
+    except Exception as e:
+        logger.warning(f"[inicis] 승인 API 오류: {e}")
+        return _fail_html()
+
+    if approve_data.get("resultCode") != "0000":
+        logger.warning(f"[inicis] 승인 실패: {approve_data.get('resultMsg')}")
+        return _fail_html()
+
+    tid = approve_data.get("tid", auth_token)
+
+    # ── 주문 조회 & 혜택 지급 ───────────────────────────
+    pending = get_pending_payment(moid)
+    if not pending:
+        logger.warning(f"[inicis] pending 없음: {moid}")
+        return _fail_html()
+
+    user_id    = pending["user_id"]
+    order_type = pending["order_type"]
+    saju_id    = pending.get("saju_id")
+
+    _PRICE_MAP = {
+        "deep": 4900, "money": 2900, "love": 2900,
+        "career": 2900, "couple": 2900,
+        "money_realistic": 990, "love_realistic": 990, "career_realistic": 990,
+    }
+
+    try:
+        if order_type == "pro_monthly":
+            activate_membership(user_id, 1)
+        elif order_type in ("basic", "analysis_ticket"):
+            add_report_credits(user_id, 1)
+        else:
+            amt = _PRICE_MAP.get(order_type, int(tot_price or 0))
+            save_purchased_report(user_id, order_type, amt, tid, saju_id)
+        save_payment(str(user_id), tid, moid, "paid")
+    except Exception as e:
+        logger.warning(f"[inicis] 혜택 지급 오류: {e}")
+
+    # ── 성공 리다이렉트 ─────────────────────────────────
+    saju_param = f"&saju_id={saju_id}" if saju_id else ""
+    success_url = (
+        f"{frontend_url}/payment/success"
+        f"?order_id={moid}&order_type={order_type}&status=inicis_ok{saju_param}"
+    )
+    return _HTML(f"""<html><body><script>
+try{{if(window.opener){{window.opener.location.href="{success_url}";window.close();}}else{{location.href="{success_url}";}}}}catch(e){{location.href="{success_url}";}}
+</script></body></html>""")
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

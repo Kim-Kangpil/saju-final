@@ -1,6 +1,7 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
+  "/add-guest/page": "app/add-guest/page.js",
   "/add-v2/page": "app/add-v2/page.js",
   "/add/page": "app/add/page.js",
   "/admin/chat-logs/page": "app/admin/chat-logs/page.js",

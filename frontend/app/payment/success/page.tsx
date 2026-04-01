@@ -44,10 +44,25 @@ function PaymentSuccessInner() {
   useEffect(() => {
     if (called.current) return;
     called.current = true;
-    const pg_token  = searchParams.get("pg_token");
-    const order_id  = searchParams.get("order_id");
+    const pg_token   = searchParams.get("pg_token");
+    const order_id   = searchParams.get("order_id");
     const order_type = searchParams.get("order_type") || "basic";
+    const status     = searchParams.get("status");
+    const saju_id    = searchParams.get("saju_id");
     setOrderType(order_type);
+
+    // KG이니시스: 백엔드에서 이미 승인 완료 → 바로 성공 처리
+    if (status === "inicis_ok") {
+      if (order_type === "deep" && saju_id) {
+        setRedirectOverride(`/report/deep?saju_id=${encodeURIComponent(saju_id)}`);
+      }
+      if (String(order_type).includes("realistic") && saju_id) {
+        const base = order_type.replace("_realistic", "");
+        setRedirectOverride(`/report/${base}?saju_id=${encodeURIComponent(saju_id)}&variant=realistic`);
+      }
+      setState("success");
+      return;
+    }
 
     if (!pg_token || !order_id) {
       setState("error");

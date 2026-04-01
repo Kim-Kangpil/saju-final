@@ -4,13 +4,13 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@iconify/react";
 import { HamIcon } from "@/components/HamIcon";
 import { getAuthHeaders } from "@/lib/auth";
+import InicisPayButton from "@/components/InicisPayButton";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function SeedChargePage({ params }: { params?: Promise<Record<string, string | string[]>> } = {}) {
   use(params ?? Promise.resolve({}));
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [credits, setCredits] = useState<number>(0);
 
@@ -18,24 +18,6 @@ export default function SeedChargePage({ params }: { params?: Promise<Record<str
     fetch(`${API_BASE}/api/payment/status`, { credentials: "include", headers: getAuthHeaders() })
       .then(r => r.json()).then(d => { if (typeof d.report_credits === "number") setCredits(d.report_credits); }).catch(() => {});
   }, []);
-
-  async function buyTicket() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${API_BASE}/api/payment/kakao/ready`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        credentials: "include",
-        body: JSON.stringify({ order_type: "basic" }),
-      });
-      if (res.status === 401) { router.push("/login"); return; }
-      const data = await res.json();
-      if (!data.next_redirect_mobile_url) { setError("결제 준비 실패"); return; }
-      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-      window.location.href = isMobile ? data.next_redirect_mobile_url : data.next_redirect_pc_url;
-    } catch { setError("결제 연결 오류"); } finally { setLoading(false); }
-  }
 
   return (
     <main style={{ backgroundColor: "#F5F2EE", minHeight: "100vh", fontFamily: "'Gmarket Sans'", display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: 100 }}>
@@ -139,14 +121,12 @@ export default function SeedChargePage({ params }: { params?: Promise<Record<str
       {/* Sticky CTA */}
       <div className="sticky-cta">
         <div className="sticky-cta-inner">
-          <button type="button" className="tap" disabled={loading} onClick={buyTicket}
-            style={{ width: "100%", padding: "15px 14px", borderRadius: 14, border: "none", background: loading ? "#A0A0A0" : "#FEE500", fontSize: 15, fontWeight: 700, color: "#191919", cursor: loading ? "wait" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            {/* 카카오페이 로고 */}
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 3C7.029 3 3 6.358 3 10.5c0 2.668 1.611 5.015 4.054 6.373L6.08 20.25a.375.375 0 0 0 .544.416L11.1 17.94c.296.027.596.06.9.06 4.971 0 9-3.358 9-7.5S16.971 3 12 3z" fill="#191919"/>
-            </svg>
-            {loading ? "결제 준비 중..." : "카카오페이로 결제 · 1,900원"}
-          </button>
+          <InicisPayButton
+            orderType="basic"
+            price={990}
+            label="카드 결제 · 990원"
+            onError={(msg) => setError(msg)}
+          />
         </div>
       </div>
     </main>

@@ -1,6 +1,7 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
+  "/add-guest/page": "/add-guest",
   "/add-v2/page": "/add-v2",
   "/add/page": "/add",
   "/admin/chat-logs/page": "/admin/chat-logs",

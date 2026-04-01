@@ -1,7 +1,7 @@
 "use client"
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import KakaoPayButton from '@/components/KakaoPayButton'
+import InicisPayButton from '@/components/InicisPayButton'
 import { getAuthHeaders } from '@/lib/auth'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://saju-backend-eqd6.onrender.com'
@@ -74,7 +74,7 @@ function BasicReportGate() {
           <div style={{ fontSize: 26, fontWeight: 700, color: '#2C2417', marginBottom: 20 }}>
             {price.toLocaleString()}원
           </div>
-          <KakaoPayButton orderType="basic" price={price} label="기본 리포트 구매" sajuId={sajuId} />
+          <InicisPayButton orderType="basic" price={price} label="기본 리포트 구매" sajuId={sajuId} />
           <button
             type="button"
             onClick={() => router.back()}

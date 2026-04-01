@@ -47,6 +47,12 @@
       "namedRegex": "^/add(?:/)?$"
     },
     {
+      "page": "/add-guest",
+      "regex": "^/add\\-guest(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/add\\-guest(?:/)?$"
+    },
+    {
       "page": "/add-v2",
       "regex": "^/add\\-v2(?:/)?$",
       "routeKeys": {},

@@ -1542,6 +1542,7 @@ def _build_money_analysis_block(data: dict[str, Any]) -> str:
     daeun_effect = data.get("daeun_effect", "")
     daeun_branch_tg = data.get("daeun_branch_tg", "")
     alt_income = data.get("alt_income") or []
+    seun_ganji = data.get("seun_ganji", "")
     seun_stem_god = data.get("seun_stem_god", "")
     seun_branch_god = data.get("seun_branch_god", "")
     seun_favorable = data.get("seun_favorable")
@@ -1576,7 +1577,8 @@ def _build_money_analysis_block(data: dict[str, Any]) -> str:
         lines.append(f"현재 대운: {daeun_effect}")
     if seun_stem_god or seun_branch_god:
         seun_label = "유리" if seun_favorable else "중립/불리"
-        lines.append(f"올해 세운: {seun_stem_god}/{seun_branch_god} 세운 ({seun_label})")
+        ganji_str = f" {seun_ganji}" if seun_ganji else ""
+        lines.append(f"올해 세운:{ganji_str} → {seun_stem_god}/{seun_branch_god} 십성 ({seun_label})")
     if yongshin_elements:
         lines.append(f"용신: {'/'.join(str(e) for e in yongshin_elements)}")
     if gishin_elements:
@@ -1811,7 +1813,13 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str, tone: str 
       다만 '의지로 모으기'보다 '자동으로 빠지는 구조'를 만들면 같은 수입으로도 2배는 더 모을 수 있어요."
 
 [6번 섹션 ✅ 실천 조언 작성 규칙]
-추상적 조언("긍정적으로 생각하세요" 같은 것) 금지. 구체적 행동 3~5가지를 이 사주에 맞는 이유와 함께 흐르는 산문으로 풀어써줘. "이유:", "행동1:", "실천:" 같은 레이블 없이, 자연스럽게 이어지는 문단으로 작성.
+반드시 아래 두 파트로 나눠서 작성. 파트 제목은 그대로 출력.
+
+이 시기에 해야 할 것
+계산된 데이터에서 실제로 유리한 행동 3가지 이상. 추상적 조언("긍정적으로 생각하세요") 금지. "지금 대운이 ~이기 때문에 ~하면 유리해요" 형식으로 이유와 함께 산문으로.
+
+피해야 할 것
+계산된 데이터에서 실제로 불리한 행동 3가지 이상. 데이터 근거 없는 금지 사항 추가 금지. "~이 약하기 때문에 ~는 손실로 연결될 수 있어요" 형식으로 이유와 함께.
 
 주제는 {topic}에만 집중. 다른 주제 확장 금지.
 """
@@ -1850,6 +1858,15 @@ def _build_deep_report_system_prompt(topic: str, analysis_block: str, tone: str 
 나쁜: "정관 대운이 진행 중이기 때문에 안정적인 흐름입니다"
 좋은: "지금은 급하게 뭔가 만들려 하기보다,
       현재 자리에서 인정받는 게 더 유리한 시기예요."
+
+[6번 섹션 ✅ 실천 조언 작성 규칙]
+반드시 아래 두 파트로 나눠서 작성. 파트 제목은 그대로 출력.
+
+이 시기에 해야 할 것
+계산된 데이터에서 실제로 유리한 행동 3가지 이상. 데이터 근거 없는 내용 추가 금지. 이유와 함께 산문으로.
+
+피해야 할 것
+계산된 데이터에서 실제로 불리한 행동 3가지 이상. 데이터 근거 없는 금지 사항 추가 금지. 이유와 함께 산문으로.
 
 주제는 {topic}에만 집중. 다른 주제 확장 금지.
 """
@@ -2487,10 +2504,12 @@ async def _generate_deep_topic_report(
     elif topic_key == "love":
         deep_result = interpret_love_deep(saju_data_for_interp)
         ordered_keys = [
-            "partner_type", "pattern", "current_flow", "seun_love", "timing",
+            "partner_type", "pattern", "current_flow",
+            "seun_ganji", "seun_love", "seun_favorable",
+            "timing",
             "ilji_ten_god", "ilji_state", "partner_positions", "partner_tonggeun",
             "yeonin_life_stages", "dohwa_count", "hongyeom_count", "daeun_ten_god",
-            "daeun_branch_tg", "daeun_favorable", "seun_favorable",
+            "daeun_branch_tg", "daeun_favorable",
             "yongshin_elements", "gishin_elements", "yongshin_love_tip",
             "yeonin_sibiun",
         ]
@@ -2499,10 +2518,11 @@ async def _generate_deep_topic_report(
         deep_result = interpret_career_deep(saju_data_for_interp)
         ordered_keys = [
             "work_style", "best_field", "org_vs_independent", "org_reason",
-            "current_flow", "seun_career",
+            "current_flow",
+            "seun_ganji", "seun_career", "seun_favorable",
             "siksang_count", "siksang_root_count", "gwan_count", "gwan_root_count",
             "career_life_stages", "special_sinsal", "daeun_ten_god", "daeun_branch_tg",
-            "daeun_favorable", "seun_favorable",
+            "daeun_favorable",
             "yongshin_elements", "gishin_elements", "yongshin_career_tip",
             "career_sibiun",
         ]

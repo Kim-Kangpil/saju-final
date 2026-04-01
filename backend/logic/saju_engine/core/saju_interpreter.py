@@ -1097,6 +1097,7 @@ def interpret_money_deep(saju_data: dict) -> dict:
     seun_branch_god = ""
     seun_favorable = None
     seun_effect = ""
+    seun_ganji = ""
     try:
         from logic.saju_engine.core.seun import analyze_seun
         seun_result = analyze_seun(saju_data) or {}
@@ -1105,6 +1106,11 @@ def interpret_money_deep(saju_data: dict) -> dict:
         SEUN_FAVORABLE = ("편재", "정재", "식신", "상관")
         seun_favorable = seun_stem_god in SEUN_FAVORABLE or seun_branch_god in SEUN_FAVORABLE
         seun_effect = f"{seun_stem_god}/{seun_branch_god} 세운"
+        _sy = seun_result.get("year", 0)
+        _ss = seun_result.get("seun_stem", "")
+        _sb = seun_result.get("seun_branch", "")
+        if _ss:
+            seun_ganji = f"{_sy}년 {_ss}{_sb}"
     except Exception:
         pass
 
@@ -1157,6 +1163,7 @@ def interpret_money_deep(saju_data: dict) -> dict:
         "daeun_branch_tg": daeun_branch_tg,
         "daeun_favorable": daeun_favorable,
         "daeun_effect": daeun_effect,
+        "seun_ganji": seun_ganji,
         "seun_stem_god": seun_stem_god,
         "seun_branch_god": seun_branch_god,
         "seun_favorable": seun_favorable,
@@ -1242,6 +1249,10 @@ def interpret_love_deep(saju_data: dict) -> dict:
         seun_stem_tg in yeonin_names or seun_branch_tg in yeonin_names
         or seun_stem_tg in ("식신", "상관") or seun_branch_tg in ("식신", "상관")
     )
+    _sy = seun.get("year", 0)
+    _ss = seun.get("seun_stem", "")
+    _sb = seun.get("seun_branch", "")
+    seun_ganji = f"{_sy}년 {_ss}{_sb}" if _ss else ""
 
     pattern = "관계가 시작되면 깊게 가지만 속도 차이에서 흔들릴 수 있는 패턴"
     if ilji_chung:
@@ -1311,6 +1322,7 @@ def interpret_love_deep(saju_data: dict) -> dict:
         "partner_type": partner_type,
         "pattern": pattern,
         "current_flow": current_flow,
+        "seun_ganji": seun_ganji,
         "seun_love": seun_love,
         "timing": timing,
         "ilji_ten_god": day_branch_tg if day_branch_tg else "중립",
@@ -1459,6 +1471,10 @@ def interpret_career_deep(saju_data: dict) -> dict:
         seun_stem_tg in ("편관", "정관", "식신", "상관")
         or seun_branch_tg in ("편관", "정관", "식신", "상관")
     )
+    _sy = seun.get("year", 0)
+    _ss = seun.get("seun_stem", "")
+    _sb = seun.get("seun_branch", "")
+    seun_ganji = f"{_sy}년 {_ss}{_sb}" if _ss else ""
     seun_career = "커리어 기반을 정리하는 해"
     if seun_stem_tg in ("편관", "정관") or seun_branch_tg in ("편관", "정관"):
         seun_career = "평가·승진·직책 변화 이슈가 커지기 쉬운 해"
@@ -1521,6 +1537,7 @@ def interpret_career_deep(saju_data: dict) -> dict:
         "org_vs_independent": org_vs_independent,
         "org_reason": org_reason,
         "current_flow": current_flow,
+        "seun_ganji": seun_ganji,
         "seun_career": seun_career,
         "siksang_count": siksang_count,
         "siksang_root_count": siksang_root,

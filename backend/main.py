@@ -898,6 +898,16 @@ def _attach_strength_to_payload(data: dict[str, Any]) -> None:
         }
 
 
+def _attach_big5_to_payload(data: dict[str, Any]) -> None:
+    """_attach_ten_gods, _attach_strength, _attach_harmony_clash 실행 후 호출"""
+    try:
+        from logic.saju_engine.core.big5 import big5_with_labels
+        data["big5"] = big5_with_labels(data)
+    except Exception as _e:
+        logger.warning(f"[big5] 계산 실패: {_e}")
+        data["big5"] = []
+
+
 def _attach_yongshin_to_payload(data: dict[str, Any]) -> None:
     """_attach_strength_to_payload 실행 후 호출 — data['strength'] 결과를 재활용"""
     try:
@@ -2096,6 +2106,7 @@ async def get_full_saju(req: SajuRequest):
         _attach_harmony_clash_to_payload(data)
         _attach_strength_to_payload(data)
         _attach_yongshin_to_payload(data)
+        _attach_big5_to_payload(data)
         return data
     except Exception as e:
         print(f"❌ /saju/full 에러: {e}")
@@ -4035,6 +4046,7 @@ class AnalyzeV2Request(BaseModel):
     cache_key: Optional[str] = None
     report_type: Optional[str] = None  # "basic" | "deep"
     solar_birth_year: Optional[int] = None  # 태양력 출생연도 (음력 입력 시 birthdate 연도 보정용)
+    current_daeun: Optional[str] = None    # /saju/full 계산값 그대로 전달 (예: "28세 甲子(갑자)")
 
 
 @app.post("/saju/analyze-v2")
@@ -4086,6 +4098,8 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
     }
     if req.birthdate:
         saju_data["birthdate"] = req.birthdate
+    if req.current_daeun:
+        saju_data["current_daeun"] = req.current_daeun
 
     # ── 1) 규칙 엔진 ────────────────────────────────────
     try:
@@ -4416,6 +4430,8 @@ async def analyze_guest(req: AnalyzeV2Request, request: Request):
         saju_data["birthdate"] = req_basic.birthdate
     if req_basic.solar_birth_year:
         saju_data["solar_birth_year"] = req_basic.solar_birth_year
+    if req_basic.current_daeun:
+        saju_data["current_daeun"] = req_basic.current_daeun
 
     # ── 1) 규칙 엔진 ────────────────────────────────────
     try:

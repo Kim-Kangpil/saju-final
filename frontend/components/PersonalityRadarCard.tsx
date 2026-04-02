@@ -8,15 +8,6 @@ interface Props {
 const AXES = ["신경성", "외향성", "개방성", "우호성", "성실성"] as const;
 type Axis = (typeof AXES)[number];
 
-// 각 축: 점수 >= 50이면 [0]번 레이블(높음), < 50이면 [1]번 레이블(낮음)
-const AXIS_PAIRS: Record<Axis, [string, string]> = {
-  신경성: ["예민형", "침착형"],
-  외향성: ["외향형", "내향형"],
-  개방성: ["개방형", "전통형"],
-  우호성: ["협력형", "독립형"],
-  성실성: ["성실형", "자유형"],
-};
-
 const AXIS_DESC: Record<Axis, [string, string]> = {
   신경성: ["감정이 섬세하고 상황에 민감하게 반응해요", "감정적으로 안정적이고 웬만해선 흔들리지 않아요"],
   외향성: ["사람들과 함께할 때 에너지가 올라가요", "혼자만의 시간이 있어야 회복이 돼요"],
@@ -63,10 +54,7 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
     return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
   };
 
-  // intensity = 0~1 (중심=중립, 외곽=강함)
   const getIntensity = (ax: Axis) => Math.abs((scores[ax] ?? 50) - 50) / 50;
-  const isHigh = (ax: Axis) => (scores[ax] ?? 50) >= 50;
-  const getDominant = (ax: Axis) => AXIS_PAIRS[ax][isHigh(ax) ? 0 : 1];
 
   const getLevel = (intensity: number) => {
     if (intensity > 0.62) return "매우 강함";
@@ -75,7 +63,6 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
     return "중립";
   };
 
-  // 데이터 폴리곤: intensity * R
   const dataPoints = AXES.map((ax, i) => toXY(i, getIntensity(ax) * R));
   const dataPts = dataPoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
 
@@ -85,6 +72,7 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
     (a, b) => (getIntensity(a) >= getIntensity(b) ? a : b),
     AXES[0]
   );
+  const strongestHigh = (scores[strongest] ?? 50) >= 50;
 
   return (
     <div
@@ -96,26 +84,10 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
         border: "1px solid #E3D9CB",
       }}
     >
-      <p
-        style={{
-          fontSize: 12,
-          fontWeight: 700,
-          color: "#6B5F4E",
-          letterSpacing: "0.08em",
-          textAlign: "center",
-        }}
-      >
+      <p style={{ fontSize: 12, fontWeight: 700, color: "#6B5F4E", letterSpacing: "0.08em", textAlign: "center" }}>
         나의 성향 지도
       </p>
-      <p
-        style={{
-          fontSize: 10,
-          color: "#A8946A",
-          textAlign: "center",
-          marginTop: 3,
-          marginBottom: 10,
-        }}
-      >
+      <p style={{ fontSize: 10, color: "#A8946A", textAlign: "center", marginTop: 3, marginBottom: 10 }}>
         중심에서 멀수록 그 성향이 강해요
       </p>
 
@@ -125,7 +97,6 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
         preserveAspectRatio="xMidYMid meet"
         style={{ display: "block", overflow: "visible", maxWidth: 340, margin: "0 auto" }}
       >
-        {/* 배경 원 3개 */}
         {[0.33, 0.66, 1].map((ratio, ri) => {
           const bpts = AXES.map((_, i) => {
             const p = toXY(i, R * ratio);
@@ -143,26 +114,15 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
           );
         })}
 
-        {/* 축 선 */}
         {AXES.map((_, i) => {
           const p = toXY(i, R);
           return (
-            <line
-              key={i}
-              x1={CX}
-              y1={CY}
-              x2={p.x.toFixed(1)}
-              y2={p.y.toFixed(1)}
-              stroke="#E3D9CB"
-              strokeWidth={1}
-            />
+            <line key={i} x1={CX} y1={CY} x2={p.x.toFixed(1)} y2={p.y.toFixed(1)} stroke="#E3D9CB" strokeWidth={1} />
           );
         })}
 
-        {/* 중심점 (중립) */}
         <circle cx={CX} cy={CY} r={5} fill="#D4C9B8" />
 
-        {/* 데이터 영역 */}
         <polygon
           points={dataPts}
           fill="rgba(139,115,85,0.16)"
@@ -171,23 +131,13 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
           strokeLinejoin="round"
         />
 
-        {/* 데이터 점 */}
         {dataPoints.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x.toFixed(1)}
-            cy={p.y.toFixed(1)}
-            r={4}
-            fill="#8B7355"
-            stroke="#fff"
-            strokeWidth={1.5}
-          />
+          <circle key={i} cx={p.x.toFixed(1)} cy={p.y.toFixed(1)} r={4} fill="#8B7355" stroke="#fff" strokeWidth={1.5} />
         ))}
 
         {/* 축 라벨: Big Five 차원명 */}
         {AXES.map((ax, i) => {
           const { x, y } = toXY(i, labelR);
-          const label = ax;
           const intensity = getIntensity(ax);
           const strong = intensity > 0.38;
           let ta: "middle" | "start" | "end" = "middle";
@@ -204,71 +154,35 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
               fill={strong ? "#5C4A30" : "#8B7355"}
               fontFamily="'Gmarket Sans', sans-serif"
             >
-              {label}
+              {ax}
             </text>
           );
         })}
       </svg>
 
       {/* 바 차트 범례 */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 7,
-          marginTop: 10,
-          padding: "0 6px",
-        }}
-      >
+      <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 10, padding: "0 6px" }}>
         {AXES.map((ax) => {
           const intensity = getIntensity(ax);
-          const dominant = getDominant(ax);
           const level = getLevel(intensity);
           const barPct = Math.round(intensity * 100);
           const strong = intensity > 0.38;
           return (
             <div key={ax} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span
-                style={{
-                  width: 46,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  color: "#5C4A30",
-                  textAlign: "right",
-                  flexShrink: 0,
-                }}
-              >
-                {dominant}
+              <span style={{ width: 40, fontSize: 10, fontWeight: 600, color: "#A8946A", textAlign: "right", flexShrink: 0 }}>
+                {ax}
               </span>
-              <div
-                style={{
-                  flex: 1,
-                  height: 7,
-                  background: "#EDE6DC",
-                  borderRadius: 4,
-                  overflow: "hidden",
-                }}
-              >
+              <div style={{ flex: 1, height: 7, background: "#EDE6DC", borderRadius: 4, overflow: "hidden" }}>
                 <div
                   style={{
                     width: `${barPct}%`,
                     height: "100%",
-                    background: strong
-                      ? "linear-gradient(90deg, #8B7355, #5C4A30)"
-                      : "#C4B8A4",
+                    background: strong ? "linear-gradient(90deg, #8B7355, #5C4A30)" : "#C4B8A4",
                     borderRadius: 4,
                   }}
                 />
               </div>
-              <span
-                style={{
-                  width: 56,
-                  fontSize: 10,
-                  color: strong ? "#5C4A30" : "#A8946A",
-                  textAlign: "left",
-                  flexShrink: 0,
-                }}
-              >
+              <span style={{ width: 52, fontSize: 10, color: strong ? "#5C4A30" : "#A8946A", textAlign: "left", flexShrink: 0 }}>
                 {level}
               </span>
             </div>
@@ -276,19 +190,11 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
         })}
       </div>
 
-      {/* 가장 강한 성향 한 줄 설명 */}
-      <div
-        style={{
-          marginTop: 12,
-          padding: "10px 12px",
-          background: "#F5F1EA",
-          borderRadius: 10,
-          border: "1px solid #E3D9CB",
-        }}
-      >
+      {/* 가장 강한 성향 설명 */}
+      <div style={{ marginTop: 12, padding: "10px 12px", background: "#F5F1EA", borderRadius: 10, border: "1px solid #E3D9CB" }}>
         <p style={{ fontSize: 11, color: "#5C4A30", lineHeight: 1.65 }}>
-          가장 두드러지는 성향은 <strong>{getDominant(strongest)}</strong>이에요.{" "}
-          {AXIS_DESC[strongest][isHigh(strongest) ? 0 : 1]}.
+          가장 두드러지는 성향은 <strong>{strongest}</strong>이에요.{" "}
+          {AXIS_DESC[strongest][strongestHigh ? 0 : 1]}.
         </p>
       </div>
 
@@ -302,15 +208,8 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
             사주 오행에서 추정한 성격 유형 경향
           </p>
 
-          {/* 4글자 타입 뱃지 */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-            <div style={{
-              display: "inline-flex",
-              gap: 4,
-              background: "#3A3A3A",
-              borderRadius: 12,
-              padding: "10px 20px",
-            }}>
+            <div style={{ display: "inline-flex", gap: 4, background: "#3A3A3A", borderRadius: 12, padding: "10px 20px" }}>
               {mbti.type.split("").map((ch, i) => (
                 <span key={i} style={{ fontSize: 22, fontWeight: 800, color: "#F5F1EA", letterSpacing: "0.05em" }}>
                   {ch}
@@ -319,7 +218,6 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
             </div>
           </div>
 
-          {/* 4축 슬라이더 */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "0 4px" }}>
             {MBTI_DIMS.map(({ left, right, leftColor, rightColor }) => {
               const leftPct = mbti[left] as number;
@@ -328,35 +226,16 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
               return (
                 <div key={String(left)}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{
-                      fontSize: 12, fontWeight: dominant === left ? 800 : 500,
-                      color: dominant === left ? leftColor : "#A8946A",
-                    }}>
+                    <span style={{ fontSize: 12, fontWeight: dominant === left ? 800 : 500, color: dominant === left ? leftColor : "#A8946A" }}>
                       {String(left)} {leftPct}%
                     </span>
-                    <span style={{
-                      fontSize: 12, fontWeight: dominant === right ? 800 : 500,
-                      color: dominant === right ? rightColor : "#A8946A",
-                    }}>
+                    <span style={{ fontSize: 12, fontWeight: dominant === right ? 800 : 500, color: dominant === right ? rightColor : "#A8946A" }}>
                       {rightPct}% {String(right)}
                     </span>
                   </div>
-                  {/* 중앙 분할 바 */}
                   <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden", background: "#EDE6DC" }}>
-                    <div style={{
-                      width: `${leftPct}%`,
-                      background: leftColor,
-                      borderRadius: "4px 0 0 4px",
-                      opacity: dominant === left ? 1 : 0.45,
-                      transition: "width 0.4s ease",
-                    }} />
-                    <div style={{
-                      width: `${rightPct}%`,
-                      background: rightColor,
-                      borderRadius: "0 4px 4px 0",
-                      opacity: dominant === right ? 1 : 0.45,
-                      transition: "width 0.4s ease",
-                    }} />
+                    <div style={{ width: `${leftPct}%`, background: leftColor, borderRadius: "4px 0 0 4px", opacity: dominant === left ? 1 : 0.45 }} />
+                    <div style={{ width: `${rightPct}%`, background: rightColor, borderRadius: "0 4px 4px 0", opacity: dominant === right ? 1 : 0.45 }} />
                   </div>
                 </div>
               );

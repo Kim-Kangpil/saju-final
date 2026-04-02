@@ -534,6 +534,55 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }: {
   );
 }
 
+// ─── Big Five 성향 카드 ───
+type Big5Item = { key: string; name: string; desc: string; score: number; level: string };
+
+function Big5Card({ items }: { items: Big5Item[] }) {
+  const COLORS: Record<string, string> = {
+    O: "#7B6FA0", C: "#5B8A6F", E: "#C87C3E", A: "#7A9EC2", N: "#B25C5C",
+  };
+  return (
+    <div style={{
+      background: "#fff", borderRadius: 14, border: `1px solid ${S.beige}`,
+      padding: "16px 18px", marginBottom: 16,
+      boxShadow: "0 2px 8px rgba(44,36,23,0.05)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: S.ink }}>🧠 성격 성향 분석</span>
+        <span style={{ fontSize: 10, color: S.ink3 }}>Big Five 기반</span>
+      </div>
+      {items.map((item) => {
+        const color = COLORS[item.key] || S.gold;
+        const barW = `${item.score}%`;
+        return (
+          <div key={item.key} style={{ marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: S.ink }}>
+                {item.name}
+                <span style={{ fontSize: 11, fontWeight: 400, color: S.ink3, marginLeft: 5 }}>{item.desc}</span>
+              </span>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color,
+                background: `${color}18`, borderRadius: 4, padding: "1px 6px",
+              }}>{item.level}</span>
+            </div>
+            <div style={{ height: 7, borderRadius: 4, background: S.cream3, overflow: "hidden" }}>
+              <div style={{
+                height: "100%", width: barW, borderRadius: 4,
+                background: `linear-gradient(90deg, ${color}99, ${color})`,
+                transition: "width 0.6s ease",
+              }} />
+            </div>
+          </div>
+        );
+      })}
+      <p style={{ fontSize: 11, color: S.ink3, margin: "10px 0 0", textAlign: "center" }}>
+        사주 오행·일간·십성에서 도출한 선천적 성향이에요
+      </p>
+    </div>
+  );
+}
+
 // ─── 상품 목록 그리드 ───
 function ProductGrid({ sajuId, router, isGuest }: {
   sajuId: string;
@@ -1213,6 +1262,11 @@ function BasicV2ReportContent() {
               isGuest={isGuest}
               router={router}
             />
+          )}
+
+          {/* Big Five 성향 분석 */}
+          {Array.isArray(fullRawData?.big5) && fullRawData.big5.length > 0 && (
+            <Big5Card items={fullRawData.big5 as Big5Item[]} />
           )}
 
           {/* AI 분석 섹션 */}

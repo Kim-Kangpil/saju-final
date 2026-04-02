@@ -73,6 +73,59 @@ ILGAN_INNER_OUTER = {
 YANG_STEMS = {"甲", "丙", "戊", "庚", "壬"}
 
 # ─────────────────────────────────────────────────────────────
+# 일간별 MBTI 축 보정값 (1차 지표: 음양 + 일간 기질)
+# ─────────────────────────────────────────────────────────────
+# E/I: 양간→E 발산, 음간→I 수렴
+ILGAN_EI_ADJ = {
+    "甲": 12, "丙": 15, "戊": 10, "庚": 12, "壬": 8,
+    "乙": -10, "丁": -12, "己": -8, "辛": -14, "癸": -12,
+}
+# N/S: 甲壬丁癸 → 직관·미래, 庚戊己 → 현실·구체
+ILGAN_SN_ADJ = {
+    "甲": 12, "壬": 15, "丁": 10, "癸": 8, "乙": 5,
+    "庚": -12, "戊": -10, "己": -12, "辛": -8,
+}
+# F/T: 丁甲丙乙癸 → 감성·공감, 庚辛壬 → 냉철·논리
+ILGAN_TF_ADJ = {
+    "丁": 12, "甲": 8, "丙": 10, "乙": 6, "癸": 8,
+    "庚": -15, "辛": -10, "壬": -8,
+}
+# J/P: 庚戊己辛 → 계획·완수, 甲壬癸乙丙 → 유연·즉흥
+ILGAN_JP_ADJ = {
+    "庚": 10, "戊": 8, "己": 8, "辛": 6,
+    "甲": -8, "壬": -10, "癸": -6, "乙": -6, "丙": -8,
+}
+
+# ─────────────────────────────────────────────────────────────
+# 일간별 Big Five 보정값
+# ─────────────────────────────────────────────────────────────
+# 신경성: 辛(예민·완벽) 丁(섬세) 癸(감수성) vs 戊(묵직) 庚(단단)
+ILGAN_NEUROTICISM_ADJ = {
+    "辛": 15, "丁": 10, "癸": 8,
+    "戊": -12, "庚": -8, "甲": -5,
+}
+# 외향성: 丙(태양·표현) 甲(직진) vs 癸(조용) 辛(내면) 丁(촛불·내향)
+ILGAN_EXTRAVERSION_ADJ = {
+    "丙": 15, "甲": 8, "戊": 6, "壬": 6,
+    "癸": -12, "辛": -10, "丁": -8, "乙": -6,
+}
+# 개방성: 壬(통찰·흐름) 甲(성장·도전) 丁(깊이·탐구) vs 己(실용) 戊(안정)
+ILGAN_OPENNESS_ADJ = {
+    "壬": 15, "甲": 10, "丁": 8, "癸": 6,
+    "己": -10, "戊": -8, "庚": -6,
+}
+# 우호성: 丁(봉사) 乙(유연·배려) 己(세심) 癸(공감) vs 庚(직설) 甲(독립)
+ILGAN_AGREEABLENESS_ADJ = {
+    "丁": 15, "乙": 10, "己": 8, "癸": 6,
+    "庚": -12, "甲": -6, "壬": -5,
+}
+# 성실성: 庚(원칙) 己(꼼꼼) 辛(완벽) 戊(묵직) vs 壬(흐름) 甲(새 시작)
+ILGAN_CONSCIENTIOUSNESS_ADJ = {
+    "庚": 15, "己": 12, "辛": 10, "戊": 8,
+    "壬": -8, "甲": -6, "丙": -5,
+}
+
+# ─────────────────────────────────────────────────────────────
 # 내부 헬퍼 함수
 # ─────────────────────────────────────────────────────────────
 
@@ -1586,12 +1639,19 @@ def interpret_career_deep(saju_data: dict) -> dict:
 def calculate_personality_radar_scores(saju_data: dict, personality_result: dict, money_result: dict, career_result: dict) -> dict:
     """
     성향 레이더 차트용 Big Five 5축 점수 계산 (0~100)
-    - 신경성 (높을수록 예민·불안)
-    - 외향성 (높을수록 사교·활발)
-    - 개방성 (높을수록 창의·변화 추구)
-    - 우호성 (높을수록 협력·배려)
-    - 성실성 (높을수록 체계적·완수)
+
+    매핑 원칙 (3단계 가중치 합산):
+      1단계 일간 기질 보정 (1차 지표 — 가장 강한 가중치)
+      2단계 오행 세력 분포 보정
+      3단계 십성 분포 보정 + 신강/신약 최종 조정
+
+    - 신경성: 辛丁癸(예민·감수성) vs 戊庚(안정·단단)
+    - 외향성: 丙甲(발산·표현) vs 癸辛丁(수렴·내향) / 화기·식상 vs 수기·인성
+    - 개방성: 壬甲丁(흐름·성장) vs 己戊(실용·보수) / 목수기·식상 vs 토금기·정성
+    - 우호성: 丁乙己癸(온기·배려) vs 庚甲(독립·직설) / 정인·식신 vs 편관·겁재
+    - 성실성: 庚己辛戊(원칙·완수) vs 壬甲丙(유동·즉흥) / 토금기·관성 vs 역마·편성
     """
+    ilgan = _get_ilgan(saju_data)
     strength = _get_strength(saju_data)
     ten_gods = _get_ten_gods(saju_data)
     sinsal = saju_data.get("sinsal") or {}
@@ -1632,6 +1692,7 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
 
     # ── 신경성 (높을수록 예민·불안) ──────────────────────────
     신경성 = 50
+    신경성 += ILGAN_NEUROTICISM_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
     신경성 += elements["water"] * 8   # 수기 → 감정 출렁임
     신경성 += pyeongwan_count * 12    # 편관(칠살) → 압박·스트레스
     신경성 += sanggwan_count * 8      # 상관 → 예민·반항
@@ -1644,6 +1705,7 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
 
     # ── 외향성 (높을수록 사교·활발) ──────────────────────────
     외향성 = 50
+    외향성 += ILGAN_EXTRAVERSION_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
     외향성 += elements["fire"] * 9    # 화기 → 표현력·활발
     외향성 += siksang_count * 10      # 식상 → 표현 욕구
     외향성 += yeokma_count * 12       # 역마 → 활동성
@@ -1653,6 +1715,7 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
 
     # ── 개방성 (높을수록 창의·변화 추구) ─────────────────────
     개방성 = 50
+    개방성 += ILGAN_OPENNESS_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
     개방성 += elements["wood"] * 8    # 목기 → 성장·도전
     개방성 += siksang_count * 10      # 식상 → 창의적 표현
     개방성 += yeokma_count * 12       # 역마 → 변화 추구
@@ -1663,6 +1726,7 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
 
     # ── 우호성 (높을수록 협력·배려) ──────────────────────────
     우호성 = 50
+    우호성 += ILGAN_AGREEABLENESS_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
     우호성 += jeongin_count * 12      # 정인 → 포용·배려
     우호성 += sikshin_count * 10      # 식신 → 베풀기 좋아함
     우호성 += jeongjae_count * 8      # 정재 → 성실한 관계
@@ -1673,6 +1737,7 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
 
     # ── 성실성 (높을수록 체계적·완수) ────────────────────────
     성실성 = 50
+    성실성 += ILGAN_CONSCIENTIOUSNESS_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
     성실성 += elements["earth"] * 8   # 토기 → 안정·꼼꼼
     성실성 += elements["metal"] * 7   # 금기 → 원칙·규율
     성실성 += 정성_count * 10         # 정성 → 규칙 중시
@@ -1704,31 +1769,120 @@ def _mbti_type_str(e: int, n: int, f: int, j: int) -> str:
     )
 
 
-def calculate_mbti_tendency(radar_scores: dict) -> dict:
+def calculate_mbti_tendency(saju_data: dict) -> dict:
     """
-    Big Five 점수 → MBTI 4축 퍼센테이지 도출
-    - E/I ← 외향성
-    - N/S ← 개방성 (개방형 → N, 전통형 → S)
-    - F/T ← 우호성(60%) + 신경성(40%)
-    - J/P ← 성실성 (성실형 → J, 자유형 → P)
-    """
-    extraversion     = radar_scores.get("외향성", 50)
-    openness         = radar_scores.get("개방성", 50)
-    agreeableness    = radar_scores.get("우호성", 50)
-    neuroticism      = radar_scores.get("신경성", 50)
-    conscientiousness = radar_scores.get("성실성", 50)
+    사주 데이터에서 MBTI 4축 퍼센테이지를 직접 계산
 
-    e_pct = round(extraversion)
-    n_pct = round(openness)
-    f_pct = round(agreeableness * 0.6 + neuroticism * 0.4)
-    j_pct = round(conscientiousness)
+    매핑 원칙 (3단계 가중치 합산):
+      1단계 일간 음양·기질 (1차 지표 — 가장 강한 가중치)
+        - 양간(甲丙戊庚壬) → E 발산, 음간(乙丁己辛癸) → I 수렴
+        - 일간별 N/S·T/F·J/P 기질 반영
+      2단계 오행 세력 분포
+        - E/I: 火·土 vs 水·金
+        - N/S: 木·水·인성 vs 土·金·재성
+        - T/F: 金·水 vs 火·木
+        - J/P: 土·金·정성 vs 木·水·역마
+      3단계 십성 분포 + 신강/신약 보정
+    """
+    ilgan = _get_ilgan(saju_data)
+    strength = _get_strength(saju_data)
+    ten_gods = _get_ten_gods(saju_data)
+    sinsal = saju_data.get("sinsal") or {}
+
+    pillars = _get_pillars(saju_data)
+    elements = {"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}
+    for pos in ("year", "month", "day", "hour"):
+        p = pillars.get(pos, "")
+        if len(p) >= 2:
+            stem_elem = get_element(p[0])
+            branch_elem = get_element(p[1])
+            if stem_elem in elements:
+                elements[stem_elem] += 1
+            if branch_elem in elements:
+                elements[branch_elem] += 1
+
+    tg_values = list(ten_gods.values())
+    siksang_count   = sum(1 for tg in tg_values if tg in ("식신", "상관"))
+    sikshin_count   = sum(1 for tg in tg_values if tg == "식신")
+    sanggwan_count  = sum(1 for tg in tg_values if tg == "상관")
+    gwan_count      = sum(1 for tg in tg_values if tg in ("편관", "정관"))
+    pyeongwan_count = sum(1 for tg in tg_values if tg == "편관")
+    in_count        = sum(1 for tg in tg_values if tg in ("편인", "정인"))
+    jeongin_count   = sum(1 for tg in tg_values if tg == "정인")
+    jeongjae_count  = sum(1 for tg in tg_values if tg == "정재")
+    정성_count = sum(1 for tg in tg_values if tg in ("정재", "정관", "정인"))
+    편성_count = sum(1 for tg in tg_values if tg in ("편재", "편관", "편인"))
+
+    yeokma_count = len(sinsal.get("yeokma") or sinsal.get("역마") or [])
+    sibiun_data = saju_data.get("twelve_states") or {}
+    strong_sibiun = sum(1 for s in sibiun_data.values() if s in ("건록", "제왕", "관대"))
+
+    # ── E (외향) vs I (내향) ──────────────────────────────
+    e = 50
+    e += ILGAN_EI_ADJ.get(ilgan, 0)  # 1단계: 양간→E / 음간→I
+    e += elements["fire"] * 9         # 화기 → 표현·활발
+    e += elements["earth"] * 4        # 토기 → 자기표현
+    e += siksang_count * 10           # 식상 → 표현 욕구
+    e += yeokma_count * 12            # 역마 → 활동성
+    e += strong_sibiun * 5            # 건록·제왕·관대 → 강한 자기표현
+    e -= elements["water"] * 7        # 수기 → 내면 지향
+    e -= elements["metal"] * 4        # 금기 → 수렴·절제
+    e -= in_count * 8                 # 인성 → 내향
+
+    # ── N (직관) vs S (감각) ─────────────────────────────
+    n = 50
+    n += ILGAN_SN_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
+    n += elements["wood"] * 7         # 목기 → 가능성·미래 중시
+    n += elements["water"] * 7        # 수기 → 흐름·패턴 인식
+    n += in_count * 9                 # 인성 → 추상·개념·학습
+    n += sikshin_count * 8            # 식신 → 상상력
+    n += yeokma_count * 7             # 역마 → 변화·미래 지향
+    n -= elements["earth"] * 8        # 토기 → 현실적·구체적
+    n -= elements["metal"] * 6        # 금기 → 실용·원칙
+    n -= jeongjae_count * 8           # 정재 → 현실 자원 중시
+    n -= gwan_count * 5               # 관성 → 현실 규칙 중시
+
+    # ── F (감정) vs T (사고) ─────────────────────────────
+    f = 50
+    f += ILGAN_TF_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
+    f += elements["water"] * 7        # 수기 → 감수성·공감
+    f += elements["fire"] * 5         # 화기 → 감성·열정
+    f += jeongin_count * 10           # 정인 → 배려·포용
+    f += sikshin_count * 8            # 식신 → 베풀기
+    f += sanggwan_count * 6           # 상관 → 감수성
+    f -= elements["metal"] * 8        # 금기 → 냉철·논리
+    f -= pyeongwan_count * 9          # 편관 → 냉정한 판단
+    f -= 정성_count * 5               # 정성 → 원칙·논리 중시
+    if strength == "신강":
+        f -= 8
+    elif strength == "신약":
+        f += 6
+
+    # ── J (판단) vs P (인식) ─────────────────────────────
+    j = 50
+    j += ILGAN_JP_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
+    j += elements["earth"] * 8        # 토기 → 안정·계획
+    j += elements["metal"] * 7        # 금기 → 원칙·완수
+    j += 정성_count * 10              # 정성 → 규칙·마감 중시
+    j += gwan_count * 7               # 관성 → 책임·질서
+    j -= yeokma_count * 15            # 역마 → 즉흥·유연
+    j -= 편성_count * 6               # 편성 → 틀 밖
+    j -= elements["fire"] * 5         # 화기 → 충동
+    j -= elements["wood"] * 4         # 목기 → 새로운 자극
+    if strength == "신강":
+        j += 8
+
+    def clamp100(v: float) -> int:
+        return int(max(10, min(90, v)))
+
+    e, n, f, j = clamp100(e), clamp100(n), clamp100(f), clamp100(j)
 
     return {
-        "E": e_pct, "I": 100 - e_pct,
-        "N": n_pct, "S": 100 - n_pct,
-        "F": f_pct, "T": 100 - f_pct,
-        "J": j_pct, "P": 100 - j_pct,
-        "type": _mbti_type_str(e_pct, n_pct, f_pct, j_pct),
+        "E": e, "I": 100 - e,
+        "N": n, "S": 100 - n,
+        "F": f, "T": 100 - f,
+        "J": j, "P": 100 - j,
+        "type": _mbti_type_str(e, n, f, j),
     }
 
 
@@ -2026,7 +2180,7 @@ def interpret_all(saju_data: dict) -> dict:
         _radar = calculate_personality_radar_scores(saju_data, personality, money, career)
         visual_data = {
             "personality_radar": _radar,
-            "mbti": calculate_mbti_tendency(_radar),
+            "mbti": calculate_mbti_tendency(saju_data),
             "problem_loop": calculate_problem_loop(saju_data, personality, money, career),
             "money_flow": calculate_money_flow(saju_data, money),
         }

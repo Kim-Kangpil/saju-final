@@ -476,33 +476,16 @@ function HeroCard({
 }
 
 // ─── 대운 미리보기 ───
-function DaeunPreview({ daeunList, birthYear, sajuId, router }: {
-  daeunList: string[];
-  birthYear: number;
+// currentDaeun: 백엔드에서 계산한 현재 대운 문자열 (예: "28세 甲子(갑자)")
+// 프론트에서 연도·나이 계산 금지 — 규칙 엔진이 내려주는 값 그대로 사용
+function DaeunPreview({ currentDaeun, sajuId, router }: {
+  currentDaeun: string;
   sajuId: string;
   router: ReturnType<typeof import("next/navigation").useRouter>;
 }) {
-  const currentYear = 2026;
-  const approxAge = currentYear - birthYear;
-
-  let currentEntry: { ganji: string; hangul: string; startAge: number } | null = null;
-  for (const entry of daeunList) {
-    const m = entry.match(/^(\d+)세\s+([^\(]+)\(([^)]+)\)/);
-    if (!m) continue;
-    const startAge = parseInt(m[1], 10);
-    const ganji = m[2].trim();
-    const hangul = m[3].trim();
-    if (approxAge >= startAge && approxAge < startAge + 10) {
-      currentEntry = { ganji, hangul, startAge };
-      break;
-    }
-  }
-  if (!currentEntry && daeunList.length > 0) {
-    const m = daeunList[0].match(/^(\d+)세\s+([^\(]+)\(([^)]+)\)/);
-    if (m) currentEntry = { ganji: m[2].trim(), hangul: m[3].trim(), startAge: parseInt(m[1], 10) };
-  }
-  if (!currentEntry) return null;
-
+  const m = currentDaeun.match(/^(\d+)세\s+([^\(]+)\(([^)]+)\)/);
+  if (!m) return null;
+  const currentEntry = { startAge: parseInt(m[1], 10), ganji: m[2].trim(), hangul: m[3].trim() };
   const endAge = currentEntry.startAge + 9;
 
   return (
@@ -1213,11 +1196,10 @@ function BasicV2ReportContent() {
             </div>
           )}
 
-          {/* 대운 미리보기 */}
-          {fullRawData && Array.isArray(fullRawData.daeun_list) && fullRawData.daeun_list.length > 0 && sajuInfo?.birthdate && !isSharedView && (
+          {/* 대운 미리보기 — current_daeun은 백엔드 규칙 엔진이 계산해서 내려줌 */}
+          {fullRawData?.current_daeun && !isSharedView && (
             <DaeunPreview
-              daeunList={fullRawData.daeun_list as string[]}
-              birthYear={parseInt((sajuInfo.birthdate as string).split("-")[0], 10)}
+              currentDaeun={fullRawData.current_daeun as string}
               sajuId={sajuId}
               router={router}
             />

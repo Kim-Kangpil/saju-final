@@ -158,12 +158,23 @@ def compute_full_saju(payload: Dict[str, Any], db: Any) -> Dict[str, Any]:
   daeun_start_age = None
   daeun_direction = None
   daeun_list = None
+  current_daeun = None  # 오늘 기준 현재 대운 항목 (예: "28세 甲子(갑자)")
   try:
+      import re as _re
       gender = (payload.get("gender") or "").strip().upper()
       d_num, d_list, d_dir = test.calculate_daeun(birth_dt, gender, yj, mj, db)
       daeun_start_age = d_num
       daeun_direction = d_dir
       daeun_list = d_list
+
+      # 현재 대운: 서버 today 기준으로 계산 (프론트에서 연도 하드코딩 금지)
+      current_age = datetime.utcnow().year - year
+      for entry in d_list:
+          m = _re.match(r'^(\d+)세', entry)
+          if m and int(m.group(1)) <= current_age:
+              current_daeun = entry
+          elif m:
+              break
   except Exception:
       pass
 
@@ -183,6 +194,8 @@ def compute_full_saju(payload: Dict[str, Any], db: Any) -> Dict[str, Any]:
       "daeun_start_age": daeun_start_age,
       "daeun_direction": daeun_direction,
       "daeun_list": daeun_list,
+      "current_daeun": current_daeun,
+      "birth_year": year,
       "time_unknown": hour is None,
   }
 

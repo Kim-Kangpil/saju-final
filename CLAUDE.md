@@ -51,6 +51,10 @@
 - backend/.env 에 있음
 - TEST_MODE=true (개발 중)
 - KAKAO_PAY_CID=TC0ONETIME (테스트)
+- PORTONE_V1_USER_CODE — 포트원 콘솔 > 식별코드·API Keys > 고객사 식별코드
+- PORTONE_V1_IMP_KEY — 포트원 콘솔 > 식별코드·API Keys > REST API Key
+- PORTONE_V1_IMP_SECRET — 포트원 콘솔 > 식별코드·API Keys > REST API Secret
+- INICIS_MID — 포트원 콘솔 > 채널 관리 > KG이니시스 > 상점아이디(MID)
 
 ## 작업 전 필수 확인
 1. 현재 브랜치가 ui-renewal인지
@@ -59,24 +63,60 @@
 
 ---
 
-## 현재 로컬 파일 상태 (2026-04-01 기준, 브랜치: ui-renewal)
+## 결제 시스템 (2026-04-02 확정)
 
-### 구현 완료 목록 (2026-04-01 기준)
+### PG: PortOne V1 + KG이니시스 단일화
+- 모든 리포트/멤버십 결제 → `InicisPayButton` 컴포넌트 사용
+- `KakaoPayButton`은 레거시 (신규 페이지에 사용 금지)
+- 결제 흐름: `POST /api/payment/portone/ready` → `IMP.request_pay` → `POST /api/payment/portone/confirm`
+
+### 결제 엔드포인트
+| 엔드포인트 | 역할 |
+|---|---|
+| `POST /api/payment/portone/ready` | 주문번호 발급, pending_payments 저장 |
+| `POST /api/payment/portone/confirm` | imp_uid 검증 + 금액 대조 + 혜택 지급 |
+| `POST /api/payment/portone/webhook` | 웹훅 수신 (콜백 누락 보완, 중복 처리 방지 포함) |
+
+### 포트원 콘솔 웹훅 설정
+- URL: `https://saju-backend-eqd6.onrender.com/api/payment/portone/webhook`
+- 버전: V1, 테스트/실연동 각각 설정
+
+### 가격표 (백엔드 _ORDER_PRICE_MAP 기준)
+| order_type | 가격 |
+|---|---|
+| pro_monthly | 4,900원 |
+| deep | 4,900원 |
+| money / love / career / couple | 2,900원 |
+| money_realistic / love_realistic / career_realistic | 990원 |
+| basic / analysis_ticket | 990원 |
+
+---
+
+## 현재 로컬 파일 상태 (2026-04-02 기준, 브랜치: ui-renewal)
+
+### 구현 완료 목록
 
 | 파일 | 내용 |
 |------|------|
 | `frontend/app/chat/page.tsx` | 일일 채팅 3회 제한 (isPro, dailyChatCount, 소진 모달) |
 | `frontend/app/add-guest/page.tsx` | 게스트 사주 등록 → `/saju/analyze-guest` 호출 → sessionStorage 저장 |
 | `frontend/components/PurchaseModal.tsx` | 비로그인 구매 시도 → 로그인 후 자동 리다이렉트 |
-| `frontend/app/membership/page.tsx` | Pro 구독 카카오페이 결제 연동 완료 (order_type: pro_monthly) |
+| `frontend/components/InicisPayButton.tsx` | PortOne V1 KG이니시스 결제 버튼 (모든 결제에 사용) |
+| `frontend/app/membership/page.tsx` | Pro 구독 InicisPayButton 연동 (order_type: pro_monthly) |
 | `frontend/app/report/basic/intro/page.tsx` | 기본 리포트 인트로 — 무료 전환 (결제 제거) |
-| `frontend/app/report/basic/v2/page.tsx` | 기본 리포트 결과 페이지 (1,342줄, 게스트 지원) |
+| `frontend/app/report/basic/v2/page.tsx` | 기본 리포트 결과 페이지 (게스트 지원) |
+| `frontend/app/report/deep/intro/page.tsx` | 심화 리포트 인트로 — InicisPayButton |
 | `frontend/app/report/deep/page.tsx` | 심화 리포트 결과 페이지 (대운 분석, AI 채팅 CTA) |
-| `frontend/app/report/money/page.tsx` | 재물 리포트 결과 페이지 (직설 분석 추가구매 옵션) |
-| `frontend/app/report/love/page.tsx` | 연애 리포트 결과 페이지 (직설 분석 추가구매 옵션) |
-| `frontend/app/report/career/page.tsx` | 직업 리포트 결과 페이지 (직설 분석 추가구매 옵션) |
-| `frontend/app/saju-preview/page.tsx` | 기본 리포트 "무료" 뱃지 + "무료로 바로 보기" 텍스트 |
-| `backend/main.py` | `/saju/analyze-guest` 엔드포인트 (비로그인 사주 분석) |
+| `frontend/app/report/money/intro/page.tsx` | 재물운 인트로 — InicisPayButton |
+| `frontend/app/report/money/page.tsx` | 재물운 결과 + 직설 추가구매 — InicisPayButton |
+| `frontend/app/report/love/intro/page.tsx` | 연애운 인트로 — InicisPayButton |
+| `frontend/app/report/love/page.tsx` | 연애운 결과 + 직설 추가구매 — InicisPayButton |
+| `frontend/app/report/career/intro/page.tsx` | 직업운 인트로 — InicisPayButton |
+| `frontend/app/report/career/page.tsx` | 직업운 결과 + 직설 추가구매 — InicisPayButton |
+| `frontend/app/saju-preview/page.tsx` | 기본 리포트 "무료" 뱃지 |
+| `backend/main.py` | `/saju/analyze-guest` (게스트 분석, 횟수 제한 없음) |
+| `backend/main.py` | `/api/payment/portone/webhook` (웹훅 수신) |
+| `backend/logic/payment_db.py` | `get_payment_by_imp_uid()` (중복 결제 처리 방지) |
 
 ### 주요 구현 세부사항
 
@@ -86,13 +126,18 @@
 - 소진 모달: 3번째 전송 완료 직후 자동 오픈
 
 **기본 리포트 무료 전환**
-- intro 페이지: KakaoPayButton 제거 → 바로 v2로 이동
+- intro 페이지: 결제 제거 → 바로 v2로 이동
 - v2 페이지: `/saju/analyze-v2` 호출 (크레딧 체크 없음, 로그인만 필요)
-- 백엔드 변경 없음
+
+**게스트 분석 (`/saju/analyze-guest`)**
+- 비로그인 사주 분석, 횟수 제한 없음 (2026-04-02 제한 해제)
+- 결과는 sessionStorage에 저장
 
 **구매 흐름**
 - 비로그인 구매 시도 → `purchase_redirect` localStorage 저장 → 로그인 후 자동 리다이렉트
 - `PurchaseModal` 컴포넌트로 통합
+- 결제 성공 시 `/payment/success?order_id=...&order_type=...&status=portone_ok` 로 이동
 
 ### 주의 사항
-- `seed-charge` 페이지: order_type "basic"으로 분析권 판매 중 — 기본 리포트 무료화 이후 이 페이지의 역할 재정의 필요 (현재는 특화/심화 크레딧 용도로 혼용)
+- `report/basic/page.tsx`: KakaoPayButton 잔존 — 하지만 intro에서 바로 v2로 이동하므로 실제 접근 안 됨
+- `seed-charge` 페이지: order_type "basic"으로 분析권 판매 중 — 역할 재정의 필요

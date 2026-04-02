@@ -93,7 +93,30 @@ export default function TermsPage({
 
                         {/* 제8조 */}
                         <section>
-                            <h2 className="text-lg font-bold mb-3">제8조 (분쟁 해결)</h2>
+                            <h2 className="text-lg font-bold mb-3">제8조 (결제 및 환불 정책)</h2>
+                            <div className="text-sm leading-relaxed space-y-3">
+                                <p className="font-semibold">① 월 정기구독 (Pro)</p>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>서비스 제공 기간: 결제일로부터 1개월(30일), 이후 매월 동일한 날짜에 자동 갱신</li>
+                                    <li>결제 즉시 서비스(AI 채팅 무제한, 월간 리포트 등)가 제공되므로, 전자상거래 등에서의 소비자보호에 관한 법률 제17조 제2항에 따라 결제 완료 시점부터 청약철회(환불)가 제한됩니다.</li>
+                                    <li>해지 시 다음 결제일 전까지 혜택이 유지되며, 이후 자동 갱신이 중단됩니다.</li>
+                                </ul>
+                                <p className="font-semibold">② 일회성 리포트 (특화·심화·궁합 등)</p>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>결제 즉시 리포트 콘텐츠가 제공되므로, 전자상거래법 제17조 제2항에 따라 결제 완료 시점부터 청약철회(환불)가 제한됩니다.</li>
+                                </ul>
+                                <p className="font-semibold">③ 예외 (환불 가능한 경우)</p>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li>회사의 귀책 사유(시스템 오류, 서비스 장애 등)로 정상적인 서비스 제공이 불가한 경우 전액 환불합니다.</li>
+                                    <li>결제는 완료되었으나 기술적 오류로 서비스가 실제 제공되지 않은 경우 전액 환불합니다.</li>
+                                </ul>
+                                <p>④ 환불 신청은 고객센터(문의하기 페이지)로 접수하실 수 있으며, 영업일 기준 3~5일 이내 처리됩니다.</p>
+                            </div>
+                        </section>
+
+                        {/* 제9조 */}
+                        <section>
+                            <h2 className="text-lg font-bold mb-3">제9조 (분쟁 해결)</h2>
                             <p className="text-sm leading-relaxed">
                                 서비스 이용과 관련한 분쟁은 대한민국 법률에 따르며, 관할 법원은 회사의 소재지를 기준으로 합니다.
                             </p>

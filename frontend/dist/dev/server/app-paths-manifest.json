@@ -3,6 +3,5 @@
   "/page": "app/page.js",
   "/report/basic/page": "app/report/basic/page.js",
   "/report/basic/v2/page": "app/report/basic/v2/page.js",
-  "/saju-list/page": "app/saju-list/page.js",
   "/start/page": "app/start/page.js"
 }

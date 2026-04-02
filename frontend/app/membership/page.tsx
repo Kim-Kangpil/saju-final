@@ -111,11 +111,27 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
               </div>
             ))}
           </div>
-          <p style={{ fontSize: 11, color: "#A0A0A0", textAlign: "center", marginTop: 8 }}>언제든 해지 가능 · 다음 결제 전까지 혜택 유지</p>
+          <p style={{ fontSize: 11, color: "#A0A0A0", textAlign: "center", marginTop: 8 }}>
+            결제일로부터 1개월(30일) 이용 후 자동 갱신 · 매월 동일한 날짜에 자동 결제
+          </p>
+          <p style={{ fontSize: 11, color: "#A0A0A0", textAlign: "center", marginTop: 4 }}>
+            언제든 해지 가능 · 해지 시 다음 결제일 전까지 혜택 유지
+          </p>
+          <p style={{ fontSize: 11, color: "#A0A0A0", textAlign: "center", marginTop: 6 }}>
+            <a href="/terms" style={{ color: "#8B7355", textDecoration: "underline" }}>환불 정책 전문 보기</a>
+          </p>
         </section>
 
 
         {error && <div style={{ color: "#e11d48", fontSize: 13, textAlign: "center", marginBottom: 12 }}>{error}</div>}
+
+        {/* 결제 전 청약철회 제한 고지 — 전자상거래법 제17조 제2항 */}
+        {!status?.is_pro && (
+          <p style={{ fontSize: 11, color: "#A0A0A0", textAlign: "center", lineHeight: 1.6, padding: "0 8px", marginBottom: 8 }}>
+            결제 즉시 서비스가 제공되므로 전자상거래법 제17조 제2항에 따라<br />
+            청약철회(환불)가 제한됩니다. 단, 회사 귀책 사유 발생 시 전액 환불합니다.
+          </p>
+        )}
       </div>
 
       {/* Sticky CTA */}

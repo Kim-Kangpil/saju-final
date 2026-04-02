@@ -1605,6 +1605,10 @@
     padding-bottom: calc(var(--spacing) * 2);
   }
 
+  .pl-5 {
+    padding-left: calc(var(--spacing) * 5);
+  }
+
   .text-center {
     text-align: center;
   }

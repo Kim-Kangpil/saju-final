@@ -13,56 +13,83 @@ var _s = __turbopack_context__.k.signature();
 "use client";
 ;
 const AXES = [
-    "감정",
-    "즉흥",
-    "외향",
-    "실행",
-    "안정"
+    "신경성",
+    "외향성",
+    "개방성",
+    "우호성",
+    "성실성"
 ];
+// 각 축: 점수 >= 50이면 [0]번 레이블(높음), < 50이면 [1]번 레이블(낮음)
 const AXIS_PAIRS = {
-    감정: [
-        "감정형",
-        "이성형"
+    신경성: [
+        "예민형",
+        "침착형"
     ],
-    즉흥: [
-        "즉흥형",
-        "계획형"
-    ],
-    외향: [
+    외향성: [
         "외향형",
         "내향형"
     ],
-    실행: [
-        "실행형",
-        "고민형"
+    개방성: [
+        "개방형",
+        "전통형"
     ],
-    안정: [
-        "안정형",
-        "변화형"
+    우호성: [
+        "협력형",
+        "독립형"
+    ],
+    성실성: [
+        "성실형",
+        "자유형"
     ]
 };
 const AXIS_DESC = {
-    감정: [
-        "감수성이 높고 공감 능력이 뛰어나요",
-        "논리와 데이터로 판단하는 편이에요"
+    신경성: [
+        "감정이 섬세하고 상황에 민감하게 반응해요",
+        "감정적으로 안정적이고 웬만해선 흔들리지 않아요"
     ],
-    즉흥: [
-        "즉흥적이고 유연하게 흘러가는 편이에요",
-        "계획을 세우고 체계적으로 움직여요"
-    ],
-    외향: [
+    외향성: [
         "사람들과 함께할 때 에너지가 올라가요",
         "혼자만의 시간이 있어야 회복이 돼요"
     ],
-    실행: [
-        "생각보다 행동이 먼저 나오는 편이에요",
-        "신중하게 고민하고 나서 움직여요"
+    개방성: [
+        "새로운 것에 호기심이 많고 창의적이에요",
+        "익숙하고 검증된 것을 선호해요"
     ],
-    안정: [
-        "안정적이고 익숙한 환경을 선호해요",
-        "변화와 새로운 도전을 즐겨요"
+    우호성: [
+        "배려심이 깊고 협력하는 걸 좋아해요",
+        "자기 방식을 고집하는 편이에요"
+    ],
+    성실성: [
+        "계획적이고 맡은 일을 끝까지 완수해요",
+        "틀에 얽매이지 않고 유연하게 행동해요"
     ]
 };
+const MBTI_DIMS = [
+    {
+        left: "E",
+        right: "I",
+        leftColor: "#E8865A",
+        rightColor: "#5A8BE8"
+    },
+    {
+        left: "N",
+        right: "S",
+        leftColor: "#9B59B6",
+        rightColor: "#27AE60"
+    },
+    {
+        left: "F",
+        right: "T",
+        leftColor: "#E8595A",
+        rightColor: "#2E86AB"
+    },
+    {
+        left: "J",
+        right: "P",
+        leftColor: "#8B7355",
+        rightColor: "#A8946A"
+    }
+];
 function PersonalityRadarCard({ ruleSummary }) {
     _s();
     const scores = (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
@@ -70,14 +97,23 @@ function PersonalityRadarCard({ ruleSummary }) {
             const vd = ruleSummary?.visual_data?.personality_radar;
             if (vd && typeof vd === "object") return vd;
             return {
-                감정: 50,
-                즉흥: 50,
-                외향: 50,
-                실행: 50,
-                안정: 50
+                신경성: 50,
+                외향성: 50,
+                개방성: 50,
+                우호성: 50,
+                성실성: 50
             };
         }
     }["PersonalityRadarCard.useMemo[scores]"], [
+        ruleSummary
+    ]);
+    const mbti = (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useMemo"])({
+        "PersonalityRadarCard.useMemo[mbti]": ()=>{
+            const m = ruleSummary?.visual_data?.mbti;
+            if (m && typeof m === "object" && m.type) return m;
+            return null;
+        }
+    }["PersonalityRadarCard.useMemo[mbti]"], [
         ruleSummary
     ]);
     const CX = 140;
@@ -91,10 +127,10 @@ function PersonalityRadarCard({ ruleSummary }) {
             y: CY + r * Math.sin(rad)
         };
     };
-    // intensity = 0~1 (거리를 반지름으로: 중립=중심, 강함=외곽)
+    // intensity = 0~1 (중심=중립, 외곽=강함)
     const getIntensity = (ax)=>Math.abs((scores[ax] ?? 50) - 50) / 50;
-    const isLeft = (ax)=>(scores[ax] ?? 50) >= 50;
-    const getDominant = (ax)=>AXIS_PAIRS[ax][isLeft(ax) ? 0 : 1];
+    const isHigh = (ax)=>(scores[ax] ?? 50) >= 50;
+    const getDominant = (ax)=>AXIS_PAIRS[ax][isHigh(ax) ? 0 : 1];
     const getLevel = (intensity)=>{
         if (intensity > 0.62) return "매우 강함";
         if (intensity > 0.38) return "강함";
@@ -126,7 +162,7 @@ function PersonalityRadarCard({ ruleSummary }) {
                 children: "나의 성향 지도"
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                lineNumber: 77,
+                lineNumber: 99,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -140,7 +176,7 @@ function PersonalityRadarCard({ ruleSummary }) {
                 children: "중심에서 멀수록 그 성향이 강해요"
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                lineNumber: 88,
+                lineNumber: 110,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("svg", {
@@ -171,7 +207,7 @@ function PersonalityRadarCard({ ruleSummary }) {
                             strokeDasharray: ri < 2 ? "3,3" : "0"
                         }, ri, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                            lineNumber: 113,
+                            lineNumber: 135,
                             columnNumber: 13
                         }, this);
                     }),
@@ -186,7 +222,7 @@ function PersonalityRadarCard({ ruleSummary }) {
                             strokeWidth: 1
                         }, i, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                            lineNumber: 128,
+                            lineNumber: 150,
                             columnNumber: 13
                         }, this);
                     }),
@@ -197,7 +233,7 @@ function PersonalityRadarCard({ ruleSummary }) {
                         fill: "#D4C9B8"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                        lineNumber: 141,
+                        lineNumber: 163,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("polygon", {
@@ -208,7 +244,7 @@ function PersonalityRadarCard({ ruleSummary }) {
                         strokeLinejoin: "round"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                        lineNumber: 144,
+                        lineNumber: 166,
                         columnNumber: 9
                     }, this),
                     dataPoints.map((p, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("circle", {
@@ -220,12 +256,12 @@ function PersonalityRadarCard({ ruleSummary }) {
                             strokeWidth: 1.5
                         }, i, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                            lineNumber: 154,
+                            lineNumber: 176,
                             columnNumber: 11
                         }, this)),
                     AXES.map((ax, i)=>{
                         const { x, y } = toXY(i, labelR);
-                        const label = getDominant(ax);
+                        const label = ax;
                         const intensity = getIntensity(ax);
                         const strong = intensity > 0.38;
                         let ta = "middle";
@@ -242,14 +278,14 @@ function PersonalityRadarCard({ ruleSummary }) {
                             children: label
                         }, ax, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                            lineNumber: 175,
+                            lineNumber: 197,
                             columnNumber: 13
                         }, this);
                     })
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                lineNumber: 100,
+                lineNumber: 122,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -285,7 +321,7 @@ function PersonalityRadarCard({ ruleSummary }) {
                                 children: dominant
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                                lineNumber: 209,
+                                lineNumber: 231,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -305,12 +341,12 @@ function PersonalityRadarCard({ ruleSummary }) {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                                    lineNumber: 230,
+                                    lineNumber: 252,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                                lineNumber: 221,
+                                lineNumber: 243,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -324,19 +360,19 @@ function PersonalityRadarCard({ ruleSummary }) {
                                 children: level
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                                lineNumber: 241,
+                                lineNumber: 263,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, ax, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                        lineNumber: 208,
+                        lineNumber: 230,
                         columnNumber: 13
                     }, this);
                 })
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                lineNumber: 192,
+                lineNumber: 214,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -359,32 +395,236 @@ function PersonalityRadarCard({ ruleSummary }) {
                             children: getDominant(strongest)
                         }, void 0, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                            lineNumber: 268,
+                            lineNumber: 290,
                             columnNumber: 24
                         }, this),
                         "이에요.",
                         " ",
-                        AXIS_DESC[strongest][isLeft(strongest) ? 0 : 1],
+                        AXIS_DESC[strongest][isHigh(strongest) ? 0 : 1],
                         "."
                     ]
                 }, void 0, true, {
                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                    lineNumber: 267,
+                    lineNumber: 289,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-                lineNumber: 258,
+                lineNumber: 280,
                 columnNumber: 7
+            }, this),
+            mbti && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                style: {
+                    marginTop: 16,
+                    paddingTop: 16,
+                    borderTop: "1px solid #E3D9CB"
+                },
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        style: {
+                            fontSize: 12,
+                            fontWeight: 700,
+                            color: "#6B5F4E",
+                            letterSpacing: "0.08em",
+                            textAlign: "center"
+                        },
+                        children: "MBTI 경향"
+                    }, void 0, false, {
+                        fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                        lineNumber: 298,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        style: {
+                            fontSize: 10,
+                            color: "#A8946A",
+                            textAlign: "center",
+                            marginTop: 3,
+                            marginBottom: 12
+                        },
+                        children: "사주 오행에서 추정한 성격 유형 경향"
+                    }, void 0, false, {
+                        fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                        lineNumber: 301,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        style: {
+                            display: "flex",
+                            justifyContent: "center",
+                            marginBottom: 16
+                        },
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            style: {
+                                display: "inline-flex",
+                                gap: 4,
+                                background: "#3A3A3A",
+                                borderRadius: 12,
+                                padding: "10px 20px"
+                            },
+                            children: mbti.type.split("").map((ch, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    style: {
+                                        fontSize: 22,
+                                        fontWeight: 800,
+                                        color: "#F5F1EA",
+                                        letterSpacing: "0.05em"
+                                    },
+                                    children: ch
+                                }, i, false, {
+                                    fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                    lineNumber: 315,
+                                    columnNumber: 17
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                            lineNumber: 307,
+                            columnNumber: 13
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                        lineNumber: 306,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        style: {
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 10,
+                            padding: "0 4px"
+                        },
+                        children: MBTI_DIMS.map(({ left, right, leftColor, rightColor })=>{
+                            const leftPct = mbti[left];
+                            const rightPct = mbti[right];
+                            const dominant = leftPct >= rightPct ? left : right;
+                            return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        style: {
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            marginBottom: 4
+                                        },
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                style: {
+                                                    fontSize: 12,
+                                                    fontWeight: dominant === left ? 800 : 500,
+                                                    color: dominant === left ? leftColor : "#A8946A"
+                                                },
+                                                children: [
+                                                    String(left),
+                                                    " ",
+                                                    leftPct,
+                                                    "%"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                                lineNumber: 331,
+                                                columnNumber: 21
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                style: {
+                                                    fontSize: 12,
+                                                    fontWeight: dominant === right ? 800 : 500,
+                                                    color: dominant === right ? rightColor : "#A8946A"
+                                                },
+                                                children: [
+                                                    rightPct,
+                                                    "% ",
+                                                    String(right)
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                                lineNumber: 337,
+                                                columnNumber: 21
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                        lineNumber: 330,
+                                        columnNumber: 19
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        style: {
+                                            display: "flex",
+                                            height: 8,
+                                            borderRadius: 4,
+                                            overflow: "hidden",
+                                            background: "#EDE6DC"
+                                        },
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                style: {
+                                                    width: `${leftPct}%`,
+                                                    background: leftColor,
+                                                    borderRadius: "4px 0 0 4px",
+                                                    opacity: dominant === left ? 1 : 0.45,
+                                                    transition: "width 0.4s ease"
+                                                }
+                                            }, void 0, false, {
+                                                fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                                lineNumber: 346,
+                                                columnNumber: 21
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                style: {
+                                                    width: `${rightPct}%`,
+                                                    background: rightColor,
+                                                    borderRadius: "0 4px 4px 0",
+                                                    opacity: dominant === right ? 1 : 0.45,
+                                                    transition: "width 0.4s ease"
+                                                }
+                                            }, void 0, false, {
+                                                fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                                lineNumber: 353,
+                                                columnNumber: 21
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                        lineNumber: 345,
+                                        columnNumber: 19
+                                    }, this)
+                                ]
+                            }, String(left), true, {
+                                fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                                lineNumber: 329,
+                                columnNumber: 17
+                            }, this);
+                        })
+                    }, void 0, false, {
+                        fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                        lineNumber: 323,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        style: {
+                            fontSize: 10,
+                            color: "#C4B8A4",
+                            textAlign: "center",
+                            marginTop: 10,
+                            lineHeight: 1.5
+                        },
+                        children: "* MBTI 공식 검사 결과와 다를 수 있어요"
+                    }, void 0, false, {
+                        fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                        lineNumber: 366,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
+                lineNumber: 297,
+                columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/components/PersonalityRadarCard.tsx",
-        lineNumber: 68,
+        lineNumber: 90,
         columnNumber: 5
     }, this);
 }
-_s(PersonalityRadarCard, "WfsIMQ70/jk5mrOI94vMt5B2aYk=");
+_s(PersonalityRadarCard, "ZOth1WK3YpPg1PXF9SzYuZ6dAxM=");
 _c = PersonalityRadarCard;
 var _c;
 __turbopack_context__.k.register(_c, "PersonalityRadarCard");
@@ -1787,10 +2027,6 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                         value: `${dayHanja}(${dayHangul})`
                     },
                     {
-                        label: "용신",
-                        value: yongshin
-                    },
-                    {
                         label: "격국",
                         value: geokguk
                     }
@@ -1813,7 +2049,7 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                                 children: item.label
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 421,
+                                lineNumber: 420,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1825,13 +2061,13 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                                 children: item.value
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 422,
+                                lineNumber: 421,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, item.label, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 417,
+                        lineNumber: 416,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
@@ -1854,7 +2090,7 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                         children: "오행 비율"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 429,
+                        lineNumber: 428,
                         columnNumber: 9
                     }, this),
                     [
@@ -1883,7 +2119,7 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                                     children: ELEMENT_KO[el].split("(")[0]
                                 }, void 0, false, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                    lineNumber: 434,
+                                    lineNumber: 433,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1912,12 +2148,12 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 436,
+                                        lineNumber: 435,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                    lineNumber: 435,
+                                    lineNumber: 434,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1934,20 +2170,20 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                    lineNumber: 443,
+                                    lineNumber: 442,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, el, true, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 433,
+                            lineNumber: 432,
                             columnNumber: 13
                         }, this);
                     })
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 428,
+                lineNumber: 427,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1973,7 +2209,7 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                         children: "📸 이미지 저장"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 451,
+                        lineNumber: 450,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -1993,13 +2229,13 @@ function HeroCard({ pillarStrings, yongshin, geokguk, sajuId, onSaveImage }) {
                         children: "💬 카카오 공유"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 462,
+                        lineNumber: 461,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 450,
+                lineNumber: 449,
                 columnNumber: 7
             }, this)
         ]
@@ -2049,7 +2285,7 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }) {
                         children: "🌊 현재 대운"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 499,
+                        lineNumber: 498,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2065,13 +2301,13 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }) {
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 500,
+                        lineNumber: 499,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 498,
+                lineNumber: 497,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2099,7 +2335,7 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }) {
                                 children: currentEntry.ganji
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 507,
+                                lineNumber: 506,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2111,13 +2347,13 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }) {
                                 children: currentEntry.hangul
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 508,
+                                lineNumber: 507,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 503,
+                        lineNumber: 502,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2143,14 +2379,14 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 512,
+                                        lineNumber: 511,
                                         columnNumber: 16
                                     }, this),
                                     " 대운 흐름 속에 있어요."
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 511,
+                                lineNumber: 510,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2167,19 +2403,19 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 514,
+                                lineNumber: 513,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 510,
+                        lineNumber: 509,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 502,
+                lineNumber: 501,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2204,13 +2440,13 @@ function DaeunPreview({ currentDaeun, sajuId, isGuest, router }) {
                 children: isGuest ? "로그인하고 전체 대운 흐름 보기 →" : "전체 대운 흐름 보기 →"
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 519,
+                lineNumber: 518,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-        lineNumber: 493,
+        lineNumber: 492,
         columnNumber: 5
     }, this);
 }
@@ -2295,7 +2531,7 @@ function ProductGrid({ sajuId, router, isGuest }) {
                 children: "📦 더 깊이 알아보기"
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 580,
+                lineNumber: 579,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2325,7 +2561,7 @@ function ProductGrid({ sajuId, router, isGuest }) {
                                 children: p.icon
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 594,
+                                lineNumber: 593,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2338,7 +2574,7 @@ function ProductGrid({ sajuId, router, isGuest }) {
                                 children: p.label
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 595,
+                                lineNumber: 594,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2349,24 +2585,24 @@ function ProductGrid({ sajuId, router, isGuest }) {
                                 children: p.sub
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 596,
+                                lineNumber: 595,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, p.label, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 583,
+                        lineNumber: 582,
                         columnNumber: 11
                     }, this))
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 581,
+                lineNumber: 580,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-        lineNumber: 579,
+        lineNumber: 578,
         columnNumber: 5
     }, this);
 }
@@ -2765,9 +3001,9 @@ function BasicV2ReportContent() {
         return elements.map((e)=>KO[e] ?? e).join("·") || "분석 중";
     })();
     const geokgukLabel = (()=>{
-        const tg = fullRawData?.ten_gods;
-        const mb = tg?.month_branch ?? "";
-        return mb ? `${mb}격` : "분석 중";
+        // v2Result.gyeok (백엔드 格局 엔진) 우선 사용
+        const name = v2Result?.gyeok?.gyeok_name ?? "";
+        return name || "분석 중";
     })();
     if (error) {
         return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2788,7 +3024,7 @@ function BasicV2ReportContent() {
                     children: "⚠️"
                 }, void 0, false, {
                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                    lineNumber: 940,
+                    lineNumber: 939,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2800,7 +3036,7 @@ function BasicV2ReportContent() {
                     children: error
                 }, void 0, false, {
                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                    lineNumber: 941,
+                    lineNumber: 940,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -2818,13 +3054,13 @@ function BasicV2ReportContent() {
                     children: "사주 목록으로"
                 }, void 0, false, {
                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                    lineNumber: 942,
+                    lineNumber: 941,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-            lineNumber: 939,
+            lineNumber: 938,
             columnNumber: 7
         }, this);
     }
@@ -2862,12 +3098,12 @@ function BasicV2ReportContent() {
                             color: S.ink
                         }, void 0, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 959,
+                            lineNumber: 958,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 958,
+                        lineNumber: 957,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -2880,7 +3116,7 @@ function BasicV2ReportContent() {
                         children: "✨ 기본 분석 리포트"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 961,
+                        lineNumber: 960,
                         columnNumber: 9
                     }, this),
                     isSharedView && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2895,13 +3131,13 @@ function BasicV2ReportContent() {
                         children: "공유됨"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 963,
+                        lineNumber: 962,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 957,
+                lineNumber: 956,
                 columnNumber: 7
             }, this),
             loading ? /* ── 로딩 UI ── */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2938,7 +3174,7 @@ function BasicV2ReportContent() {
                         children: loadingStep.icon
                     }, loadingStep.icon, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 971,
+                        lineNumber: 970,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -2970,12 +3206,12 @@ function BasicV2ReportContent() {
                             children: loadingStep.msg
                         }, loadingStep.msg, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 984,
+                            lineNumber: 983,
                             columnNumber: 13
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 983,
+                        lineNumber: 982,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2988,7 +3224,7 @@ function BasicV2ReportContent() {
                         children: "AI가 사주 데이터를 바탕으로 분석하고 있어요"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 996,
+                        lineNumber: 995,
                         columnNumber: 11
                     }, this),
                     stuckAt95 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3007,26 +3243,26 @@ function BasicV2ReportContent() {
                             "생각보다 오래 걸리고 있어요.",
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1001,
+                                lineNumber: 1000,
                                 columnNumber: 31
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
                                 children: "앱을 닫지 말고 잠시만 기다려 주세요."
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1002,
+                                lineNumber: 1001,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1002,
+                                lineNumber: 1001,
                                 columnNumber: 53
                             }, this),
                             "최대 1분 안에 완성돼요 🔮"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1000,
+                        lineNumber: 999,
                         columnNumber: 13
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3058,7 +3294,7 @@ function BasicV2ReportContent() {
                                     }
                                 }, void 0, false, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                    lineNumber: 1011,
+                                    lineNumber: 1010,
                                     columnNumber: 17
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     style: {
@@ -3089,17 +3325,17 @@ function BasicV2ReportContent() {
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1018,
+                                        lineNumber: 1017,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                    lineNumber: 1017,
+                                    lineNumber: 1016,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1009,
+                                lineNumber: 1008,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3116,7 +3352,7 @@ function BasicV2ReportContent() {
                                         children: "분석 중"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1027,
+                                        lineNumber: 1026,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3131,19 +3367,19 @@ function BasicV2ReportContent() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1028,
+                                        lineNumber: 1027,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1026,
+                                lineNumber: 1025,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1008,
+                        lineNumber: 1007,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3170,19 +3406,19 @@ function BasicV2ReportContent() {
                                 }
                             }, i, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1038,
+                                lineNumber: 1037,
                                 columnNumber: 17
                             }, this);
                         })
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1033,
+                        lineNumber: 1032,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 969,
+                lineNumber: 968,
                 columnNumber: 9
             }, this) : /* ── 결과 UI ── */ /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 style: {
@@ -3199,12 +3435,12 @@ function BasicV2ReportContent() {
                             onSaveImage: handleSaveImage
                         }, void 0, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 1054,
+                            lineNumber: 1053,
                             columnNumber: 15
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1053,
+                        lineNumber: 1052,
                         columnNumber: 13
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3240,7 +3476,7 @@ function BasicV2ReportContent() {
                                         children: "기본 정보"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1071,
+                                        lineNumber: 1070,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].span, {
@@ -3266,23 +3502,23 @@ function BasicV2ReportContent() {
                                                 strokeLinejoin: "round"
                                             }, void 0, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                lineNumber: 1073,
+                                                lineNumber: 1072,
                                                 columnNumber: 77
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                            lineNumber: 1073,
+                                            lineNumber: 1072,
                                             columnNumber: 17
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1072,
+                                        lineNumber: 1071,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1066,
+                                lineNumber: 1065,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -3345,7 +3581,7 @@ function BasicV2ReportContent() {
                                                         children: row.label
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                        lineNumber: 1087,
+                                                        lineNumber: 1086,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3357,34 +3593,34 @@ function BasicV2ReportContent() {
                                                         children: row.value
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                        lineNumber: 1088,
+                                                        lineNumber: 1087,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, row.label, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                lineNumber: 1086,
+                                                lineNumber: 1085,
                                                 columnNumber: 23
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1079,
+                                        lineNumber: 1078,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                    lineNumber: 1078,
+                                    lineNumber: 1077,
                                     columnNumber: 17
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1076,
+                                lineNumber: 1075,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1065,
+                        lineNumber: 1064,
                         columnNumber: 11
                     }, this),
                     pillarStrings && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3420,7 +3656,7 @@ function BasicV2ReportContent() {
                                         children: "내 사주팔자"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1105,
+                                        lineNumber: 1104,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$render$2f$components$2f$motion$2f$proxy$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["motion"].span, {
@@ -3446,23 +3682,23 @@ function BasicV2ReportContent() {
                                                 strokeLinejoin: "round"
                                             }, void 0, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                lineNumber: 1107,
+                                                lineNumber: 1106,
                                                 columnNumber: 79
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                            lineNumber: 1107,
+                                            lineNumber: 1106,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1106,
+                                        lineNumber: 1105,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1100,
+                                lineNumber: 1099,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$framer$2d$motion$2f$dist$2f$es$2f$components$2f$AnimatePresence$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["AnimatePresence"], {
@@ -3546,7 +3782,7 @@ function BasicV2ReportContent() {
                                                                     }
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                    lineNumber: 1127,
+                                                                    lineNumber: 1126,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 blocks.map((b)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
@@ -3554,18 +3790,18 @@ function BasicV2ReportContent() {
                                                                         children: b.label
                                                                     }, b.label, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                        lineNumber: 1128,
+                                                                        lineNumber: 1127,
                                                                         columnNumber: 48
                                                                     }, this))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                            lineNumber: 1126,
+                                                            lineNumber: 1125,
                                                             columnNumber: 29
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                        lineNumber: 1125,
+                                                        lineNumber: 1124,
                                                         columnNumber: 27
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -3577,7 +3813,7 @@ function BasicV2ReportContent() {
                                                                         children: "십성"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                        lineNumber: 1134,
+                                                                        lineNumber: 1133,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     blocks.map((b)=>{
@@ -3591,14 +3827,14 @@ function BasicV2ReportContent() {
                                                                             children: tenGod(dayStem, stem)
                                                                         }, b.label, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                            lineNumber: 1137,
+                                                                            lineNumber: 1136,
                                                                             columnNumber: 40
                                                                         }, this);
                                                                     })
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                lineNumber: 1133,
+                                                                lineNumber: 1132,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3608,7 +3844,7 @@ function BasicV2ReportContent() {
                                                                         children: "천간"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                        lineNumber: 1142,
+                                                                        lineNumber: 1141,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     blocks.map((b)=>{
@@ -3636,19 +3872,19 @@ function BasicV2ReportContent() {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                                lineNumber: 1148,
+                                                                                lineNumber: 1147,
                                                                                 columnNumber: 37
                                                                             }, this)
                                                                         }, b.label, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                            lineNumber: 1147,
+                                                                            lineNumber: 1146,
                                                                             columnNumber: 35
                                                                         }, this);
                                                                     })
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                lineNumber: 1141,
+                                                                lineNumber: 1140,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3658,7 +3894,7 @@ function BasicV2ReportContent() {
                                                                         children: "지지"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                        lineNumber: 1157,
+                                                                        lineNumber: 1156,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     blocks.map((b)=>{
@@ -3686,19 +3922,19 @@ function BasicV2ReportContent() {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                                lineNumber: 1163,
+                                                                                lineNumber: 1162,
                                                                                 columnNumber: 37
                                                                             }, this)
                                                                         }, b.label, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                            lineNumber: 1162,
+                                                                            lineNumber: 1161,
                                                                             columnNumber: 35
                                                                         }, this);
                                                                     })
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                lineNumber: 1156,
+                                                                lineNumber: 1155,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3708,7 +3944,7 @@ function BasicV2ReportContent() {
                                                                         children: "십성(지지)"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                        lineNumber: 1172,
+                                                                        lineNumber: 1171,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     blocks.map((b)=>{
@@ -3722,48 +3958,48 @@ function BasicV2ReportContent() {
                                                                             children: ms ? tenGod(dayStem, ms) : ""
                                                                         }, b.label, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                            lineNumber: 1175,
+                                                                            lineNumber: 1174,
                                                                             columnNumber: 40
                                                                         }, this);
                                                                     })
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                                lineNumber: 1171,
+                                                                lineNumber: 1170,
                                                                 columnNumber: 29
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                        lineNumber: 1131,
+                                                        lineNumber: 1130,
                                                         columnNumber: 27
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                                lineNumber: 1124,
+                                                lineNumber: 1123,
                                                 columnNumber: 25
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                            lineNumber: 1123,
+                                            lineNumber: 1122,
                                             columnNumber: 23
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1122,
+                                        lineNumber: 1121,
                                         columnNumber: 21
                                     }, this);
                                 })()
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1110,
+                                lineNumber: 1109,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1099,
+                        lineNumber: 1098,
                         columnNumber: 13
                     }, this),
                     v2Result?.gyeok?.gyeok_name && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3791,7 +4027,7 @@ function BasicV2ReportContent() {
                                         children: "🏛️"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1192,
+                                        lineNumber: 1191,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3803,7 +4039,7 @@ function BasicV2ReportContent() {
                                         children: "나의 格 (타고난 틀)"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1193,
+                                        lineNumber: 1192,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3819,13 +4055,13 @@ function BasicV2ReportContent() {
                                         children: v2Result.gyeok.gyeok_name
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1194,
+                                        lineNumber: 1193,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1191,
+                                lineNumber: 1190,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3839,7 +4075,7 @@ function BasicV2ReportContent() {
                                 children: v2Result.gyeok.desc
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1198,
+                                lineNumber: 1197,
                                 columnNumber: 15
                             }, this),
                             v2Result.gyeok.good && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3857,13 +4093,13 @@ function BasicV2ReportContent() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1202,
+                                lineNumber: 1201,
                                 columnNumber: 17
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1190,
+                        lineNumber: 1189,
                         columnNumber: 13
                     }, this),
                     fullRawData?.current_daeun && !isSharedView && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(DaeunPreview, {
@@ -3873,7 +4109,7 @@ function BasicV2ReportContent() {
                         router: router
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1211,
+                        lineNumber: 1210,
                         columnNumber: 13
                     }, this),
                     v2Result && (()=>{
@@ -3896,7 +4132,7 @@ function BasicV2ReportContent() {
                                     children: "AI 분석 결과 · 섹션을 탭해서 펼쳐보세요"
                                 }, void 0, false, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                    lineNumber: 1224,
+                                    lineNumber: 1223,
                                     columnNumber: 17
                                 }, this),
                                 sections.map((sec, idx)=>{
@@ -3944,14 +4180,14 @@ function BasicV2ReportContent() {
                                         ctaOnClick: guestCtaClick
                                     }, sec.title, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1262,
+                                        lineNumber: 1261,
                                         columnNumber: 21
                                     }, this);
                                 })
                             ]
                         }, void 0, true, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 1223,
+                            lineNumber: 1222,
                             columnNumber: 15
                         }, this);
                     })(),
@@ -3990,7 +4226,7 @@ function BasicV2ReportContent() {
                                         children: "📤 공유하기"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1285,
+                                        lineNumber: 1284,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4009,13 +4245,13 @@ function BasicV2ReportContent() {
                                         children: "✅ 저장됨"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                        lineNumber: 1297,
+                                        lineNumber: 1296,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1284,
+                                lineNumber: 1283,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4027,13 +4263,13 @@ function BasicV2ReportContent() {
                                 children: "리포트는 자동 저장돼요. 언제든 다시 열람 가능해요."
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1306,
+                                lineNumber: 1305,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1283,
+                        lineNumber: 1282,
                         columnNumber: 13
                     }, this),
                     v2Result && !isSharedView && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4055,7 +4291,7 @@ function BasicV2ReportContent() {
                                 children: "AI에게 직접 물어보세요"
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1321,
+                                lineNumber: 1320,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4068,7 +4304,7 @@ function BasicV2ReportContent() {
                                 children: "궁금한 게 생기면 AI 사주 상담이 답해줘요. 무료 3회 제공."
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1322,
+                                lineNumber: 1321,
                                 columnNumber: 15
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
@@ -4087,13 +4323,13 @@ function BasicV2ReportContent() {
                                 children: "AI 상담 시작하기"
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                                lineNumber: 1325,
+                                lineNumber: 1324,
                                 columnNumber: 15
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1314,
+                        lineNumber: 1313,
                         columnNumber: 13
                     }, this),
                     v2Result && !isSharedView && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(ProductGrid, {
@@ -4102,7 +4338,7 @@ function BasicV2ReportContent() {
                         isGuest: isGuest
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1346,
+                        lineNumber: 1345,
                         columnNumber: 13
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4111,13 +4347,13 @@ function BasicV2ReportContent() {
                         }
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                        lineNumber: 1349,
+                        lineNumber: 1348,
                         columnNumber: 11
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 1050,
+                lineNumber: 1049,
                 columnNumber: 9
             }, this),
             !loading && v2Result && !isSharedView && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4152,14 +4388,14 @@ function BasicV2ReportContent() {
                             children: "💬"
                         }, void 0, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 1370,
+                            lineNumber: 1369,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                             children: "AI에게 바로 질문하기"
                         }, void 0, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 1371,
+                            lineNumber: 1370,
                             columnNumber: 13
                         }, this),
                         freeChatRemaining !== null && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4176,24 +4412,24 @@ function BasicV2ReportContent() {
                             children: freeChatRemaining > 0 ? `${freeChatRemaining}회 무료` : "소진"
                         }, void 0, false, {
                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                            lineNumber: 1373,
+                            lineNumber: 1372,
                             columnNumber: 15
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                    lineNumber: 1358,
+                    lineNumber: 1357,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-                lineNumber: 1355,
+                lineNumber: 1354,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-        lineNumber: 955,
+        lineNumber: 954,
         columnNumber: 5
     }, this);
 }
@@ -4214,17 +4450,17 @@ function BasicV2ReportPage() {
             children: "로딩 중..."
         }, void 0, false, {
             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-            lineNumber: 1390,
+            lineNumber: 1389,
             columnNumber: 25
         }, void 0),
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(BasicV2ReportContent, {}, void 0, false, {
             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-            lineNumber: 1391,
+            lineNumber: 1390,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/report/basic/v2/page.tsx",
-        lineNumber: 1390,
+        lineNumber: 1389,
         columnNumber: 5
     }, this);
 }

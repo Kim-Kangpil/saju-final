@@ -184,10 +184,10 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
           />
         ))}
 
-        {/* 축 라벨: 실제 성향 단어 */}
+        {/* 축 라벨: Big Five 차원명 */}
         {AXES.map((ax, i) => {
           const { x, y } = toXY(i, labelR);
-          const label = getDominant(ax);
+          const label = ax;
           const intensity = getIntensity(ax);
           const strong = intensity > 0.38;
           let ta: "middle" | "start" | "end" = "middle";

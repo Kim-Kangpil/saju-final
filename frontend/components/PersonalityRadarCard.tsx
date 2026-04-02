@@ -5,30 +5,31 @@ interface Props {
   ruleSummary: Record<string, any>;
 }
 
-const AXES = ["감정", "즉흥", "외향", "실행", "안정"] as const;
+const AXES = ["신경성", "외향성", "개방성", "우호성", "성실성"] as const;
 type Axis = (typeof AXES)[number];
 
+// 각 축: 점수 >= 50이면 [0]번 레이블(높음), < 50이면 [1]번 레이블(낮음)
 const AXIS_PAIRS: Record<Axis, [string, string]> = {
-  감정: ["감정형", "이성형"],
-  즉흥: ["즉흥형", "계획형"],
-  외향: ["외향형", "내향형"],
-  실행: ["실행형", "고민형"],
-  안정: ["안정형", "변화형"],
+  신경성: ["예민형", "침착형"],
+  외향성: ["외향형", "내향형"],
+  개방성: ["개방형", "전통형"],
+  우호성: ["협력형", "독립형"],
+  성실성: ["성실형", "자유형"],
 };
 
 const AXIS_DESC: Record<Axis, [string, string]> = {
-  감정: ["감수성이 높고 공감 능력이 뛰어나요", "논리와 데이터로 판단하는 편이에요"],
-  즉흥: ["즉흥적이고 유연하게 흘러가는 편이에요", "계획을 세우고 체계적으로 움직여요"],
-  외향: ["사람들과 함께할 때 에너지가 올라가요", "혼자만의 시간이 있어야 회복이 돼요"],
-  실행: ["생각보다 행동이 먼저 나오는 편이에요", "신중하게 고민하고 나서 움직여요"],
-  안정: ["안정적이고 익숙한 환경을 선호해요", "변화와 새로운 도전을 즐겨요"],
+  신경성: ["감정이 섬세하고 상황에 민감하게 반응해요", "감정적으로 안정적이고 웬만해선 흔들리지 않아요"],
+  외향성: ["사람들과 함께할 때 에너지가 올라가요", "혼자만의 시간이 있어야 회복이 돼요"],
+  개방성: ["새로운 것에 호기심이 많고 창의적이에요", "익숙하고 검증된 것을 선호해요"],
+  우호성: ["배려심이 깊고 협력하는 걸 좋아해요", "자기 방식을 고집하는 편이에요"],
+  성실성: ["계획적이고 맡은 일을 끝까지 완수해요", "틀에 얽매이지 않고 유연하게 행동해요"],
 };
 
 export function PersonalityRadarCard({ ruleSummary }: Props) {
   const scores = useMemo(() => {
     const vd = ruleSummary?.visual_data?.personality_radar;
     if (vd && typeof vd === "object") return vd as Record<Axis, number>;
-    return { 감정: 50, 즉흥: 50, 외향: 50, 실행: 50, 안정: 50 } as Record<Axis, number>;
+    return { 신경성: 50, 외향성: 50, 개방성: 50, 우호성: 50, 성실성: 50 } as Record<Axis, number>;
   }, [ruleSummary]);
 
   const CX = 140;
@@ -41,10 +42,10 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
     return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
   };
 
-  // intensity = 0~1 (거리를 반지름으로: 중립=중심, 강함=외곽)
+  // intensity = 0~1 (중심=중립, 외곽=강함)
   const getIntensity = (ax: Axis) => Math.abs((scores[ax] ?? 50) - 50) / 50;
-  const isLeft = (ax: Axis) => (scores[ax] ?? 50) >= 50;
-  const getDominant = (ax: Axis) => AXIS_PAIRS[ax][isLeft(ax) ? 0 : 1];
+  const isHigh = (ax: Axis) => (scores[ax] ?? 50) >= 50;
+  const getDominant = (ax: Axis) => AXIS_PAIRS[ax][isHigh(ax) ? 0 : 1];
 
   const getLevel = (intensity: number) => {
     if (intensity > 0.62) return "매우 강함";
@@ -162,7 +163,7 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
           />
         ))}
 
-        {/* 축 라벨: 이 사람의 실제 성향 단어 */}
+        {/* 축 라벨: 실제 성향 단어 */}
         {AXES.map((ax, i) => {
           const { x, y } = toXY(i, labelR);
           const label = getDominant(ax);
@@ -266,7 +267,7 @@ export function PersonalityRadarCard({ ruleSummary }: Props) {
       >
         <p style={{ fontSize: 11, color: "#5C4A30", lineHeight: 1.65 }}>
           가장 두드러지는 성향은 <strong>{getDominant(strongest)}</strong>이에요.{" "}
-          {AXIS_DESC[strongest][isLeft(strongest) ? 0 : 1]}.
+          {AXIS_DESC[strongest][isHigh(strongest) ? 0 : 1]}.
         </p>
       </div>
     </div>

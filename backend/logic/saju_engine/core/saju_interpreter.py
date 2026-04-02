@@ -1585,18 +1585,17 @@ def interpret_career_deep(saju_data: dict) -> dict:
 
 def calculate_personality_radar_scores(saju_data: dict, personality_result: dict, money_result: dict, career_result: dict) -> dict:
     """
-    성향 레이더 차트용 5축 점수 계산 (0~100)
-    - 감정 vs 이성
-    - 즉흥 vs 계획
-    - 외향 vs 내향
-    - 실행 vs 고민
-    - 안정 vs 변화
+    성향 레이더 차트용 Big Five 5축 점수 계산 (0~100)
+    - 신경성 (높을수록 예민·불안)
+    - 외향성 (높을수록 사교·활발)
+    - 개방성 (높을수록 창의·변화 추구)
+    - 우호성 (높을수록 협력·배려)
+    - 성실성 (높을수록 체계적·완수)
     """
-    ilgan = _get_ilgan(saju_data)
     strength = _get_strength(saju_data)
     ten_gods = _get_ten_gods(saju_data)
     sinsal = saju_data.get("sinsal") or {}
-    
+
     # 오행 분포 계산
     pillars = _get_pillars(saju_data)
     elements = {"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}
@@ -1609,79 +1608,90 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
                 elements[stem_elem] += 1
             if branch_elem in elements:
                 elements[branch_elem] += 1
-    
-    # 십성 개수
+
+    # 십성 세부 분류
     tg_values = list(ten_gods.values())
-    siksang_count = sum(1 for tg in tg_values if tg in ("식신", "상관"))
-    gwan_count = sum(1 for tg in tg_values if tg in ("편관", "정관"))
-    jae_count = sum(1 for tg in tg_values if tg in ("편재", "정재"))
-    in_count = sum(1 for tg in tg_values if tg in ("편인", "정인"))
-    bigyeob_count = sum(1 for tg in tg_values if tg in ("비견", "겁재"))
-    
-    # 역마·도화 체크
+    siksang_count  = sum(1 for tg in tg_values if tg in ("식신", "상관"))
+    sikshin_count  = sum(1 for tg in tg_values if tg == "식신")
+    sanggwan_count = sum(1 for tg in tg_values if tg == "상관")
+    gwan_count     = sum(1 for tg in tg_values if tg in ("편관", "정관"))
+    pyeongwan_count = sum(1 for tg in tg_values if tg == "편관")
+    in_count       = sum(1 for tg in tg_values if tg in ("편인", "정인"))
+    jeongin_count  = sum(1 for tg in tg_values if tg == "정인")
+    geopjae_count  = sum(1 for tg in tg_values if tg == "겁재")
+    jeongjae_count = sum(1 for tg in tg_values if tg == "정재")
+    정성_count = sum(1 for tg in tg_values if tg in ("정재", "정관", "정인"))
+    편성_count = sum(1 for tg in tg_values if tg in ("편재", "편관", "편인"))
+
+    # 역마
     yeokma_count = len(sinsal.get("yeokma") or sinsal.get("역마") or [])
-    
-    # 십이운성 체크
+
+    # 십이운성
     sibiun_data = saju_data.get("twelve_states") or {}
     strong_sibiun = sum(1 for s in sibiun_data.values() if s in ("건록", "제왕", "관대"))
-    
-    # 기본값 50 (중립)
-    감정 = 50
-    즉흥 = 50
-    외향 = 50
-    실행 = 50
-    안정 = 50
-    
-    # 감정 vs 이성 (수기·금기 많으면 감정↑, 목기·토기 많으면 이성↑)
-    감정 += elements["water"] * 8
-    감정 += elements["metal"] * 5
-    감정 -= elements["wood"] * 6
-    감정 -= elements["earth"] * 4
-    if siksang_count >= 2:
-        감정 += 12  # 식상 많으면 표현·감수성
-    if in_count >= 2:
-        감정 -= 10  # 인성 많으면 이성·학습
-    
-    # 즉흥 vs 계획 (화기·역마 많으면 즉흥↑, 토기·정성 많으면 계획↑)
-    즉흥 += elements["fire"] * 7
-    즉흥 += yeokma_count * 15
-    즉흥 -= elements["earth"] * 6
-    정성_count = sum(1 for tg in tg_values if tg in ("정재", "정관", "정인"))
-    즉흥 -= 정성_count * 8
-    
-    # 외향 vs 내향 (화기·식상 많으면 외향↑, 수기·인성 많으면 내향↑)
-    외향 += elements["fire"] * 9
-    외향 += siksang_count * 10
-    외향 += strong_sibiun * 5
-    외향 -= elements["water"] * 7
-    외향 -= in_count * 8
-    
-    # 실행 vs 고민 (신강·비겁·관성 많으면 실행↑, 신약·인성 많으면 고민↑)
+
+    # ── 신경성 (높을수록 예민·불안) ──────────────────────────
+    신경성 = 50
+    신경성 += elements["water"] * 8   # 수기 → 감정 출렁임
+    신경성 += pyeongwan_count * 12    # 편관(칠살) → 압박·스트레스
+    신경성 += sanggwan_count * 8      # 상관 → 예민·반항
+    if strength == "신약":
+        신경성 += 15
+    elif strength == "신강":
+        신경성 -= 10
+    신경성 -= jeongin_count * 8       # 정인 → 안정감
+    신경성 -= elements["earth"] * 6   # 토기 → 정서 안정
+
+    # ── 외향성 (높을수록 사교·활발) ──────────────────────────
+    외향성 = 50
+    외향성 += elements["fire"] * 9    # 화기 → 표현력·활발
+    외향성 += siksang_count * 10      # 식상 → 표현 욕구
+    외향성 += yeokma_count * 12       # 역마 → 활동성
+    외향성 += strong_sibiun * 5       # 건록·제왕 → 강한 자기표현
+    외향성 -= elements["water"] * 7   # 수기 → 내면 지향
+    외향성 -= in_count * 8            # 인성 → 내향
+
+    # ── 개방성 (높을수록 창의·변화 추구) ─────────────────────
+    개방성 = 50
+    개방성 += elements["wood"] * 8    # 목기 → 성장·도전
+    개방성 += siksang_count * 10      # 식상 → 창의적 표현
+    개방성 += yeokma_count * 12       # 역마 → 변화 추구
+    개방성 += 편성_count * 8          # 편성 → 틀을 벗어남
+    개방성 -= elements["earth"] * 8   # 토기 → 보수적
+    개방성 -= 정성_count * 7          # 정성 → 관습 중시
+    개방성 -= elements["metal"] * 6   # 금기 → 규율·원칙
+
+    # ── 우호성 (높을수록 협력·배려) ──────────────────────────
+    우호성 = 50
+    우호성 += jeongin_count * 12      # 정인 → 포용·배려
+    우호성 += sikshin_count * 10      # 식신 → 베풀기 좋아함
+    우호성 += jeongjae_count * 8      # 정재 → 성실한 관계
+    우호성 += elements["water"] * 6   # 수기 → 유연·포용
+    우호성 -= pyeongwan_count * 10    # 편관 → 지배적
+    우호성 -= geopjae_count * 8       # 겁재 → 경쟁적
+    우호성 -= sanggwan_count * 8      # 상관 → 반항적
+
+    # ── 성실성 (높을수록 체계적·완수) ────────────────────────
+    성실성 = 50
+    성실성 += elements["earth"] * 8   # 토기 → 안정·꼼꼼
+    성실성 += elements["metal"] * 7   # 금기 → 원칙·규율
+    성실성 += 정성_count * 10         # 정성 → 규칙 중시
+    성실성 += gwan_count * 8          # 관성 → 책임감
     if strength == "신강":
-        실행 += 15
-    elif strength == "신약":
-        실행 -= 15
-    실행 += bigyeob_count * 8
-    실행 += gwan_count * 6
-    실행 -= in_count * 10
-    
-    # 안정 vs 변화 (토기·정성 많으면 안정↑, 역마·편성 많으면 변화↑)
-    안정 += elements["earth"] * 8
-    안정 += 정성_count * 10
-    안정 -= yeokma_count * 18
-    편성_count = sum(1 for tg in tg_values if tg in ("편재", "편관", "편인"))
-    안정 -= 편성_count * 7
-    
-    # 0~100 범위로 제한
+        성실성 += 10
+    성실성 -= yeokma_count * 15       # 역마 → 산만·이동
+    성실성 -= 편성_count * 6          # 편성 → 틀 벗어남
+    성실성 -= elements["fire"] * 5    # 화기 → 충동적
+
     def clamp(v: float) -> int:
         return int(max(10, min(90, v)))
-    
+
     return {
-        "감정": clamp(감정),
-        "즉흥": clamp(즉흥),
-        "외향": clamp(외향),
-        "실행": clamp(실행),
-        "안정": clamp(안정),
+        "신경성": clamp(신경성),
+        "외향성": clamp(외향성),
+        "개방성": clamp(개방성),
+        "우호성": clamp(우호성),
+        "성실성": clamp(성실성),
     }
 
 

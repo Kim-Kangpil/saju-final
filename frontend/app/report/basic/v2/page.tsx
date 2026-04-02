@@ -411,7 +411,6 @@ function HeroCard({
       <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
         {[
           { label: "일주", value: `${dayHanja}(${dayHangul})` },
-          { label: "용신", value: yongshin },
           { label: "격국", value: geokguk },
         ].map((item) => (
           <div key={item.label} style={{

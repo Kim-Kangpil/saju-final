@@ -10,6 +10,7 @@
       language_points → GPT가 자연어 답변에 바로 녹여 쓸 핵심 문장들
 """
 
+import re as _re_module
 from datetime import date
 from .ten_gods import calculate_ten_god, get_element
 
@@ -258,24 +259,41 @@ def _parse_daeun_entry(entry: str) -> tuple[int, str]:
 
 def _get_current_daeun(saju_data: dict) -> tuple[int, str] | None:
     """오늘 기준 현재 대운 (start_age, '甲子') 반환. birth_year 없으면 None."""
-    # solar_birth_year 우선 (음력 입력 시 birthdate의 연도가 음력 연도일 수 있음)
-    birth_year = (
-        saju_data.get("solar_birth_year")
-        or saju_data.get("birth_year")
-        or saju_data.get("birthYear")
-    )
-    if not birth_year:
-        # birthdate에서 연도 추출 시도
-        bd = saju_data.get("birthdate") or saju_data.get("birthYmd") or ""
-        if bd and len(str(bd)) >= 4:
-            try:
-                birth_year = int(str(bd)[:4])
-            except Exception:
-                return None
-    if not birth_year:
-        return None
+    # /saju/full 이 미리 계산한 current_daeun 문자열이 있으면 바로 파싱 (재계산 금지)
+    pre = saju_data.get("current_daeun")
+    if pre and isinstance(pre, str):
+        m = _re_module.match(r'^(\d+)세\s+([^\s(]+)', pre)
+        if m:
+            return int(m.group(1)), m.group(2)
 
-    current_age = date.today().year - int(birth_year)
+    # --- fallback: birthdate로 만 나이 계산 (생일 월/일 반영) ---
+    today = date.today()
+    bd_str = str(saju_data.get("birthdate") or saju_data.get("birthYmd") or "").replace("-", "")
+    if len(bd_str) >= 8:
+        try:
+            birth_dt = date(int(bd_str[:4]), int(bd_str[4:6]), int(bd_str[6:8]))
+            current_age = today.year - birth_dt.year
+            if (today.month, today.day) < (birth_dt.month, birth_dt.day):
+                current_age -= 1
+        except Exception:
+            current_age = None
+    else:
+        birth_year = (
+            saju_data.get("solar_birth_year")
+            or saju_data.get("birth_year")
+            or saju_data.get("birthYear")
+        )
+        if not birth_year and len(bd_str) >= 4:
+            try:
+                birth_year = int(bd_str[:4])
+            except Exception:
+                pass
+        if not birth_year:
+            return None
+        current_age = today.year - int(birth_year)
+
+    if current_age is None:
+        return None
     daeun_list = _get_daeun_list(saju_data)
     if not daeun_list:
         return None

@@ -2097,6 +2097,7 @@ export default function Page({
           daeun_list:      Array.isArray(raw.daeun_list) ? raw.daeun_list : [],
           daeun_direction:
             typeof raw.daeun_direction === "string" ? raw.daeun_direction : "순행",
+          current_daeun:   typeof raw.current_daeun === "string" ? raw.current_daeun : null,
           ten_gods:
             raw.ten_gods && typeof raw.ten_gods === "object"
               ? (raw.ten_gods as object)

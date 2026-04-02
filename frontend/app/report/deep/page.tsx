@@ -224,6 +224,7 @@ function DeepReportContent() {
   const [v2Result, setV2Result] = useState<V2Result | null>(null);
   const [daeunList, setDaeunList] = useState<DaeunItem[]>([]);
   const [daeunStartAge, setDaeunStartAge] = useState(0);
+  const [currentDaeunRaw, setCurrentDaeunRaw] = useState<string | null>(null);
   const [pillars, setPillars] = useState<{ year: string; month: string; day: string; hour: string } | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
@@ -314,6 +315,7 @@ function DeepReportContent() {
         }).filter((d) => d.ganji);
         setDaeunList(parsed);
         setDaeunStartAge(typeof fullData.daeun_start_age === "number" ? fullData.daeun_start_age : 0);
+        setCurrentDaeunRaw(typeof fullData.current_daeun === "string" ? fullData.current_daeun : null);
 
         // 4) v2 심화 분석
         const v2Res = await fetch(`${API_BASE}/saju/analyze-v2`, {
@@ -357,13 +359,23 @@ function DeepReportContent() {
     })();
   }, [sajuId, retryCount]);
 
-  // 현재 대운 인덱스 계산
+  // 현재 대운 인덱스: 백엔드 current_daeun으로 결정 (프론트 나이 재계산 금지)
   const birthYear = sajuInfo?.birthdate ? parseInt((sajuInfo.birthdate as string).split("-")[0], 10) : 0;
-  const currentAge = birthYear ? (new Date().getFullYear() - birthYear) : 0;
-  const currentDaeunIdx = daeunList.findIndex((d, i) => {
-    const next = daeunList[i + 1];
-    return currentAge >= d.age && (!next || currentAge < next.age);
-  });
+  const currentAge = (() => {
+    if (!birthYear) return 0;
+    const today = new Date();
+    const bdate = sajuInfo?.birthdate ? new Date(sajuInfo.birthdate as string) : null;
+    let age = today.getFullYear() - birthYear;
+    if (bdate && (today.getMonth() < bdate.getMonth() || (today.getMonth() === bdate.getMonth() && today.getDate() < bdate.getDate()))) age--;
+    return age;
+  })();
+  const currentDaeunIdx = (() => {
+    if (currentDaeunRaw) {
+      const m = currentDaeunRaw.match(/^(\d+)세/);
+      if (m) return daeunList.findIndex(d => d.age === parseInt(m[1], 10));
+    }
+    return -1;
+  })();
 
   const birthYmd = (sajuInfo?.birthdate as string | undefined)?.replace(/-/g, "");
   const currentMonth = new Date().getMonth() + 1;

@@ -20,6 +20,7 @@
   "/mypage/page": "app/mypage/page.js",
   "/page": "app/page.js",
   "/payment/cancel/page": "app/payment/cancel/page.js",
+  "/payment/close/page": "app/payment/close/page.js",
   "/payment/fail/page": "app/payment/fail/page.js",
   "/payment/page": "app/payment/page.js",
   "/payment/success/page": "app/payment/success/page.js",

@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
 import { loadReportInputBySajuId } from "@/lib/reportSaju";
 import { ReportSection } from "@/components/ReportSection";
-import InicisPayButton from "@/components/InicisPayButton";
+import KakaoPayButton from "@/components/KakaoPayButton";
 import { parseGptSections } from "@/lib/parseGptReportSections";
 
 const API_BASE =
@@ -58,7 +58,7 @@ function PurchaseModal({ price, sajuId, onDismiss }: { price: number; sajuId: st
         <div style={{ fontSize: 26, fontWeight: 700, color: "#2C2417", marginBottom: 20 }}>
           {price.toLocaleString()}원
         </div>
-        <InicisPayButton orderType="love" price={price} label="연애운 리포트 구매" sajuId={sajuId} onError={setPayErr} />
+        <KakaoPayButton orderType="love" price={price} label="연애운 리포트 구매" sajuId={sajuId} onError={setPayErr} />
         {payErr && <div style={{ fontSize: 12, color: "#e11d48", marginTop: 8 }}>{payErr}</div>}
         <button type="button" onClick={onDismiss}
           style={{ marginTop: 14, background: "none", border: "none", fontSize: 13, color: "#A0A0A0", cursor: "pointer" }}>
@@ -98,7 +98,7 @@ function LoveAddonModal({
           분량·구성은 지금 보신 리포트와 같아요.
         </div>
         <div style={{ fontSize: 24, fontWeight: 700, color: "#2C2417", marginBottom: 18 }}>+{price.toLocaleString()}원</div>
-        <InicisPayButton
+        <KakaoPayButton
           orderType="love_realistic"
           price={price}
           label="추가 구매"

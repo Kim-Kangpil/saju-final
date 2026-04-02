@@ -258,7 +258,12 @@ def _parse_daeun_entry(entry: str) -> tuple[int, str]:
 
 def _get_current_daeun(saju_data: dict) -> tuple[int, str] | None:
     """오늘 기준 현재 대운 (start_age, '甲子') 반환. birth_year 없으면 None."""
-    birth_year = saju_data.get("birth_year") or saju_data.get("birthYear")
+    # solar_birth_year 우선 (음력 입력 시 birthdate의 연도가 음력 연도일 수 있음)
+    birth_year = (
+        saju_data.get("solar_birth_year")
+        or saju_data.get("birth_year")
+        or saju_data.get("birthYear")
+    )
     if not birth_year:
         # birthdate에서 연도 추출 시도
         bd = saju_data.get("birthdate") or saju_data.get("birthYmd") or ""

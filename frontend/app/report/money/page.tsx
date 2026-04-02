@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
 import { loadReportInputBySajuId } from "@/lib/reportSaju";
 import { ReportSection } from "@/components/ReportSection";
-import InicisPayButton from "@/components/InicisPayButton";
+import KakaoPayButton from "@/components/KakaoPayButton";
 import { parseGptSections } from "@/lib/parseGptReportSections";
 
 const API_BASE =
@@ -60,7 +60,7 @@ function PurchaseModal({ price, sajuId, onDismiss }: { price: number; sajuId: st
         <div style={{ fontSize: 26, fontWeight: 700, color: "#2C2417", marginBottom: 20 }}>
           {price.toLocaleString()}원
         </div>
-        <InicisPayButton
+        <KakaoPayButton
           orderType="money"
           price={price}
           label="재물운 리포트 구매"
@@ -113,7 +113,7 @@ function AddonModal({
         <div style={{ fontSize: 24, fontWeight: 700, color: "#2C2417", marginBottom: 18 }}>
           +{price.toLocaleString()}원
         </div>
-        <InicisPayButton
+        <KakaoPayButton
           orderType="money_realistic"
           price={price}
           label="추가 구매"

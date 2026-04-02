@@ -155,6 +155,12 @@
       "namedRegex": "^/payment/cancel(?:/)?$"
     },
     {
+      "page": "/payment/close",
+      "regex": "^/payment/close(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/payment/close(?:/)?$"
+    },
+    {
       "page": "/payment/fail",
       "regex": "^/payment/fail(?:/)?$",
       "routeKeys": {},

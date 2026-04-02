@@ -123,7 +123,7 @@ export function ProblemLoopCard({ ruleSummary }: Props) {
           padding: "4px 0 8px",
         }}
       >
-        {steps.map((step, i) => (
+        {steps.map((step: string, i: number) => (
           <div
             key={i}
             style={{ display: "flex", alignItems: "center", flexShrink: 0 }}

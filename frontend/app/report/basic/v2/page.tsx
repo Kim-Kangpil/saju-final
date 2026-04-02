@@ -683,6 +683,9 @@ function BasicV2ReportContent() {
           const hourPillar = (raw.hour_pillar as string) || `${fullData.hour?.cheongan?.hanja || ""}${fullData.hour?.jiji?.hanja || ""}`;
           setPillarStrings({ hour: hourPillar, day: dayPillar, month: monthPillar, year: yearPillar });
           const genderCode = inputData.gender === "남자" ? "M" : "F";
+          const solarBirthYear = typeof raw.solar_datetime_used === "string"
+            ? parseInt(raw.solar_datetime_used.slice(0, 4), 10)
+            : undefined;
           const v2Res = await fetch(`${API_BASE}/saju/analyze-guest`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -693,6 +696,7 @@ function BasicV2ReportContent() {
               hour_pillar: hourPillar,
               gender: genderCode,
               birthdate: inputData.birthdate,
+              solar_birth_year: solarBirthYear,
               daeun_list: Array.isArray(raw.daeun_list) ? raw.daeun_list : [],
               daeun_direction: typeof raw.daeun_direction === "string" ? raw.daeun_direction : "순행",
               ten_gods: raw.ten_gods && typeof raw.ten_gods === "object" ? raw.ten_gods : {},

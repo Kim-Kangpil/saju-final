@@ -28,6 +28,8 @@
 
 /* 2. 테일윈드 */
 @import "tailwindcss";
+@source not "../dist/**/*";
+@source not "../.next/**/*";
 
 @theme {
   --font-sans: 'Gmarket Sans', -apple-system, sans-serif;

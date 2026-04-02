@@ -3938,6 +3938,7 @@ class AnalyzeV2Request(BaseModel):
     tone: str = "empathy"
     cache_key: Optional[str] = None
     report_type: Optional[str] = None  # "basic" | "deep"
+    solar_birth_year: Optional[int] = None  # 태양력 출생연도 (음력 입력 시 birthdate 연도 보정용)
 
 
 @app.post("/saju/analyze-v2")
@@ -4281,9 +4282,6 @@ section_personality, section_strength, section_problem, section_money, section_c
 # /saju/analyze-guest  — 비로그인 게스트 경량 분석
 # =====================================================
 
-# IP당 하루 3회 제한: { "ip_YYYY-MM-DD": count }
-_guest_rate: dict[str, int] = {}
-
 @app.post("/saju/analyze-guest")
 async def analyze_guest(req: AnalyzeV2Request, request: Request):
     """
@@ -4293,19 +4291,6 @@ async def analyze_guest(req: AnalyzeV2Request, request: Request):
     - report_type 강제 "basic"
     - DB 저장 없음
     """
-    # ── rate limit ──────────────────────────────────
-    client_ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() \
-        or (request.client.host if request.client else "unknown")
-    from datetime import date as _date
-    today_str = _date.today().isoformat()
-    rate_key = f"{client_ip}_{today_str}"
-    current_count = _guest_rate.get(rate_key, 0)
-    if current_count >= 3:
-        raise HTTPException(
-            status_code=429,
-            detail="하루 무료 분석 3회를 모두 사용했어요.",
-        )
-
     if not get_openai_client():
         raise HTTPException(status_code=503, detail="OPENAI_API_KEY not configured")
 
@@ -4333,6 +4318,8 @@ async def analyze_guest(req: AnalyzeV2Request, request: Request):
     }
     if req_basic.birthdate:
         saju_data["birthdate"] = req_basic.birthdate
+    if req_basic.solar_birth_year:
+        saju_data["solar_birth_year"] = req_basic.solar_birth_year
 
     # ── 1) 규칙 엔진 ────────────────────────────────────
     try:
@@ -4402,8 +4389,6 @@ async def analyze_guest(req: AnalyzeV2Request, request: Request):
                     parsed_sections = {k: str(v) for k, v in obj.items() if isinstance(v, str)}
             except Exception:
                 parsed_sections = {}
-        # 캐시 히트여도 rate count 증가
-        _guest_rate[rate_key] = current_count + 1
         print(f"✅ [analyze-guest] 캐시 히트: {cache_key}")
         return {
             "success": True,
@@ -4513,9 +4498,6 @@ section_personality, section_strength, section_problem, section_money, section_c
         print(f"✅ [analyze-guest] 캐시 저장: {cache_key}")
     except Exception as e:
         logger.warning(f"[analyze-guest] 캐시 저장 실패: {e}")
-
-    # ── rate count 증가 ──────────────────────────────────
-    _guest_rate[rate_key] = current_count + 1
 
     rule_summary_data = interpretation.get("summary_for_gpt", {})
     return {

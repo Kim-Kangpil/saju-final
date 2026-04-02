@@ -20,6 +20,7 @@
   "/mypage/page": "/mypage",
   "/page": "/",
   "/payment/cancel/page": "/payment/cancel",
+  "/payment/close/page": "/payment/close",
   "/payment/fail/page": "/payment/fail",
   "/payment/page": "/payment",
   "/payment/success/page": "/payment/success",

@@ -2981,7 +2981,7 @@ export default function Page({
                         <button
                           type="button"
                           onClick={() => {
-                            setResult(null); setFortuneAnalysis(null); setCharmAnalysis(null); setTalentAnalysis(null); setStrengthAnalysis(null); setRelationsAnalysis(null); setSpecialStarsAnalysis(null); setTodayFortune(null); setNewInterpretation(null); setMaskVsNatureAnalysis(null); setMaskVsNatureLabels(null); setSummaryGuide(null); setExpandedSection(null); setShowFortune(false); setShowCharm(false); setShowTalent(false); setShowStrength(false); setShowRelations(false); setShowSpecialStars(false); setShowToday(false); setBirthYmd(""); setBirthHm(""); setTimeUnknown(false); setLoading(false); setErr(""); setShowHarmonyAfter(false);
+                            setResult(null); setFortuneAnalysis(null); setCharmAnalysis(null); setTalentAnalysis(null); setSpecialStarsAnalysis(null); setTodayFortune(null); setNewInterpretation(null); setMaskVsNatureAnalysis(null); setMaskVsNatureLabels(null); setSummaryGuide(null); setExpandedSection(null); setShowFortune(false); setShowCharm(false); setShowTalent(false); setShowStrength(false); setShowRelations(false); setShowSpecialStars(false); setShowToday(false); setBirthYmd(""); setBirthHm(""); setTimeUnknown(false); setLoading(false); setErr(""); setShowHarmonyAfter(false);
                           }}
                           style={{ width: "100%", padding: "10px 12px", background: "transparent", border: `1px solid ${S.beige}`, color: S.ink3, borderRadius: 10, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, cursor: "pointer", fontFamily: S.fontBody }}
                         >

@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import InicisPayButton from "@/components/InicisPayButton";
+import KakaoPayButton from "@/components/KakaoPayButton";
 import { ReportIntroHeader } from "@/components/ReportIntroHeader";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://saju-backend-eqd6.onrender.com";
@@ -175,7 +175,7 @@ function DeepIntroContent() {
             51%
           </span>
         </div>
-        <InicisPayButton
+        <KakaoPayButton
           orderType="deep"
           price={4900}
           label="심화 리포트 확인하기"

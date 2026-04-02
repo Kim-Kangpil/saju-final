@@ -168,7 +168,12 @@ def compute_full_saju(payload: Dict[str, Any], db: Any) -> Dict[str, Any]:
       daeun_list = d_list
 
       # 현재 대운: 서버 today 기준으로 계산 (프론트에서 연도 하드코딩 금지)
-      current_age = datetime.utcnow().year - year
+      # solar_dt_used.year 사용: 음력 입력 시 year는 음력연도 → 태양력 연도로 보정
+      _today = datetime.utcnow().date()
+      _solar_bdate = solar_dt_used.date()
+      current_age = _today.year - _solar_bdate.year
+      if (_today.month, _today.day) < (_solar_bdate.month, _solar_bdate.day):
+          current_age -= 1
       for entry in d_list:
           m = _re.match(r'^(\d+)세', entry)
           if m and int(m.group(1)) <= current_age:

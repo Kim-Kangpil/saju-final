@@ -4023,6 +4023,14 @@ async def _analyze_v2_impl(req: AnalyzeV2Request, request: Request):
         print(f"❌ analyze_full_saju 실패: {e}\n{_trace}")
         raise HTTPException(status_code=500, detail=f"분석 엔진 오류: {e}")
 
+    # ── 2-1) 格局 계산 ──────────────────────────────────
+    gyeok_result: dict = {}
+    try:
+        from logic.saju_engine.core.gyeok import calculate_gyeok
+        gyeok_result = calculate_gyeok(analysis)
+    except Exception as _gy_err:
+        logger.warning(f"格局 계산 실패: {_gy_err}")
+
     # ── 3) 이론 검색 ────────────────────────────────────
     theories = ""
     try:
@@ -4194,6 +4202,7 @@ section_personality, section_strength, section_problem, section_money, section_c
 직업: {summary_for_gpt.get("career_points", [])}
 현재시기: {summary_for_gpt.get("period_points", [])}
 신강약: {summary_for_gpt.get("strength", "")}
+格局: {gyeok_result.get("gyeok_name", "")} — {gyeok_result.get("desc", "")}
 종합참고: {comprehensive}
 """
         try:
@@ -4264,6 +4273,7 @@ section_personality, section_strength, section_problem, section_money, section_c
         "section_harmony": deep_sections.get("section_harmony", ""),
         "section_sinsal": deep_sections.get("section_sinsal", ""),
         "section_seun": deep_sections.get("section_seun", ""),
+        "gyeok": gyeok_result,
     }
 
 
@@ -4355,6 +4365,14 @@ async def analyze_guest(req: AnalyzeV2Request, request: Request):
         logger.warning(f"[analyze-guest] analyze_full_saju 실패: {e}\n{_tb.format_exc()}")
         raise HTTPException(status_code=500, detail=f"분석 엔진 오류: {e}")
 
+    # ── 2-1) 格局 계산 ──────────────────────────────────
+    gyeok_result: dict = {}
+    try:
+        from logic.saju_engine.core.gyeok import calculate_gyeok
+        gyeok_result = calculate_gyeok(analysis)
+    except Exception as _gy_err:
+        logger.warning(f"[analyze-guest] 格局 계산 실패: {_gy_err}")
+
     # ── 3) 이론 검색 ────────────────────────────────────
     theories = ""
     try:
@@ -4403,6 +4421,7 @@ async def analyze_guest(req: AnalyzeV2Request, request: Request):
             # deep 섹션은 게스트에 미제공
             "section_structure": "", "section_geunmyo": "", "section_tonggeun": "",
             "section_sibiun": "", "section_harmony": "", "section_sinsal": "", "section_seun": "",
+            "gyeok": gyeok_result,
         }
 
     # ── 5) GPT 표현 변환 ────────────────────────────────
@@ -4515,6 +4534,7 @@ section_personality, section_strength, section_problem, section_money, section_c
         # deep 섹션은 게스트에 미제공
         "section_structure": "", "section_geunmyo": "", "section_tonggeun": "",
         "section_sibiun": "", "section_harmony": "", "section_sinsal": "", "section_seun": "",
+        "gyeok": gyeok_result,
     }
 
 

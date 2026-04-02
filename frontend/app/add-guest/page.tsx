@@ -105,6 +105,7 @@ export default function AddGuestPage() {
       gender: gender === "male" ? "남자" : "여자",
       calendar_type: calendar === "solar" ? "양력" : "음력",
       time_unknown: timeUnknown,
+      birth_time: timeUnknown ? "" : `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
       birthdate: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
     };
 

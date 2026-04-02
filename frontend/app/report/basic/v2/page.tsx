@@ -153,6 +153,16 @@ interface SajuResult {
   hour: { cheongan: { hanja: string; hangul: string }; jiji: { hanja: string; hangul: string } };
 }
 
+interface GyeokResult {
+  gyeok_name: string;
+  gyeok_shin_kr: string;
+  tuchul: boolean;
+  ten_god: string;
+  desc: string;
+  good: string;
+  bad: string;
+}
+
 interface V2Result {
   comprehensive: string;
   core_values: string;
@@ -164,6 +174,7 @@ interface V2Result {
   section_relationship: string;
   section_current: string;
   rule_summary: Record<string, any>;
+  gyeok?: GyeokResult;
 }
 
 // comprehensive 텍스트 → 섹션 파싱 (이모지로 시작하는 줄이 섹션 제목)
@@ -538,18 +549,45 @@ function DaeunPreview({ daeunList, birthYear, sajuId, router }: {
 }
 
 // ─── 상품 목록 그리드 ───
-function ProductGrid({ sajuId, router }: {
+function ProductGrid({ sajuId, router, isGuest }: {
   sajuId: string;
   router: ReturnType<typeof import("next/navigation").useRouter>;
+  isGuest?: boolean;
 }) {
   const products = [
-    { icon: "💰", label: "재물운 리포트", sub: "2,900원", href: `/report/money/intro?saju_id=${sajuId}` },
-    { icon: "❤️", label: "연애운 리포트", sub: "2,900원", href: `/report/love/intro?saju_id=${sajuId}` },
-    { icon: "🧭", label: "직업운 리포트", sub: "2,900원", href: `/report/career/intro?saju_id=${sajuId}` },
-    { icon: "🔮", label: "심화 리포트", sub: "4,900원", href: `/report/deep/intro?saju_id=${sajuId}` },
-    { icon: "💬", label: "AI 채팅", sub: "Pro 월 3,900원", href: `/chat?saju_id=${sajuId}` },
-    { icon: "💑", label: "궁합 분석", sub: "2,900원", href: `/report/couple/intro?saju_id=${sajuId}` },
+    { icon: "💰", label: "재물운 리포트", sub: "2,900원", key: "money" },
+    { icon: "❤️", label: "연애운 리포트", sub: "2,900원", key: "love" },
+    { icon: "🧭", label: "직업운 리포트", sub: "2,900원", key: "career" },
+    { icon: "🔮", label: "심화 리포트", sub: "4,900원", key: "deep" },
+    { icon: "💬", label: "AI 채팅", sub: "무료 3회 제공", key: "chat" },
+    { icon: "💑", label: "궁합 분석", sub: "2,900원", key: "couple" },
   ];
+
+  function handleClick(key: string) {
+    if (isGuest) {
+      const redirectMap: Record<string, string> = {
+        money: "/report/money/intro",
+        love: "/report/love/intro",
+        career: "/report/career/intro",
+        deep: "/report/deep/intro",
+        chat: "/chat",
+        couple: "/report/couple/intro",
+      };
+      localStorage.setItem("purchase_redirect", redirectMap[key] || "/home");
+      router.push("/start");
+      return;
+    }
+    const hrefMap: Record<string, string> = {
+      money: `/report/money/intro?saju_id=${sajuId}`,
+      love: `/report/love/intro?saju_id=${sajuId}`,
+      career: `/report/career/intro?saju_id=${sajuId}`,
+      deep: `/report/deep/intro?saju_id=${sajuId}`,
+      chat: `/chat?saju_id=${sajuId}`,
+      couple: `/report/couple/intro?saju_id=${sajuId}`,
+    };
+    router.push(hrefMap[key] || "/home");
+  }
+
   return (
     <div style={{ marginTop: 24, marginBottom: 8 }}>
       <p style={{ fontSize: 13, fontWeight: 700, color: S.ink, marginBottom: 12 }}>📦 더 깊이 알아보기</p>
@@ -558,7 +596,7 @@ function ProductGrid({ sajuId, router }: {
           <button
             key={p.label}
             type="button"
-            onClick={() => router.push(p.href)}
+            onClick={() => handleClick(p.key)}
             style={{
               padding: "14px 12px", borderRadius: 12,
               background: "#fff", border: `1px solid ${S.beige}`,
@@ -1154,8 +1192,29 @@ function BasicV2ReportContent() {
             </div>
           )}
 
+          {/* 格局 카드 */}
+          {v2Result?.gyeok?.gyeok_name && (
+            <div style={{ background: "#fff", borderRadius: 14, padding: "16px 18px", marginBottom: 16, border: `1px solid ${S.beige}`, boxShadow: "0 1px 4px rgba(44,36,23,0.05)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span style={{ fontSize: 18 }}>🏛️</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: S.ink }}>나의 格 (타고난 틀)</span>
+                <span style={{ marginLeft: "auto", fontSize: 12, fontWeight: 700, color: "#fff", background: S.gold, padding: "2px 9px", borderRadius: 20 }}>
+                  {v2Result.gyeok.gyeok_name}
+                </span>
+              </div>
+              <p style={{ fontSize: 13, color: S.ink2, lineHeight: 1.8, margin: "0 0 8px", wordBreak: "keep-all" }}>
+                {v2Result.gyeok.desc}
+              </p>
+              {v2Result.gyeok.good && (
+                <p style={{ fontSize: 12, color: "#4B7A4B", background: "#F0FDF4", borderRadius: 8, padding: "7px 10px", margin: 0 }}>
+                  ✓ {v2Result.gyeok.good}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* 대운 미리보기 */}
-          {fullRawData && Array.isArray(fullRawData.daeun_list) && fullRawData.daeun_list.length > 0 && sajuInfo?.birthdate && !isSharedView && !isGuest && (
+          {fullRawData && Array.isArray(fullRawData.daeun_list) && fullRawData.daeun_list.length > 0 && sajuInfo?.birthdate && !isSharedView && (
             <DaeunPreview
               daeunList={fullRawData.daeun_list as string[]}
               birthYear={parseInt((sajuInfo.birthdate as string).split("-")[0], 10)}
@@ -1290,8 +1349,8 @@ function BasicV2ReportContent() {
           )}
 
           {/* 상품 목록 그리드 */}
-          {v2Result && !isSharedView && !isGuest && (
-            <ProductGrid sajuId={sajuId} router={router} />
+          {v2Result && !isSharedView && (
+            <ProductGrid sajuId={sajuId} router={router} isGuest={isGuest} />
           )}
 
           <div style={{ height: 80 }} />

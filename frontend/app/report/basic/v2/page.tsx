@@ -478,12 +478,13 @@ function HeroCard({
 // ─── 대운 미리보기 ───
 // currentDaeun: 백엔드에서 계산한 현재 대운 문자열 (예: "28세 甲子(갑자)")
 // 프론트에서 연도·나이 계산 금지 — 규칙 엔진이 내려주는 값 그대로 사용
-function DaeunPreview({ currentDaeun, sajuId, router }: {
+function DaeunPreview({ currentDaeun, sajuId, isGuest, router }: {
   currentDaeun: string;
   sajuId: string;
+  isGuest?: boolean;
   router: ReturnType<typeof import("next/navigation").useRouter>;
 }) {
-  const m = currentDaeun.match(/^(\d+)세\s+([^\(]+)\(([^)]+)\)/);
+  const m = currentDaeun.match(/^(\d+)세\s+([^(]+)\(([^)]+)\)/);
   if (!m) return null;
   const currentEntry = { startAge: parseInt(m[1], 10), ganji: m[2].trim(), hangul: m[3].trim() };
   const endAge = currentEntry.startAge + 9;
@@ -517,7 +518,10 @@ function DaeunPreview({ currentDaeun, sajuId, router }: {
       </div>
       <button
         type="button"
-        onClick={() => router.push(`/report/deep/intro?saju_id=${sajuId}`)}
+        onClick={() => isGuest
+          ? router.push("/start?redirect=deep")
+          : router.push(`/report/deep/intro?saju_id=${sajuId}`)
+        }
         style={{
           marginTop: 12, width: "100%", padding: "10px 0", borderRadius: 8,
           background: S.cream2, border: `1px solid ${S.beige}`,
@@ -525,7 +529,7 @@ function DaeunPreview({ currentDaeun, sajuId, router }: {
           display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
         }}
       >
-        전체 대운 흐름 보기 →
+        {isGuest ? "로그인하고 전체 대운 흐름 보기 →" : "전체 대운 흐름 보기 →"}
       </button>
     </div>
   );
@@ -1207,6 +1211,7 @@ function BasicV2ReportContent() {
             <DaeunPreview
               currentDaeun={fullRawData.current_daeun as string}
               sajuId={sajuId}
+              isGuest={isGuest}
               router={router}
             />
           )}

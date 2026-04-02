@@ -7,7 +7,7 @@ import { Icon } from "@iconify/react";
 import { getAuthHeaders } from "@/lib/auth";
 import { loadReportInputBySajuId } from "@/lib/reportSaju";
 import { ReportSection } from "@/components/ReportSection";
-import KakaoPayButton from "@/components/KakaoPayButton";
+import InicisPayButton from "@/components/InicisPayButton";
 import { parseGptSections } from "@/lib/parseGptReportSections";
 
 const API_BASE =
@@ -58,7 +58,7 @@ function PurchaseModal({ price, sajuId, onDismiss }: { price: number; sajuId: st
         <div style={{ fontSize: 26, fontWeight: 700, color: "#2C2417", marginBottom: 20 }}>
           {price.toLocaleString()}원
         </div>
-        <KakaoPayButton orderType="career" price={price} label="직업운 리포트 구매" sajuId={sajuId} onError={setPayErr} />
+        <InicisPayButton orderType="career" price={price} label="직업운 리포트 구매" sajuId={sajuId} onError={setPayErr} />
         {payErr && <div style={{ fontSize: 12, color: "#e11d48", marginTop: 8 }}>{payErr}</div>}
         <button type="button" onClick={onDismiss}
           style={{ marginTop: 14, background: "none", border: "none", fontSize: 13, color: "#A0A0A0", cursor: "pointer" }}>
@@ -75,11 +75,6 @@ function CareerAddonModal({
   onDismiss,
 }: { price: number; sajuId: string; onDismiss: () => void }) {
   const [payErr, setPayErr] = useState<string | null>(null);
-  const saveReturn = () => {
-    if (typeof window !== "undefined" && sajuId) {
-      localStorage.setItem("kakao_pay_report_return", `/report/career?saju_id=${encodeURIComponent(sajuId)}`);
-    }
-  };
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 200,
@@ -98,12 +93,11 @@ function CareerAddonModal({
           분량·구성은 지금 보신 리포트와 같아요.
         </div>
         <div style={{ fontSize: 24, fontWeight: 700, color: "#2C2417", marginBottom: 18 }}>+{price.toLocaleString()}원</div>
-        <KakaoPayButton
+        <InicisPayButton
           orderType="career_realistic"
           price={price}
           label="추가 구매"
           sajuId={sajuId}
-          onBeforePay={saveReturn}
           onError={setPayErr}
         />
         {payErr && <div style={{ fontSize: 12, color: "#e11d48", marginTop: 8 }}>{payErr}</div>}

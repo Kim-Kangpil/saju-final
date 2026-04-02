@@ -50,7 +50,8 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(npm run:*)",
-      "Bash(xargs -I{} bash -c 'if python3 -c \" import sys with open\\(sys.argv[1], \\\\\"rb\\\\\"\\) as f: content = f.read\\(\\) try: content.decode\\(\\\\\"utf-8\\\\\"\\) except UnicodeDecodeError as e: print\\(sys.argv[1], str\\(e\\)\\) \" \"{}\" 2>/dev/null; then :; fi')"
+      "Bash(xargs -I{} bash -c 'if python3 -c \" import sys with open\\(sys.argv[1], \\\\\"rb\\\\\"\\) as f: content = f.read\\(\\) try: content.decode\\(\\\\\"utf-8\\\\\"\\) except UnicodeDecodeError as e: print\\(sys.argv[1], str\\(e\\)\\) \" \"{}\" 2>/dev/null; then :; fi')",
+      "WebFetch(domain:developers.portone.io)"
     ]
   }
 }

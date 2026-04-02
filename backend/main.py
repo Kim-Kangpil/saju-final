@@ -3348,10 +3348,19 @@ async def portone_pay_confirm(request: Request):
     saju_id = pending.get("saju_id")
 
     _PRICE_MAP = {
+        "pro_monthly": 4900,
         "deep": 4900, "money": 2900, "love": 2900,
         "career": 2900, "couple": 2900,
         "money_realistic": 990, "love_realistic": 990, "career_realistic": 990,
+        "basic": 990, "analysis_ticket": 990,
     }
+
+    # 금액 위변조 방지: API 검증이 된 경우에만 금액 대조
+    if paid_amount is not None:
+        expected_amount = _PRICE_MAP.get(order_type, 0)
+        if expected_amount and paid_amount != expected_amount:
+            logger.warning(f"[portone] 금액 불일치 order={order_id} expected={expected_amount} paid={paid_amount}")
+            raise HTTPException(status_code=400, detail="결제 금액이 일치하지 않습니다.")
 
     try:
         if order_type == "pro_monthly":
@@ -3367,6 +3376,91 @@ async def portone_pay_confirm(request: Request):
         raise HTTPException(status_code=500, detail="혜택 지급 중 오류가 발생했습니다.")
 
     return {"success": True, "order_type": order_type}
+
+
+@app.post("/api/payment/portone/webhook")
+async def portone_webhook(request: Request):
+    """PortOne V1 웹훅 — 네트워크 단절로 콜백이 누락됐을 때 혜택 지급 보완."""
+    try:
+        body = await request.json()
+    except Exception:
+        return {"status": "ignored"}
+
+    imp_uid = (body.get("imp_uid") or "").strip()
+    merchant_uid = (body.get("merchant_uid") or "").strip()
+    status = body.get("status", "")
+
+    if not imp_uid or not merchant_uid or status != "paid":
+        return {"status": "ignored"}
+
+    imp_key = os.getenv("PORTONE_V1_IMP_KEY", "")
+    imp_secret = os.getenv("PORTONE_V1_IMP_SECRET", "")
+    if not imp_key or not imp_secret:
+        logger.warning("[webhook] IMP_KEY/SECRET 미설정")
+        return {"status": "ignored"}
+
+    try:
+        import httpx as _httpx
+        async with _httpx.AsyncClient(timeout=10) as client:
+            token_res = await client.post(
+                "https://api.iamport.kr/users/getToken",
+                json={"imp_key": imp_key, "imp_secret": imp_secret},
+            )
+            access_token = token_res.json()["response"]["access_token"]
+            pay_res = await client.get(
+                f"https://api.iamport.kr/payments/{imp_uid}",
+                headers={"Authorization": access_token},
+            )
+            pay_data = pay_res.json()["response"]
+    except Exception as e:
+        logger.warning(f"[webhook] PortOne API 조회 실패: {e}")
+        return {"status": "error"}
+
+    if pay_data.get("status") != "paid":
+        return {"status": "not_paid"}
+    if pay_data.get("merchant_uid") != merchant_uid:
+        logger.warning(f"[webhook] 주문번호 불일치: {imp_uid}")
+        return {"status": "mismatch"}
+
+    from logic.payment_db import get_pending_payment, save_payment, save_purchased_report, get_payment_by_imp_uid
+    pending = get_pending_payment(merchant_uid)
+    if not pending:
+        return {"status": "no_pending"}
+
+    # 이미 처리된 건인지 확인 (중복 처리 방지)
+    if get_payment_by_imp_uid(imp_uid):
+        return {"status": "already_processed"}
+
+    order_type = pending["order_type"]
+    user_id = pending["user_id"]
+    saju_id = pending.get("saju_id")
+    paid_amount = pay_data.get("amount")
+
+    _PRICE_MAP = {
+        "deep": 4900, "money": 2900, "love": 2900,
+        "career": 2900, "couple": 2900,
+        "money_realistic": 990, "love_realistic": 990, "career_realistic": 990,
+        "pro_monthly": 4900, "basic": 990, "analysis_ticket": 990,
+    }
+    expected = _PRICE_MAP.get(order_type, 0)
+    if expected and paid_amount != expected:
+        logger.warning(f"[webhook] 금액 불일치 order={merchant_uid} expected={expected} paid={paid_amount}")
+        return {"status": "amount_mismatch"}
+
+    try:
+        if order_type == "pro_monthly":
+            activate_membership(user_id, 1)
+        elif order_type in ("basic", "analysis_ticket"):
+            add_report_credits(user_id, 1)
+        else:
+            save_purchased_report(user_id, order_type, paid_amount, imp_uid, saju_id)
+        save_payment(str(user_id), imp_uid, merchant_uid, "paid")
+        logger.info(f"[webhook] 혜택 지급 완료: user={user_id} order_type={order_type}")
+    except Exception as e:
+        logger.warning(f"[webhook] 혜택 지급 오류: {e}")
+        return {"status": "error"}
+
+    return {"status": "ok"}
 
 
 @app.post("/payment/confirm")

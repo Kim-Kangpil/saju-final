@@ -161,7 +161,13 @@ def compute_full_saju(payload: Dict[str, Any], db: Any) -> Dict[str, Any]:
   current_daeun = None  # 오늘 기준 현재 대운 항목 (예: "28세 甲子(갑자)")
   try:
       import re as _re
-      gender = (payload.get("gender") or "").strip().upper()
+      _g = (payload.get("gender") or "").strip().upper()
+      if _g in ("남자", "남성"):
+          gender = "M"
+      elif _g in ("여자", "여성"):
+          gender = "F"
+      else:
+          gender = _g  # already M or F
       d_num, d_list, d_dir = test.calculate_daeun(birth_dt, gender, yj, mj, db)
       daeun_start_age = d_num
       daeun_direction = d_dir

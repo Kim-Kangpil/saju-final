@@ -1,7 +1,7 @@
 "use client"
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
-import KakaoPayButton from '@/components/KakaoPayButton'
+import InicisPayButton from '@/components/InicisPayButton'
 import { ReportIntroHeader } from '@/components/ReportIntroHeader'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://saju-backend-eqd6.onrender.com'
@@ -181,7 +181,7 @@ function CareerIntroContent() {
             51%
           </span>
         </div>
-        <KakaoPayButton
+        <InicisPayButton
           orderType="career"
           price={2900}
           label="직업운 리포트 확인하기"

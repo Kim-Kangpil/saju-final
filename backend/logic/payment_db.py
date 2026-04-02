@@ -176,6 +176,23 @@ def save_payment(user_id: str, payment_id: str, order_id: str, status: str = "pa
         conn.close()
 
 
+def get_payment_by_imp_uid(imp_uid: str) -> dict | None:
+    """imp_uid로 이미 처리된 결제 건 조회 (웹훅 중복 처리 방지용)."""
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(adapt("SELECT * FROM payments WHERE payment_id = ? LIMIT 1"), (imp_uid,))
+        row = cur.fetchone()
+        if not row:
+            return None
+        cols = [d[0] for d in cur.description]
+        return dict(zip(cols, row))
+    except Exception:
+        return None
+    finally:
+        conn.close()
+
+
 def _ensure_purchased_reports_table(cur) -> None:
     if USE_PG:
         cur.execute("""

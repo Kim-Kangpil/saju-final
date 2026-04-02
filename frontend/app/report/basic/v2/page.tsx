@@ -929,9 +929,9 @@ function BasicV2ReportContent() {
     return elements.map((e) => KO[e] ?? e).join("·") || "분석 중";
   })();
   const geokgukLabel = (() => {
-    const tg = fullRawData?.ten_gods;
-    const mb = tg?.month_branch ?? "";
-    return mb ? `${mb}격` : "분석 중";
+    // v2Result.gyeok (백엔드 格局 엔진) 우선 사용
+    const name = (v2Result as any)?.gyeok?.gyeok_name ?? "";
+    return name || "분석 중";
   })();
 
   if (error) {

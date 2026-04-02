@@ -3231,60 +3231,140 @@ async def inicis_pay_ready(request: Request):
 
 @app.post("/api/payment/portone/ready")
 async def portone_pay_ready(request: Request):
-    """포트원 결제 준비 — 간단한 테스트용."""
+    """포트원 V1 결제 준비."""
     user_id = get_user_id_from_request(request)
     if not user_id:
         raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
-    
+
     try:
         body = await request.json()
     except Exception:
         body = {}
-    
+
     _ORDER_PRICE_MAP = {
-        "pro_monthly":     ("한양사주 Pro (월간)", 4900),
-        "basic":           ("분석권 1개", 990),
-        "analysis_ticket": ("분석권 1개", 990),
-        "deep":            ("심화 리포트", 4900),
-        "money":           ("재물운 리포트", 2900),
-        "love":            ("연애운 리포트", 2900),
-        "career":          ("직업운 리포트", 2900),
-        "couple":          ("궁합 리포트", 2900),
-        "money_realistic": ("재물운 직설 분석", 990),
-        "love_realistic":  ("연애운 직설 분석", 990),
+        "pro_monthly":      ("한양사주 Pro (월간)", 4900),
+        "basic":            ("분석권 1개", 990),
+        "analysis_ticket":  ("분석권 1개", 990),
+        "deep":             ("심화 리포트", 4900),
+        "money":            ("재물운 리포트", 2900),
+        "love":             ("연애운 리포트", 2900),
+        "career":           ("직업운 리포트", 2900),
+        "couple":           ("궁합 리포트", 2900),
+        "money_realistic":  ("재물운 직설 분석", 990),
+        "love_realistic":   ("연애운 직설 분석", 990),
         "career_realistic": ("직업운 직설 분석", 990),
     }
-    
+
     order_type = body.get("order_type", "basic")
     if order_type not in _ORDER_PRICE_MAP:
         order_type = "basic"
-    
+
     item_name, amount = _ORDER_PRICE_MAP[order_type]
-    frontend_url = os.getenv("FRONTEND_URL", "https://hsaju.com")
-    
+
     import uuid as _uuid
     order_id = f"po_{_uuid.uuid4().hex[:16]}"
-    
-    # PortOne은 클라이언트에서 직접 결제를 처리하므로 간단한 정보만 반환
+
     from logic.payment_db import normalize_saju_id_from_client, save_pending_payment
-    
     pending_saju_id = normalize_saju_id_from_client(body.get("saju_id"))
     save_pending_payment(
         order_id=order_id,
         user_id=user_id,
         order_type=order_type,
-        tid="",  # PortOne은 tid가 필요 없음
+        tid="",
         saju_id=pending_saju_id,
     )
-    
+
+    user_code = os.getenv("PORTONE_V1_USER_CODE", "")
+    mid = os.getenv("INICIS_MID", "")
+    pg = f"html5_inicis.{mid}" if mid else "html5_inicis"
+
     return {
         "order_id": order_id,
         "item_name": item_name,
         "amount": amount,
-        "store_id": "store-1234",  # 포트원 상점 ID (테스트용)
-        "channel_key": "channel-key-1234",  # 포트원 채널 키 (테스트용)
-        "payment_method": "card",  # 카드 결제
+        "user_code": user_code,
+        "pg": pg,
     }
+
+
+@app.post("/api/payment/portone/confirm")
+async def portone_pay_confirm(request: Request):
+    """포트원 V1 결제 검증 및 혜택 지급."""
+    user_id = get_user_id_from_request(request)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="로그인이 필요합니다.")
+
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    imp_uid = body.get("imp_uid", "").strip()
+    order_id = body.get("order_id", "").strip()
+    if not imp_uid or not order_id:
+        raise HTTPException(status_code=400, detail="imp_uid, order_id 필수")
+
+    # PortOne V1 API로 결제 검증
+    imp_key = os.getenv("PORTONE_V1_IMP_KEY", "")
+    imp_secret = os.getenv("PORTONE_V1_IMP_SECRET", "")
+    paid_amount = None
+    if imp_key and imp_secret:
+        try:
+            import httpx as _httpx
+            async with _httpx.AsyncClient(timeout=10) as client:
+                # 토큰 발급
+                token_res = await client.post(
+                    "https://api.iamport.kr/users/getToken",
+                    json={"imp_key": imp_key, "imp_secret": imp_secret},
+                )
+                token_data = token_res.json()
+                access_token = token_data["response"]["access_token"]
+                # 결제 조회
+                pay_res = await client.get(
+                    f"https://api.iamport.kr/payments/{imp_uid}",
+                    headers={"Authorization": access_token},
+                )
+                pay_data = pay_res.json()["response"]
+                if pay_data.get("status") != "paid":
+                    raise HTTPException(status_code=400, detail="결제 상태가 완료가 아닙니다.")
+                if pay_data.get("merchant_uid") != order_id:
+                    raise HTTPException(status_code=400, detail="주문번호 불일치")
+                paid_amount = pay_data.get("amount")
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.warning(f"[portone] 결제 검증 실패: {e}")
+            raise HTTPException(status_code=502, detail="결제 검증 실패")
+
+    # 혜택 지급
+    from logic.payment_db import get_pending_payment, save_payment, save_purchased_report
+    pending = get_pending_payment(order_id)
+    if not pending:
+        raise HTTPException(status_code=400, detail="주문 정보를 찾을 수 없습니다.")
+
+    order_type = pending["order_type"]
+    saju_id = pending.get("saju_id")
+
+    _PRICE_MAP = {
+        "deep": 4900, "money": 2900, "love": 2900,
+        "career": 2900, "couple": 2900,
+        "money_realistic": 990, "love_realistic": 990, "career_realistic": 990,
+    }
+
+    try:
+        if order_type == "pro_monthly":
+            activate_membership(user_id, 1)
+        elif order_type in ("basic", "analysis_ticket"):
+            add_report_credits(user_id, 1)
+        else:
+            amt = paid_amount or _PRICE_MAP.get(order_type, 0)
+            save_purchased_report(user_id, order_type, amt, imp_uid, saju_id)
+        save_payment(str(user_id), imp_uid, order_id, "paid")
+    except Exception as e:
+        logger.warning(f"[portone] 혜택 지급 오류: {e}")
+        raise HTTPException(status_code=500, detail="혜택 지급 중 오류가 발생했습니다.")
+
+    return {"success": True, "order_type": order_type}
 
 
 @app.post("/payment/confirm")
@@ -4662,6 +4742,7 @@ async def inicis_ready(request: Request):
     sig = _inicis_signature(timestamp, mid, price, signkey)
     mkey = _inicis_mkey(signkey)
 
+    from logic.payment_db import normalize_saju_id_from_client, save_pending_payment
     saju_id_int = normalize_saju_id_from_client(saju_id_raw) if saju_id_raw else None
     save_pending_payment(order_id, user_id, order_type, "", saju_id_int)
 
@@ -4739,6 +4820,7 @@ try{{if(window.opener){{window.opener.location.href="{url}";window.close();}}els
     tid = approve_data.get("tid", auth_token)
 
     # ── 주문 조회 & 혜택 지급 ───────────────────────────
+    from logic.payment_db import get_pending_payment, save_payment, save_purchased_report
     pending = get_pending_payment(moid)
     if not pending:
         logger.warning(f"[inicis] pending 없음: {moid}")

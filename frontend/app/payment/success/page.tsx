@@ -51,8 +51,8 @@ function PaymentSuccessInner() {
     const saju_id    = searchParams.get("saju_id");
     setOrderType(order_type);
 
-    // KG이니시스: 백엔드에서 이미 승인 완료 → 바로 성공 처리
-    if (status === "inicis_ok") {
+    // PortOne / KG이니시스: 백엔드에서 이미 승인 완료 → 바로 성공 처리
+    if (status === "inicis_ok" || status === "portone_ok") {
       if (order_type === "deep" && saju_id) {
         setRedirectOverride(`/report/deep?saju_id=${encodeURIComponent(saju_id)}`);
       }

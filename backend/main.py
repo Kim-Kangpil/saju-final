@@ -3341,6 +3341,8 @@ async def portone_pay_confirm(request: Request):
     pending = get_pending_payment(order_id)
     if not pending:
         raise HTTPException(status_code=400, detail="주문 정보를 찾을 수 없습니다.")
+    if int(pending["user_id"]) != int(user_id):
+        raise HTTPException(status_code=403, detail="주문 정보가 일치하지 않습니다.")
 
     order_type = pending["order_type"]
     saju_id = pending.get("saju_id")

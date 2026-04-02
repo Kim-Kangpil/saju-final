@@ -8,7 +8,7 @@ from logic._db import USE_PG, get_conn, adapt
 
 DB_PATH = Path(__file__).resolve().parent / "saju.db"
 
-PROMPT_VERSION = "v2.1"  # 캐시 버스팅: 프롬프트 변경 시 버전 올릴 것
+PROMPT_VERSION = "v2.2"  # 캐시 버스팅: 대운 역행 버그 수정 후 캐시 무효화
 
 
 def _conn():

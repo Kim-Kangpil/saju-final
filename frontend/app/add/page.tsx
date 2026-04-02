@@ -8,18 +8,13 @@ import { useRouter } from 'next/navigation';
 import Script from "next/script";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  analyzeFullFortune,
   GreatFortuneData,
   YearFortuneData,
-  FORTUNE_ANALYSIS,
 } from "../../data/fortuneAnalysis";
 import { CHARM_ANALYSIS, CHARM_BY_PILLAR } from "../../data/charmAnalysis";
 import { ELEMENT_ANALYSIS } from "../../data/elementAnalysis";
-import { RELATIONS_ANALYSIS, analyzeRelations } from "../../data/relationsAnalysis";
 import {
-  SPECIAL_STARS_ANALYSIS,
-  analyzeSpecialStars,
-  getSpecialStarsVisualData,
+  buildFromBackendSinsal,
   type SpecialStarVisualCard,
 } from "../../data/specialStarsAnalysis";
 import { summarizeGongmang, getGongmangVisualData, GongmangVisualSlot } from "../../data/gongmangAnalysis";
@@ -36,7 +31,6 @@ import {
   type HealthBodyMapData,
 } from "../../data/healthConstitutionAnalysis";
 import { summarizeGuiin } from "../../data/guiinAnalysis";
-import { STRENGTH_ANALYSIS, analyzeStrength } from "../../data/strengthAnalysis";
 import { TALENT_ANALYSIS, TALENT_BY_TEN_GOD } from "../../data/talentAnalysis";
 import { TODAY_ANALYSIS, analyzeTodayFortune } from "../../data/todayAnalysis";
 import { dayPillarTexts } from "../../data/dayPillarAnimal";
@@ -755,8 +749,6 @@ export default function Page({
 
   const [charmAnalysis, setCharmAnalysis] = useState<string | null>(null);
   const [talentAnalysis, setTalentAnalysis] = useState<string | null>(null);
-  const [strengthAnalysis, setStrengthAnalysis] = useState<any>(null);
-  const [relationsAnalysis, setRelationsAnalysis] = useState<any>(null);
   const [specialStarsAnalysis, setSpecialStarsAnalysis] = useState<any>(null);
   const [specialStarsVisual, setSpecialStarsVisual] = useState<SpecialStarVisualCard[] | null>(null);
   const [healthBodyMap, setHealthBodyMap] = useState<HealthBodyMapData | null>(null);
@@ -1231,36 +1223,10 @@ export default function Page({
         const parsedYmd = parseYmd(birthYmd);
         if (!parsedYmd) return;
 
-        const birthYear = parsedYmd.year;
-        const currentYear = new Date().getFullYear();
-        const currentAge = currentYear - birthYear + 1;
-
-        const monthPillar = result.month.cheongan.hanja + result.month.jiji.hanja;
         const dayStem = result.day.cheongan.hanja;
 
-        const originalPillars = {
-          year: result.year.cheongan.hanja + result.year.jiji.hanja,
-          month: monthPillar,
-          day: result.day.cheongan.hanja + result.day.jiji.hanja,
-          hour: result.hour.cheongan.hanja + result.hour.jiji.hanja,
-        };
-
-        const daeunNum = 5;
-        const sinGangScore = 50;
-
-        const fortune = analyzeFullFortune(
-          birthYear,
-          gender,
-          monthPillar,
-          daeunNum,
-          currentAge,
-          currentYear,
-          dayStem,
-          originalPillars,
-          sinGangScore
-        );
-
-        setFortuneAnalysis(fortune);
+        // 대운/신살/신강약/합충: 백엔드 /saju/full 응답 직접 사용 (프론트 재계산 제거)
+        setFortuneAnalysis(null); // 렌더링 미사용 — 백엔드 daeun_list/daeun_start_age로 대체
 
         const dayPillar = result.day.cheongan.hanja + result.day.jiji.hanja;
         const charmText = CHARM_BY_PILLAR[dayPillar];
@@ -1270,77 +1236,11 @@ export default function Page({
         const talentText = TALENT_BY_TEN_GOD[dayStemTenGod];
         if (talentText) setTalentAnalysis(talentText.empathy);
 
-        const strengthResult = analyzeStrength(
-          dayStem,
-          result.month.jiji.hanja,
-          [result.year, result.month, result.day, result.hour],
-          tenGod
-        );
-        setStrengthAnalysis(strengthResult);
-
-        const relationsResult = analyzeRelations(
-          [
-            result.year.cheongan.hanja,
-            result.month.cheongan.hanja,
-            result.day.cheongan.hanja,
-            result.hour.cheongan.hanja,
-          ],
-          [
-            result.year.jiji.hanja,
-            result.month.jiji.hanja,
-            result.day.jiji.hanja,
-            result.hour.jiji.hanja,
-          ]
-        );
-        setRelationsAnalysis(relationsResult);
-
-        const specialResult = analyzeSpecialStars(result.day.cheongan.hanja, [
-          {
-            pos: "년",
-            stem: result.year.cheongan.hanja,
-            branch: result.year.jiji.hanja,
-          },
-          {
-            pos: "월",
-            stem: result.month.cheongan.hanja,
-            branch: result.month.jiji.hanja,
-          },
-          {
-            pos: "일",
-            stem: result.day.cheongan.hanja,
-            branch: result.day.jiji.hanja,
-          },
-          {
-            pos: "시",
-            stem: result.hour.cheongan.hanja,
-            branch: result.hour.jiji.hanja,
-          },
-        ]);
-        setSpecialStarsAnalysis(specialResult);
-        setSpecialStarsVisual(
-          getSpecialStarsVisualData(result.day.cheongan.hanja, [
-            {
-              pos: "년",
-              stem: result.year.cheongan.hanja,
-              branch: result.year.jiji.hanja,
-            },
-            {
-              pos: "월",
-              stem: result.month.cheongan.hanja,
-              branch: result.month.jiji.hanja,
-            },
-            {
-              pos: "일",
-              stem: result.day.cheongan.hanja,
-              branch: result.day.jiji.hanja,
-            },
-            {
-              pos: "시",
-              stem: result.hour.cheongan.hanja,
-              branch: result.hour.jiji.hanja,
-            },
-          ])
-        );
+        // 신살: 백엔드 sinsal 필드로 카드 생성
+        const sinsalData = (sajuJsonRaw?.sinsal ?? {}) as Record<string, unknown>;
+        const { empathy: sinsalEmpathy, visual: sinsalVisual } = buildFromBackendSinsal(sinsalData);
+        setSpecialStarsAnalysis({ empathy: sinsalEmpathy });
+        setSpecialStarsVisual(sinsalVisual);
 
         const todayResult = analyzeTodayFortune(hanjaToElement(dayStem), selectedChar);
         setTodayFortune(todayResult);
@@ -1575,12 +1475,11 @@ export default function Page({
           if (branchSet.has("丑") && branchSet.has("戌") && branchSet.has("未")) hyung.push("축술미");
           if (hasPair("子", "卯")) hyung.push("자묘형");
 
-          const shingangLevel =
-            strengthResult?.type === "신강"
-              ? "신강"
-              : strengthResult?.type === "신약"
-              ? "신약"
-              : ("중간" as const);
+          // 신강약: 백엔드 strength.strength 사용 (strengthResult 미선언 버그 수정)
+          const shingangLevel: "신강" | "신약" | "중간" =
+            sajuJsonRaw?.strength?.strength === "신강" ? "신강"
+            : sajuJsonRaw?.strength?.strength === "신약" ? "신약"
+            : "중간";
 
           const summaryInput: SummaryInput = {
             dayStem,
@@ -1662,7 +1561,7 @@ export default function Page({
         console.error("대운세운 분석 오류:", error);
       }
     }
-  }, [result, birthYmd, gender]);
+  }, [result, birthYmd, gender, sajuJsonRaw]);
 
   const getDayPillarAnimalText = useMemo(() => {
     if (!result) return null;
@@ -1971,7 +1870,6 @@ export default function Page({
     return base;
   }, [
     newInterpretation,
-    relationsAnalysis,
     specialStarsAnalysis,
     todayFortune,
     natureAnalysis,

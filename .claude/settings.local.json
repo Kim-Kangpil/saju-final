@@ -46,7 +46,9 @@
       "Bash(wc:*)",
       "Bash(tail:*)",
       "Bash(grep -E \"\\\\.py$\")",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
     ]
   }
 }

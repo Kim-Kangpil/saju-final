@@ -870,3 +870,86 @@ export function analyzeSpecialStars(...args: any[]): SpecialStarsResult {
     fun: "",
   };
 }
+
+/**
+ * 백엔드 sinsal 필드로 카드 표시용 text + visual 생성.
+ * 계산은 백엔드, 표시 UX는 기존 카드 방식 유지.
+ */
+export function buildFromBackendSinsal(sinsal: Record<string, unknown>): {
+  empathy: string;
+  visual: SpecialStarVisualCard[];
+} {
+  const BACKEND_KEY_MAP: Partial<Record<string, SpecialStarKey>> = {
+    dohwa: "dohwa",
+    yeokma: "yeokma",
+    hwagae: "hwagae",
+    guimun: "guimun",
+    hongyeom: "hongyeom",
+  };
+
+  const PRIORITY: SpecialStarKey[] = [
+    "goegang", "baekho", "goran", "gwasuk", "yangin",
+    "hongyeom", "dohwa", "yeokma", "hwagae", "guimun",
+    "wonjin", "geobsal", "jaesal", "cheonsal", "jisal",
+    "wolSal", "mangsin", "jangseong",
+  ];
+
+  const activeKeys = new Set<SpecialStarKey>();
+  for (const [backendKey, frontendKey] of Object.entries(BACKEND_KEY_MAP)) {
+    const items = sinsal[backendKey];
+    if (frontendKey && Array.isArray(items) && items.length > 0) {
+      activeKeys.add(frontendKey);
+    }
+  }
+
+  const visual: SpecialStarVisualCard[] = STAR_ORDER.map((key) => {
+    const info = STAR_INFO[key];
+    const ability =
+      (info?.core ?? "").replace(/\s+/g, " ").trim() ||
+      "삶의 특정 상황에서 작동하는 변수형 기운";
+    return {
+      key,
+      name: STAR_LABEL[key],
+      state: (activeKeys.has(key) ? "active" : "inactive") as SpecialStarCardState,
+      count: activeKeys.has(key) ? 1 : 0,
+      ability,
+    };
+  });
+
+  if (activeKeys.size === 0) {
+    const empathy =
+      "지금 구조에서는 도드라지게 잡히는 특수 신살이 많지 않아요. 그만큼 기본 골격과 스스로 선택한 방향성이 인생 흐름을 더 또렷하게 만드는 타입으로 볼 수 있어요. 시간이 지날수록 신살 변수보다는, 내가 쌓아 온 습관과 전략이 더 큰 무기가 되는 구조입니다.";
+    return { empathy, visual };
+  }
+
+  const sortedActive = Array.from(activeKeys).sort((a, b) => {
+    const pa = PRIORITY.indexOf(a);
+    const pb = PRIORITY.indexOf(b);
+    return (pa === -1 ? 999 : pa) - (pb === -1 ? 999 : pb);
+  });
+  const main = sortedActive.slice(0, 3);
+
+  const empathyIntro =
+    "당신이 가지고 있는 여러 신살 가운데, 지금은 특히 핵심적으로 작동하는 몇 가지를 중심으로 풀어볼게요.";
+  const starParas: string[] = [];
+  main.forEach((key) => {
+    const info = STAR_INFO[key];
+    if (!info) return;
+    starParas.push(`${STAR_LABEL[key]}은(는) ${info.core} ${info.positive}`);
+  });
+  const empathyClosing =
+    "이 기운들은 운명을 고정시키는 것이 아니라, 어떤 상황에서 무엇을 더 잘할 수 있는지 알려 주는 선택지에 가깝습니다. 나이가 들수록 언제 힘을 세우고 언제 빼야 하는지 감이 잡히면서, 같은 신살이 점점 더 의식적인 무기로 변해 가는 흐름이에요.";
+
+  const empathyParts: string[] = [empathyIntro];
+  if (starParas.length === 1) {
+    empathyParts.push(starParas[0]);
+  } else if (starParas.length === 2) {
+    empathyParts.push(starParas[0], starParas[1]);
+  } else {
+    empathyParts.push(starParas[0], [starParas[1], starParas[2]].join(" "));
+  }
+  empathyParts.push(empathyClosing);
+
+  const empathy = empathyParts.filter((p) => p.trim().length > 0).join("\n\n");
+  return { empathy, visual };
+}

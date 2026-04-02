@@ -379,41 +379,62 @@ const ko = {
         ]
     },
     features: {
-        badge: "🔍 분석 항목",
-        title: "사주 8글자에서\n이 모든 걸 읽어냅니다",
-        more: "+ 대운 · 세운 · 공망 · 귀인 · 체질 · 행운 아이템",
-        more_strong: "사주 전체를 종합한 인생 가이드",
-        more_suffix: "까지",
-        items: [
+        badge: "📋 리포트 안내",
+        title: "어떤 리포트를\n받을 수 있나요?",
+        reports: [
             {
-                icon: "🎭",
-                title: "타고난 기질",
-                desc: "음양오행으로 보는 나의 본성"
+                icon: "💬",
+                title: "무료 기본 분석",
+                price: "무료",
+                free: true,
+                items: [
+                    "사주팔자 원국 · 일주 동물",
+                    "타고난 기질 · 오행 성향",
+                    "십성 분포 요약",
+                    "대운 · 올해 운세 흐름"
+                ]
+            },
+            {
+                icon: "💼",
+                title: "직업운 리포트",
+                price: "2,900원",
+                free: false,
+                items: [
+                    "💼 일하는 방식",
+                    "🎯 잘 맞는 직종",
+                    "🏢 조직 vs 독립",
+                    "📈 현재 커리어 흐름",
+                    "🗓 올해 직업운",
+                    "✅ 실천 조언"
+                ]
+            },
+            {
+                icon: "❤️",
+                title: "연애운 리포트",
+                price: "2,900원",
+                free: false,
+                items: [
+                    "❤️ 연애 기질",
+                    "👤 이상형",
+                    "🔄 관계 패턴",
+                    "💫 현재 인연 흐름",
+                    "🗓 올해 연애운",
+                    "✅ 실천 조언"
+                ]
             },
             {
                 icon: "💰",
-                title: "재물운·직업운",
-                desc: "십성 기반 재물·적성 분석"
-            },
-            {
-                icon: "🤝",
-                title: "인간관계",
-                desc: "합충 기반 관계 에너지"
-            },
-            {
-                icon: "🔮",
-                title: "공망·귀인",
-                desc: "숨겨진 조력자와 공백 분석"
-            },
-            {
-                icon: "🏥",
-                title: "체질·건강",
-                desc: "오행 체질 맞춤 건강 정보"
-            },
-            {
-                icon: "📜",
-                title: "종합 인생 가이드",
-                desc: "사주 전체를 한눈에 정리"
+                title: "재물운 리포트",
+                price: "2,900원",
+                free: false,
+                items: [
+                    "💰 재물 기질",
+                    "💵 수입 구조",
+                    "🕳 지출 패턴",
+                    "📈 현재 재물 흐름",
+                    "🗓 올해 재물운",
+                    "✅ 실천 조언"
+                ]
             }
         ]
     },
@@ -670,41 +691,62 @@ const en = {
         ]
     },
     features: {
-        badge: "🔍 Analysis Areas",
-        title: "All of this decoded\nfrom 8 BaZi characters",
-        more: "+ 10‑Year Luck Pillars, Annual Luck, Void (Empty Branch), Nobleman Stars, Constitution, Lucky items",
-        more_strong: "A complete life guide",
-        more_suffix: " synthesizing your entire BaZi chart",
-        items: [
+        badge: "📋 Reports",
+        title: "What reports\ncan you get?",
+        reports: [
             {
-                icon: "🎭",
-                title: "Innate Nature",
-                desc: "Your core self through Yin-Yang & Five Elements"
+                icon: "💬",
+                title: "Free Basic Analysis",
+                price: "Free",
+                free: true,
+                items: [
+                    "BaZi Chart · Day Pillar Animal",
+                    "Innate Nature · Five Elements",
+                    "Ten Gods Distribution",
+                    "Luck Pillars · Annual Fortune"
+                ]
+            },
+            {
+                icon: "💼",
+                title: "Career Report",
+                price: "₩2,900",
+                free: false,
+                items: [
+                    "💼 Work Style",
+                    "🎯 Best-fit Industries",
+                    "🏢 Organization vs Independence",
+                    "📈 Current Career Flow",
+                    "🗓 This Year's Career Fortune",
+                    "✅ Action Advice"
+                ]
+            },
+            {
+                icon: "❤️",
+                title: "Love Report",
+                price: "₩2,900",
+                free: false,
+                items: [
+                    "❤️ Romantic Nature",
+                    "👤 Ideal Type",
+                    "🔄 Relationship Patterns",
+                    "💫 Current Relationship Energy",
+                    "🗓 This Year's Love Fortune",
+                    "✅ Action Advice"
+                ]
             },
             {
                 icon: "💰",
-                title: "Wealth & Career",
-                desc: "Ten Gods–based wealth and career analysis"
-            },
-            {
-                icon: "🤝",
-                title: "Relationships",
-                desc: "Relationship energy through harmony & conflict"
-            },
-            {
-                icon: "🔮",
-                title: "Void & Nobleman Stars",
-                desc: "Hidden helpers (Nobleman Stars) and karmic voids (Void/Emptiness)"
-            },
-            {
-                icon: "🏥",
-                title: "Health & Constitution",
-                desc: "Five-element based health insights"
-            },
-            {
-                icon: "📜",
-                title: "Life Guide Summary",
-                desc: "Your entire Saju at a glance"
+                title: "Wealth Report",
+                price: "₩2,900",
+                free: false,
+                items: [
+                    "💰 Wealth Nature",
+                    "💵 Income Structure",
+                    "🕳 Spending Patterns",
+                    "📈 Current Wealth Flow",
+                    "🗓 This Year's Wealth Fortune",
+                    "✅ Action Advice"
+                ]
             }
         ]
     },

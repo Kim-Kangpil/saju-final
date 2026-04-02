@@ -1695,6 +1695,43 @@ def calculate_personality_radar_scores(saju_data: dict, personality_result: dict
     }
 
 
+def _mbti_type_str(e: int, n: int, f: int, j: int) -> str:
+    return (
+        ("E" if e >= 50 else "I")
+        + ("N" if n >= 50 else "S")
+        + ("F" if f >= 50 else "T")
+        + ("J" if j >= 50 else "P")
+    )
+
+
+def calculate_mbti_tendency(radar_scores: dict) -> dict:
+    """
+    Big Five 점수 → MBTI 4축 퍼센테이지 도출
+    - E/I ← 외향성
+    - N/S ← 개방성 (개방형 → N, 전통형 → S)
+    - F/T ← 우호성(60%) + 신경성(40%)
+    - J/P ← 성실성 (성실형 → J, 자유형 → P)
+    """
+    extraversion     = radar_scores.get("외향성", 50)
+    openness         = radar_scores.get("개방성", 50)
+    agreeableness    = radar_scores.get("우호성", 50)
+    neuroticism      = radar_scores.get("신경성", 50)
+    conscientiousness = radar_scores.get("성실성", 50)
+
+    e_pct = round(extraversion)
+    n_pct = round(openness)
+    f_pct = round(agreeableness * 0.6 + neuroticism * 0.4)
+    j_pct = round(conscientiousness)
+
+    return {
+        "E": e_pct, "I": 100 - e_pct,
+        "N": n_pct, "S": 100 - n_pct,
+        "F": f_pct, "T": 100 - f_pct,
+        "J": j_pct, "P": 100 - j_pct,
+        "type": _mbti_type_str(e_pct, n_pct, f_pct, j_pct),
+    }
+
+
 def calculate_problem_loop(saju_data: dict, personality_result: dict, money_result: dict, career_result: dict) -> dict:
     """
     반복되는 문제 패턴 계산
@@ -1986,8 +2023,10 @@ def interpret_all(saju_data: dict) -> dict:
 
     # 시각화 데이터 계산
     try:
+        _radar = calculate_personality_radar_scores(saju_data, personality, money, career)
         visual_data = {
-            "personality_radar": calculate_personality_radar_scores(saju_data, personality, money, career),
+            "personality_radar": _radar,
+            "mbti": calculate_mbti_tendency(_radar),
             "problem_loop": calculate_problem_loop(saju_data, personality, money, career),
             "money_flow": calculate_money_flow(saju_data, money),
         }

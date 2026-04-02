@@ -3275,6 +3275,7 @@ async def portone_pay_ready(request: Request):
     )
 
     user_code = os.getenv("PORTONE_V1_USER_CODE", "")
+    channel_key = os.getenv("PORTONE_V1_CHANNEL_KEY", "")
     mid = os.getenv("INICIS_MID", "")
     pg = f"html5_inicis.{mid}" if mid else "html5_inicis"
 
@@ -3283,6 +3284,7 @@ async def portone_pay_ready(request: Request):
         "item_name": item_name,
         "amount": amount,
         "user_code": user_code,
+        "channel_key": channel_key,
         "pg": pg,
     }
 

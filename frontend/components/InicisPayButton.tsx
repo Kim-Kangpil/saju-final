@@ -75,7 +75,7 @@ export default function InicisPayButton({
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "결제 준비 실패");
 
-      const { order_id, item_name, amount, user_code, pg } = data;
+      const { order_id, item_name, amount, user_code, channel_key, pg } = data;
 
       const IMP = window.IMP;
       if (!IMP) throw new Error("결제 모듈을 불러올 수 없어요. 잠시 후 다시 시도해 주세요.");
@@ -86,7 +86,7 @@ export default function InicisPayButton({
       await new Promise<void>((resolve, reject) => {
         IMP.request_pay(
           {
-            pg,
+            ...(channel_key ? { channelKey: channel_key } : { pg }),
             pay_method: "card",
             merchant_uid: order_id,
             name: item_name,

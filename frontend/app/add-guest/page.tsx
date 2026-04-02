@@ -109,7 +109,7 @@ export default function AddGuestPage() {
     };
 
     const payload = {
-      calendar_type: inputData.calendar_type,
+      calendar_type: calendar === "solar" ? "solar" : "lunar",
       year,
       month,
       day,

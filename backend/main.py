@@ -2788,12 +2788,13 @@ async def payment_status_api(request: Request):
     daily_count = get_daily_chat_count(str(user_id))
     is_pro = bool(status.get("is_member"))
     
-    # 베타 쿠폰 확인
+    # 베타 쿠폰 확인 (관리자 코드만 유효, 베타 기간 종료)
     coupon_key = f"beta_coupon_{user_id}"
     coupon_data = get_cached_data(coupon_key)
-    beta_features = coupon_data.get("features") if coupon_data else None
-    
-    # 채팅 제한: Pro 무제한, 베타 무제한, 일반 5회
+    _raw_features = coupon_data.get("features") if coupon_data else None
+    beta_features = _raw_features if (_raw_features and _raw_features.get("is_admin")) else None
+
+    # 채팅 제한: Pro 무제한, 관리자 무제한, 일반 5회
     if is_pro or (beta_features and beta_features.get("free_chat")):
         chat_limit = 999
     else:
@@ -2832,13 +2833,14 @@ async def report_access_check(report_type: str, request: Request):
             out["has_direct_addon"] = True
         return out
 
-    # 베타 쿠폰 확인
+    # 베타 쿠폰 확인 (관리자 코드만 유효, 베타 기간 종료)
     beta_features = None
     if user_id:
         coupon_key = f"beta_coupon_{user_id}"
         coupon_data = get_cached_data(coupon_key)
-        beta_features = coupon_data.get("features") if coupon_data else None
-        
+        _raw_features = coupon_data.get("features") if coupon_data else None
+        beta_features = _raw_features if (_raw_features and _raw_features.get("is_admin")) else None
+
         # 관리자 모드 확인
         if beta_features and beta_features.get("is_admin"):
             return {
@@ -4682,15 +4684,7 @@ def set_cached_data(key: str, data: dict, expire_hours: int = 24):
             pass
 
 BETA_COUPONS = {
-    "BETA2024": {
-        "free_chat": True,
-        "free_basic_report": True,
-        "free_special_report": False,
-        "free_deep_report": False,
-        "unlimited_basic": True,
-        "max_uses": 100,
-        "used_count": 0,
-    },
+    # 베타 기간 종료 (2026-04-04) — 관리자 코드만 유지
     "sem101019": {
         "free_chat": True,
         "free_basic_report": True,
@@ -4732,7 +4726,11 @@ async def apply_beta_coupon(request: Request):
     print(f"[DEBUG] 쿠폰 조회 결과: {coupon}")
     
     if not coupon:
-        raise HTTPException(status_code=400, detail="유효하지 않은 쿠폰입니다.")
+        raise HTTPException(status_code=400, detail="베타 테스트 기간이 종료됐습니다.")
+
+    # 관리자 코드가 아니면 베타 기간 종료로 차단
+    if not coupon.get("is_admin"):
+        raise HTTPException(status_code=400, detail="베타 테스트 기간이 종료됐습니다.")
 
     coupon_key = f"beta_coupon_{user_id}"
     existing_coupon = get_cached_data(coupon_key)

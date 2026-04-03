@@ -333,8 +333,8 @@ export default function SajuMyPage({
           </div>
         </section>
 
-        {/* 베타 쿠폰 섹션 */}
-        {(!betaFeatures || !betaFeatures.is_admin) && (
+        {/* 베타 쿠폰 섹션 — 베타 종료로 비표시 */}
+        {false && (!betaFeatures || !betaFeatures.is_admin) && (
           <section style={{ margin: "20px -20px 0", background: "var(--bg-surface)", padding: "20px", borderRadius: 12, border: "1.5px solid var(--border-default)" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: textDark, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
               {betaFeatures ? "👑 관리자 전환 코드" : "🎉 베타 테스터 쿠폰"}

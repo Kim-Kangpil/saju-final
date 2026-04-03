@@ -1611,48 +1611,6 @@ export default function HomePage({
             </div>
           </section>
 
-          {/* ── 베타 테스터 배너 ── */}
-          <section style={{padding: '20px', textAlign: 'center'}}>
-            <div style={{
-              background: 'linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%)',
-              borderRadius: 16,
-              padding: 24,
-              maxWidth: 400,
-              margin: '0 auto',
-              border: '2px solid #2d5a2d',
-              boxShadow: '0 4px 12px rgba(45, 90, 45, 0.1)'
-            }}>
-              <div style={{fontSize: 14, fontWeight: 700, color: '#2d5a2d', marginBottom: 8}}>
-                베타 테스터 모집
-              </div>
-              <h3 style={{fontSize: 18, fontWeight: 700, color: '#2d5a2d', marginBottom: 8}}>
-                채팅 + 기본 리포트 무제한!
-              </h3>
-              <p style={{fontSize: 13, color: '#2d5a2d', marginBottom: 16, lineHeight: 1.5}}>
-                베타 테스터가 되어<br/>
-                AI 채팅과 기본 리포트를 무제한으로 이용하세요
-              </p>
-              <button 
-                onClick={() => router.push('/saju-mypage')}
-                style={{
-                  background: '#2d5a2d',
-                  color: 'white',
-                  border: 'none',
-                  padding: '12px 24px',
-                  borderRadius: 8,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                쿠폰 받기
-              </button>
-            </div>
-          </section>
-
           {/* ── 문제 제기 섹션 ── */}
           <section className="problem-sec">
             <div className="problem-label">{t("problem.eyebrow")}</div>

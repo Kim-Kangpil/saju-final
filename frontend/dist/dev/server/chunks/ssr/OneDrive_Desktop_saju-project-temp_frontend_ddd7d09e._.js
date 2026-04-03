@@ -2424,101 +2424,6 @@ function HomePage({ params }) {
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
-                                style: {
-                                    padding: '20px',
-                                    textAlign: 'center'
-                                },
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    style: {
-                                        background: 'linear-gradient(135deg, #e8f5e8 0%, #d4e8d4 100%)',
-                                        borderRadius: 16,
-                                        padding: 24,
-                                        maxWidth: 400,
-                                        margin: '0 auto',
-                                        border: '2px solid #2d5a2d',
-                                        boxShadow: '0 4px 12px rgba(45, 90, 45, 0.1)'
-                                    },
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            style: {
-                                                fontSize: 14,
-                                                fontWeight: 700,
-                                                color: '#2d5a2d',
-                                                marginBottom: 8
-                                            },
-                                            children: "베타 테스터 모집"
-                                        }, void 0, false, {
-                                            fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                            lineNumber: 1625,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                                            style: {
-                                                fontSize: 18,
-                                                fontWeight: 700,
-                                                color: '#2d5a2d',
-                                                marginBottom: 8
-                                            },
-                                            children: "채팅 + 기본 리포트 무제한!"
-                                        }, void 0, false, {
-                                            fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                            lineNumber: 1628,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                            style: {
-                                                fontSize: 13,
-                                                color: '#2d5a2d',
-                                                marginBottom: 16,
-                                                lineHeight: 1.5
-                                            },
-                                            children: [
-                                                "베타 테스터가 되어",
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
-                                                    fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                    lineNumber: 1632,
-                                                    columnNumber: 27
-                                                }, this),
-                                                "AI 채팅과 기본 리포트를 무제한으로 이용하세요"
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                            lineNumber: 1631,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            onClick: ()=>router.push('/saju-mypage'),
-                                            style: {
-                                                background: '#2d5a2d',
-                                                color: 'white',
-                                                border: 'none',
-                                                padding: '12px 24px',
-                                                borderRadius: 8,
-                                                fontSize: 14,
-                                                fontWeight: 700,
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s'
-                                            },
-                                            onMouseOver: (e)=>e.currentTarget.style.transform = 'scale(1.05)',
-                                            onMouseOut: (e)=>e.currentTarget.style.transform = 'scale(1)',
-                                            children: "쿠폰 받기"
-                                        }, void 0, false, {
-                                            fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                            lineNumber: 1635,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                    lineNumber: 1616,
-                                    columnNumber: 13
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 1615,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
                                 className: "problem-sec",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2526,7 +2431,7 @@ function HomePage({ params }) {
                                         children: t("problem.eyebrow")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1658,
+                                        lineNumber: 1616,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2537,7 +2442,7 @@ function HomePage({ params }) {
                                         children: t("problem.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1659,
+                                        lineNumber: 1617,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2548,14 +2453,14 @@ function HomePage({ params }) {
                                         children: t("problem.title_gold")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1662,
+                                        lineNumber: 1620,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "problem-divider"
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1665,
+                                        lineNumber: 1623,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2566,13 +2471,13 @@ function HomePage({ params }) {
                                         children: t("problem.body")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1666,
+                                        lineNumber: 1624,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 1657,
+                                lineNumber: 1615,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -2586,7 +2491,7 @@ function HomePage({ params }) {
                                         children: t("compare.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1673,
+                                        lineNumber: 1631,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2597,7 +2502,7 @@ function HomePage({ params }) {
                                         children: t("compare.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1674,
+                                        lineNumber: 1632,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2611,7 +2516,7 @@ function HomePage({ params }) {
                                                         children: t("compare.left_label")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1680,
+                                                        lineNumber: 1638,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2622,7 +2527,7 @@ function HomePage({ params }) {
                                                                 children: "ChatGPT"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 1682,
+                                                                lineNumber: 1640,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2630,7 +2535,7 @@ function HomePage({ params }) {
                                                                 children: "Claude"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 1683,
+                                                                lineNumber: 1641,
                                                                 columnNumber: 19
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2638,13 +2543,13 @@ function HomePage({ params }) {
                                                                 children: "Gemini"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 1684,
+                                                                lineNumber: 1642,
                                                                 columnNumber: 19
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1681,
+                                                        lineNumber: 1639,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2652,13 +2557,13 @@ function HomePage({ params }) {
                                                         children: t("compare.left_note")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1686,
+                                                        lineNumber: 1644,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1679,
+                                                lineNumber: 1637,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2666,7 +2571,7 @@ function HomePage({ params }) {
                                                 children: "→"
                                             }, void 0, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1689,
+                                                lineNumber: 1647,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2677,7 +2582,7 @@ function HomePage({ params }) {
                                                         children: t("compare.right_label")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1692,
+                                                        lineNumber: 1650,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2693,17 +2598,17 @@ function HomePage({ params }) {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 1695,
+                                                                lineNumber: 1653,
                                                                 columnNumber: 21
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1694,
+                                                            lineNumber: 1652,
                                                             columnNumber: 19
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1693,
+                                                        lineNumber: 1651,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2711,7 +2616,7 @@ function HomePage({ params }) {
                                                         children: t("compare.right_name")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1702,
+                                                        lineNumber: 1660,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2719,19 +2624,19 @@ function HomePage({ params }) {
                                                         children: t("compare.right_note")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1703,
+                                                        lineNumber: 1661,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1691,
+                                                lineNumber: 1649,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1678,
+                                        lineNumber: 1636,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2744,7 +2649,7 @@ function HomePage({ params }) {
                                                         children: t("compare.engine_a")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1709,
+                                                        lineNumber: 1667,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2752,20 +2657,20 @@ function HomePage({ params }) {
                                                         children: "×"
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1710,
+                                                        lineNumber: 1668,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                         children: t("compare.engine_b")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1711,
+                                                        lineNumber: 1669,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1708,
+                                                lineNumber: 1666,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2773,19 +2678,19 @@ function HomePage({ params }) {
                                                 children: t("compare.engine_sub")
                                             }, void 0, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1713,
+                                                lineNumber: 1671,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1707,
+                                        lineNumber: 1665,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 1672,
+                                lineNumber: 1630,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -2803,7 +2708,7 @@ function HomePage({ params }) {
                                         children: t("chat_preview.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1719,
+                                        lineNumber: 1677,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2814,7 +2719,7 @@ function HomePage({ params }) {
                                         children: t("chat_preview.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1722,
+                                        lineNumber: 1680,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2826,7 +2731,7 @@ function HomePage({ params }) {
                                         children: t("chat_preview.sub")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1725,
+                                        lineNumber: 1683,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2846,12 +2751,12 @@ function HomePage({ params }) {
                                                             }
                                                         }, void 0, false, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1732,
+                                                            lineNumber: 1690,
                                                             columnNumber: 19
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1731,
+                                                        lineNumber: 1689,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2859,7 +2764,7 @@ function HomePage({ params }) {
                                                         children: t("chat_preview.ai_name")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1738,
+                                                        lineNumber: 1696,
                                                         columnNumber: 17
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2871,13 +2776,13 @@ function HomePage({ params }) {
                                                         children: t("chat_preview.ai_status")
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1739,
+                                                        lineNumber: 1697,
                                                         columnNumber: 17
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1730,
+                                                lineNumber: 1688,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2892,7 +2797,7 @@ function HomePage({ params }) {
                                                                 children: b.q
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 1749,
+                                                                lineNumber: 1707,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2900,7 +2805,7 @@ function HomePage({ params }) {
                                                                 children: b.a
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 1750,
+                                                                lineNumber: 1708,
                                                                 columnNumber: 23
                                                             }, this)
                                                         ]
@@ -2908,7 +2813,7 @@ function HomePage({ params }) {
                                                 })()
                                             }, chatIdx, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1743,
+                                                lineNumber: 1701,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2933,24 +2838,24 @@ function HomePage({ params }) {
                                                     children: t("chat_preview.cta")
                                                 }, void 0, false, {
                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                    lineNumber: 1756,
+                                                    lineNumber: 1714,
                                                     columnNumber: 17
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1755,
+                                                lineNumber: 1713,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1729,
+                                        lineNumber: 1687,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 1718,
+                                lineNumber: 1676,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -2964,7 +2869,7 @@ function HomePage({ params }) {
                                         children: t("manseryeok.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1779,
+                                        lineNumber: 1737,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -2975,7 +2880,7 @@ function HomePage({ params }) {
                                         children: t("manseryeok.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1780,
+                                        lineNumber: 1738,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2987,7 +2892,7 @@ function HomePage({ params }) {
                                         children: t("manseryeok.sub")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1783,
+                                        lineNumber: 1741,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3007,25 +2912,25 @@ function HomePage({ params }) {
                                                                 }
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 1792,
+                                                                lineNumber: 1750,
                                                                 columnNumber: 21
                                                             }, this),
                                                             messages.manseryeok.headers.map((h)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
                                                                     children: h
                                                                 }, h, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1794,
+                                                                    lineNumber: 1752,
                                                                     columnNumber: 23
                                                                 }, this))
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1791,
+                                                        lineNumber: 1749,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                    lineNumber: 1790,
+                                                    lineNumber: 1748,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
@@ -3042,20 +2947,20 @@ function HomePage({ params }) {
                                                                     children: "십성(천간)"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1801,
+                                                                    lineNumber: 1759,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 messages.manseryeok.sipsung_top.map((s, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                                                         children: s
                                                                     }, i, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 1803,
+                                                                        lineNumber: 1761,
                                                                         columnNumber: 23
                                                                     }, this))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1800,
+                                                            lineNumber: 1758,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3069,7 +2974,7 @@ function HomePage({ params }) {
                                                                     children: "천간"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1808,
+                                                                    lineNumber: 1766,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 [
@@ -3106,19 +3011,19 @@ function HomePage({ params }) {
                                                                             children: c.char
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1818,
+                                                                            lineNumber: 1776,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     }, i, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 1817,
+                                                                        lineNumber: 1775,
                                                                         columnNumber: 25
                                                                     }, this);
                                                                 })
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1807,
+                                                            lineNumber: 1765,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3132,7 +3037,7 @@ function HomePage({ params }) {
                                                                     children: "지지"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1834,
+                                                                    lineNumber: 1792,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 [
@@ -3169,19 +3074,19 @@ function HomePage({ params }) {
                                                                             children: c.char
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1844,
+                                                                            lineNumber: 1802,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     }, i, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 1843,
+                                                                        lineNumber: 1801,
                                                                         columnNumber: 25
                                                                     }, this);
                                                                 })
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1833,
+                                                            lineNumber: 1791,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3196,20 +3101,20 @@ function HomePage({ params }) {
                                                                     children: "십성(지지)"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1860,
+                                                                    lineNumber: 1818,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 messages.manseryeok.sipsung_bot.map((s, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                                                         children: s
                                                                     }, i, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 1862,
+                                                                        lineNumber: 1820,
                                                                         columnNumber: 23
                                                                     }, this))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1859,
+                                                            lineNumber: 1817,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3223,7 +3128,7 @@ function HomePage({ params }) {
                                                                     children: "지장간"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1867,
+                                                                    lineNumber: 1825,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -3239,20 +3144,20 @@ function HomePage({ params }) {
                                                                             children: "경금 (상관)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1869,
+                                                                            lineNumber: 1827,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: "신금 (식신)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1870,
+                                                                            lineNumber: 1828,
                                                                             columnNumber: 23
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1868,
+                                                                    lineNumber: 1826,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -3268,27 +3173,27 @@ function HomePage({ params }) {
                                                                             children: "정화 (편인)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1873,
+                                                                            lineNumber: 1831,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: "을목 (편관)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1874,
+                                                                            lineNumber: 1832,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: "기토 (비견)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1875,
+                                                                            lineNumber: 1833,
                                                                             columnNumber: 23
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1872,
+                                                                    lineNumber: 1830,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -3304,27 +3209,27 @@ function HomePage({ params }) {
                                                                             children: "무토 (겁재)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1878,
+                                                                            lineNumber: 1836,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: "임수 (정재)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1879,
+                                                                            lineNumber: 1837,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: "경금 (상관)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1880,
+                                                                            lineNumber: 1838,
                                                                             columnNumber: 23
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1877,
+                                                                    lineNumber: 1835,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
@@ -3340,33 +3245,33 @@ function HomePage({ params }) {
                                                                             children: "무토 (겁재)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1883,
+                                                                            lineNumber: 1841,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: "경금 (상관)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1884,
+                                                                            lineNumber: 1842,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                             children: "병화 (정인)"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1885,
+                                                                            lineNumber: 1843,
                                                                             columnNumber: 23
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1882,
+                                                                    lineNumber: 1840,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1866,
+                                                            lineNumber: 1824,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
@@ -3381,37 +3286,37 @@ function HomePage({ params }) {
                                                                     children: "십이운성"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1890,
+                                                                    lineNumber: 1848,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 messages.manseryeok.twelve.map((s, i)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                                                         children: s
                                                                     }, i, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 1892,
+                                                                        lineNumber: 1850,
                                                                         columnNumber: 23
                                                                     }, this))
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1889,
+                                                            lineNumber: 1847,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                    lineNumber: 1798,
+                                                    lineNumber: 1756,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                            lineNumber: 1789,
+                                            lineNumber: 1747,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1788,
+                                        lineNumber: 1746,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3424,13 +3329,13 @@ function HomePage({ params }) {
                                         children: t("manseryeok.note")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1899,
+                                        lineNumber: 1857,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 1778,
+                                lineNumber: 1736,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -3444,7 +3349,7 @@ function HomePage({ params }) {
                                         children: t("features.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1906,
+                                        lineNumber: 1864,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3455,7 +3360,7 @@ function HomePage({ params }) {
                                         children: t("features.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1907,
+                                        lineNumber: 1865,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3477,7 +3382,7 @@ function HomePage({ params }) {
                                                                             children: r.icon
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1917,
+                                                                            lineNumber: 1875,
                                                                             columnNumber: 23
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3487,7 +3392,7 @@ function HomePage({ params }) {
                                                                                     children: r.title
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                                    lineNumber: 1919,
+                                                                                    lineNumber: 1877,
                                                                                     columnNumber: 25
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3495,19 +3400,19 @@ function HomePage({ params }) {
                                                                                     children: "로그인 없이 바로 확인"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                                    lineNumber: 1920,
+                                                                                    lineNumber: 1878,
                                                                                     columnNumber: 25
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1918,
+                                                                            lineNumber: 1876,
                                                                             columnNumber: 23
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1916,
+                                                                    lineNumber: 1874,
                                                                     columnNumber: 21
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3515,13 +3420,13 @@ function HomePage({ params }) {
                                                                     children: r.price
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1923,
+                                                                    lineNumber: 1881,
                                                                     columnNumber: 21
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1915,
+                                                            lineNumber: 1873,
                                                             columnNumber: 19
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3531,18 +3436,18 @@ function HomePage({ params }) {
                                                                     children: item
                                                                 }, i, false, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1927,
+                                                                    lineNumber: 1885,
                                                                     columnNumber: 23
                                                                 }, this))
                                                         }, void 0, false, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1925,
+                                                            lineNumber: 1883,
                                                             columnNumber: 19
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                    lineNumber: 1914,
+                                                    lineNumber: 1872,
                                                     columnNumber: 17
                                                 }, this);
                                             })(),
@@ -3567,7 +3472,7 @@ function HomePage({ params }) {
                                                                             children: r.icon
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1945,
+                                                                            lineNumber: 1903,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3575,7 +3480,7 @@ function HomePage({ params }) {
                                                                             children: r.title
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1946,
+                                                                            lineNumber: 1904,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3583,7 +3488,7 @@ function HomePage({ params }) {
                                                                             children: r.price
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1947,
+                                                                            lineNumber: 1905,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3593,23 +3498,23 @@ function HomePage({ params }) {
                                                                                     children: item
                                                                                 }, i, false, {
                                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                                    lineNumber: 1950,
+                                                                                    lineNumber: 1908,
                                                                                     columnNumber: 31
                                                                                 }, this))
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                            lineNumber: 1948,
+                                                                            lineNumber: 1906,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, idx, true, {
                                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                    lineNumber: 1940,
+                                                                    lineNumber: 1898,
                                                                     columnNumber: 25
                                                                 }, this))
                                                         }, void 0, false, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1938,
+                                                            lineNumber: 1896,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3617,7 +3522,7 @@ function HomePage({ params }) {
                                                             children: "← 옆으로 밀어서 더 보기"
                                                         }, void 0, false, {
                                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                            lineNumber: 1956,
+                                                            lineNumber: 1914,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
@@ -3626,7 +3531,7 @@ function HomePage({ params }) {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1911,
+                                        lineNumber: 1869,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -3654,20 +3559,20 @@ function HomePage({ params }) {
                                                 children: "🛒"
                                             }, void 0, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1975,
+                                                lineNumber: 1933,
                                                 columnNumber: 15
                                             }, this),
                                             " 전체 리포트 보러가기"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1963,
+                                        lineNumber: 1921,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 1905,
+                                lineNumber: 1863,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -3681,7 +3586,7 @@ function HomePage({ params }) {
                                         children: t("animals.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1981,
+                                        lineNumber: 1939,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3692,7 +3597,7 @@ function HomePage({ params }) {
                                         children: t("animals.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1982,
+                                        lineNumber: 1940,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3704,7 +3609,7 @@ function HomePage({ params }) {
                                         children: t("animals.sub")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1985,
+                                        lineNumber: 1943,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3728,22 +3633,22 @@ function HomePage({ params }) {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 1997,
+                                                        lineNumber: 1955,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, `${animalRound}-${i}`, false, {
                                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                    lineNumber: 1992,
+                                                    lineNumber: 1950,
                                                     columnNumber: 19
                                                 }, this)
                                             }, i, false, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 1991,
+                                                lineNumber: 1949,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 1989,
+                                        lineNumber: 1947,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3756,13 +3661,13 @@ function HomePage({ params }) {
                                         children: t("animals.note")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2008,
+                                        lineNumber: 1966,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 1980,
+                                lineNumber: 1938,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -3777,7 +3682,7 @@ function HomePage({ params }) {
                                         children: t("trust.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2015,
+                                        lineNumber: 1973,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3790,7 +3695,7 @@ function HomePage({ params }) {
                                                         children: idx === 0 ? reviewCount.toLocaleString() + "+" : item.val
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 2020,
+                                                        lineNumber: 1978,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3801,24 +3706,24 @@ function HomePage({ params }) {
                                                         children: item.lbl.replace("{count}", reviewCount.toLocaleString())
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 2023,
+                                                        lineNumber: 1981,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, idx, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 2019,
+                                                lineNumber: 1977,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2017,
+                                        lineNumber: 1975,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 2014,
+                                lineNumber: 1972,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -3832,7 +3737,7 @@ function HomePage({ params }) {
                                         children: t("reviews.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2033,
+                                        lineNumber: 1991,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3843,7 +3748,7 @@ function HomePage({ params }) {
                                         children: t("reviews.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2034,
+                                        lineNumber: 1992,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3879,7 +3784,7 @@ function HomePage({ params }) {
                                                                         children: r.name
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 2059,
+                                                                        lineNumber: 2017,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3887,13 +3792,13 @@ function HomePage({ params }) {
                                                                         children: r.age
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 2060,
+                                                                        lineNumber: 2018,
                                                                         columnNumber: 23
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 2058,
+                                                                lineNumber: 2016,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3901,13 +3806,13 @@ function HomePage({ params }) {
                                                                 children: r.tag
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 2062,
+                                                                lineNumber: 2020,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 2057,
+                                                        lineNumber: 2015,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3915,7 +3820,7 @@ function HomePage({ params }) {
                                                         children: "★".repeat(5)
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 2064,
+                                                        lineNumber: 2022,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3927,18 +3832,18 @@ function HomePage({ params }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 2065,
+                                                        lineNumber: 2023,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, i, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 2056,
+                                                lineNumber: 2014,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2038,
+                                        lineNumber: 1996,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3951,13 +3856,13 @@ function HomePage({ params }) {
                                         children: t("reviews.hint")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2070,
+                                        lineNumber: 2028,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 2032,
+                                lineNumber: 1990,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -3971,7 +3876,7 @@ function HomePage({ params }) {
                                         children: t("core_features.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2077,
+                                        lineNumber: 2035,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3982,7 +3887,7 @@ function HomePage({ params }) {
                                         children: t("core_features.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2078,
+                                        lineNumber: 2036,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4019,7 +3924,7 @@ function HomePage({ params }) {
                                                         children: item.icon
                                                     }, void 0, false, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 2096,
+                                                        lineNumber: 2054,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4046,7 +3951,7 @@ function HomePage({ params }) {
                                                                         children: item.title
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 2112,
+                                                                        lineNumber: 2070,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     item.tag && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4062,13 +3967,13 @@ function HomePage({ params }) {
                                                                         children: item.tag
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                        lineNumber: 2116,
+                                                                        lineNumber: 2074,
                                                                         columnNumber: 25
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 2111,
+                                                                lineNumber: 2069,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4082,30 +3987,30 @@ function HomePage({ params }) {
                                                                 children: item.desc
                                                             }, void 0, false, {
                                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                                lineNumber: 2129,
+                                                                lineNumber: 2087,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                        lineNumber: 2110,
+                                                        lineNumber: 2068,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, idx, true, {
                                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                                lineNumber: 2084,
+                                                lineNumber: 2042,
                                                 columnNumber: 17
                                             }, this))
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2082,
+                                        lineNumber: 2040,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 2076,
+                                lineNumber: 2034,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -4121,7 +4026,7 @@ function HomePage({ params }) {
                                         children: t("pricing.badge")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2140,
+                                        lineNumber: 2098,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -4133,7 +4038,7 @@ function HomePage({ params }) {
                                         children: t("pricing.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2141,
+                                        lineNumber: 2099,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4145,13 +4050,13 @@ function HomePage({ params }) {
                                         }
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2144,
+                                        lineNumber: 2102,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 2139,
+                                lineNumber: 2097,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -4168,7 +4073,7 @@ function HomePage({ params }) {
                                         children: t("cta.eyebrow")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2149,
+                                        lineNumber: 2107,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -4179,7 +4084,7 @@ function HomePage({ params }) {
                                         children: t("cta.title")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2152,
+                                        lineNumber: 2110,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4190,7 +4095,7 @@ function HomePage({ params }) {
                                         children: t("cta.sub")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2155,
+                                        lineNumber: 2113,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4199,7 +4104,7 @@ function HomePage({ params }) {
                                         children: t("cta.primary")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2159,
+                                        lineNumber: 2117,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4208,13 +4113,13 @@ function HomePage({ params }) {
                                         children: t("cta.secondary")
                                     }, void 0, false, {
                                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                        lineNumber: 2162,
+                                        lineNumber: 2120,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 2148,
+                                lineNumber: 2106,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("footer", {
@@ -4228,19 +4133,19 @@ function HomePage({ params }) {
                                         t("footer.copy"),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                             fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                            lineNumber: 2171,
+                                            lineNumber: 2129,
                                             columnNumber: 15
                                         }, this),
                                         t("footer.sub")
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                    lineNumber: 2169,
+                                    lineNumber: 2127,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                                lineNumber: 2168,
+                                lineNumber: 2126,
                                 columnNumber: 11
                             }, this)
                         ]
@@ -4264,7 +4169,7 @@ function HomePage({ params }) {
                         children: "무료 사주 분석"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                        lineNumber: 2183,
+                        lineNumber: 2141,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$OneDrive$2f$Desktop$2f$saju$2d$project$2d$temp$2f$frontend$2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -4273,13 +4178,13 @@ function HomePage({ params }) {
                         children: "AI 대화"
                     }, void 0, false, {
                         fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                        lineNumber: 2186,
+                        lineNumber: 2144,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/OneDrive/Desktop/saju-project-temp/frontend/app/home/page.tsx",
-                lineNumber: 2182,
+                lineNumber: 2140,
                 columnNumber: 7
             }, this)
         ]

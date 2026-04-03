@@ -236,10 +236,6 @@ function SajuPreviewContent() {
   const [selectedDaeunIndex, setSelectedDaeunIndex] = useState<number | null>(null);
   const [deducting, setDeducting] = useState(false);
   const [showSeedSheet, setShowSeedSheet] = useState(false);
-  const [betaCode, setBetaCode] = useState("");
-  const [betaApplied, setBetaApplied] = useState(false);
-  const [betaLoading, setBetaLoading] = useState(false);
-  const [betaMsg, setBetaMsg] = useState<string | null>(null);
 
   function buildPillarBlock(label: string, pillarStr: string) {
     if (!pillarStr || pillarStr.length < 2)
@@ -266,33 +262,6 @@ function SajuPreviewContent() {
       year: mk(pillars.year_pillar),
     });
   }, [pillars?.day_pillar, pillars?.hour_pillar, pillars?.month_pillar, pillars?.year_pillar]);
-
-  async function handleBetaApply() {
-    if (!betaCode.trim()) return;
-    setBetaLoading(true);
-    setBetaMsg(null);
-    try {
-      const res = await fetch(`${API_BASE}/api/beta/apply-coupon`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-        body: JSON.stringify({ coupon_code: betaCode.trim() }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.features) {
-        localStorage.setItem("betaFeatures", JSON.stringify(data.features));
-        setBetaApplied(true);
-        setBetaMsg("🎉 코드가 적용됐어요! 리포트를 무료로 이용할 수 있어요.");
-        setBetaCode("");
-      } else {
-        setBetaMsg(data?.detail || "코드가 올바르지 않아요.");
-      }
-    } catch {
-      setBetaMsg("오류가 발생했어요. 다시 시도해주세요.");
-    } finally {
-      setBetaLoading(false);
-    }
-  }
 
   async function handleStartAnalysis() {
     if (!saju || !pillars) return;
@@ -1114,48 +1083,6 @@ function SajuPreviewContent() {
           </div>
         </section>
 
-        {/* 베타 코드 입력 */}
-        {!betaApplied && (
-          <div style={{ marginBottom: 16, padding: "16px", background: "#FBF8F3", borderRadius: 14, border: "1.5px solid #E0D8CC" }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#2C2417", marginBottom: 4 }}>🎁 베타 코드가 있으신가요?</p>
-            <p style={{ fontSize: 12, color: "#8B7355", marginBottom: 10 }}>코드를 입력하면 리포트를 무료로 이용할 수 있어요.</p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input
-                type="text"
-                placeholder="베타 코드 입력"
-                value={betaCode}
-                onChange={(e) => setBetaCode(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleBetaApply()}
-                style={{
-                  flex: 1, padding: "10px 12px", borderRadius: 10,
-                  border: "1.5px solid #D4C9B8", background: "#fff",
-                  fontSize: 13, color: "#2C2417", outline: "none",
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleBetaApply}
-                disabled={betaLoading}
-                style={{
-                  padding: "10px 16px", borderRadius: 10,
-                  border: "none", background: "#2C2417",
-                  color: "#fff", fontSize: 13, fontWeight: 700,
-                  cursor: betaLoading ? "wait" : "pointer",
-                }}
-              >
-                {betaLoading ? "..." : "적용"}
-              </button>
-            </div>
-            {betaMsg && (
-              <p style={{ fontSize: 12, marginTop: 8, color: betaApplied ? "#166534" : "#dc2626" }}>{betaMsg}</p>
-            )}
-          </div>
-        )}
-        {betaApplied && betaMsg && (
-          <div style={{ marginBottom: 16, padding: "12px 16px", background: "#f0fdf4", borderRadius: 14, border: "1.5px solid #bbf7d0" }}>
-            <p style={{ fontSize: 13, color: "#166534", fontWeight: 600 }}>{betaMsg}</p>
-          </div>
-        )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
           <button

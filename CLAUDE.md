@@ -92,7 +92,7 @@
 
 ---
 
-## 현재 로컬 파일 상태 (2026-04-02 기준, 브랜치: ui-renewal)
+## 현재 로컬 파일 상태 (2026-04-03 기준, 브랜치: ui-renewal)
 
 ### 구현 완료 목록
 
@@ -141,3 +141,44 @@
 ### 주의 사항
 - `report/basic/page.tsx`: KakaoPayButton 잔존 — 하지만 intro에서 바로 v2로 이동하므로 실제 접근 안 됨
 - `seed-charge` 페이지: order_type "basic"으로 분析권 판매 중 — 역할 재정의 필요
+
+---
+
+## 성향 분석 엔진 (2026-04-03 추가)
+
+### 파일 구조
+| 파일 | 역할 |
+|---|---|
+| `backend/logic/saju_engine/core/big5.py` | Big Five(OCEAN) 점수 계산 |
+| `backend/logic/saju_engine/core/sibsung_mix.py` | 십성 혼잡(정+편 동시 출현) 판정 |
+| `backend/logic/saju_engine/core/saju_interpreter.py` | MBTI/Big5 계산 함수 포함 |
+| `frontend/components/PersonalityRadarCard.tsx` | Big5 레이더 차트 + MBTI 경향 UI |
+
+### 설계 원칙 — 3단계 가중치 합산
+1. **1단계 일간 기질** (가장 강한 가중치) — 음양/일간별 고정 보정
+2. **2단계 오행 세력** — 8자 오행 분포 count 기반
+3. **3단계 십성 분포** — 혼잡 판정 후 쌍 단위 가중치 적용
+
+### Big5 십성 가중치 (`SIBSUNG_WEIGHT`)
+- effective 십성 × `min(total_count / 3, 1.0)` 스케일
+- 혼잡(mixed=True) 쌍: 신경성(N) +3 추가 보정
+- 클램프: 각 OCEAN 항목 0~100
+
+### 일간별 보정 테이블 목록 (saju_interpreter.py 상단)
+- `ILGAN_EI_ADJ` — E/I 기본값 (양간→E, 음간→I)
+- `ILGAN_SN_ADJ` — N/S 기질 (甲壬丁→N, 庚戊己→S)
+- `ILGAN_TF_ADJ` — T/F 기질 (丁甲丙→F, 庚辛壬→T)
+- `ILGAN_JP_ADJ` — J/P 기질 (庚戊己辛→J, 甲壬乙丙→P)
+- `ILGAN_NEUROTICISM_ADJ`, `ILGAN_EXTRAVERSION_ADJ`, `ILGAN_OPENNESS_ADJ`, `ILGAN_AGREEABLENESS_ADJ`, `ILGAN_CONSCIENTIOUSNESS_ADJ` — Big5 5축
+
+### sibsung_mix.py 반환 구조
+```python
+resolve_mixed_sibsung(ten_gods_list: list[str]) -> dict[str, dict]
+# 그룹명(비겁/식상/재성/관성/인성) → {jeong, pyeon, jeong_cnt, pyeon_cnt, effective, mixed, total}
+# 혼잡 규칙: 정+편 동시 출현 or 정만 3개 이상 → effective = 편, mixed = True
+```
+
+### /saju/full 연동
+- `_attach_big5_to_payload(data)` — `big5_with_labels()` 호출, `data["big5"]` 주입
+- `_attach_mixed_sibsung_to_payload(data)` — `resolve_mixed_sibsung()` 호출, `data["mixed_sibsung"]` 주입
+- `visual_data.mbti` / `visual_data.personality_radar` — `calculate_mbti_tendency()` / `calculate_personality_radar_scores()` 결과

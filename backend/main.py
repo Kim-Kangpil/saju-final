@@ -2996,11 +2996,12 @@ async def kakao_pay_ready(request: Request):
         "money_realistic": ("재물운 직설 분석", 990),
         "love_realistic":  ("연애운 직설 분석", 990),
         "career_realistic": ("직업운 직설 분석", 990),
+        "consulting":      ("1:1 사주 채팅 상담", 20000),
     }
     order_type = body.get("order_type", "basic")
     if order_type not in _ORDER_PRICE_MAP:
         order_type = "basic"
-    
+
     # 베타 쿠폰 무료 처리
     if beta_features:
         # 관리자 모드 처리
@@ -3219,12 +3220,13 @@ async def inicis_pay_ready(request: Request):
         "money_realistic": ("재물운 직설 분석", 990),
         "love_realistic":  ("연애운 직설 분석", 990),
         "career_realistic": ("직업운 직설 분석", 990),
+        "consulting":      ("1:1 사주 채팅 상담", 20000),
     }
-    
+
     order_type = body.get("order_type", "basic")
     if order_type not in _ORDER_PRICE_MAP:
         order_type = "basic"
-    
+
     item_name, amount = _ORDER_PRICE_MAP[order_type]
     frontend_url = os.getenv("FRONTEND_URL", "https://hsaju.com")
     

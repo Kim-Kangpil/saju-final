@@ -1343,6 +1343,38 @@ function SajuPreviewContent() {
             </button>
           </div>
 
+          {/* 1:1 사주 채팅 상담 */}
+          <button
+            type="button"
+            className="preview-tap"
+            onClick={() => router.push("/consulting")}
+            style={{
+              width: "100%",
+              borderRadius: 14,
+              border: `1.5px solid #B8A88A`,
+              background: "#F0EBE1",
+              padding: "14px 16px",
+              color: PREVIEW_TEXT,
+              fontFamily: "'Gmarket Sans', sans-serif",
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700 }}>💬 1:1 사주 채팅 상담</div>
+              <div style={{ fontSize: 11, color: "#8B7355", marginTop: 4 }}>카카오톡으로 직접 상담</div>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "#3A2E1E" }}>20,000원</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                <Icon icon="mdi:arrow-right-circle-outline" width={15} style={{ color: "#9A7B52" }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#8B7355", letterSpacing: "0.04em" }}>자세히 보러가기</span>
+              </div>
+            </div>
+          </button>
+
           <button
             type="button"
             className="preview-tap"

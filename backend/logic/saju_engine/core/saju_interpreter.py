@@ -13,6 +13,7 @@
 import re as _re_module
 from datetime import date
 from .ten_gods import calculate_ten_god, get_element
+from .sibsung_mix import resolve_mixed_sibsung
 
 # ─────────────────────────────────────────────────────────────
 # 일간 기본 성향 테이블
@@ -94,6 +95,43 @@ ILGAN_TF_ADJ = {
 ILGAN_JP_ADJ = {
     "庚": 10, "戊": 8, "己": 8, "辛": 6,
     "甲": -8, "壬": -10, "癸": -6, "乙": -6, "丙": -8,
+}
+
+# ─────────────────────────────────────────────────────────────
+# 십성별 MBTI 가중치 (N_axis = S/N 축의 N 방향 점수)
+# ─────────────────────────────────────────────────────────────
+SIBSUNG_MBTI_WEIGHT: dict[str, dict[str, int]] = {
+    "비견": {"E": 4, "I": 4, "N_axis": 2, "P": 3},
+    "겁재": {"E": 8, "N_axis": 4, "P": 6},
+    "식신": {"E": 6, "F": 6, "P": 4},
+    "상관": {"E": 8, "N_axis": 8, "P": 8, "F": 4},
+    "정재": {"S": 8, "T": 4, "J": 8},
+    "편재": {"S": 6, "T": 6, "P": 6, "E": 4},
+    "정관": {"J": 10, "T": 6, "S": 6},
+    "편관": {"J": 6,  "T": 8, "S": 4},
+    "정인": {"I": 8, "N_axis": 8, "F": 6},
+    "편인": {"I": 10, "N_axis": 10, "P": 4},
+}
+
+# ─────────────────────────────────────────────────────────────
+# 오행별 MBTI 가중치
+# 스케일: 가중치 × (해당_오행_개수 / 8)
+# ─────────────────────────────────────────────────────────────
+OHANG_MBTI_WEIGHT: dict[str, dict[str, int]] = {
+    "목": {"N_axis": 12, "P": 12},
+    "화": {"E": 12, "F": 12},
+    "토": {"S": 12, "J": 12},
+    "금": {"T": 12, "J": 12, "I": 8},
+    "수": {"N_axis": 8, "I": 12, "T": 8},
+}
+
+# 혼잡 쌍 이름 매핑
+_MIXED_PAIR_LABEL: dict[str, str] = {
+    "비겁": "자아·경쟁",
+    "식상": "표현·창의",
+    "재성": "재물·실행",
+    "관성": "통제·규율",
+    "인성": "학습·의존",
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -1775,14 +1813,11 @@ def calculate_mbti_tendency(saju_data: dict) -> dict:
 
     매핑 원칙 (3단계 가중치 합산):
       1단계 일간 음양·기질 (1차 지표 — 가장 강한 가중치)
-        - 양간(甲丙戊庚壬) → E 발산, 음간(乙丁己辛癸) → I 수렴
-        - 일간별 N/S·T/F·J/P 기질 반영
-      2단계 오행 세력 분포
-        - E/I: 火·土 vs 水·金
-        - N/S: 木·水·인성 vs 土·金·재성
-        - T/F: 金·水 vs 火·木
-        - J/P: 土·金·정성 vs 木·水·역마
-      3단계 십성 분포 + 신강/신약 보정
+      2단계 오행 세력 분포 (OHANG_MBTI_WEIGHT, 스케일: 가중치 × 개수/8)
+      3단계 십성 분포 — resolve_mixed_sibsung 기반
+             effective 십성 × min(total/3, 1.0) 스케일
+             mixed=True 쌍은 추가로 P+2 / J-2 보정
+      신강/신약 보정
     """
     ilgan = _get_ilgan(saju_data)
     strength = _get_strength(saju_data)
@@ -1790,87 +1825,120 @@ def calculate_mbti_tendency(saju_data: dict) -> dict:
     sinsal = saju_data.get("sinsal") or {}
 
     pillars = _get_pillars(saju_data)
-    elements = {"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}
+    # 오행별 개수 (천간+지지, 총 8자)
+    elem_count: dict[str, float] = {"wood": 0, "fire": 0, "earth": 0, "metal": 0, "water": 0}
+    _ELEM_KO = {"wood": "목", "fire": "화", "earth": "토", "metal": "금", "water": "수"}
     for pos in ("year", "month", "day", "hour"):
         p = pillars.get(pos, "")
         if len(p) >= 2:
-            stem_elem = get_element(p[0])
-            branch_elem = get_element(p[1])
-            if stem_elem in elements:
-                elements[stem_elem] += 1
-            if branch_elem in elements:
-                elements[branch_elem] += 1
+            for ch in (p[0], p[1]):
+                el = get_element(ch)
+                if el in elem_count:
+                    elem_count[el] += 1
 
-    tg_values = list(ten_gods.values())
-    siksang_count   = sum(1 for tg in tg_values if tg in ("식신", "상관"))
-    sikshin_count   = sum(1 for tg in tg_values if tg == "식신")
-    sanggwan_count  = sum(1 for tg in tg_values if tg == "상관")
-    gwan_count      = sum(1 for tg in tg_values if tg in ("편관", "정관"))
-    pyeongwan_count = sum(1 for tg in tg_values if tg == "편관")
-    in_count        = sum(1 for tg in tg_values if tg in ("편인", "정인"))
-    jeongin_count   = sum(1 for tg in tg_values if tg == "정인")
-    jeongjae_count  = sum(1 for tg in tg_values if tg == "정재")
-    정성_count = sum(1 for tg in tg_values if tg in ("정재", "정관", "정인"))
-    편성_count = sum(1 for tg in tg_values if tg in ("편재", "편관", "편인"))
-
-    yeokma_count = len(sinsal.get("yeokma") or sinsal.get("역마") or [])
+    sinsal_data = sinsal if isinstance(sinsal, dict) else {}
+    yeokma_count = len(sinsal_data.get("yeokma") or sinsal_data.get("역마") or [])
     sibiun_data = saju_data.get("twelve_states") or {}
     strong_sibiun = sum(1 for s in sibiun_data.values() if s in ("건록", "제왕", "관대"))
 
-    # ── E (외향) vs I (내향) ──────────────────────────────
-    e = 50
-    e += ILGAN_EI_ADJ.get(ilgan, 0)  # 1단계: 양간→E / 음간→I
-    e += elements["fire"] * 9         # 화기 → 표현·활발
-    e += elements["earth"] * 4        # 토기 → 자기표현
-    e += siksang_count * 10           # 식상 → 표현 욕구
-    e += yeokma_count * 12            # 역마 → 활동성
-    e += strong_sibiun * 5            # 건록·제왕·관대 → 강한 자기표현
-    e -= elements["water"] * 7        # 수기 → 내면 지향
-    e -= elements["metal"] * 4        # 금기 → 수렴·절제
-    e -= in_count * 8                 # 인성 → 내향
+    # ── 1단계: 일간 보정 ──────────────────────────────────
+    e = 50 + ILGAN_EI_ADJ.get(ilgan, 0)
+    n = 50 + ILGAN_SN_ADJ.get(ilgan, 0)
+    f = 50 + ILGAN_TF_ADJ.get(ilgan, 0)
+    j = 50 + ILGAN_JP_ADJ.get(ilgan, 0)
 
-    # ── N (직관) vs S (감각) ─────────────────────────────
-    n = 50
-    n += ILGAN_SN_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
-    n += elements["wood"] * 7         # 목기 → 가능성·미래 중시
-    n += elements["water"] * 7        # 수기 → 흐름·패턴 인식
-    n += in_count * 9                 # 인성 → 추상·개념·학습
-    n += sikshin_count * 8            # 식신 → 상상력
-    n += yeokma_count * 7             # 역마 → 변화·미래 지향
-    n -= elements["earth"] * 8        # 토기 → 현실적·구체적
-    n -= elements["metal"] * 6        # 금기 → 실용·원칙
-    n -= jeongjae_count * 8           # 정재 → 현실 자원 중시
-    n -= gwan_count * 5               # 관성 → 현실 규칙 중시
+    # ── 2단계: 오행 가중치 ────────────────────────────────
+    # 스케일: 가중치 × (해당_오행_개수 / 8)
+    _AXIS_MAP = {
+        "E": "e", "I": "i_adj", "N_axis": "n", "S": "s_adj",
+        "F": "f", "T": "t_adj", "J": "j", "P": "p_adj",
+    }
+    ohang_delta: dict[str, float] = {k: 0.0 for k in ("e", "n", "f", "j", "i_adj", "s_adj", "t_adj", "p_adj")}
+    for eng_key, ko_key in _ELEM_KO.items():
+        weight_map = OHANG_MBTI_WEIGHT.get(ko_key, {})
+        cnt = elem_count[eng_key]
+        scale = cnt / 8.0
+        for axis, w in weight_map.items():
+            delta = w * scale
+            if axis == "E":
+                ohang_delta["e"] += delta
+            elif axis == "I":
+                ohang_delta["e"] -= delta          # I 가중 → E 감소
+            elif axis == "N_axis":
+                ohang_delta["n"] += delta
+            elif axis == "S":
+                ohang_delta["n"] -= delta          # S 가중 → N 감소
+            elif axis == "F":
+                ohang_delta["f"] += delta
+            elif axis == "T":
+                ohang_delta["f"] -= delta          # T 가중 → F 감소
+            elif axis == "J":
+                ohang_delta["j"] += delta
+            elif axis == "P":
+                ohang_delta["j"] -= delta          # P 가중 → J 감소
 
-    # ── F (감정) vs T (사고) ─────────────────────────────
-    f = 50
-    f += ILGAN_TF_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
-    f += elements["water"] * 7        # 수기 → 감수성·공감
-    f += elements["fire"] * 5         # 화기 → 감성·열정
-    f += jeongin_count * 10           # 정인 → 배려·포용
-    f += sikshin_count * 8            # 식신 → 베풀기
-    f += sanggwan_count * 6           # 상관 → 감수성
-    f -= elements["metal"] * 8        # 금기 → 냉철·논리
-    f -= pyeongwan_count * 9          # 편관 → 냉정한 판단
-    f -= 정성_count * 5               # 정성 → 원칙·논리 중시
+    e += ohang_delta["e"]
+    n += ohang_delta["n"]
+    f += ohang_delta["f"]
+    j += ohang_delta["j"]
+
+    # 역마·십이운성 보정 (1단계에서 유지)
+    e += yeokma_count * 12
+    e += strong_sibiun * 5
+    n += yeokma_count * 7
+    j -= yeokma_count * 15
+
+    # ── 3단계: 십성 가중치 (resolve_mixed_sibsung 기반) ──
+    # saju_data에 mixed_sibsung 이 미리 주입된 경우 재계산 생략
+    mix_result = saju_data.get("mixed_sibsung") or None
+    if not mix_result:
+        tg_list = list(ten_gods.values())
+        mix_result = resolve_mixed_sibsung(tg_list)
+
+    mixed_notes: list[str] = []
+
+    for group, info in mix_result.items():
+        effective = info["effective"]
+        total = info["total"]
+        if not effective or total == 0:
+            continue
+
+        scale = min(total / 3.0, 1.0)
+        weights = SIBSUNG_MBTI_WEIGHT.get(effective, {})
+
+        for axis, w in weights.items():
+            delta = w * scale
+            if axis == "E":
+                e += delta
+            elif axis == "I":
+                e -= delta
+            elif axis == "N_axis":
+                n += delta
+            elif axis == "S":
+                n -= delta
+            elif axis == "F":
+                f += delta
+            elif axis == "T":
+                f -= delta
+            elif axis == "J":
+                j += delta
+            elif axis == "P":
+                j -= delta
+
+        # 혼잡 보정: P+2, J-2
+        if info["mixed"]:
+            j -= 2
+            pair_label = _MIXED_PAIR_LABEL.get(group, group)
+            mixed_notes.append(
+                f"{effective} 혼잡 — 충동성·변동성이 가중되어 {pair_label} 영역에서 일관성이 낮아질 수 있습니다."
+            )
+
+    # ── 신강/신약 보정 ────────────────────────────────────
     if strength == "신강":
         f -= 8
+        j += 8
     elif strength == "신약":
         f += 6
-
-    # ── J (판단) vs P (인식) ─────────────────────────────
-    j = 50
-    j += ILGAN_JP_ADJ.get(ilgan, 0)  # 1단계: 일간 기질
-    j += elements["earth"] * 8        # 토기 → 안정·계획
-    j += elements["metal"] * 7        # 금기 → 원칙·완수
-    j += 정성_count * 10              # 정성 → 규칙·마감 중시
-    j += gwan_count * 7               # 관성 → 책임·질서
-    j -= yeokma_count * 15            # 역마 → 즉흥·유연
-    j -= 편성_count * 6               # 편성 → 틀 밖
-    j -= elements["fire"] * 5         # 화기 → 충동
-    j -= elements["wood"] * 4         # 목기 → 새로운 자극
-    if strength == "신강":
-        j += 8
 
     def clamp100(v: float) -> int:
         return int(max(10, min(90, v)))
@@ -1883,6 +1951,7 @@ def calculate_mbti_tendency(saju_data: dict) -> dict:
         "F": f, "T": 100 - f,
         "J": j, "P": 100 - j,
         "type": _mbti_type_str(e, n, f, j),
+        "mixed_notes": mixed_notes,
     }
 
 

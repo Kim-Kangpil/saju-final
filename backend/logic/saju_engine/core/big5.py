@@ -8,6 +8,8 @@ O(개방성) C(성실성) E(외향성) A(친화성) N(신경성) 5개 차원 점
 """
 from __future__ import annotations
 
+from .sibsung_mix import resolve_mixed_sibsung
+
 # ─── 일간별 기본 성향 조정 ────────────────────────────────
 STEM_DELTA: dict[str, dict[str, int]] = {
     "甲": {"O": +8, "E": +8},            # 목양간 — 탐색·주도
@@ -31,18 +33,21 @@ ELEMENT_DELTA: dict[str, dict[str, int]] = {
     "water": {"O": +4, "N": +3},
 }
 
-# ─── 십성별 성향 조정 (등장 횟수 × 가중치) ────────────────
-TEN_GOD_DELTA: dict[str, dict[str, int]] = {
-    "상관": {"O": +5, "E": +3, "C": -3, "A": -4},
-    "편인": {"O": +5, "E": -3},
-    "정관": {"C": +5},
-    "정재": {"C": +4},
-    "정인": {"C": +3, "A": +4},
-    "식신": {"E": +4, "A": +5, "N": -3},
-    "겁재": {"E": +3, "A": -3},
-    "비견": {"E": +2},
-    "편관": {"A": -5, "N": +2},
-    "편재": {"O": +2, "E": +2},
+# ─── 십성별 성향 가중치 (쌍 단위 effective 십성 기준) ────────
+# 키: O(개방성) C(성실성) E(외향성) A(친화성) N(신경성)
+# 적용: effective_weight × min(total_count / 3, 1.0)
+# mixed=True 인 쌍은 N +3 추가 보정
+SIBSUNG_WEIGHT: dict[str, dict[str, int]] = {
+    "비견": {"O": 0,  "C": 0,   "E": 4,  "A": 4,  "N": 4},
+    "겁재": {"O": 0,  "C": -6,  "E": 6,  "A": -8, "N": 6},
+    "식신": {"O": 6,  "C": 0,   "E": 4,  "A": 6,  "N": 0},
+    "상관": {"O": 10, "C": -6,  "E": 6,  "A": 2,  "N": 4},
+    "정재": {"O": 0,  "C": 10,  "E": 0,  "A": 4,  "N": -4},
+    "편재": {"O": 4,  "C": 4,   "E": 4,  "A": 0,  "N": 0},
+    "정관": {"O": 0,  "C": 12,  "E": 0,  "A": 6,  "N": -4},
+    "편관": {"O": 0,  "C": 6,   "E": 0,  "A": -6, "N": 8},
+    "정인": {"O": 6,  "C": 4,   "E": -4, "A": 6,  "N": 0},
+    "편인": {"O": 10, "C": 0,   "E": -6, "A": -4, "N": 4},
 }
 
 # ─── 신강약별 조정 ────────────────────────────────────────
@@ -114,11 +119,26 @@ def calculate_big5(saju_data: dict) -> dict[str, int]:
             for dim, per_count in ELEMENT_DELTA.get(elem, {}).items():
                 scores[dim] += per_count * excess
 
-    # 3. 십성 (등장 횟수 × 가중치)
-    ten_gods = saju_data.get("ten_gods") or {}
-    for tg, cnt in _count_ten_gods(ten_gods).items():
-        for dim, delta in TEN_GOD_DELTA.get(tg, {}).items():
-            scores[dim] += delta * cnt
+    # 3. 십성 (혼잡 판정 후 쌍별 가중치 적용)
+    # _attach_mixed_sibsung_to_payload 가 먼저 실행된 경우 재계산 생략
+    mixed_result = saju_data.get("mixed_sibsung") or None
+    if not mixed_result:
+        ten_gods = saju_data.get("ten_gods") or {}
+        ten_gods_list = [v for v in ten_gods.values() if isinstance(v, str) and v]
+        mixed_result = resolve_mixed_sibsung(ten_gods_list)
+
+    for info in mixed_result.values():
+        effective = info["effective"]
+        total_count = info["total"]
+        if not effective or total_count == 0:
+            continue
+
+        scale = min(total_count / 3, 1.0)
+        for dim, w in SIBSUNG_WEIGHT.get(effective, {}).items():
+            scores[dim] += w * scale
+
+        if info["mixed"]:
+            scores["N"] += 3
 
     # 4. 신강약
     strength_raw = saju_data.get("strength") or {}

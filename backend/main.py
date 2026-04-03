@@ -898,6 +898,19 @@ def _attach_strength_to_payload(data: dict[str, Any]) -> None:
         }
 
 
+def _attach_mixed_sibsung_to_payload(data: dict[str, Any]) -> None:
+    """십성 혼잡 판정을 미리 계산해 data['mixed_sibsung']에 주입.
+    _attach_ten_gods_to_payload 실행 후 호출해야 함."""
+    try:
+        from logic.saju_engine.core.sibsung_mix import resolve_mixed_sibsung
+        ten_gods = data.get("ten_gods") or {}
+        tg_list = [v for v in ten_gods.values() if isinstance(v, str) and v]
+        data["mixed_sibsung"] = resolve_mixed_sibsung(tg_list)
+    except Exception as _e:
+        logger.warning(f"[mixed_sibsung] 계산 실패: {_e}")
+        data["mixed_sibsung"] = {}
+
+
 def _attach_big5_to_payload(data: dict[str, Any]) -> None:
     """_attach_ten_gods, _attach_strength, _attach_harmony_clash 실행 후 호출"""
     try:
@@ -2106,6 +2119,7 @@ async def get_full_saju(req: SajuRequest):
         _attach_harmony_clash_to_payload(data)
         _attach_strength_to_payload(data)
         _attach_yongshin_to_payload(data)
+        _attach_mixed_sibsung_to_payload(data)
         _attach_big5_to_payload(data)
         return data
     except Exception as e:

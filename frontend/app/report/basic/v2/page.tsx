@@ -218,6 +218,7 @@ function SectionAccordion({
   defaultOpen,
   visualCard,
   ruleSummary,
+  big5Items,
   ctaLabel,
   ctaHref,
   ctaTitle,
@@ -229,6 +230,7 @@ function SectionAccordion({
   defaultOpen: boolean;
   visualCard?: "personality" | "problem" | "money";
   ruleSummary?: Record<string, any>;
+  big5Items?: Big5Item[];
   ctaLabel?: string;
   ctaHref?: string;
   ctaTitle?: string;
@@ -287,7 +289,7 @@ function SectionAccordion({
               <MarkdownBody text={body} />
               {visualCard === "personality" && ruleSummary && (
                 <div style={{ marginTop: 16 }}>
-                  <PersonalityRadarCard ruleSummary={ruleSummary} />
+                  <PersonalityRadarCard ruleSummary={ruleSummary} big5Items={big5Items} />
                 </div>
               )}
               {visualCard === "problem" && ruleSummary && (
@@ -1320,6 +1322,7 @@ function BasicV2ReportContent() {
                       defaultOpen={idx < 2}
                       visualCard={getVisualCard(sec.title)}
                       ruleSummary={v2Result.rule_summary}
+                      big5Items={Array.isArray(fullRawData?.big5) ? fullRawData.big5 : undefined}
                       ctaTitle={showCTA ? ctaConfig.title : undefined}
                       ctaLabel={showCTA ? ctaConfig.label : undefined}
                       ctaHref={showCTA ? ctaConfig.href : undefined}

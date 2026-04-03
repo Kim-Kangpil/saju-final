@@ -1,12 +1,24 @@
 "use client";
 import { useMemo } from "react";
 
+interface Big5Item {
+  key: string;   // "O" | "C" | "E" | "A" | "N"
+  name: string;  // "개방성" 등
+  score: number; // 0~100
+}
+
 interface Props {
   ruleSummary: Record<string, any>;
+  big5Items?: Big5Item[];
 }
 
 const AXES = ["신경성", "외향성", "개방성", "우호성", "성실성"] as const;
 type Axis = (typeof AXES)[number];
+
+// Big5 key → 레이더 축 이름 매핑
+const BIG5_KEY_TO_AXIS: Record<string, Axis> = {
+  N: "신경성", E: "외향성", O: "개방성", A: "우호성", C: "성실성",
+};
 
 const AXIS_DESC: Record<Axis, [string, string]> = {
   신경성: ["감정이 섬세하고 상황에 민감하게 반응해요", "감정적으로 안정적이고 웬만해선 흔들리지 않아요"],
@@ -31,12 +43,22 @@ const MBTI_DIMS: Array<{ left: keyof MbtiData; right: keyof MbtiData; leftColor:
   { left: "J", right: "P", leftColor: "#8B7355", rightColor: "#A8946A" },
 ];
 
-export function PersonalityRadarCard({ ruleSummary }: Props) {
+export function PersonalityRadarCard({ ruleSummary, big5Items }: Props) {
   const scores = useMemo(() => {
+    // big5Items (규칙 엔진 계산값) 우선 사용
+    if (big5Items && big5Items.length > 0) {
+      const s: Record<Axis, number> = { 신경성: 50, 외향성: 50, 개방성: 50, 우호성: 50, 성실성: 50 };
+      big5Items.forEach((item) => {
+        const axis = BIG5_KEY_TO_AXIS[item.key];
+        if (axis) s[axis] = item.score;
+      });
+      return s;
+    }
+    // fallback: GPT visual_data
     const vd = ruleSummary?.visual_data?.personality_radar;
     if (vd && typeof vd === "object") return vd as Record<Axis, number>;
     return { 신경성: 50, 외향성: 50, 개방성: 50, 우호성: 50, 성실성: 50 } as Record<Axis, number>;
-  }, [ruleSummary]);
+  }, [big5Items, ruleSummary]);
 
   const mbti = useMemo<MbtiData | null>(() => {
     const m = ruleSummary?.visual_data?.mbti;

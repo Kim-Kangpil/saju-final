@@ -1,5 +1,6 @@
 {
   "/add-guest/page": "app/add-guest/page.js",
   "/page": "app/page.js",
+  "/report/basic/page": "app/report/basic/page.js",
   "/report/basic/v2/page": "app/report/basic/v2/page.js"
 }

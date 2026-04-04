@@ -32,10 +32,7 @@ function DeepIntroContent() {
     if (stored) {
       try {
         const f = JSON.parse(stored);
-        if (f?.is_admin === true) {
-          if (sajuId) { router.replace(`/report/deep?saju_id=${sajuId}`); return; }
-          setIsAdmin(true);
-        }
+        if (f?.is_admin === true) setIsAdmin(true);
       } catch {}
     }
     fetch(`${API_BASE}/api/beta/features`, { credentials: "include" })
@@ -44,14 +41,11 @@ function DeepIntroContent() {
         const f = data?.features;
         if (f) {
           localStorage.setItem("betaFeatures", JSON.stringify(f));
-          if (f.is_admin === true) {
-            if (sajuId) { router.replace(`/report/deep?saju_id=${sajuId}`); return; }
-            setIsAdmin(true);
-          }
+          if (f.is_admin === true) setIsAdmin(true);
         }
       })
       .catch(() => {});
-  }, [sajuId]);
+  }, []);
 
   const handleAdminViewReport = () => {
     if (!sajuId) {

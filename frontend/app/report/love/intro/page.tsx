@@ -34,10 +34,7 @@ function LoveIntroContent() {
     if (betaFeatures) {
       try {
         const parsed = JSON.parse(betaFeatures)
-        if (parsed?.is_admin) {
-          if (sajuId) { router.replace(`/report/love?saju_id=${sajuId}`); return; }
-          setIsAdmin(true)
-        }
+        if (parsed?.is_admin) setIsAdmin(true)
       } catch {}
     }
 
@@ -49,13 +46,13 @@ function LoveIntroContent() {
         })
         const data = await res.json()
         if (data?.features?.is_admin) {
-          if (sajuId) { router.replace(`/report/love?saju_id=${sajuId}`); return; }
+          localStorage.setItem('betaFeatures', JSON.stringify(data.features))
           setIsAdmin(true)
         }
       } catch {}
     }
     checkAdminFeatures()
-  }, [sajuId])
+  }, [])
 
   // 관리자용 바로 보기 핸들러
   const handleAdminViewReport = () => {

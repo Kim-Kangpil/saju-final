@@ -49,8 +49,8 @@ export default function StartPage({
     }).then(r => {
       if (r.ok) {
         const redirect = localStorage.getItem("purchase_redirect");
-        if (redirect) {
-          localStorage.removeItem("purchase_redirect");
+        localStorage.removeItem("purchase_redirect");
+        if (redirect && redirect.startsWith("/") && !redirect.startsWith("/payment/success") && !redirect.startsWith("/start")) {
           router.replace(redirect);
         } else {
           router.replace("/home");
@@ -98,8 +98,8 @@ export default function StartPage({
       if (data.token) localStorage.setItem("hsaju_token", data.token);
       if (data.user_id) localStorage.setItem("userId", String(data.user_id));
       const redirect = localStorage.getItem("purchase_redirect");
-      if (redirect) {
-        localStorage.removeItem("purchase_redirect");
+      localStorage.removeItem("purchase_redirect");
+      if (redirect && redirect.startsWith("/") && !redirect.startsWith("/payment/success") && !redirect.startsWith("/start")) {
         router.replace(redirect);
       } else {
         router.replace("/home");

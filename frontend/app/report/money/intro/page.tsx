@@ -32,7 +32,10 @@ function MoneyIntroContent() {
     if (betaFeatures) {
       try {
         const parsed = JSON.parse(betaFeatures)
-        if (parsed?.is_admin) setIsAdmin(true)
+        if (parsed?.is_admin) {
+          if (sajuId) { router.replace(`/report/money?saju_id=${sajuId}`); return; }
+          setIsAdmin(true)
+        }
       } catch {}
     }
 
@@ -40,11 +43,14 @@ function MoneyIntroContent() {
       try {
         const res = await fetch(`${API_BASE}/api/beta/features`, { credentials: 'include' })
         const data = await res.json()
-        if (data?.features?.is_admin) setIsAdmin(true)
+        if (data?.features?.is_admin) {
+          if (sajuId) { router.replace(`/report/money?saju_id=${sajuId}`); return; }
+          setIsAdmin(true)
+        }
       } catch {}
     }
     checkAdminFeatures()
-  }, [])
+  }, [sajuId])
 
   const handleAdminViewReport = () => {
     if (!sajuId) {

@@ -35,11 +35,12 @@ function CareerIntroContent() {
       try {
         const parsed = JSON.parse(betaFeatures)
         if (parsed?.is_admin) {
+          if (sajuId) { router.replace(`/report/career?saju_id=${sajuId}`); return; }
           setIsAdmin(true)
         }
       } catch {}
     }
-    
+
     // 2. API에서 최신 정보 가져오기
     const checkAdminFeatures = async () => {
       try {
@@ -48,12 +49,13 @@ function CareerIntroContent() {
         })
         const data = await res.json()
         if (data?.features?.is_admin) {
+          if (sajuId) { router.replace(`/report/career?saju_id=${sajuId}`); return; }
           setIsAdmin(true)
         }
       } catch {}
     }
     checkAdminFeatures()
-  }, [])
+  }, [sajuId])
 
   // 관리자용 바로 보기 핸들러
   const handleAdminViewReport = () => {

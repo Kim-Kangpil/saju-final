@@ -160,6 +160,7 @@ export default function HomePage({
         const data = await res.json();
         if (data.features) {
           setBetaFeatures(data.features);
+          localStorage.setItem("betaFeatures", JSON.stringify(data.features));
         }
       } catch (error) {
         console.error("베타 혜택 확인 오류:", error);

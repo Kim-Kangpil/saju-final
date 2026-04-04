@@ -485,6 +485,79 @@ def create_email_user(email: str, password: str, nickname: str = "") -> int | No
         conn.close()
 
 
+def ensure_admin_user(username: str, password: str) -> int | None:
+    """
+    관리자 계정을 DB에 보장합니다.
+    - 없으면 생성, 있으면 비밀번호/멤버십/쿠폰 데이터를 최신 상태로 갱신.
+    - username 은 이메일 필드에 입력하는 ID (예: 'kkp0922').
+    - 로그인 시 이메일 란에 username, 비밀번호 란에 password 입력.
+    """
+    import json
+    now = datetime.utcnow().isoformat()
+    expires = "2099-12-31T00:00:00"
+    pw_hash = _hash_password(password)
+    admin_coupon = json.dumps({
+        "code": "ADMIN_INTERNAL",
+        "features": {
+            "free_chat": True,
+            "free_basic_report": True,
+            "free_special_report": True,
+            "free_deep_report": True,
+            "unlimited_basic": True,
+            "is_admin": True,
+            "is_beta_tester": True,
+        },
+        "applied_at": now,
+    })
+
+    conn = _conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            adapt("SELECT id FROM users WHERE provider = ? AND provider_id = ?"),
+            ("email", username),
+        )
+        row = cur.fetchone()
+        if row:
+            user_id = int(row[0])
+            cur.execute(
+                adapt("""
+                UPDATE users SET
+                    password_hash = ?,
+                    is_member = 1,
+                    membership_started_at = ?,
+                    membership_expires_at = ?,
+                    beta_coupon_data = ?,
+                    last_login = ?
+                WHERE id = ?
+                """),
+                (pw_hash, now, expires, admin_coupon, now, user_id),
+            )
+            conn.commit()
+            return user_id
+
+        sql = adapt(
+            "INSERT INTO users (provider, provider_id, email, nickname, password_hash,"
+            " is_member, membership_started_at, membership_expires_at,"
+            " beta_coupon_data, created_at, last_login)"
+            " VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)"
+        )
+        if USE_PG:
+            sql += " RETURNING id"
+        cur.execute(sql, (
+            "email", username, username, "관리자",
+            pw_hash, now, expires, admin_coupon, now, now,
+        ))
+        new_id = cur.fetchone()[0] if USE_PG else cur.lastrowid
+        conn.commit()
+        return new_id
+    except Exception as e:
+        logger.error("ensure_admin_user 오류: %s", e)
+        return None
+    finally:
+        conn.close()
+
+
 def verify_email_login(email: str, password: str) -> int | None:
     """이메일 로그인 검증. 성공 시 user_id, 실패 시 None."""
     now = datetime.utcnow().isoformat()

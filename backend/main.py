@@ -268,6 +268,17 @@ try:
 except Exception as e:
     print(f"⚠️ 사용자 DB 초기화: {e}")
 
+# 관리자 계정 보장 (로그인: 이메일=kkp0922, 비밀번호=kkkk123)
+try:
+    from logic.user_db import ensure_admin_user
+    _admin_id = ensure_admin_user("kkp0922", "kkkk123")
+    if _admin_id:
+        print(f"✅ 관리자 계정 준비 완료 (user_id={_admin_id})")
+    else:
+        print("⚠️ 관리자 계정 설정 실패")
+except Exception as e:
+    print(f"⚠️ 관리자 계정 설정: {e}")
+
 # 게스트 채팅 카운터 DB 초기화
 try:
     from logic.guest_chat_db import init_guest_chat_db

@@ -126,7 +126,7 @@ function LoveReportContent() {
   const [purchasePrice, setPurchasePrice] = useState(5900);
   const [accessChecked, setAccessChecked] = useState(false);
   const [hasDirectAddon, setHasDirectAddon] = useState(false);
-  const [addonPrice, setAddonPrice] = useState(990);
+  const [addonPrice, setAddonPrice] = useState(300);
   const realisticFetchedRef = useRef(false);
   const [fakeProgress, setFakeProgress] = useState(0);
   const [stuckAt95, setStuckAt95] = useState(false);

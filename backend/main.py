@@ -2547,7 +2547,7 @@ async def _generate_deep_topic_report(
                     raise HTTPException(
                         status_code=403,
                         detail=json.dumps(
-                            {"error": "purchase_required", "price": 990, "addon": "realistic"},
+                            {"error": "purchase_required", "price": 300, "addon": "realistic"},
                             ensure_ascii=False,
                         ),
                     )
@@ -2831,7 +2831,7 @@ async def report_access_check(report_type: str, request: Request):
     user_id = get_user_id_from_request(request)
 
     def _addon_fields(uid: Optional[int], is_member: bool) -> dict[str, Any]:
-        out: dict[str, Any] = {"direct_addon_price": 990, "has_direct_addon": False}
+        out: dict[str, Any] = {"direct_addon_price": 300, "has_direct_addon": False}
         if report_type not in ("money", "love", "career"):
             return out
         if TEST_MODE:
@@ -3006,9 +3006,9 @@ async def kakao_pay_ready(request: Request):
         "love":            ("연애운 리포트", 2900),
         "career":          ("직업운 리포트", 2900),
         "couple":          ("궁합 리포트", 2900),
-        "money_realistic": ("재물운 직설 분석", 990),
-        "love_realistic":  ("연애운 직설 분석", 990),
-        "career_realistic": ("직업운 직설 분석", 990),
+        "money_realistic": ("재물운 직설 분석", 300),
+        "love_realistic":  ("연애운 직설 분석", 300),
+        "career_realistic": ("직업운 직설 분석", 300),
         "consulting":      ("1:1 사주 채팅 상담", 20000),
     }
     order_type = body.get("order_type", "basic")
@@ -3157,9 +3157,9 @@ async def kakao_pay_approve(request: Request):
         "love": 2900,
         "career": 2900,
         "couple": 2900,
-        "money_realistic": 990,
-        "love_realistic": 990,
-        "career_realistic": 990,
+        "money_realistic": 300,
+        "love_realistic": 300,
+        "career_realistic": 300,
     }
     if order_type == "pro_monthly":
         activate_membership(user_id, 1)
@@ -3230,9 +3230,9 @@ async def inicis_pay_ready(request: Request):
         "love":            ("연애운 리포트", 2900),
         "career":          ("직업운 리포트", 2900),
         "couple":          ("궁합 리포트", 2900),
-        "money_realistic": ("재물운 직설 분석", 990),
-        "love_realistic":  ("연애운 직설 분석", 990),
-        "career_realistic": ("직업운 직설 분석", 990),
+        "money_realistic": ("재물운 직설 분석", 300),
+        "love_realistic":  ("연애운 직설 분석", 300),
+        "career_realistic": ("직업운 직설 분석", 300),
         "consulting":      ("1:1 사주 채팅 상담", 20000),
     }
 
@@ -3290,9 +3290,9 @@ async def portone_pay_ready(request: Request):
         "love":             ("연애운 리포트", 2900),
         "career":           ("직업운 리포트", 2900),
         "couple":           ("궁합 리포트", 2900),
-        "money_realistic":  ("재물운 직설 분석", 990),
-        "love_realistic":   ("연애운 직설 분석", 990),
-        "career_realistic": ("직업운 직설 분석", 990),
+        "money_realistic":  ("재물운 직설 분석", 300),
+        "love_realistic":   ("연애운 직설 분석", 300),
+        "career_realistic": ("직업운 직설 분석", 300),
         "consulting":       ("1:1 사주 채팅 상담", 20000),
     }
 
@@ -3394,7 +3394,7 @@ async def portone_pay_confirm(request: Request):
         "pro_monthly": 4900,
         "deep": 4900, "money": 2900, "love": 2900,
         "career": 2900, "couple": 2900,
-        "money_realistic": 990, "love_realistic": 990, "career_realistic": 990,
+        "money_realistic": 300, "love_realistic": 300, "career_realistic": 300,
         "basic": 990, "analysis_ticket": 990,
     }
 
@@ -3482,7 +3482,7 @@ async def portone_webhook(request: Request):
     _PRICE_MAP = {
         "deep": 4900, "money": 2900, "love": 2900,
         "career": 2900, "couple": 2900,
-        "money_realistic": 990, "love_realistic": 990, "career_realistic": 990,
+        "money_realistic": 300, "love_realistic": 300, "career_realistic": 300,
         "pro_monthly": 4900, "basic": 990, "analysis_ticket": 990,
     }
     expected = _PRICE_MAP.get(order_type, 0)
@@ -4841,9 +4841,9 @@ _INICIS_ORDER_MAP: dict[str, tuple[str, int]] = {
     "love":             ("연애운 리포트", 2900),
     "career":           ("직업운 리포트", 2900),
     "couple":           ("궁합 리포트", 2900),
-    "money_realistic":  ("재물운 직설 분析", 990),
-    "love_realistic":   ("연애운 직설 분析", 990),
-    "career_realistic": ("직업운 직설 분析", 990),
+    "money_realistic":  ("재물운 직설 분析", 300),
+    "love_realistic":   ("연애운 직설 분析", 300),
+    "career_realistic": ("직업운 직설 분析", 300),
 }
 
 def _inicis_signature(timestamp: str, mid: str, price: int, signkey: str) -> str:
@@ -4975,7 +4975,7 @@ try{{if(window.opener){{window.opener.location.href="{url}";window.close();}}els
     _PRICE_MAP = {
         "deep": 4900, "money": 2900, "love": 2900,
         "career": 2900, "couple": 2900,
-        "money_realistic": 990, "love_realistic": 990, "career_realistic": 990,
+        "money_realistic": 300, "love_realistic": 300, "career_realistic": 300,
     }
 
     try:

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { getAuthHeaders } from "@/lib/auth";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-const KAKAO_CHANNEL_URL = "http://pf.kakao.com/_Ribbn/friend";
+const KAKAO_CHANNEL_URL = "http://pf.kakao.com/_Ribbn/chat";
 
 declare global {
   interface Window {

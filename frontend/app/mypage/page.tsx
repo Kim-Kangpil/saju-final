@@ -277,7 +277,6 @@ function MyPageContent({
               <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-primary)" }}>
                 <Icon icon="mdi:crown" width={13} style={{ color: "#c9a227" }} />
                 <strong>Pro 구독 중</strong>
-                <span style={{ color: "#6b7280", marginLeft: 4 }}>· 분석권 {seedCount}개</span>
               </div>
             ) : (
               <div style={{ fontSize: 12, color: "var(--text-primary)" }}>
@@ -286,20 +285,6 @@ function MyPageContent({
             )}
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button
-              type="button"
-              className="tap sans"
-              onClick={() => router.push("/seed-charge")}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 4,
-                padding: "7px 12px", borderRadius: 10,
-                background: "#fff", border: "1.5px solid var(--border-default)",
-                fontSize: 12, fontWeight: 700, color: "var(--text-primary)", cursor: "pointer",
-              }}
-            >
-              <Icon icon="mdi:ticket-confirmation-outline" width={14} />
-              충전
-            </button>
             <button
               type="button"
               className="tap sans"

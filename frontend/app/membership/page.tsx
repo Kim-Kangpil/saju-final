@@ -92,19 +92,19 @@ export default function MembershipPage({ params }: { params?: Promise<Record<str
           <h2 style={{ fontSize: 13, fontWeight: 700, color: "#6B6B6B", letterSpacing: "0.08em", marginBottom: 14 }}>플랜 비교</h2>
           <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #E0DDCF", overflow: "hidden" }}>
             {/* Header row */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#E1DDCF" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#E1DDCF" }}>
               {["무료", "분석권", "Pro"].map((h, i) => (
                 <div key={h} style={{ padding: "10px 8px", textAlign: "center", fontSize: 12, fontWeight: 700, background: i === 2 ? "#3A3A3A" : "transparent", color: i === 2 ? "#fff" : "#6B6B6B" }}>{h}</div>
               ))}
             </div>
             {/* Rows */}
             {[
-              ["AI 채팅", "3회/일", "3회/일", "무제한"],
+              ["AI 채팅", "3회/일", "무제한"],
               ["분석권", "❌", "1회", "월 3회"],
-              ["특화/심화 리포트", "❌", "유료", "월 3회 할인"],
-              ["가격", "무료", "1,900원", "4,900원/월"],
-            ].map(([label, a, , c]) => (
-              <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: "1px solid #E8E5DF" }}>
+              ["특화/심화 리포트", "❌", "구매 후 이용"],
+              ["가격", "무료", "4,900원/월"],
+            ].map(([label, a, c]) => (
+              <div key={label} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: "1px solid #E8E5DF" }}>
                 <div style={{ padding: "11px 8px", fontSize: 12, color: "#6B6B6B", textAlign: "center" }}>{label}</div>
                 <div style={{ padding: "11px 8px", fontSize: 12, color: "#6B6B6B", textAlign: "center" }}>{a}</div>
                 <div style={{ padding: "11px 8px", fontSize: 12, color: "#3A3A3A", fontWeight: 700, textAlign: "center", background: "#F5F2EE" }}>{c}</div>

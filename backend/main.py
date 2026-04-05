@@ -2239,8 +2239,7 @@ async def interpret_with_gpt(req: GPTInterpretRequest, request: Request):
                     raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 4900}, ensure_ascii=False))
         else:
             if not _is_pro:
-                if get_report_credits(_uid) <= 0:
-                    raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
+                pass  # 분析권 제도 폐지 — Pro 또는 개별 구매만 체크
 
     try:
         print(f"✅ GPT 해석 요청: day_stem={req.day_stem}, tone={req.tone}")
@@ -2540,7 +2539,7 @@ async def _generate_deep_topic_report(
         is_pro = bool(_mst.get("is_member"))
         if not is_pro:
             from logic.payment_db import has_purchased_report as _has_pr
-            if not _has_pr(_uid, topic_key) and get_report_credits(_uid) <= 0:
+            if not _has_pr(_uid, topic_key):
                 raise HTTPException(status_code=403, detail=json.dumps({"error": "purchase_required", "price": 2900}, ensure_ascii=False))
             if (report_tone or "").strip().lower() == "realistic":
                 if not _has_pr(_uid, f"{topic_key}_realistic"):
@@ -2902,12 +2901,6 @@ async def report_access_check(report_type: str, request: Request):
     from logic.payment_db import has_purchased_report
     if has_purchased_report(user_id, report_type):
         base = {"has_access": True, "reason": "purchased"}
-        base.update(_addon_fields(user_id, False))
-        return base
-    
-    # 분석권 확인
-    if report_type in ("basic", "analysis_ticket") and get_report_credits(user_id) > 0:
-        base = {"has_access": True, "reason": "credits"}
         base.update(_addon_fields(user_id, False))
         return base
     
@@ -3694,16 +3687,10 @@ def get_shared_saju(share_token: str):
 
 @app.post("/saju/summary-gpt")
 async def summary_gpt(req: SummaryGPTRequest, request: Request):
-    """종합 요약 GPT — Pro 또는 분析권 1개 차감 후 허용."""
-    # 접근 제어: Pro 또는 분析권 보유 확인 + 차감
+    """종합 요약 GPT — 로그인 필요."""
     _uid = get_user_id_from_request(request)
     if _uid is None:
         raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
-    _mst = refresh_and_get_membership_status(_uid)
-    if not _mst.get("is_member"):
-        _ok, _remaining = deduct_report_credit(_uid)
-        if not _ok:
-            raise HTTPException(status_code=403, detail=json.dumps({"error": "report_locked"}, ensure_ascii=False))
 
     try:
         if not get_openai_client() and not GEMINI_API_KEY:

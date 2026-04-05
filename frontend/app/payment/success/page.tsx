@@ -53,8 +53,8 @@ function PaymentSuccessInner() {
 
     // PortOne / KG이니시스: 백엔드에서 이미 승인 완료 → 바로 성공 처리
     if (status === "inicis_ok" || status === "portone_ok") {
-      if (order_type === "deep" && saju_id) {
-        setRedirectOverride(`/report/deep?saju_id=${encodeURIComponent(saju_id)}`);
+      if (saju_id && ["deep", "money", "love", "career", "couple"].includes(order_type)) {
+        setRedirectOverride(`/report/${order_type}?saju_id=${encodeURIComponent(saju_id)}`);
       }
       if (String(order_type).includes("realistic") && saju_id) {
         const base = order_type.replace("_realistic", "");

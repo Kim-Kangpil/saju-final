@@ -450,7 +450,7 @@ function ChatPageInner({
         });
         if (res.ok) {
           const data = await res.json().catch(() => ({}));
-          setIsPro(!!data.is_member);
+          setIsPro(!!data.is_member || !!data.is_admin);
         }
       } catch {
         setIsPro(false);

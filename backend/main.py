@@ -720,11 +720,19 @@ def get_me(request: Request):
         user = get_user_by_id(user_id)
         if not user:
             return {"ok": False, "provider": None, "email": None, "nickname": None}
+        st = refresh_and_get_membership_status(user_id)
+        is_member = bool(st.get("is_member"))
+        coupon_key = f"beta_coupon_{user_id}"
+        coupon_data = get_cached_data(coupon_key)
+        _raw_features = coupon_data.get("features") if coupon_data else None
+        is_admin = bool(_raw_features and _raw_features.get("is_admin"))
         return {
             "ok": True,
             "provider": user.get("provider"),
             "email": user.get("email"),
             "nickname": user.get("nickname"),
+            "is_member": is_member,
+            "is_admin": is_admin,
         }
     except Exception as e:
         print(f"⚠️ /api/me 조회 실패: {e}")

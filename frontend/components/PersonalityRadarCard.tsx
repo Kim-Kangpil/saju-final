@@ -28,20 +28,6 @@ const AXIS_DESC: Record<Axis, [string, string]> = {
   성실성: ["계획적이고 맡은 일을 끝까지 완수해요", "틀에 얽매이지 않고 유연하게 행동해요"],
 };
 
-interface MbtiData {
-  E: number; I: number;
-  N: number; S: number;
-  F: number; T: number;
-  J: number; P: number;
-  type: string;
-}
-
-const MBTI_DIMS: Array<{ left: keyof MbtiData; right: keyof MbtiData; leftColor: string; rightColor: string }> = [
-  { left: "E", right: "I", leftColor: "#E8865A", rightColor: "#5A8BE8" },
-  { left: "N", right: "S", leftColor: "#9B59B6", rightColor: "#27AE60" },
-  { left: "F", right: "T", leftColor: "#E8595A", rightColor: "#2E86AB" },
-  { left: "J", right: "P", leftColor: "#8B7355", rightColor: "#A8946A" },
-];
 
 export function PersonalityRadarCard({ ruleSummary, big5Items }: Props) {
   const scores = useMemo(() => {
@@ -59,12 +45,6 @@ export function PersonalityRadarCard({ ruleSummary, big5Items }: Props) {
     if (vd && typeof vd === "object") return vd as Record<Axis, number>;
     return { 신경성: 50, 외향성: 50, 개방성: 50, 우호성: 50, 성실성: 50 } as Record<Axis, number>;
   }, [big5Items, ruleSummary]);
-
-  const mbti = useMemo<MbtiData | null>(() => {
-    const m = ruleSummary?.visual_data?.mbti;
-    if (m && typeof m === "object" && m.type) return m as MbtiData;
-    return null;
-  }, [ruleSummary]);
 
   const CX = 140;
   const CY = 140;
@@ -220,55 +200,6 @@ export function PersonalityRadarCard({ ruleSummary, big5Items }: Props) {
         </p>
       </div>
 
-      {/* MBTI 경향 섹션 */}
-      {mbti && (
-        <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid #E3D9CB" }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "#6B5F4E", letterSpacing: "0.08em", textAlign: "center" }}>
-            MBTI 경향
-          </p>
-          <p style={{ fontSize: 10, color: "#A8946A", textAlign: "center", marginTop: 3, marginBottom: 12 }}>
-            사주 오행에서 추정한 성격 유형 경향
-          </p>
-
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
-            <div style={{ display: "inline-flex", gap: 4, background: "#3A3A3A", borderRadius: 12, padding: "10px 20px" }}>
-              {mbti.type.split("").map((ch, i) => (
-                <span key={i} style={{ fontSize: 22, fontWeight: 800, color: "#F5F1EA", letterSpacing: "0.05em" }}>
-                  {ch}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "0 4px" }}>
-            {MBTI_DIMS.map(({ left, right, leftColor, rightColor }) => {
-              const leftPct = mbti[left] as number;
-              const rightPct = mbti[right] as number;
-              const dominant = leftPct >= rightPct ? left : right;
-              return (
-                <div key={String(left)}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, fontWeight: dominant === left ? 800 : 500, color: dominant === left ? leftColor : "#A8946A" }}>
-                      {String(left)} {leftPct}%
-                    </span>
-                    <span style={{ fontSize: 12, fontWeight: dominant === right ? 800 : 500, color: dominant === right ? rightColor : "#A8946A" }}>
-                      {rightPct}% {String(right)}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", height: 8, borderRadius: 4, overflow: "hidden", background: "#EDE6DC" }}>
-                    <div style={{ width: `${leftPct}%`, background: leftColor, borderRadius: "4px 0 0 4px", opacity: dominant === left ? 1 : 0.45 }} />
-                    <div style={{ width: `${rightPct}%`, background: rightColor, borderRadius: "0 4px 4px 0", opacity: dominant === right ? 1 : 0.45 }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <p style={{ fontSize: 10, color: "#C4B8A4", textAlign: "center", marginTop: 10, lineHeight: 1.5 }}>
-            * MBTI 공식 검사 결과와 다를 수 있어요
-          </p>
-        </div>
-      )}
     </div>
   );
 }
